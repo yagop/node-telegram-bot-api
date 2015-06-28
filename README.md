@@ -1,17 +1,19 @@
+[![Build Status](https://travis-ci.org/yagop/telegram-bot-api.svg?branch=master)](https://travis-ci.org/yagop/telegram-bot-api) 
+
 * * *
 
 ## Class: TelegramBot
-NodeJS class for Telegram Bot API. 
+NodeJS class for Telegram Bot API.
 
 Support for WebHooks and long polling. Emits `message` when message arrives.
 
-### TelegramBot.getMe() 
+### TelegramBot.getMe()
 
 Returns basic information about the bot in form of a `User` object.
 
 **Returns**: `Promise`
 
-### TelegramBot.setWebHook(url) 
+### TelegramBot.setWebHook(url)
 
 Specify a url to receive incoming updates via an outgoing webHook.
 
@@ -20,7 +22,7 @@ Specify a url to receive incoming updates via an outgoing webHook.
 **url**: `String`, URL
 
 
-### TelegramBot.getUpdates(timeout, limit, offset) 
+### TelegramBot.getUpdates(timeout, limit, offset)
 
 Use this method to receive incoming updates using long polling
 
@@ -34,7 +36,7 @@ Use this method to receive incoming updates using long polling
 
 **Returns**: `Promise`, Updates
 
-### TelegramBot.sendMessage(chatId, text, options) 
+### TelegramBot.sendMessage(chatId, text, options)
 
 Send text message.
 
@@ -48,7 +50,7 @@ Send text message.
 
 **Returns**: `Promise`
 
-### TelegramBot.forwardMessage(chatId, fromChatId, messageId) 
+### TelegramBot.forwardMessage(chatId, fromChatId, messageId)
 
 Forward messages of any kind.
 
@@ -63,7 +65,7 @@ original message was sent
 
 **Returns**: `Promise`
 
-### TelegramBot.sendPhoto(chatId, photo, options) 
+### TelegramBot.sendPhoto(chatId, photo, options)
 
 Send photo
 
@@ -78,7 +80,7 @@ also be a `file_id` previously uploaded
 
 **Returns**: `Promise`
 
-### TelegramBot.sendAudio(chatId, audio, options) 
+### TelegramBot.sendAudio(chatId, audio, options)
 
 Send audio
 
