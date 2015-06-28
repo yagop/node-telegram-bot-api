@@ -13,8 +13,8 @@ var fs = require('fs');
 var requestPromise = Promise.promisify(request);
 
 /**
- * Telegram Bot API. Suppor for WebHooks and long polling. Emits `message` when
- * a message arrives.
+ * NodeJS class for Telegram Bot API. Support for WebHooks and long polling. Emits `message` when
+ * message arrives.
  *
  * @class TelegramBot
  * @constructor
