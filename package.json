@@ -1,0 +1,30 @@
+{
+  "name": "telegram-bot-api",
+  "version": "0.1.0",
+  "description": "Telegram Bot API",
+  "main": "index.js",
+  "directories": {
+    "test": "test",
+    "src": "src"
+  },
+  "keywords": [
+    "telegram",
+    "telegram bot",
+    "telegram bot api",
+    "bot"
+  ],
+  "scripts": {
+    "test": "./node_modules/.bin/mocha test/index.js"
+  },
+  "author": "Yago Pérez <yagoperezs@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "bluebird": "^2.9.30",
+    "mime": "^1.3.4",
+    "request": "^2.58.0"
+  },
+  "devDependencies": {
+    "mocha": "^2.2.5",
+    "should": "^7.0.1"
+  }
+}
