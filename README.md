@@ -2,9 +2,6 @@
 
 Node.js module to interact with official [Telegram Bot API](https://core.telegram.org/bots/api). A bot token is needed, to obtain one, talk to [@botfather](telegram.me/BotFather) and create a new bot.
 
-Both request method to obtain messages are implemented. To use standard polling, set `polling: true`
-on `options`. Notice that [webHook](https://core.telegram.org/bots/api#setwebhook) will need a valid (not self signed) SSL certificate.
-
 ```sh
 npm install node-telegram-bot-api
 ```
@@ -27,99 +24,114 @@ There are some other examples on [examples](https://github.com/yagop/node-telegr
 
 * * *
 
-## Class: TelegramBot
-NodeJS class for Telegram Bot API.
+## TelegramBot
 
-Support for WebHooks and long polling. Emits `message` when message arrives.
+Both request method to obtain messages are implemented. To use standard polling, set `polling: true`
+on `options`. Notice that [webHook](https://core.telegram.org/bots/api#setwebhook) will need a valid (not self signed) SSL certificate.
+Emmits `message` when a message arrives.
 
-### TelegramBot.getMe()
+See: https://core.telegram.org/bots/api
+
+### Params:
+
+* **String** *token* Bot Token
+* **Object** *[options]*
+* **Boolean|Object** *[options.polling=false]* Set true to enable polling
+* **String|Number** *[options.polling.timeout=4]* Polling time
+* **Boolean|Object** *[options.webHook=false]* Set true to enable WebHook
+* **String** *[options.webHook.key]* PEM private key to webHook server
+* **String** *[options.webHook.cert]* PEM certificate key to webHook server
+
+## getMe()
 
 Returns basic information about the bot in form of a `User` object.
 
-**Returns**: `Promise`
+### Return:
 
-### TelegramBot.setWebHook(url)
+* **Promise**
+
+## setWebHook(url)
 
 Specify a url to receive incoming updates via an outgoing webHook.
 
-**Parameters**
+### Params:
 
-**url**: `String`, URL
+* **String** *url* URL
 
-
-### TelegramBot.getUpdates(timeout, limit, offset)
+## getUpdates([timeout], [limit], [offset])
 
 Use this method to receive incoming updates using long polling
 
-**Parameters**
+See: https://core.telegram.org/bots/api#getupdates
 
-**timeout**: `Number | String`, Timeout in seconds for long polling.
+### Params:
 
-**limit**: `Number | String`, Limits the number of updates to be retrieved.
+* **Number|String** *[timeout]* Timeout in seconds for long polling.
+* **Number|String** *[limit]* Limits the number of updates to be retrieved.
+* **Number|String** *[offset]* Identifier of the first update to be returned.
 
-**offset**: `Number | String`, Identifier of the first update to be returned.
+### Return:
 
-**Returns**: `Promise`, Updates
+* **Promise** Updates
 
-### TelegramBot.sendMessage(chatId, text, options)
+## sendMessage(chatId, text, [options])
 
 Send text message.
 
-**Parameters**
+See: https://core.telegram.org/bots/api#sendmessage
 
-**chatId**: `Number | String`, Unique identifier for the message recipient
+### Params:
 
-**text**: `Sting`, Text of the message to be sent
+* **Number|String** *chatId* Unique identifier for the message recipient
+* **Sting** *text* Text of the message to be sent
+* **Object** *[options]* Additional Telegram query options
 
-**options**: `Object`, Additional Telegram query options
+### Return:
 
-**Returns**: `Promise`
+* **Promise**
 
-### TelegramBot.forwardMessage(chatId, fromChatId, messageId)
+## forwardMessage(chatId, fromChatId, messageId)
 
 Forward messages of any kind.
 
-**Parameters**
+### Params:
 
-**chatId**: `Number | String`, Unique identifier for the message recipient
+* **Number|String** *chatId* Unique identifier for the message recipient
+* **Number|String** *fromChatId* Unique identifier for the chat where the original message was sent
+* **Number|String** *messageId* Unique message identifier
 
-**fromChatId**: `Number | String`, Unique identifier for the chat where the
-original message was sent
+### Return:
 
-**messageId**: `Number | String`, Unique message identifier
+* **Promise**
 
-**Returns**: `Promise`
-
-### TelegramBot.sendPhoto(chatId, photo, options)
+## sendPhoto(chatId, photo, [options])
 
 Send photo
 
-**Parameters**
+See: https://core.telegram.org/bots/api#sendphoto
 
-**chatId**: `Number | String`, Unique identifier for the message recipient
+### Params:
 
-**photo**: `String | stream.Stream`, A file path or a Stream. Can
-also be a `file_id` previously uploaded
+* **Number|String** *chatId* Unique identifier for the message recipient
+* **String|stream.Stream** *photo* A file path or a Stream. Can also be a `file_id` previously uploaded
+* **Object** *[options]* Additional Telegram query options
 
-**options**: `Object`, Additional Telegram query options
+### Return:
 
-**Returns**: `Promise`
+* **Promise**
 
-### TelegramBot.sendAudio(chatId, audio, options)
+## sendAudio(chatId, audio, [options])
 
 Send audio
 
-**Parameters**
+See: https://core.telegram.org/bots/api#sendaudio
 
-**chatId**: `Number | String`, Unique identifier for the message recipient
+### Params:
 
-**audio**: `String | stream.Stream`, A file path or a Stream. Can
-also be a `file_id` previously uploaded.
+* **Number|String** *chatId* Unique identifier for the message recipient
+* **String|stream.Stream** *audio* A file path or a Stream. Can also be a `file_id` previously uploaded.
+* **Object** *[options]* Additional Telegram query options
 
-**options**: `Object`, Additional Telegram query options
+### Return:
 
-**Returns**: `Promise`
-
-
-
-* * *
+* **Promise**
