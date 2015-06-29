@@ -1,5 +1,10 @@
 [![Build Status](https://travis-ci.org/yagop/telegram-bot-api.svg?branch=master)](https://travis-ci.org/yagop/telegram-bot-api) [![Coverage Status](https://coveralls.io/repos/yagop/telegram-bot-api/badge.svg?branch=develop)](https://coveralls.io/r/yagop/telegram-bot-api?branch=develop)
 
+Node.js module to interact with official [Telegram Bot API](https://core.telegram.org/bots/api). A bot token is needed, to obtain one, talk to [@botfather](telegram.me/BotFather) and create a new bot.
+
+Both request method to obtain messages are implemented. To use standard polling, set `polling: true`
+on `options`. Notice that [webHook](https://core.telegram.org/bots/api#setwebhook) will need a valid (not self signed) SSL certificate.
+
 ```sh
 npm install node-telegram-bot-api
 ```
@@ -17,6 +22,8 @@ bot.on('message', function (msg) {
   bot.sendPhoto(chatId, photo, {caption: "I'm a bot!"});
 });
 ```
+
+There are some other examples on [examples](https://github.com/yagop/node-telegram-bot-api/tree/master/examples).
 
 * * *
 
