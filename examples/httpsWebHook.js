@@ -8,5 +8,5 @@ var options = {
   }
 };
 
-var bot = new TelegramBot('BOTTOKEN', options);
-bot.setWebHook('IP:PORT');
+var bot = new TelegramBot('BOT_TOKEN', options);
+bot.setWebHook('IP:PORT/botBOT_TOKEN');
