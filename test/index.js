@@ -36,7 +36,7 @@ describe('Telegram', function () {
         msg.should.be.an.instanceOf(Object);
         done();
       });
-      var url = 'http://localhost:8443/bot';
+      var url = 'http://localhost:8443/bot'+TOKEN;
       request({
         url: url,
         method: 'POST',
