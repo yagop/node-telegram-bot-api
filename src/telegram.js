@@ -76,9 +76,8 @@ TelegramBot.prototype._configureWebHook = function (port, host, key, cert) {
 };
 
 TelegramBot.prototype._requestListener = function (req, res) {
-  console.log(req)
   var self = this;
-  var url = '/bot';
+  var url = '/bot'+this.token;
   if (req.url === url && req.method === 'POST') {
     var fullBody = '';
     req.on('data', function (chunk) {
