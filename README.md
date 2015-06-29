@@ -1,5 +1,23 @@
 [![Build Status](https://travis-ci.org/yagop/telegram-bot-api.svg?branch=master)](https://travis-ci.org/yagop/telegram-bot-api) [![Coverage Status](https://coveralls.io/repos/yagop/telegram-bot-api/badge.svg?branch=develop)](https://coveralls.io/r/yagop/telegram-bot-api?branch=develop)
 
+```sh
+npm install node-telegram-bot-api
+```
+
+```js
+var TelegramBot = require('node-telegram-bot-api');
+
+var token = 'YOUR_TELEGRAM_BOT_TOKEN';
+// Setup polling way
+var bot = new TelegramBot(token, {polling: true});
+bot.on('message', function (msg) {
+  var chatId = msg.chat.id;
+  // photo can be: a file path, a stream or a Telegram file_id
+  var photo = 'bot.gif';
+  bot.sendPhoto(chatId, photo, {caption: "I'm a bot!"});
+});
+```
+
 * * *
 
 ## Class: TelegramBot
