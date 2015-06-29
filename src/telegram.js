@@ -151,7 +151,7 @@ TelegramBot.prototype.getMe = function () {
 TelegramBot.prototype.setWebHook = function (url) {
   var path = 'setWebHook';
   var qs = {url: url};
-  return this._request(path, {method: 'POST', qs: qs})
+  return this._request(path, {qs: qs})
     .then(function (resp) {
       if (!resp) {
         throw new Error(resp);
