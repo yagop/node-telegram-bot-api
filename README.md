@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/yagop/telegram-bot-api.svg?branch=master)](https://travis-ci.org/yagop/telegram-bot-api) 
+[![Build Status](https://travis-ci.org/yagop/telegram-bot-api.svg?branch=master)](https://travis-ci.org/yagop/telegram-bot-api) [![Coverage Status](https://coveralls.io/repos/yagop/telegram-bot-api/badge.svg?branch=develop)](https://coveralls.io/r/yagop/telegram-bot-api?branch=develop)
 
 * * *
 
