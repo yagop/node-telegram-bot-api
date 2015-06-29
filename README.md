@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/yagop/telegram-bot-api.svg?branch=master)](https://travis-ci.org/yagop/telegram-bot-api) [![Coverage Status](https://coveralls.io/repos/yagop/telegram-bot-api/badge.svg?branch=develop)](https://coveralls.io/r/yagop/telegram-bot-api?branch=develop)
+[![Build Status](https://travis-ci.org/yagop/node-telegram-bot-api.svg?branch=master)](https://travis-ci.org/yagop/node-telegram-bot-api) [![Coverage Status](https://coveralls.io/repos/yagop/node-telegram-bot-api/badge.svg)](https://coveralls.io/r/yagop/node-telegram-bot-api)
 
 Node.js module to interact with official [Telegram Bot API](https://core.telegram.org/bots/api). A bot token is needed, to obtain one, talk to [@botfather](telegram.me/BotFather) and create a new bot.
 
