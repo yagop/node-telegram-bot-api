@@ -44,13 +44,14 @@ var TelegramBot = function (token, options) {
     var port = options.webHook.port || 8443;
     var key = options.webHook.key;
     var cert = options.webHook.cert;
-    this._configureWebHook(port, key, cert);
+    var host = options.webHook.host;
+    this._configureWebHook(port, host, key, cert);
   }
 };
 
 util.inherits(TelegramBot, EventEmitter);
 
-TelegramBot.prototype._configureWebHook = function (port, key, cert) {
+TelegramBot.prototype._configureWebHook = function (port, host, key, cert) {
   var protocol = 'HTTP';
   var self = this;
 
@@ -69,7 +70,7 @@ TelegramBot.prototype._configureWebHook = function (port, key, cert) {
     });
   }
 
-  this._webServer.listen(port, function () {
+  this._webServer.listen(port, host, function () {
     console.log(protocol+" WebHook listening on:", port);
   });
 };
