@@ -76,8 +76,10 @@ TelegramBot.prototype._configureWebHook = function (port, host, key, cert) {
 };
 
 TelegramBot.prototype._requestListener = function (req, res) {
+  console.log(req)
   var self = this;
-  if (req.url === '/bot' && req.method === 'POST') {
+  var url = '/bot';
+  if (req.url === url && req.method === 'POST') {
     var fullBody = '';
     req.on('data', function (chunk) {
       fullBody += chunk.toString();
@@ -85,11 +87,12 @@ TelegramBot.prototype._requestListener = function (req, res) {
     req.on('end', function () {
       try {
         var data = JSON.parse(fullBody);
-        self.emit('message', data);
+        self.offset = data.update_id;
+        self.emit('message', data.message);
       } catch (error) {
         console.error(error);
       }
-      res.end('OK\n');
+      res.end('OK :P\n');
     });
   } else {
     res.end('OK\n');
