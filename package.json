@@ -33,10 +33,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/yagop/telegram-bot-api.git"
+    "url": "https://github.com/yagop/node-telegram-bot-api.git"
   },
   "bugs": {
-    "url": "https://github.com/yagop/telegram-bot-api/issues"
+    "url": "https://github.com/yagop/node-telegram-bot-api/issues"
   },
-  "homepage": "https://github.com/yagop/telegram-bot-api"
+  "homepage": "https://github.com/yagop/node-telegram-bot-api"
 }
