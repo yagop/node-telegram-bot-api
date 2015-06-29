@@ -4,8 +4,8 @@
   "description": "Telegram Bot API",
   "main": "index.js",
   "directories": {
-    "test": "test",
-    "src": "src"
+    "example": "examples",
+    "test": "test"
   },
   "keywords": [
     "telegram",
@@ -14,8 +14,8 @@
     "bot"
   ],
   "scripts": {
-    "test": "./node_modules/.bin/mocha test/index.js",
-    "test-cov": "./node_modules/.bin/istanbul cover ./node_modules/mocha/bin/_mocha --report lcovonly -- -R spec && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js && rm -rf ./coverage"
+    "test": "mocha test/index.js",
+    "test-cov": "istanbul cover ./node_modules/mocha/bin/_mocha --report lcovonly -- -R spec && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js && rm -rf ./coverage"
   },
   "author": "Yago Pérez <yagoperezs@gmail.com>",
   "license": "MIT",
@@ -30,5 +30,13 @@
     "mocha": "^2.2.5",
     "mocha-lcov-reporter": "0.0.2",
     "should": "^7.0.1"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yagop/telegram-bot-api.git"
+  },
+  "bugs": {
+    "url": "https://github.com/yagop/telegram-bot-api/issues"
+  },
+  "homepage": "https://github.com/yagop/telegram-bot-api"
 }
