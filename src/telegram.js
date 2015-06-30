@@ -108,9 +108,9 @@ TelegramBot.prototype._processUpdates = function (updates) {
 
 TelegramBot.prototype._polling = function (timeout) {
   var self = this;
-  this.getUpdates(timeout).then(function (data) {
+  return this.getUpdates(timeout).then(function (data) {
     self._processUpdates(data);
-    self._polling(timeout);
+    return self._polling(timeout);
   });
 };
 
