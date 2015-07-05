@@ -1,8 +1,9 @@
-var Telegram = require('../src/telegram');
+var Telegram = require('../index');
 var request = require('request');
 var should = require('should');
 var fs = require('fs');
 
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 var TOKEN = process.env.TEST_TELEGRAM_TOKEN;
 if (!TOKEN) {
   throw new Error('Bot token not provided');
@@ -11,6 +12,24 @@ if (!TOKEN) {
 var USERID = process.env.TEST_USER_ID || 777000;
 
 describe('Telegram', function () {
+
+  describe('#setWebHook', function () {
+    it('should set a webHook', function (done) {
+      var bot = new Telegram(TOKEN);
+      bot.setWebHook('216.58.210.174').then(function (resp) {
+        resp.should.be.exactly(true);
+        done();
+      });
+    });
+
+    it('should delete the webHook', function (done) {
+      var bot = new Telegram(TOKEN);
+      bot.setWebHook('').then(function (resp) {
+        resp.should.be.exactly(true);
+        done();
+      });
+    });
+  });
 
   describe('#emit', function () {
     it('should emit a `message` on polling', function (done) {
@@ -30,10 +49,10 @@ describe('Telegram', function () {
       bot._polling();
     });
 
-    it('should emit a `message` on WebHook', function (done) {
+    it('should emit a `message` on HTTP WebHook', function (done) {
       var bot = new Telegram(TOKEN, {webHook: true});
       bot.on('message', function (msg) {
-        //msg.should.be.an.instanceOf(Object);
+        bot._webServer.close();
         done();
       });
       var url = 'http://localhost:8443/bot'+TOKEN;
@@ -45,6 +64,32 @@ describe('Telegram', function () {
           "content-type": "application/json",
         },
         body: JSON.stringify({update_id: 0, message: {text: 'test'}})
+      });
+    });
+
+    it('should emit a `message` on HTTPS WebHook', function (done) {
+      var opts = {
+        webHook: {
+          port: 8443,
+          key: __dirname+'/../examples/key.pem',
+          cert: __dirname+'/../examples/crt.pem'
+        }
+      };
+      var bot = new Telegram(TOKEN, opts);
+      bot.on('message', function (msg) {
+        bot._webServer.close();
+        done();
+      });
+      var url = 'https://localhost:8443/bot'+TOKEN;
+      request({
+        url: url,
+        method: 'POST',
+        json: true,
+        headers: {
+          "content-type": "application/json",
+        },
+        rejectUnhauthorized: false,
+        body: {update_id: 0, message: {text: 'test'}}
       });
     });
   });
