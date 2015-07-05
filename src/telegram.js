@@ -295,4 +295,22 @@ TelegramBot.prototype.sendAudio = function (chatId, audio, options) {
   return this._request('sendAudio', opts);
 };
 
+/**
+ * Send chat action
+ * @param  {Number|String} chatId  Unique identifier for the message recipient
+ * @param  {String} action Type of action to broadcast. `typing` for text messages,
+ * `upload_photo` for photos, `record_video` or `upload_video` for videos,
+ * `record_audio` or `upload_audio` for audio files, `upload_document` for general files,
+ * `find_location` for location data.
+ * @return {Promise}
+ * @see https://core.telegram.org/bots/api#sendchataction
+ */
+TelegramBot.prototype.sendChatAction = function (chatId, action) {
+  var query = {
+    chat_id: chatId,
+    action: action
+  };
+  return this._request('sendChatAction', {qs: query});
+};
+
 module.exports = TelegramBot;
