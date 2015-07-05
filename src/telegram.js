@@ -142,6 +142,7 @@ TelegramBot.prototype._request = function (path, options) {
 /**
  * Returns basic information about the bot in form of a `User` object.
  * @return {Promise}
+ * @see
  */
 TelegramBot.prototype.getMe = function () {
   var path = 'getMe';
@@ -149,8 +150,10 @@ TelegramBot.prototype.getMe = function () {
 };
 
 /**
- * Specify a url to receive incoming updates via an outgoing webHook.
- * @param {String} url URL
+ * Specify an url to receive incoming updates via an outgoing webHook.
+ * @param {String} url URL where Telegram will make HTTP Post. Leave empty to
+ * delete webHook.
+ * @see https://core.telegram.org/bots/api#setwebhook
  */
 TelegramBot.prototype.setWebHook = function (url) {
   var path = 'setWebHook';
@@ -160,6 +163,7 @@ TelegramBot.prototype.setWebHook = function (url) {
       if (!resp) {
         throw new Error(resp);
       }
+      return resp;
     });
 };
 
