@@ -146,7 +146,7 @@ See: https://core.telegram.org/bots/api#sendchataction
 ### Params:
 
 * **Number|String** *chatId* Unique identifier for the message recipient
-* **String|stream.Stream** *action*  Type of action to broadcast.
+* **String** *action*  Type of action to broadcast.
 
 ### Return:
 
