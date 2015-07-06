@@ -179,6 +179,17 @@ describe('Telegram', function () {
     });
   });
 
+  describe('#sendChatAction', function () {
+    it('should send a chat action', function (done) {
+      var bot = new Telegram(TOKEN);
+      var action = "typing";
+      bot.sendChatAction(USERID, action).then(function (resp) {
+        resp.should.be.exactly(true);
+        done();
+      });
+    });
+  });
+
   describe('#sendAudio', function () {
     it('should send an OGG audio', function (done) {
       var bot = new Telegram(TOKEN);
@@ -189,5 +200,6 @@ describe('Telegram', function () {
       });
     });
   });
+
 
 });
