@@ -29,8 +29,15 @@ bot.on('message', function (msg) {
         bot.forwardMessage(chatId, chatId, messageId);
       });
   }
-  if (msg.text == '/help') {
-    var opts = {reply_to_message_id: msg.message_id};
-    bot.sendMessage(chatId, 'This is only a test :D', opts);
+  if (msg.text == '/love') {
+    var opts = {
+      reply_to_message_id: msg.message_id,
+      reply_markup: JSON.stringify({
+        keyboard: [
+          ['Yes, you are the bot of my life ❤'],
+          ['No, sorry there is another one...']]
+      })
+    };
+    bot.sendMessage(chatId, 'Do you love me?', opts);
   }
 });
