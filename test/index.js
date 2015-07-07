@@ -217,7 +217,7 @@ describe('Telegram', function () {
       });
     });
 
-    it('should send a photo from id', function (done) {
+    it('should send a document from id', function (done) {
       var bot = new Telegram(TOKEN);
       // Send the same photo as before
       var document = documentId;
@@ -227,7 +227,7 @@ describe('Telegram', function () {
       });
     });
 
-    it('should send a photo from fs.readStream', function (done) {
+    it('should send a document from fs.readStream', function (done) {
       var bot = new Telegram(TOKEN);
       var document = fs.createReadStream(__dirname+'/bot.gif');
       bot.sendDocument(USERID, document).then(function (resp) {
