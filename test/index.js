@@ -203,3 +203,45 @@ describe('Telegram', function () {
 
 
 });
+
+
+  describe('#sendDocument', function () {
+    var documentId;
+    it('should send a document from file', function (done) {
+      var bot = new Telegram(TOKEN);
+      var document = __dirname+'/bot.gif';
+      bot.sendDocument(USERID, document).then(function (resp) {
+        resp.should.be.an.instanceOf(Object);
+        documentId = resp.document.file_id;
+        done();
+      });
+    });
+
+    it('should send a document from id', function (done) {
+      var bot = new Telegram(TOKEN);
+      // Send the same photo as before
+      var document = documentId;
+      bot.sendPhoto(USERID, document).then(function (resp) {
+        resp.should.be.an.instanceOf(Object);
+        done();
+      });
+    });
+
+    it('should send a document from fs.readStream', function (done) {
+      var bot = new Telegram(TOKEN);
+      var document = fs.createReadStream(__dirname+'/bot.gif');
+      bot.sendDocument(USERID, document).then(function (resp) {
+        resp.should.be.an.instanceOf(Object);
+        done();
+      });
+    });
+
+    it('should send a document from request Stream', function (done) {
+      var bot = new Telegram(TOKEN);
+      var document = request('https://telegram.org/img/t_logo.png');
+      bot.sendDocument(USERID, document).then(function (resp) {
+        resp.should.be.an.instanceOf(Object);
+        done();
+      });
+    });
+  });
