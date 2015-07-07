@@ -296,6 +296,26 @@ TelegramBot.prototype.sendAudio = function (chatId, audio, options) {
 };
 
 /**
+ * Send Document
+ * @param  {Number|String} chatId  Unique identifier for the message recipient
+ * @param  {String|stream.Stream} A file path or a Stream. Can
+ * also be a `file_id` previously uploaded.
+ * @param  {Object} [options] Additional Telegram query options
+ * @return {Promise}
+ * @see https://core.telegram.org/bots/api#sendDocument
+ */
+TelegramBot.prototype.sendDocument = function (chatId, doc, options) {
+  var opts = {
+    qs: options || {}
+  };
+  opts.qs.chat_id = chatId;
+  var content = this._formatSendData('document', doc);
+  opts.formData = content[0];
+  opts.qs.document = content[1];
+  return this._request('sendDocument', opts);
+};
+
+/**
  * Send chat action.
  * `typing` for text messages,
  * `upload_photo` for photos, `record_video` or `upload_video` for videos,
