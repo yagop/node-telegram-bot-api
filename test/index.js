@@ -221,7 +221,7 @@ describe('Telegram', function () {
       var bot = new Telegram(TOKEN);
       // Send the same photo as before
       var document = documentId;
-      bot.sendPhoto(USERID, document).then(function (resp) {
+      bot.sendDocument(USERID, document).then(function (resp) {
         resp.should.be.an.instanceOf(Object);
         done();
       });
