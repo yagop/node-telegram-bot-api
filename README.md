@@ -24,6 +24,9 @@ There are some other examples on [examples](https://github.com/yagop/node-telegr
 
 * * *
 
+
+<!-- Start src/telegram.js -->
+
 ## TelegramBot
 
 Both request method to obtain messages are implemented. To use standard polling, set `polling: true`
@@ -154,6 +157,22 @@ See: https://core.telegram.org/bots/api#sendDocument
 
 * **Promise**
 
+## sendSticker(chatId, A, [options])
+
+Send .webp stickers.
+
+See: https://core.telegram.org/bots/api#sendsticker
+
+### Params:
+
+* **Number|String** *chatId* Unique identifier for the message recipient
+* **String|stream.Stream** *A* file path or a Stream. Can also be a `file_id` previously uploaded.
+* **Object** *[options]* Additional Telegram query options
+
+### Return:
+
+* **Promise**
+
 ## sendChatAction(chatId, action)
 
 Send chat action.
@@ -171,4 +190,6 @@ See: https://core.telegram.org/bots/api#sendchataction
 
 ### Return:
 
-* **Promise** 
+* **Promise**
+
+<!-- End src/telegram.js -->
