@@ -173,6 +173,22 @@ See: https://core.telegram.org/bots/api#sendsticker
 
 * **Promise**
 
+## sendVideo(chatId, A, [options])
+
+Send video files, Telegram clients support mp4 videos (other formats may be sent whith `sendDocument`)
+
+See: https://core.telegram.org/bots/api#sendvideo
+
+### Params:
+
+* **Number|String** *chatId* Unique identifier for the message recipient
+* **String|stream.Stream** *A* file path or a Stream. Can also be a `file_id` previously uploaded.
+* **Object** *[options]* Additional Telegram query options
+
+### Return:
+
+* **Promise**
+
 ## sendChatAction(chatId, action)
 
 Send chat action.

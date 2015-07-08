@@ -41,12 +41,12 @@
   "homepage": "https://github.com/yagop/node-telegram-bot-api",
   "contributors": [
     {
-      "name": "Riddler",
-      "email": "",
-      "url": "https://github.com/Waterloo",
-      "contributions": 3,
-      "additions": 64,
-      "deletions": 2,
+      "name": "Yago",
+      "email": "yago@yago.me",
+      "url": "https://github.com/yagop",
+      "contributions": 48,
+      "additions": 1102,
+      "deletions": 153,
       "hireable": true
     },
     {
@@ -59,12 +59,12 @@
       "hireable": true
     },
     {
-      "name": "Yago",
-      "email": "yago@yago.me",
-      "url": "https://github.com/yagop",
-      "contributions": 43,
-      "additions": 1002,
-      "deletions": 132,
+      "name": "Riddler",
+      "email": "",
+      "url": "https://github.com/Waterloo",
+      "contributions": 3,
+      "additions": 64,
+      "deletions": 2,
       "hireable": true
     }
   ]
