@@ -201,10 +201,6 @@ describe('Telegram', function () {
     });
   });
 
-
-});
-
-
   describe('#sendDocument', function () {
     var documentId;
     it('should send a document from file', function (done) {
@@ -245,3 +241,5 @@ describe('Telegram', function () {
       });
     });
   });
+  
+});
