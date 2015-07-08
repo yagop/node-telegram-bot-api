@@ -241,5 +241,45 @@ describe('Telegram', function () {
       });
     });
   });
-  
+
+  describe('#sendSticker', function () {
+    var stickerId;
+    it('should send a sticker from file', function (done) {
+      var bot = new Telegram(TOKEN);
+      var sticker = __dirname+'/sticker.webp';
+      bot.sendSticker(USERID, sticker).then(function (resp) {
+        resp.should.be.an.instanceOf(Object);
+        stickerId = resp.sticker.file_id;
+        done();
+      });
+    });
+
+    it('should send a sticker from id', function (done) {
+      var bot = new Telegram(TOKEN);
+      // Send the same photo as before
+      bot.sendSticker(USERID, stickerId).then(function (resp) {
+        resp.should.be.an.instanceOf(Object);
+        done();
+      });
+    });
+
+    it('should send a sticker from fs.readStream', function (done) {
+      var bot = new Telegram(TOKEN);
+      var sticker = fs.createReadStream(__dirname+'/sticker.webp');
+      bot.sendSticker(USERID, sticker).then(function (resp) {
+        resp.should.be.an.instanceOf(Object);
+        done();
+      });
+    });
+
+    it('should send a sticker from request Stream', function (done) {
+      var bot = new Telegram(TOKEN);
+      var sticker = request('https://www.gstatic.com/webp/gallery3/1_webp_ll.webp');
+      bot.sendSticker(USERID, sticker).then(function (resp) {
+        resp.should.be.an.instanceOf(Object);
+        done();
+      });
+    });
+  });
+
 });
