@@ -336,6 +336,27 @@ TelegramBot.prototype.sendSticker = function (chatId, sticker, options) {
 };
 
 /**
+ * Send video files, Telegram clients support mp4 videos (other formats may be sent whith `sendDocument`)
+ * @param  {Number|String} chatId  Unique identifier for the message recipient
+ * @param  {String|stream.Stream} A file path or a Stream. Can
+ * also be a `file_id` previously uploaded.
+ * @param  {Object} [options] Additional Telegram query options
+ * @return {Promise}
+ * @see https://core.telegram.org/bots/api#sendvideo
+ */
+TelegramBot.prototype.sendVideo = function (chatId, video, options) {
+  var opts = {
+    qs: options || {}
+  };
+  opts.qs.chat_id = chatId;
+  var content = this._formatSendData('video', video);
+  opts.formData = content[0];
+  opts.qs.video = content[1];
+  return this._request('sendVideo', opts);
+};
+
+
+/**
  * Send chat action.
  * `typing` for text messages,
  * `upload_photo` for photos, `record_video` or `upload_video` for videos,

@@ -282,4 +282,44 @@ describe('Telegram', function () {
     });
   });
 
+  describe('#sendVideo', function () {
+    var videoId;
+    it('should send a video from file', function (done) {
+      var bot = new Telegram(TOKEN);
+      var video = __dirname+'/video.mp4';
+      bot.sendVideo(USERID, video).then(function (resp) {
+        resp.should.be.an.instanceOf(Object);
+        videoId = resp.video.file_id;
+        done();
+      });
+    });
+
+    it('should send a video from id', function (done) {
+      var bot = new Telegram(TOKEN);
+      // Send the same photo as before
+      bot.sendVideo(USERID, videoId).then(function (resp) {
+        resp.should.be.an.instanceOf(Object);
+        done();
+      });
+    });
+
+    it('should send a video from fs.readStream', function (done) {
+      var bot = new Telegram(TOKEN);
+      var video = fs.createReadStream(__dirname+'/video.mp4');
+      bot.sendVideo(USERID, video).then(function (resp) {
+        resp.should.be.an.instanceOf(Object);
+        done();
+      });
+    });
+
+    it('should send a video from request Stream', function (done) {
+      var bot = new Telegram(TOKEN);
+      var sticker = request('http://techslides.com/demos/sample-videos/small.mp4');
+      bot.sendVideo(USERID, sticker).then(function (resp) {
+        resp.should.be.an.instanceOf(Object);
+        done();
+      });
+    });
+  });
+
 });
