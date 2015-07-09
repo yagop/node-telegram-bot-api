@@ -334,4 +334,19 @@ describe('Telegram', function () {
     });
   });
 
-});
+  describe('#sendLocation', function () {
+    it('should send a location', function (done) {
+      var bot = new Telegram(TOKEN);
+      var lat = 47.5351072;
+      var long = -52.7508537;
+      bot.sendLocation(USERID, lat, long).then(function (resp) {
+        resp.should.be.an.instanceOf(Object);
+        resp.location.should.be.an.instanceOf(Object);
+        resp.location.latitude.should.be.an.instanceOf(Number);
+        resp.location.longitude.should.be.an.instanceOf(Number);
+        done();
+      });
+    });
+  });
+
+}); // End Telegram

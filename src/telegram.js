@@ -395,4 +395,23 @@ TelegramBot.prototype.getUserProfilePhotos = function (userId, offset, limit) {
   return this._request('getUserProfilePhotos', {qs: query});
 };
 
+/**
+ * Send location.
+ * Use this method to send point on the map.
+ *
+ * @param  {Number|String} chatId  Unique identifier for the message recipient
+ * @param  {Float} latitude Latitude of location
+ * @param  {Float} longitude Longitude of location
+ * @param  {Object} [options] Additional Telegram query options
+ * @return {Promise}
+ * @see https://core.telegram.org/bots/api#sendlocation
+ */
+TelegramBot.prototype.sendLocation = function (chatId, latitude, longitude, options) {
+  var query = options || {};
+  query.chat_id = chatId;
+  query.latitude = latitude;
+  query.longitude = longitude;
+  return this._request('sendLocation', {qs: query});
+};
+
 module.exports = TelegramBot;
