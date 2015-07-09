@@ -376,4 +376,23 @@ TelegramBot.prototype.sendChatAction = function (chatId, action) {
   return this._request('sendChatAction', {qs: query});
 };
 
+/**
+ * Use this method to get a list of profile pictures for a user.
+ * Returns a [UserProfilePhotos](https://core.telegram.org/bots/api#userprofilephotos) object.
+ *
+ * @param  {Number|String} userId  Unique identifier of the target user
+ * @param  {Number} [offset] Sequential number of the first photo to be returned. By default, all photos are returned.
+ * @param  {Number} [limit] Limits the number of photos to be retrieved. Values between 1—100 are accepted. Defaults to 100.
+ * @return {Promise}
+ * @see https://core.telegram.org/bots/api#getuserprofilephotos
+ */
+TelegramBot.prototype.getUserProfilePhotos = function (userId, offset, limit) {
+  var query = {
+    user_id: userId,
+    offset: offset,
+    limit: limit
+  };
+  return this._request('getUserProfilePhotos', {qs: query});
+};
+
 module.exports = TelegramBot;
