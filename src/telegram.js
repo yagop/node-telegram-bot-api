@@ -376,4 +376,23 @@ TelegramBot.prototype.sendChatAction = function (chatId, action) {
   return this._request('sendChatAction', {qs: query});
 };
 
+/**
+ * Send location.
+ * Use this method to send point on the map.
+ *
+ * @param  {Number|String} chatId  Unique identifier for the message recipient
+ * @param  {Float} latitude Latitude of location
+ * @param  {Float} longitude Longitude of location
+ * @return {Promise}
+ * @see https://core.telegram.org/bots/api#sendlocation
+ */
+TelegramBot.prototype.sendLocation = function (chatId, latitude, longitude) {
+  var query = {
+    chat_id: chatId,
+    latitude: latitude,
+    longitude: longitude
+  };
+  return this._request('sendLocation', {qs: query});
+};
+
 module.exports = TelegramBot;
