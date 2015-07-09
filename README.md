@@ -208,4 +208,21 @@ See: https://core.telegram.org/bots/api#sendchataction
 
 * **Promise**
 
+## sendLocation(chatId, latitude, longitude, [options])
+
+Use this method to send point on the map.
+
+See: https://core.telegram.org/bots/api#sendlocation
+
+### Params:
+
+* **Number|String** *chatId* Unique identifier for the message recipient
+* **Float** *latitude* Latitude of location
+* **Float** *longitude* Longitude of location
+* **Object** *[options]* Additional Telegram query options
+
+### Return:
+
+* **Promise**
+
 <!-- End src/telegram.js -->
