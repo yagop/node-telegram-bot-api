@@ -322,4 +322,16 @@ describe('Telegram', function () {
     });
   });
 
+  describe('#getUserProfilePhotos', function () {
+    it('should get user profile photos', function (done) {
+      var bot = new Telegram(TOKEN);
+      bot.getUserProfilePhotos(USERID).then(function (resp) {
+        resp.should.be.an.instanceOf(Object);
+        resp.total_count.should.be.an.instanceOf(Number);
+        resp.photos.should.be.an.instanceOf(Array);
+        done();
+      });
+    });
+  });
+
 });
