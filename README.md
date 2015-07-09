@@ -208,8 +208,26 @@ See: https://core.telegram.org/bots/api#sendchataction
 
 * **Promise**
 
+## getUserProfilePhotos(userId, [offset], [limit])
+
+Use this method to get a list of profile pictures for a user.
+Returns a [UserProfilePhotos](https://core.telegram.org/bots/api#userprofilephotos) object.
+
+See: https://core.telegram.org/bots/api#getuserprofilephotos
+
+### Params:
+
+* **Number|String** *userId* Unique identifier of the target user
+* **Number** *[offset]* Sequential number of the first photo to be returned. By default, all photos are returned.
+* **Number** *[limit]* Limits the number of photos to be retrieved. Values between 1—100 are accepted. Defaults to 100.
+
+### Return:
+
+* **Promise**
+
 ## sendLocation(chatId, latitude, longitude, [options])
 
+Send location.
 Use this method to send point on the map.
 
 See: https://core.telegram.org/bots/api#sendlocation
