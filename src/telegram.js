@@ -383,15 +383,15 @@ TelegramBot.prototype.sendChatAction = function (chatId, action) {
  * @param  {Number|String} chatId  Unique identifier for the message recipient
  * @param  {Float} latitude Latitude of location
  * @param  {Float} longitude Longitude of location
+ * @param  {Object} [options] Additional Telegram query options
  * @return {Promise}
  * @see https://core.telegram.org/bots/api#sendlocation
  */
-TelegramBot.prototype.sendLocation = function (chatId, latitude, longitude) {
-  var query = {
-    chat_id: chatId,
-    latitude: latitude,
-    longitude: longitude
-  };
+TelegramBot.prototype.sendLocation = function (chatId, latitude, longitude, options) {
+  var query = options || {};
+  query.chat_id = chatId;
+  query.latitude = latitude;
+  query.longitude = longitude;
   return this._request('sendLocation', {qs: query});
 };
 
