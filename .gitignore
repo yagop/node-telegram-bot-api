@@ -1,3 +1,6 @@
 node_modules
 coverage/
 npm-debug.log
+.package.json
+output.md
+output/
