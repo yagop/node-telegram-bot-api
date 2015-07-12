@@ -43,7 +43,9 @@ describe('Telegram', function () {
         return {
           then: function (cb) {
             cb([{update_id: 0, message: {}}]);
-          }
+            return this;
+          },
+          catch: function () {}
         };
       };
       bot._polling();
