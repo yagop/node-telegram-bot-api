@@ -53,26 +53,22 @@ var TelegramBot = function (token, options) {
 util.inherits(TelegramBot, EventEmitter);
 
 TelegramBot.prototype._configureWebHook = function (port, host, key, cert) {
-  var protocol = 'HTTP';
-  var self = this;
+  var binded = this._requestListener.bind(this);
 
   if (key && cert) { // HTTPS Server
-    protocol = 'HTTPS';
+    debug('HTTPS WebHook enabled');
     var options = {
       key: fs.readFileSync(key),
       cert: fs.readFileSync(cert)
     };
-    this._webServer = https.createServer(options, function (req, res) {
-       self._requestListener.call(self, req, res);
-    });
-  } else { // HTTP Server
-    this._webServer = http.createServer(function (req, res) {
-      self._requestListener.call(self, req, res);
-    });
+    this._webServer = https.createServer(options, binded);
+  } else {
+    debug('HTTP WebHook enabled');
+    this._webServer = http.createServer(binded);
   }
 
   this._webServer.listen(port, host, function () {
-    console.log(protocol+" WebHook listening on:", port);
+    debug("WebHook listening on port %s", port);
   });
 };
 
