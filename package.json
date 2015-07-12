@@ -42,13 +42,13 @@
   "homepage": "https://github.com/yagop/node-telegram-bot-api",
   "contributors": [
     {
-      "name": "Riddler",
-      "email": "",
-      "url": "https://github.com/Waterloo",
-      "contributions": 3,
-      "additions": 64,
-      "deletions": 2,
-      "hireable": true
+      "name": "Sebastian Troć",
+      "email": "sebastian.troc@gucman.pl",
+      "url": "https://github.com/SebastianTroc",
+      "contributions": 1,
+      "additions": 1,
+      "deletions": 1,
+      "hireable": false
     },
     {
       "name": "Ilias Ismanalijev",
@@ -60,21 +60,21 @@
       "hireable": true
     },
     {
-      "name": "Sebastian Troć",
-      "email": "sebastian.troc@gucman.pl",
-      "url": "https://github.com/SebastianTroc",
-      "contributions": 1,
-      "additions": 1,
-      "deletions": 1,
-      "hireable": false
-    },
-    {
       "name": "Yago",
       "email": "yago@yago.me",
       "url": "https://github.com/yagop",
-      "contributions": 66,
-      "additions": 1278,
-      "deletions": 218,
+      "contributions": 72,
+      "additions": 1307,
+      "deletions": 246,
+      "hireable": true
+    },
+    {
+      "name": "Riddler",
+      "email": "",
+      "url": "https://github.com/Waterloo",
+      "contributions": 3,
+      "additions": 64,
+      "deletions": 2,
       "hireable": true
     }
   ]
