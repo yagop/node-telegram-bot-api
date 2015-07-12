@@ -111,6 +111,10 @@ TelegramBot.prototype._polling = function (timeout) {
   this.getUpdates(timeout).then(function (data) {
     self._processUpdates(data);
     self._polling(timeout);
+  }).catch(function (err) {
+    // console.error(err);
+    // Wait for 2 seconds before retry
+    setTimeout(self._polling.bind(self), 2000, timeout);
   });
 };
 
