@@ -74,24 +74,35 @@ TelegramBot.prototype._configureWebHook = function (port, host, key, cert) {
 
 TelegramBot.prototype._requestListener = function (req, res) {
   var self = this;
-  var url = '/bot'+this.token;
-  if (req.url === url && req.method === 'POST') {
+  var regex = new RegExp(this.token);
+
+  debug('WebHook request URL:', req.url);
+  debug('WebHook request headers: %j', req.headers);
+  // If there isn't token on URL
+  if (!regex.test(req.url)) {
+    debug('WebHook request unauthorized');
+    res.statusCode = 401;
+    res.end();
+  } else if (req.method === 'POST') {
     var fullBody = '';
     req.on('data', function (chunk) {
       fullBody += chunk.toString();
     });
     req.on('end', function () {
       try {
+        debug('WebHook request fullBody', fullBody);
         var data = JSON.parse(fullBody);
         self.offset = data.update_id;
         self.emit('message', data.message);
       } catch (error) {
-        console.error(error);
+        debug(error);
       }
-      res.end('OK :P\n');
+      res.end('OK');
     });
-  } else {
-    res.end('OK\n');
+  } else { // Authorized but not a POST
+    debug('WebHook request isn\'t a POST');
+    res.statusCode = 418; // I'm a teabot!
+    res.end();
   }
 };
 

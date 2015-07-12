@@ -31,7 +31,7 @@ describe('Telegram', function () {
     });
   });
 
-  describe('#emit', function () {
+  describe('#Polling', function () {
     it('should emit a `message` on polling', function (done) {
       var bot = new Telegram(TOKEN);
       bot.on('message', function (msg) {
@@ -49,6 +49,32 @@ describe('Telegram', function () {
         };
       };
       bot._polling();
+    });
+  });
+
+  describe('#WebHook', function () {
+    it('should reject request if same token not provided', function (done) {
+      var bot = new Telegram(TOKEN, {webHook: true});
+      request({
+        url: 'http://localhost:8443/NOT_REAL_TOKEN',
+        method: 'POST'
+      }, function (error, response, body) {
+        response.statusCode.should.not.be.equal(200);
+        bot._webServer.close();
+        done();
+      });
+    });
+
+    it('should reject request if authorized but not a POST', function (done) {
+      var bot = new Telegram(TOKEN, {webHook: true});
+      request({
+        url: 'http://localhost:8443/bot'+TOKEN,
+        method: 'GET'
+      }, function (error, response, body) {
+        response.statusCode.should.not.be.equal(200);
+        bot._webServer.close();
+        done();
+      });
     });
 
     it('should emit a `message` on HTTP WebHook', function (done) {
