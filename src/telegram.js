@@ -200,7 +200,7 @@ TelegramBot.prototype.getUpdates = function (timeout, limit, offset) {
 /**
  * Send text message.
  * @param  {Number|String} chatId Unique identifier for the message recipient
- * @param  {Sting} text Text of the message to be sent
+ * @param  {String} text Text of the message to be sent
  * @param  {Object} [options] Additional Telegram query options
  * @return {Promise}
  * @see https://core.telegram.org/bots/api#sendmessage
