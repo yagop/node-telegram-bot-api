@@ -51,6 +51,15 @@
       "hireable": true
     },
     {
+      "name": "Ilias Ismanalijev",
+      "email": "hello@illyism.com",
+      "url": "https://github.com/Illyism",
+      "contributions": 7,
+      "additions": 140,
+      "deletions": 10,
+      "hireable": true
+    },
+    {
       "name": "Sebastian Troć",
       "email": "sebastian.troc@gucman.pl",
       "url": "https://github.com/SebastianTroc",
@@ -63,18 +72,9 @@
       "name": "Yago",
       "email": "yago@yago.me",
       "url": "https://github.com/yagop",
-      "contributions": 60,
-      "additions": 1251,
-      "deletions": 200,
-      "hireable": true
-    },
-    {
-      "name": "Ilias Ismanalijev",
-      "email": "hello@illyism.com",
-      "url": "https://github.com/Illyism",
-      "contributions": 7,
-      "additions": 140,
-      "deletions": 10,
+      "contributions": 66,
+      "additions": 1278,
+      "deletions": 218,
       "hireable": true
     }
   ]
