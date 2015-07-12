@@ -1,6 +1,6 @@
 {
   "name": "node-telegram-bot-api",
-  "version": "0.8.1",
+  "version": "0.8.2",
   "description": "Telegram Bot API",
   "main": "index.js",
   "directories": {
