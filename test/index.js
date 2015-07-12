@@ -60,7 +60,7 @@ describe('Telegram', function () {
         method: 'POST'
       }, function (error, response, body) {
         response.statusCode.should.not.be.equal(200);
-        bot._webServer.close();
+        bot._WebHook._webServer.close();
         done();
       });
     });
@@ -72,7 +72,7 @@ describe('Telegram', function () {
         method: 'GET'
       }, function (error, response, body) {
         response.statusCode.should.not.be.equal(200);
-        bot._webServer.close();
+        bot._WebHook._webServer.close();
         done();
       });
     });
@@ -80,7 +80,7 @@ describe('Telegram', function () {
     it('should emit a `message` on HTTP WebHook', function (done) {
       var bot = new Telegram(TOKEN, {webHook: true});
       bot.on('message', function (msg) {
-        bot._webServer.close();
+        bot._WebHook._webServer.close();
         done();
       });
       var url = 'http://localhost:8443/bot'+TOKEN;
@@ -91,7 +91,7 @@ describe('Telegram', function () {
         headers: {
           "content-type": "application/json",
         },
-        body: JSON.stringify({update_id: 0, message: {text: 'test'}})
+        body: {update_id: 0, message: {text: 'test'}}
       });
     });
 
@@ -105,7 +105,7 @@ describe('Telegram', function () {
       };
       var bot = new Telegram(TOKEN, opts);
       bot.on('message', function (msg) {
-        bot._webServer.close();
+        bot._WebHook._webServer.close();
         done();
       });
       var url = 'https://localhost:8443/bot'+TOKEN;

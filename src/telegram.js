@@ -1,10 +1,9 @@
-var EventEmitter = require('events').EventEmitter;
+var TelegramBotWebHook = require('./telegramWebHook');
 var debug = require('debug')('node-telegram-bot-api');
+var EventEmitter = require('events').EventEmitter;
 var Promise = require("bluebird");
 var request = require("request");
 var stream = require('stream');
-var https = require('https');
-var http = require('http');
 var util = require('util');
 var mime = require('mime');
 var path = require('path');
@@ -42,80 +41,12 @@ var TelegramBot = function (token, options) {
   }
 
   if (options.webHook) {
-    var port = options.webHook.port || 8443;
-    var key = options.webHook.key;
-    var cert = options.webHook.cert;
-    var host = options.webHook.host;
-    this._configureWebHook(port, host, key, cert);
+    var binded = this._processUpdate.bind(this);
+    this._WebHook = new TelegramBotWebHook(token, options.webHook, binded);
   }
 };
 
 util.inherits(TelegramBot, EventEmitter);
-
-TelegramBot.prototype._configureWebHook = function (port, host, key, cert) {
-  var binded = this._requestListener.bind(this);
-
-  if (key && cert) { // HTTPS Server
-    debug('HTTPS WebHook enabled');
-    var options = {
-      key: fs.readFileSync(key),
-      cert: fs.readFileSync(cert)
-    };
-    this._webServer = https.createServer(options, binded);
-  } else {
-    debug('HTTP WebHook enabled');
-    this._webServer = http.createServer(binded);
-  }
-
-  this._webServer.listen(port, host, function () {
-    debug("WebHook listening on port %s", port);
-  });
-};
-
-TelegramBot.prototype._requestListener = function (req, res) {
-  var self = this;
-  var regex = new RegExp(this.token);
-
-  debug('WebHook request URL:', req.url);
-  debug('WebHook request headers: %j', req.headers);
-  // If there isn't token on URL
-  if (!regex.test(req.url)) {
-    debug('WebHook request unauthorized');
-    res.statusCode = 401;
-    res.end();
-  } else if (req.method === 'POST') {
-    var fullBody = '';
-    req.on('data', function (chunk) {
-      fullBody += chunk.toString();
-    });
-    req.on('end', function () {
-      try {
-        debug('WebHook request fullBody', fullBody);
-        var data = JSON.parse(fullBody);
-        self._processUpdate(data);
-      } catch (error) {
-        debug(error);
-      }
-      res.end('OK');
-    });
-  } else { // Authorized but not a POST
-    debug('WebHook request isn\'t a POST');
-    res.statusCode = 418; // I'm a teabot!
-    res.end();
-  }
-};
-
-TelegramBot.prototype._processUpdate = function (update) {
-  if (update.message) {
-    this.emit('message', update.message);
-  }
-};
-
-TelegramBot.prototype._processUpdates = function (updates) {
-  for (var i = 0; i < updates.length; i++) {
-    this._processUpdate(updates[i]);
-  }
-};
 
 TelegramBot.prototype._polling = function (timeout) {
   var self = this;
@@ -127,6 +58,20 @@ TelegramBot.prototype._polling = function (timeout) {
     // Wait for 2 seconds before retry
     setTimeout(self._polling.bind(self), 2000, timeout);
   });
+};
+
+TelegramBot.prototype._processUpdate = function (update) {
+  debug('Process Update', update);
+  debug('Process Update message', update.message);
+  if (update.message) {
+    this.emit('message', update.message);
+  }
+};
+
+TelegramBot.prototype._processUpdates = function (updates) {
+  for (var i = 0; i < updates.length; i++) {
+    this._processUpdate(updates[i]);
+  }
 };
 
 TelegramBot.prototype._request = function (path, options) {
