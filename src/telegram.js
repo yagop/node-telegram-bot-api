@@ -1,4 +1,5 @@
 var EventEmitter = require('events').EventEmitter;
+var debug = require('debug')('node-telegram-bot-api');
 var Promise = require("bluebird");
 var request = require("request");
 var stream = require('stream');
@@ -112,7 +113,7 @@ TelegramBot.prototype._polling = function (timeout) {
     self._processUpdates(data);
     self._polling(timeout);
   }).catch(function (err) {
-    // console.error(err);
+    debug('polling error: %j', err);
     // Wait for 2 seconds before retry
     setTimeout(self._polling.bind(self), 2000, timeout);
   });
@@ -128,7 +129,7 @@ TelegramBot.prototype._request = function (path, options) {
     host: 'api.telegram.org',
     pathname: '/bot'+this.token+'/'+path
   });
-
+  debug('HTTP request: %j', options);
   return requestPromise(options)
     .then(function (resp) {
       if (resp[0].statusCode !== 200) {
