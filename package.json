@@ -50,21 +50,21 @@
       "hireable": true
     },
     {
-      "name": "Yago",
-      "email": "yago@yago.me",
-      "url": "https://github.com/yagop",
-      "contributions": 52,
-      "additions": 1195,
-      "deletions": 169,
-      "hireable": true
-    },
-    {
       "name": "Ilias Ismanalijev",
       "email": "hello@illyism.com",
       "url": "https://github.com/Illyism",
       "contributions": 7,
       "additions": 140,
       "deletions": 10,
+      "hireable": true
+    },
+    {
+      "name": "Yago",
+      "email": "yago@yago.me",
+      "url": "https://github.com/yagop",
+      "contributions": 57,
+      "additions": 1235,
+      "deletions": 188,
       "hireable": true
     }
   ]
