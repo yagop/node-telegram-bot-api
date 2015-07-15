@@ -1,4 +1,5 @@
 var TelegramBotWebHook = require('./telegramWebHook');
+var TelegramBotPolling = require('./telegramPolling');
 var debug = require('debug')('node-telegram-bot-api');
 var EventEmitter = require('events').EventEmitter;
 var Promise = require("bluebird");
@@ -31,46 +32,25 @@ var requestPromise = Promise.promisify(request);
 var TelegramBot = function (token, options) {
   options = options || {};
   this.token = token;
-  this.offset = 0;
-  this._webServer = null;
+
+  var processUpdate = this._processUpdate.bind(this);
 
   if (options.polling) {
-    // By default polling for 4 seconds
-    var timeout = options.polling.timeout || 4;
-    this._polling(timeout);
+    this._polling = new TelegramBotPolling(token, options.polling, processUpdate);
   }
 
   if (options.webHook) {
-    var binded = this._processUpdate.bind(this);
-    this._WebHook = new TelegramBotWebHook(token, options.webHook, binded);
+    this._WebHook = new TelegramBotWebHook(token, options.webHook, processUpdate);
   }
 };
 
 util.inherits(TelegramBot, EventEmitter);
-
-TelegramBot.prototype._polling = function (timeout) {
-  var self = this;
-  this.getUpdates(timeout).then(function (data) {
-    self._processUpdates(data);
-    self._polling(timeout);
-  }).catch(function (err) {
-    debug('polling error: %j', err);
-    // Wait for 2 seconds before retry
-    setTimeout(self._polling.bind(self), 2000, timeout);
-  });
-};
 
 TelegramBot.prototype._processUpdate = function (update) {
   debug('Process Update', update);
   debug('Process Update message', update.message);
   if (update.message) {
     this.emit('message', update.message);
-  }
-};
-
-TelegramBot.prototype._processUpdates = function (updates) {
-  for (var i = 0; i < updates.length; i++) {
-    this._processUpdate(updates[i]);
   }
 };
 
@@ -136,21 +116,13 @@ TelegramBot.prototype.setWebHook = function (url) {
  * @see https://core.telegram.org/bots/api#getupdates
  */
 TelegramBot.prototype.getUpdates = function (timeout, limit, offset) {
-  var self = this;
   var query = {
-    offset: offset || this.offset+1,
+    offset: offset,
     limit: limit,
     timeout: timeout
   };
 
-  return this._request('getUpdates', {qs: query})
-    .then(function (result) {
-      var last = result[result.length-1];
-      if (last) {
-        self.offset = last.update_id;
-      }
-      return result;
-    });
+  return this._request('getUpdates', {qs: query});
 };
 
 /**

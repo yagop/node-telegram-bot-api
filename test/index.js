@@ -1,3 +1,4 @@
+var TelegramPolling = require('../src/telegramPolling');
 var Telegram = require('../index');
 var request = require('request');
 var should = require('should');
@@ -28,27 +29,6 @@ describe('Telegram', function () {
         resp.should.be.exactly(true);
         done();
       });
-    });
-  });
-
-  describe('#Polling', function () {
-    it('should emit a `message` on polling', function (done) {
-      var bot = new Telegram(TOKEN);
-      bot.on('message', function (msg) {
-        msg.should.be.an.instanceOf(Object);
-        bot._polling = function () {};
-        done();
-      });
-      bot.getUpdates = function() {
-        return {
-          then: function (cb) {
-            cb([{update_id: 0, message: {}}]);
-            return this;
-          },
-          catch: function () {}
-        };
-      };
-      bot._polling();
     });
   });
 
@@ -378,3 +358,27 @@ describe('Telegram', function () {
   });
 
 }); // End Telegram
+
+
+describe('#TelegramBotPolling', function () {
+  it('should call the callback on polling', function (done) {
+    function onUpdate (update) {
+      update.should.be.an.instanceOf(Object);
+      done();
+    }
+    var polling = new TelegramPolling(null, {interval: 500}, onUpdate);
+    // Not the best way to mock, but it works
+    polling._getUpdates = function() {
+      return {
+        then: function (cb) {
+          cb([{update_id: 10, message: {}}]);
+          return this;
+        },
+        catch: function () {
+          return this;
+        },
+        finally: function () {}
+      };
+    };
+  });
+});
