@@ -42,15 +42,6 @@
   "homepage": "https://github.com/yagop/node-telegram-bot-api",
   "contributors": [
     {
-      "name": "Sebastian Troć",
-      "email": "sebastian.troc@gucman.pl",
-      "url": "https://github.com/SebastianTroc",
-      "contributions": 1,
-      "additions": 1,
-      "deletions": 1,
-      "hireable": false
-    },
-    {
       "name": "Ilias Ismanalijev",
       "email": "hello@illyism.com",
       "url": "https://github.com/Illyism",
@@ -63,9 +54,9 @@
       "name": "Yago",
       "email": "yago@yago.me",
       "url": "https://github.com/yagop",
-      "contributions": 72,
-      "additions": 1307,
-      "deletions": 246,
+      "contributions": 82,
+      "additions": 1572,
+      "deletions": 415,
       "hireable": true
     },
     {
@@ -76,6 +67,15 @@
       "additions": 64,
       "deletions": 2,
       "hireable": true
+    },
+    {
+      "name": "Sebastian Troć",
+      "email": "sebastian.troc@gucman.pl",
+      "url": "https://github.com/SebastianTroc",
+      "contributions": 1,
+      "additions": 1,
+      "deletions": 1,
+      "hireable": false
     }
   ]
 }
