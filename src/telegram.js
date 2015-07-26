@@ -83,7 +83,7 @@ TelegramBot.prototype._request = function (path, options) {
 /**
  * Returns basic information about the bot in form of a `User` object.
  * @return {Promise}
- * @see
+ * @see https://core.telegram.org/bots/api#getme
  */
 TelegramBot.prototype.getMe = function () {
   var path = 'getMe';
