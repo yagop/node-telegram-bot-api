@@ -88,7 +88,7 @@ See: https://core.telegram.org/bots/api#sendmessage
 ### Params:
 
 * **Number|String** *chatId* Unique identifier for the message recipient
-* **String** *text* Text of the message to be sent
+* **Sting** *text* Text of the message to be sent
 * **Object** *[options]* Additional Telegram query options
 
 ### Return:
