@@ -53,6 +53,7 @@ TelegramBotPolling.prototype._getUpdates = function () {
       pathname: '/bot'+this.token+'/getUpdates'
     })
   };
+  debug('polling with options: %j', opts);
   return requestPromise(opts).then(function (resp) {
     if (resp[0].statusCode !== 200) {
       throw new Error(resp[0].statusCode+' '+resp[0].body);
