@@ -22,9 +22,10 @@ var requestPromise = Promise.promisify(request);
  * @constructor
  * @param {String} token Bot Token
  * @param {Object} [options]
- * @param {Boolean|Object} [options.polling=false] Set true to enable polling
+ * @param {Boolean|Object} [options.polling=false] Set true to enable polling or set options
  * @param {String|Number} [options.polling.timeout=4] Polling time
- * @param {Boolean|Object} [options.webHook=false] Set true to enable WebHook
+ * @param {String|Number} [options.polling.interval=2000] Interval between requests in miliseconds
+ * @param {Boolean|Object} [options.webHook=false] Set true to enable WebHook or set options
  * @param {String} [options.webHook.key] PEM private key to webHook server
  * @param {String} [options.webHook.cert] PEM certificate key to webHook server
  * @see https://core.telegram.org/bots/api
