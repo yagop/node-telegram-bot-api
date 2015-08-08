@@ -11,7 +11,7 @@ var bot = new TelegramBot(token, options);
 bot.getMe().then(function (me) {
   console.log('Hi my name is %s!', me.username);
 });
-bot.on('message', function (msg) {
+bot.on('text', function (msg) {
   var chatId = msg.chat.id;
   if (msg.text == '/photo') {
     // From file
