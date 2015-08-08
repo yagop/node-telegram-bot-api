@@ -33,6 +33,11 @@ var requestPromise = Promise.promisify(request);
 var TelegramBot = function (token, options) {
   options = options || {};
   this.token = token;
+  this.messageTypes = [
+    'text', 'audio', 'document', 'photo', 'sticker', 'video', 'contact',
+    'location', 'new_chat_participant', 'left_chat_participant', 'new_chat_title',
+    'new_chat_photo', 'delete_chat_photo', 'group_chat_created'
+  ]; // Telegram message events
 
   var processUpdate = this._processUpdate.bind(this);
 
@@ -48,10 +53,18 @@ var TelegramBot = function (token, options) {
 util.inherits(TelegramBot, EventEmitter);
 
 TelegramBot.prototype._processUpdate = function (update) {
-  debug('Process Update', update);
-  debug('Process Update message', update.message);
-  if (update.message) {
-    this.emit('message', update.message);
+  debug('Process Update %j', update);
+  var message = update.message;
+  debug('Process Update message %j', message);
+  if (message) {
+    this.emit('message', message);
+    var processMessageType = function (messageType) {
+      if (message[messageType]) {
+        debug('Emtting %s: %j', messageType, message);
+        this.emit(messageType, message);
+      }
+    };
+    this.messageTypes.forEach(processMessageType.bind(this));
   }
 };
 
