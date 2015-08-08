@@ -16,7 +16,7 @@ var requestPromise = Promise.promisify(request);
 /**
  * Both request method to obtain messages are implemented. To use standard polling, set `polling: true`
  * on `options`. Notice that [webHook](https://core.telegram.org/bots/api#setwebhook) will need a valid (not self signed) SSL certificate.
- * Emmits `message` when a message arrives.
+ * Emits `message` when a message arrives.
  *
  * @class TelegramBot
  * @constructor

@@ -5,7 +5,7 @@ var options = {
   polling: true
 };
 
-var token = 'YOUR_TELEGRAM_BOT_TOKEN';
+var token = process.env.TELEGRAM_BOT_TOKEN || 'YOUR_TELEGRAM_BOT_TOKEN';
 
 var bot = new TelegramBot(token, options);
 bot.getMe().then(function (me) {
