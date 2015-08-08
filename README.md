@@ -12,16 +12,18 @@ var TelegramBot = require('node-telegram-bot-api');
 var token = 'YOUR_TELEGRAM_BOT_TOKEN';
 // Setup polling way
 var bot = new TelegramBot(token, {polling: true});
-bot.on('message', function (msg) {
+bot.on('text', function (msg) {
   var chatId = msg.chat.id;
   // photo can be: a file path, a stream or a Telegram file_id
-  var photo = 'bot.gif';
-  bot.sendPhoto(chatId, photo, {caption: "I'm a bot!"});
+  var photo = 'cats.png';
+  bot.sendPhoto(chatId, photo, {caption: 'Lovely kittens'});
 });
 ```
 
 There are some other examples on [examples](https://github.com/yagop/node-telegram-bot-api/tree/master/examples).
 
+### Events
+Every time  TelegramBot receives a message, it emits a `message`. Depending on which  [message](https://core.telegram.org/bots/api#message) was received, emits an event from this ones: `text`, `audio`, `document`, `photo`, `sticker`, `video`, `contact`, `location`, `new_chat_participant`, `left_chat_participant`, `new_chat_title`, `new_chat_photo`, `delete_chat_photo`, `group_chat_created`. Its much better to listen a specific event rather than a `message` in order to stay safe from the content.
 * * *
 
 
@@ -31,7 +33,7 @@ There are some other examples on [examples](https://github.com/yagop/node-telegr
 
 Both request method to obtain messages are implemented. To use standard polling, set `polling: true`
 on `options`. Notice that [webHook](https://core.telegram.org/bots/api#setwebhook) will need a valid (not self signed) SSL certificate.
-Emmits `message` when a message arrives.
+Emits `message` when a message arrives.
 
 See: https://core.telegram.org/bots/api
 
@@ -39,15 +41,18 @@ See: https://core.telegram.org/bots/api
 
 * **String** *token* Bot Token
 * **Object** *[options]*
-* **Boolean|Object** *[options.polling=false]* Set true to enable polling
+* **Boolean|Object** *[options.polling=false]* Set true to enable polling or set options
 * **String|Number** *[options.polling.timeout=4]* Polling time
-* **Boolean|Object** *[options.webHook=false]* Set true to enable WebHook
+* **String|Number** *[options.polling.interval=2000]* Interval between requests in miliseconds
+* **Boolean|Object** *[options.webHook=false]* Set true to enable WebHook or set options
 * **String** *[options.webHook.key]* PEM private key to webHook server
 * **String** *[options.webHook.cert]* PEM certificate key to webHook server
 
 ## getMe()
 
 Returns basic information about the bot in form of a `User` object.
+
+See: https://core.telegram.org/bots/api#getme
 
 ### Return:
 
@@ -88,7 +93,7 @@ See: https://core.telegram.org/bots/api#sendmessage
 ### Params:
 
 * **Number|String** *chatId* Unique identifier for the message recipient
-* **Sting** *text* Text of the message to be sent
+* **String** *text* Text of the message to be sent
 * **Object** *[options]* Additional Telegram query options
 
 ### Return:
@@ -175,7 +180,7 @@ See: https://core.telegram.org/bots/api#sendsticker
 
 ## sendVideo(chatId, A, [options])
 
-Send video files, Telegram clients support mp4 videos (other formats may be sent whith `sendDocument`)
+Use this method to send video files, Telegram clients support mp4 videos (other formats may be sent as Document).
 
 See: https://core.telegram.org/bots/api#sendvideo
 

@@ -282,7 +282,7 @@ TelegramBot.prototype.sendSticker = function (chatId, sticker, options) {
 };
 
 /**
- * Send video files, Telegram clients support mp4 videos (other formats may be sent whith `sendDocument`)
+ * Use this method to send video files, Telegram clients support mp4 videos (other formats may be sent as Document).
  * @param  {Number|String} chatId  Unique identifier for the message recipient
  * @param  {String|stream.Stream} A file path or a Stream. Can
  * also be a `file_id` previously uploaded.
