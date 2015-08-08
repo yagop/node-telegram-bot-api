@@ -1,6 +1,6 @@
 {
   "name": "node-telegram-bot-api",
-  "version": "0.11.1",
+  "version": "0.12.0",
   "description": "Telegram Bot API",
   "main": "index.js",
   "directories": {
@@ -42,22 +42,22 @@
   "homepage": "https://github.com/yagop/node-telegram-bot-api",
   "contributors": [
     {
-      "name": "Ilias Ismanalijev",
-      "email": "hello@illyism.com",
-      "url": "https://github.com/Illyism",
-      "contributions": 7,
-      "additions": 140,
-      "deletions": 10,
-      "hireable": true
-    },
-    {
       "name": "Yago",
       "email": "yago@yago.me",
       "url": "https://github.com/yagop",
-      "contributions": 82,
-      "additions": 1572,
-      "deletions": 415,
+      "contributions": 89,
+      "additions": 1598,
+      "deletions": 435,
       "hireable": true
+    },
+    {
+      "name": "Sebastian Troć",
+      "email": "sebastian.troc@gucman.pl",
+      "url": "https://github.com/SebastianTroc",
+      "contributions": 1,
+      "additions": 1,
+      "deletions": 1,
+      "hireable": false
     },
     {
       "name": "Riddler",
@@ -69,13 +69,13 @@
       "hireable": true
     },
     {
-      "name": "Sebastian Troć",
-      "email": "sebastian.troc@gucman.pl",
-      "url": "https://github.com/SebastianTroc",
-      "contributions": 1,
-      "additions": 1,
-      "deletions": 1,
-      "hireable": false
+      "name": "Ilias Ismanalijev",
+      "email": "hello@illyism.com",
+      "url": "https://github.com/Illyism",
+      "contributions": 7,
+      "additions": 140,
+      "deletions": 10,
+      "hireable": true
     }
   ]
 }
