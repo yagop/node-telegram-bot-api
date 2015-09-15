@@ -330,6 +330,17 @@ describe('Telegram', function () {
     });
   });
 
+  describe('#sendVoice', function () {
+    it('should send an OGG audio as voice', function (done) {
+      var bot = new Telegram(TOKEN);
+      var voice = request('https://upload.wikimedia.org/wikipedia/commons/c/c8/Example.ogg');
+      bot.sendVoice(USERID, voice).then(function (resp) {
+        resp.should.be.an.instanceOf(Object);
+        done();
+      });
+    });
+  });
+
   describe('#getUserProfilePhotos', function () {
     it('should get user profile photos', function (done) {
       var bot = new Telegram(TOKEN);

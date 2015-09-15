@@ -23,7 +23,7 @@ bot.on('text', function (msg) {
 There are some other examples on [examples](https://github.com/yagop/node-telegram-bot-api/tree/master/examples).
 
 ### Events
-Every time  TelegramBot receives a message, it emits a `message`. Depending on which  [message](https://core.telegram.org/bots/api#message) was received, emits an event from this ones: `text`, `audio`, `document`, `photo`, `sticker`, `video`, `contact`, `location`, `new_chat_participant`, `left_chat_participant`, `new_chat_title`, `new_chat_photo`, `delete_chat_photo`, `group_chat_created`. Its much better to listen a specific event rather than a `message` in order to stay safe from the content.
+Every time  TelegramBot receives a message, it emits a `message`. Depending on which  [message](https://core.telegram.org/bots/api#message) was received, emits an event from this ones: `text`, `audio`, `document`, `photo`, `sticker`, `video`, `voice`, `contact`, `location`, `new_chat_participant`, `left_chat_participant`, `new_chat_title`, `new_chat_photo`, `delete_chat_photo`, `group_chat_created`. Its much better to listen a specific event rather than a `message` in order to stay safe from the content.
 * * *
 
 
@@ -183,6 +183,22 @@ See: https://core.telegram.org/bots/api#sendsticker
 Use this method to send video files, Telegram clients support mp4 videos (other formats may be sent as Document).
 
 See: https://core.telegram.org/bots/api#sendvideo
+
+### Params:
+
+* **Number|String** *chatId* Unique identifier for the message recipient
+* **String|stream.Stream** *A* file path or a Stream. Can also be a `file_id` previously uploaded.
+* **Object** *[options]* Additional Telegram query options
+
+### Return:
+
+* **Promise**
+
+## sendVoice(chatId, A, [options])
+
+Use this method to send audio files, if you want Telegram clients to display the file as a playable voice message. For this to work, your audio must be in an .ogg file encoded with OPUS (other formats may be sent as Audio or Document).
+
+See: https://core.telegram.org/bots/api#sendvoice
 
 ### Params:
 
