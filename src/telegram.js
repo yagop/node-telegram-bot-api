@@ -34,7 +34,7 @@ var TelegramBot = function (token, options) {
   options = options || {};
   this.token = token;
   this.messageTypes = [
-    'text', 'audio', 'document', 'photo', 'sticker', 'video', 'contact',
+    'text', 'audio', 'document', 'photo', 'sticker', 'video', 'voice', 'contact',
     'location', 'new_chat_participant', 'left_chat_participant', 'new_chat_title',
     'new_chat_photo', 'delete_chat_photo', 'group_chat_created'
   ]; // Telegram message events
@@ -299,6 +299,26 @@ TelegramBot.prototype.sendVideo = function (chatId, video, options) {
   opts.formData = content[0];
   opts.qs.video = content[1];
   return this._request('sendVideo', opts);
+};
+
+/**
+ * Send voice
+ * @param  {Number|String} chatId  Unique identifier for the message recipient
+ * @param  {String|stream.Stream} voice A file path or a Stream. Can
+ * also be a `file_id` previously uploaded.
+ * @param  {Object} [options] Additional Telegram query options
+ * @return {Promise}
+ * @see https://core.telegram.org/bots/api#sendvoice
+ */
+TelegramBot.prototype.sendVoice = function (chatId, voice, options) {
+  var opts = {
+    qs: options || {}
+  };
+  opts.qs.chat_id = chatId;
+  var content = this._formatSendData('voice', voice);
+  opts.formData = content[0];
+  opts.qs.voice = content[1];
+  return this._request('sendVoice', opts);
 };
 
 
