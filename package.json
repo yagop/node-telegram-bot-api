@@ -27,6 +27,7 @@
     "request": "^2.58.0"
   },
   "devDependencies": {
+    "contributor": "^0.1.25",
     "coveralls": "^2.11.2",
     "del": "^2.0.2",
     "istanbul": "^0.3.17",
@@ -45,13 +46,31 @@
   "homepage": "https://github.com/yagop/node-telegram-bot-api",
   "contributors": [
     {
+      "name": "Guido García",
+      "email": "palmerabollo@gmail.com",
+      "url": "https://github.com/palmerabollo",
+      "contributions": 1,
+      "additions": 1,
+      "deletions": 1,
+      "hireable": true
+    },
+    {
       "name": "Yago",
       "email": "yago@yago.me",
       "url": "https://github.com/yagop",
-      "contributions": 89,
-      "additions": 1598,
-      "deletions": 435,
+      "contributions": 99,
+      "additions": 1685,
+      "deletions": 504,
       "hireable": true
+    },
+    {
+      "name": "Anton",
+      "email": null,
+      "url": "https://github.com/Feverqwe",
+      "contributions": 1,
+      "additions": 23,
+      "deletions": 5,
+      "hireable": null
     },
     {
       "name": "Sebastian Troć",
@@ -60,16 +79,34 @@
       "contributions": 1,
       "additions": 1,
       "deletions": 1,
-      "hireable": false
+      "hireable": null
+    },
+    {
+      "name": "Patricio López Juri",
+      "email": "lopezjuripatricio@gmail.com",
+      "url": "https://github.com/mrpatiwi",
+      "contributions": 1,
+      "additions": 49,
+      "deletions": 2,
+      "hireable": true
     },
     {
       "name": "Riddler",
-      "email": "",
+      "email": null,
       "url": "https://github.com/Waterloo",
       "contributions": 3,
       "additions": 64,
       "deletions": 2,
       "hireable": true
+    },
+    {
+      "name": "Ivan Skorokhodov",
+      "email": "iskorokhodov@gmail.com",
+      "url": "https://github.com/universome",
+      "contributions": 3,
+      "additions": 219,
+      "deletions": 5,
+      "hireable": null
     },
     {
       "name": "Ilias Ismanalijev",
