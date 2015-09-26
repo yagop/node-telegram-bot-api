@@ -279,4 +279,21 @@ See: https://core.telegram.org/bots/api#getfile
 
 * **Promise**
 
+## getFileLink(fileId)
+
+Get link for file.
+Use this method to get link for file for subsequent use.
+Attention: link will be valid for 1 hour.
+
+This method is a sugar extension of the (getFile)[#getfilefileid] method, which returns just path to file on remote server (you will have to manually build full uri after that).
+
+See: https://core.telegram.org/bots/api#getfile
+
+### Params:
+* **String** *fileId* File identifier to get info about
+
+### Return:
+
+* **Promise** *promise* Promise which will have *fileURI* in resolve callback
+
 <!-- End src/telegram.js -->
