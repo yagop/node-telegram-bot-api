@@ -102,6 +102,7 @@ TelegramBot.prototype._request = function (path, options) {
  * Generates url with bot token and provided path/method you want to be got/executed by bot
  * @return {String} url
  * @param {String} path
+ * @private
  * @see https://core.telegram.org/bots/api#making-requests
  */
 TelegramBot.prototype._buildURL = function(path) {
