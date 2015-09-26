@@ -2,6 +2,7 @@ var TelegramPolling = require('../src/telegramPolling');
 var Telegram = require('../index');
 var request = require('request');
 var should = require('should');
+var del = require('del');
 var fs = require('fs');
 
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
@@ -419,6 +420,38 @@ describe('Telegram', function () {
       });
     });
   });
+
+  describe('#downloadFile', function () {
+
+  	var fileId;
+  	var downloadPath = __dirname;
+
+  	// To get a file we have to send some file first
+    it('should send a photo from file', function (done) {
+
+      var bot = new Telegram(TOKEN);
+      var photo = __dirname + '/bot.gif';
+
+      bot.sendPhoto(USERID, photo).then(function (resp) {
+        resp.should.be.an.instanceOf(Object);
+        fileId = resp.photo[0].file_id;
+        done();
+      });
+    });
+
+    it('should download a file', function (done) {
+
+      var bot = new Telegram(TOKEN);
+
+      bot.downloadFile(fileId, downloadPath).then(function (filePath) {
+        filePath.should.be.an.instanceOf(String);
+        fs.existsSync(filePath).should.be.true();
+        del(filePath); // Clean folder after test
+        done();
+      });
+    });
+  });
+
 
 }); // End Telegram
 
