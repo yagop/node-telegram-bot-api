@@ -264,4 +264,19 @@ See: https://core.telegram.org/bots/api#sendlocation
 
 * **Promise**
 
+## getFile(fileId)
+
+Get file.
+Use this method to get basic info about a file and prepare it for downloading.
+Attention: link will be valid for 1 hour.
+
+See: https://core.telegram.org/bots/api#getfile
+
+### Params:
+* **String** *fileId* File identifier to get info about
+
+### Return:
+
+* **Promise**
+
 <!-- End src/telegram.js -->
