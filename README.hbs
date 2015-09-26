@@ -1,0 +1,37 @@
+[![Build Status](https://travis-ci.org/yagop/node-telegram-bot-api.svg?branch=master)](https://travis-ci.org/yagop/node-telegram-bot-api) [![Build status](https://ci.appveyor.com/api/projects/status/ujko6bsum3g5msjh/branch/master?svg=true)](https://ci.appveyor.com/project/yagop/node-telegram-bot-api/branch/master) [![Coverage Status](https://coveralls.io/repos/yagop/node-telegram-bot-api/badge.svg?branch=master)](https://coveralls.io/r/yagop/node-telegram-bot-api?branch=master) [![bitHound Score](https://www.bithound.io/github/yagop/node-telegram-bot-api/badges/score.svg)](https://www.bithound.io/github/yagop/node-telegram-bot-api)
+
+Node.js module to interact with official [Telegram Bot API](https://core.telegram.org/bots/api). A bot token is needed, to obtain one, talk to [@botfather](telegram.me/BotFather) and create a new bot.
+
+```sh
+npm install node-telegram-bot-api
+```
+
+```js
+var TelegramBot = require('node-telegram-bot-api');
+
+var token = 'YOUR_TELEGRAM_BOT_TOKEN';
+// Setup polling way
+var bot = new TelegramBot(token, {polling: true});
+bot.on('text', function (msg) {
+  var chatId = msg.chat.id;
+  // photo can be: a file path, a stream or a Telegram file_id
+  var photo = 'cats.png';
+  bot.sendPhoto(chatId, photo, {caption: 'Lovely kittens'});
+});
+```
+
+There are some other examples on [examples](https://github.com/yagop/node-telegram-bot-api/tree/master/examples).
+
+### Events
+Every time  TelegramBot receives a message, it emits a `message`. Depending on which  [message](https://core.telegram.org/bots/api#message) was received, emits an event from this ones: `text`, `audio`, `document`, `photo`, `sticker`, `video`, `voice`, `contact`, `location`, `new_chat_participant`, `left_chat_participant`, `new_chat_title`, `new_chat_photo`, `delete_chat_photo`, `group_chat_created`. Its much better to listen a specific event rather than a `message` in order to stay safe from the content.
+* * *
+
+
+## API Reference
+{{#class name="TelegramBot"~}}
+{{>header~}}
+{{>body~}}
+{{>member-index~}}
+{{>members~}}
+{{/class}}
+* * *
