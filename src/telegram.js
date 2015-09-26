@@ -32,6 +32,7 @@ var requestPromise = Promise.promisify(request);
  */
 var TelegramBot = function (token, options) {
   options = options || {};
+  this.options = options;
   this.token = token;
   this.messageTypes = [
     'text', 'audio', 'document', 'photo', 'sticker', 'video', 'voice', 'contact',
@@ -39,18 +40,26 @@ var TelegramBot = function (token, options) {
     'new_chat_photo', 'delete_chat_photo', 'group_chat_created'
   ]; // Telegram message events
 
-  var processUpdate = this._processUpdate.bind(this);
+  this.processUpdate = this._processUpdate.bind(this);
 
   if (options.polling) {
-    this._polling = new TelegramBotPolling(token, options.polling, processUpdate);
+    this.initPolling();
   }
 
   if (options.webHook) {
-    this._WebHook = new TelegramBotWebHook(token, options.webHook, processUpdate);
+    this._WebHook = new TelegramBotWebHook(token, options.webHook, this.processUpdate);
   }
 };
 
 util.inherits(TelegramBot, EventEmitter);
+
+TelegramBot.prototype.initPolling = function() {
+  if (this._polling) {
+    this._polling.abort = true;
+    this._polling.lastRequest.cancel("Polling restart");
+  }
+  this._polling = new TelegramBotPolling(this.token, this.options.polling, this.processUpdate);
+};
 
 TelegramBot.prototype._processUpdate = function (update) {
   debug('Process Update %j', update);
