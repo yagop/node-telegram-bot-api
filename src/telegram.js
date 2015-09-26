@@ -428,19 +428,15 @@ TelegramBot.prototype.getFile = function(fileId) {
  */
 TelegramBot.prototype.getFileLink = function(fileId) {
 
-	var bot = this;
+  var self = this;
+  return self.getFile(fileId).then(function (resp) {
+    return URL.format({
+      protocol: 'https',
+      host: 'api.telegram.org',
+      pathname: '/file/bot' + self.token + '/' + resp.file_path
+    });
+  });
 
-	return new Promise(function(resolve) {
-		bot.getFile(fileId).then(function(resp) {
-			var fileURI = URL.format({
-				protocol: 'https',
-				host: 'api.telegram.org',
-				pathname: '/file/bot' + bot.token + '/' + resp.file_path
-			});
-
-			resolve(fileURI);
-		})
-	});
 };
 
 module.exports = TelegramBot;
