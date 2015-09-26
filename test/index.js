@@ -394,6 +394,32 @@ describe('Telegram', function () {
     });
   });
 
+  describe('#getFileLink', function () {
+		var fileId;
+
+		// To get a file we have to send any file first
+    it('should send a photo from file', function (done) {
+      var bot = new Telegram(TOKEN);
+      var photo = __dirname + '/bot.gif';
+      bot.sendPhoto(USERID, photo).then(function (resp) {
+        resp.should.be.an.instanceOf(Object);
+        fileId = resp.photo[0].file_id;
+        done();
+      });
+    });
+
+    it('should get a file link', function (done) {
+
+      var bot = new Telegram(TOKEN);
+
+      bot.getFileLink(fileId).then(function (fileURI) {
+        fileURI.should.be.an.instanceOf(String);
+        fileURI.should.startWith('https');
+        done(); // TODO: validate URL with some library or regexp
+      });
+    });
+  });
+
 }); // End Telegram
 
 
