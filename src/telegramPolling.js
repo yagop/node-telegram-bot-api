@@ -16,13 +16,17 @@ var TelegramBotPolling = function (token, options, callback) {
   this.callback = callback;
   this.timeout = options.timeout || 0;
   this.interval = options.interval || 2000;
+  this.lastUpdate = 0;
+  this.lastRequest = null;
+  this.abort = false;
   this._polling();
 };
 
 TelegramBotPolling.prototype._polling = function () {
   var self = this;
 
-  this._getUpdates().then(function (updates) {
+  this.lastRequest = this._getUpdates().then(function (updates) {
+    self.lastUpdate = Date.now();
     debug('polling data %j', updates);
     updates.forEach(function (update, index) {
       // If is the latest, update the offset.
@@ -35,6 +39,11 @@ TelegramBotPolling.prototype._polling = function () {
   }).catch(function (err) {
     debug('polling error: %j', err);
   }).finally(function () {
+    if (self.abort) {
+      debug('Polling is aborted!');
+      return;
+    }
+
     debug('setTimeout for %s miliseconds', self.interval);
     setTimeout(self._polling.bind(self), self.interval);
   });
@@ -54,7 +63,7 @@ TelegramBotPolling.prototype._getUpdates = function () {
     })
   };
   debug('polling with options: %j', opts);
-  return requestPromise(opts).then(function (resp) {
+  return requestPromise(opts).cancellable().then(function (resp) {
     if (resp[0].statusCode !== 200) {
       throw new Error(resp[0].statusCode+' '+resp[0].body);
     }
