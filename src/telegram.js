@@ -389,4 +389,20 @@ TelegramBot.prototype.sendLocation = function (chatId, latitude, longitude, opti
   return this._request('sendLocation', {qs: query});
 };
 
+/**
+ * Get file.
+ * Use this method to get basic info about a file and prepare it for downloading.
+ * Attention: link will be valid for 1 hour.
+ *
+ * @param  {String} fileId  File identifier to get info about
+ * @return {Promise}
+ * @see https://core.telegram.org/bots/api#getfile
+ */
+TelegramBot.prototype.getFile = function(fileId) {
+
+	var query = { file_id: fileId };
+
+	return this._request('getFile', {qs: query});
+};
+
 module.exports = TelegramBot;
