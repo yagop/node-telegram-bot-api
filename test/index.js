@@ -2,7 +2,6 @@ var TelegramPolling = require('../src/telegramPolling');
 var Telegram = require('../index');
 var request = require('request');
 var should = require('should');
-var del = require('del');
 var fs = require('fs');
 
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
@@ -446,7 +445,7 @@ describe('Telegram', function () {
       bot.downloadFile(fileId, downloadPath).then(function (filePath) {
         filePath.should.be.an.instanceOf(String);
         fs.existsSync(filePath).should.be.true();
-        del(filePath); // Clean folder after test
+        fs.unlinkSync(filePath); // Delete file after test
         done();
       });
     });
