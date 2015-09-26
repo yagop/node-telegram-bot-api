@@ -434,4 +434,33 @@ TelegramBot.prototype.getFileLink = function(fileId) {
 	});
 };
 
+/**
+ * Downloads file in the specified folder.
+ * This is just a sugar for (getFile)[#getfilefiled] method
+ *
+ * @param  {String} fileId  File identifier to get info about
+ * @param  {String} downloadDir Absolute path to the folder in which file will be saved
+ * @return {Promise} promise Promise, which will have *filePath* of downloaded file in resolve callback
+ */
+TelegramBot.prototype.downloadFile = function(fileId, downloadDir) {
+
+	var bot = this;
+
+	return new Promise(function(resolve, reject) {
+		
+		bot.getFileLink(fileId).then(function(fileURI) {
+			// Apparently, this is not the safest method to get the file name,
+			// but I am pretty sure that Telegram will not include slashes when generating names
+			var fileName = fileURI.slice(fileURI.lastIndexOf('/') + 1);
+			var filePath = downloadDir + '/' + fileName;
+
+			request({uri: fileURI})
+				.pipe(fs.createWriteStream(filePath))
+				.on('close', function() {
+					resolve(filePath);
+				});
+		});		
+	});
+}
+
 module.exports = TelegramBot;

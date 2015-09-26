@@ -296,4 +296,17 @@ See: https://core.telegram.org/bots/api#getfile
 
 * **Promise** *promise* Promise which will have *fileURI* in resolve callback
 
+## downloadFile(fileId, downloadDir)
+
+Downloads file in the specified folder.
+This is just a sugar for (getFile)[#getfilefiled] method
+
+### Params:
+* **String** *fileId* File identifier to get info about
+* **String** *downloadDir* Absolute path to the folder in which file will be saved
+
+### Return:
+
+* **Promise** *promise* Promise, which will have *filePath* of downloaded file in resolve callback
+
 <!-- End src/telegram.js -->
