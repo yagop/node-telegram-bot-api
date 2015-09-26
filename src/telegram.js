@@ -449,23 +449,20 @@ TelegramBot.prototype.getFileLink = function(fileId) {
  */
 TelegramBot.prototype.downloadFile = function(fileId, downloadDir) {
 
-	var bot = this;
+  return this.getFileLink(fileId).then(function (fileURI) {
+    var fileName = fileURI.slice(fileURI.lastIndexOf('/') + 1);
+    // TODO: Ensure fileName doesn't contains slashes
+    var filePath = downloadDir + '/' + fileName;
+    return new Promise(function (resolve, reject) {
+      request({uri: fileURI})
+        .pipe(fs.createWriteStream(filePath))
+        .on('error', reject)
+        .on('close', function() {
+          resolve(filePath);
+        });
+    });
+  });
 
-	return new Promise(function(resolve, reject) {
-		
-		bot.getFileLink(fileId).then(function(fileURI) {
-			// Apparently, this is not the safest method to get the file name,
-			// but I am pretty sure that Telegram will not include slashes when generating names
-			var fileName = fileURI.slice(fileURI.lastIndexOf('/') + 1);
-			var filePath = downloadDir + '/' + fileName;
-
-			request({uri: fileURI})
-				.pipe(fs.createWriteStream(filePath))
-				.on('close', function() {
-					resolve(filePath);
-				});
-		});		
-	});
 }
 
 module.exports = TelegramBot;
