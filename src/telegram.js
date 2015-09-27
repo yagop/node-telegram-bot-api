@@ -131,8 +131,8 @@ TelegramBot.prototype.getMe = function () {
  */
 TelegramBot.prototype.setWebHook = function (url) {
   var path = 'setWebHook';
-  var qs = {url: url};
-  return this._request(path, {qs: qs})
+  var form = {url: url};
+  return this._request(path, {form: form})
     .then(function (resp) {
       if (!resp) {
         throw new Error(resp);
@@ -150,13 +150,13 @@ TelegramBot.prototype.setWebHook = function (url) {
  * @see https://core.telegram.org/bots/api#getupdates
  */
 TelegramBot.prototype.getUpdates = function (timeout, limit, offset) {
-  var query = {
+  var form = {
     offset: offset,
     limit: limit,
     timeout: timeout
   };
 
-  return this._request('getUpdates', {qs: query});
+  return this._request('getUpdates', {form: form});
 };
 
 /**
@@ -168,10 +168,10 @@ TelegramBot.prototype.getUpdates = function (timeout, limit, offset) {
  * @see https://core.telegram.org/bots/api#sendmessage
  */
 TelegramBot.prototype.sendMessage = function (chatId, text, options) {
-  var query = options || {};
-  query.chat_id = chatId;
-  query.text = text;
-  return this._request('sendMessage', {qs: query});
+  var form = options || {};
+  form.chat_id = chatId;
+  form.text = text;
+  return this._request('sendMessage', {form: form});
 };
 
 /**
@@ -183,12 +183,12 @@ TelegramBot.prototype.sendMessage = function (chatId, text, options) {
  * @return {Promise}
  */
 TelegramBot.prototype.forwardMessage = function (chatId, fromChatId, messageId) {
-  var query = {
+  var form = {
     chat_id: chatId,
     from_chat_id: fromChatId,
     message_id: messageId
   };
-  return this._request('forwardMessage', {qs: query});
+  return this._request('forwardMessage', {form: form});
 };
 
 TelegramBot.prototype._formatSendData = function (type, data) {
@@ -355,11 +355,11 @@ TelegramBot.prototype.sendVoice = function (chatId, voice, options) {
  * @see https://core.telegram.org/bots/api#sendchataction
  */
 TelegramBot.prototype.sendChatAction = function (chatId, action) {
-  var query = {
+  var form = {
     chat_id: chatId,
     action: action
   };
-  return this._request('sendChatAction', {qs: query});
+  return this._request('sendChatAction', {form: form});
 };
 
 /**
@@ -373,12 +373,12 @@ TelegramBot.prototype.sendChatAction = function (chatId, action) {
  * @see https://core.telegram.org/bots/api#getuserprofilephotos
  */
 TelegramBot.prototype.getUserProfilePhotos = function (userId, offset, limit) {
-  var query = {
+  var form = {
     user_id: userId,
     offset: offset,
     limit: limit
   };
-  return this._request('getUserProfilePhotos', {qs: query});
+  return this._request('getUserProfilePhotos', {form: form});
 };
 
 /**
@@ -393,11 +393,11 @@ TelegramBot.prototype.getUserProfilePhotos = function (userId, offset, limit) {
  * @see https://core.telegram.org/bots/api#sendlocation
  */
 TelegramBot.prototype.sendLocation = function (chatId, latitude, longitude, options) {
-  var query = options || {};
-  query.chat_id = chatId;
-  query.latitude = latitude;
-  query.longitude = longitude;
-  return this._request('sendLocation', {qs: query});
+  var form = options || {};
+  form.chat_id = chatId;
+  form.latitude = latitude;
+  form.longitude = longitude;
+  return this._request('sendLocation', {form: form});
 };
 
 /**
@@ -410,10 +410,8 @@ TelegramBot.prototype.sendLocation = function (chatId, latitude, longitude, opti
  * @see https://core.telegram.org/bots/api#getfile
  */
 TelegramBot.prototype.getFile = function(fileId) {
-
-	var query = { file_id: fileId };
-
-	return this._request('getFile', {qs: query});
+  var form = {file_id: fileId};
+  return this._request('getFile', {form: form});
 };
 
 /**
