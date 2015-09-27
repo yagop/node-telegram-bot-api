@@ -30,7 +30,6 @@
   "devDependencies": {
     "contributor": "^0.1.25",
     "coveralls": "^2.11.2",
-    "del": "^2.0.2",
     "istanbul": "^0.3.17",
     "jsdoc-to-markdown": "^1.2.0",
     "jshint": "^2.8.0",
