@@ -9,4 +9,4 @@ var options = {
 };
 
 var bot = new TelegramBot('BOT_TOKEN', options);
-bot.setWebHook('IP:PORT/botBOT_TOKEN');
+bot.setWebHook('IP:PORT/botBOT_TOKEN', __dirname+'/crt.pem');
