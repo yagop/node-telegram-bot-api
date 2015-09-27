@@ -1,9 +1,11 @@
+'use strict';
+
 var TelegramBotWebHook = require('./telegramWebHook');
 var TelegramBotPolling = require('./telegramPolling');
 var debug = require('debug')('node-telegram-bot-api');
 var EventEmitter = require('events').EventEmitter;
-var Promise = require("bluebird");
-var request = require("request");
+var Promise = require('bluebird');
+var request = require('request');
 var stream = require('stream');
 var util = require('util');
 var mime = require('mime');
@@ -56,7 +58,7 @@ util.inherits(TelegramBot, EventEmitter);
 TelegramBot.prototype.initPolling = function() {
   if (this._polling) {
     this._polling.abort = true;
-    this._polling.lastRequest.cancel("Polling restart");
+    this._polling.lastRequest.cancel('Polling restart');
   }
   this._polling = new TelegramBotPolling(this.token, this.options.polling, this.processUpdate);
 };
@@ -111,7 +113,7 @@ TelegramBot.prototype._buildURL = function(path) {
     host: 'api.telegram.org',
     pathname: '/bot' + this.token + '/' + path
   });
-}
+};
 
 /**
  * Returns basic information about the bot in form of a `User` object.
@@ -462,6 +464,6 @@ TelegramBot.prototype.downloadFile = function(fileId, downloadDir) {
     });
   });
 
-}
+};
 
 module.exports = TelegramBot;

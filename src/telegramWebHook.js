@@ -1,7 +1,8 @@
+'use strict';
+
 var debug = require('debug')('node-telegram-bot-api');
 var https = require('https');
 var http = require('http');
-var util = require('util');
 var fs = require('fs');
 
 var TelegramBotWebHook = function (token, options, callback) {
@@ -26,7 +27,7 @@ var TelegramBotWebHook = function (token, options, callback) {
   }
 
   this._webServer.listen(options.port, options.host, function () {
-    debug("WebHook listening on port %s", options.port);
+    debug('WebHook listening on port %s', options.port);
   });
 };
 

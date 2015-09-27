@@ -16,7 +16,8 @@
   "scripts": {
     "test": "./node_modules/.bin/mocha test/index.js",
     "test-cov": "./node_modules/.bin/istanbul cover ./node_modules/mocha/bin/_mocha --report lcovonly -- -R spec && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js && rm -rf ./coverage",
-    "gen-doc": "./node_modules/.bin/jsdoc2md --src src/telegram.js -t README.hbs > README.md"
+    "gen-doc": "./node_modules/.bin/jsdoc2md --src src/telegram.js -t README.hbs > README.md",
+    "jshint": "./node_modules/.bin/jshint src test"
   },
   "author": "Yago Pérez <yagoperezs@gmail.com>",
   "license": "MIT",
@@ -32,6 +33,7 @@
     "del": "^2.0.2",
     "istanbul": "^0.3.17",
     "jsdoc-to-markdown": "^1.2.0",
+    "jshint": "^2.8.0",
     "mocha": "^2.2.5",
     "mocha-lcov-reporter": "0.0.2",
     "should": "^7.0.1"

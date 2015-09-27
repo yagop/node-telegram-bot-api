@@ -1,0 +1,11 @@
+{
+  "curly"   : true,
+  "eqeqeq"  : true,
+  "indent"  : 2,
+  "latedef" : true,
+  "newcap"  : true,
+  "quotmark": "single",
+  "strict"  : true,
+  "undef"   : true,
+  "node"    : true
+}

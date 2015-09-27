@@ -1,10 +1,12 @@
+'use strict';
+
 var TelegramPolling = require('../src/telegramPolling');
 var Telegram = require('../index');
 var request = require('request');
 var should = require('should');
 var fs = require('fs');
 
-process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 var TOKEN = process.env.TEST_TELEGRAM_TOKEN;
 if (!TOKEN) {
   throw new Error('Bot token not provided');
@@ -69,7 +71,7 @@ describe('Telegram', function () {
         method: 'POST',
         json: true,
         headers: {
-          "content-type": "application/json",
+          'content-type': 'application/json',
         },
         body: {update_id: 0, message: {text: 'test'}}
       });
@@ -94,7 +96,7 @@ describe('Telegram', function () {
         method: 'POST',
         json: true,
         headers: {
-          "content-type": "application/json",
+          'content-type': 'application/json',
         },
         rejectUnhauthorized: false,
         body: {update_id: 0, message: {text: 'test'}}
@@ -190,7 +192,7 @@ describe('Telegram', function () {
   describe('#sendChatAction', function () {
     it('should send a chat action', function (done) {
       var bot = new Telegram(TOKEN);
-      var action = "typing";
+      var action = 'typing';
       bot.sendChatAction(USERID, action).then(function (resp) {
         resp.should.be.exactly(true);
         done();

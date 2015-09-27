@@ -1,5 +1,7 @@
+'use strict';
+
 var debug = require('debug')('node-telegram-bot-api');
-var Promise = require("bluebird");
+var Promise = require('bluebird');
 var request = require('request');
 var URL = require('url');
 
@@ -7,7 +9,7 @@ var requestPromise = Promise.promisify(request);
 
 var TelegramBotPolling = function (token, options, callback) {
   options = options || {};
-  if (typeof options === "function") {
+  if (typeof options === 'function') {
     callback = options;
     options = {};
   }
