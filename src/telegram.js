@@ -17,7 +17,7 @@ var requestPromise = Promise.promisify(request);
 
 /**
  * Both request method to obtain messages are implemented. To use standard polling, set `polling: true`
- * on `options`. Notice that [webHook](https://core.telegram.org/bots/api#setwebhook) will need a valid (not self signed) SSL certificate.
+ * on `options`. Notice that [webHook](https://core.telegram.org/bots/api#setwebhook) will need a SSL certificate.
  * Emits `message` when a message arrives.
  *
  * @class TelegramBot
@@ -28,8 +28,8 @@ var requestPromise = Promise.promisify(request);
  * @param {String|Number} [options.polling.timeout=4] Polling time
  * @param {String|Number} [options.polling.interval=2000] Interval between requests in miliseconds
  * @param {Boolean|Object} [options.webHook=false] Set true to enable WebHook or set options
- * @param {String} [options.webHook.key] PEM private key to webHook server
- * @param {String} [options.webHook.cert] PEM certificate key to webHook server
+ * @param {String} [options.webHook.key] PEM private key to webHook server.
+ * @param {String} [options.webHook.cert] PEM certificate (public) to webHook server.
  * @see https://core.telegram.org/bots/api
  */
 var TelegramBot = function (token, options) {
@@ -108,7 +108,7 @@ TelegramBot.prototype._request = function (path, options) {
  * @see https://core.telegram.org/bots/api#making-requests
  */
 TelegramBot.prototype._buildURL = function(path) {
-	return URL.format({
+  return URL.format({
     protocol: 'https',
     host: 'api.telegram.org',
     pathname: '/bot' + this.token + '/' + path
@@ -129,12 +129,22 @@ TelegramBot.prototype.getMe = function () {
  * Specify an url to receive incoming updates via an outgoing webHook.
  * @param {String} url URL where Telegram will make HTTP Post. Leave empty to
  * delete webHook.
+ * @param {String|stream.Stream} [cert] PEM certificate key (public).
  * @see https://core.telegram.org/bots/api#setwebhook
  */
-TelegramBot.prototype.setWebHook = function (url) {
+TelegramBot.prototype.setWebHook = function (url, cert) {
   var path = 'setWebHook';
-  var form = {url: url};
-  return this._request(path, {form: form})
+  var opts = {
+    qs: {url: url}
+  };
+
+  if (cert) {
+    var content = this._formatSendData('certificate', cert);
+    opts.formData = content[0];
+    opts.qs.certificate = content[1];
+  }
+
+  return this._request(path, opts)
     .then(function (resp) {
       if (!resp) {
         throw new Error(resp);

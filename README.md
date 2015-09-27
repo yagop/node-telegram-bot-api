@@ -26,6 +26,16 @@ There are some other examples on [examples](https://github.com/yagop/node-telegr
 Every time  TelegramBot receives a message, it emits a `message`. Depending on which  [message](https://core.telegram.org/bots/api#message) was received, emits an event from this ones: `text`, `audio`, `document`, `photo`, `sticker`, `video`, `voice`, `contact`, `location`, `new_chat_participant`, `left_chat_participant`, `new_chat_title`, `new_chat_photo`, `delete_chat_photo`, `group_chat_created`. Its much better to listen a specific event rather than a `message` in order to stay safe from the content.
 * * *
 
+### WebHooks
+
+Telegram only supports HTTPS connections to WebHooks, in order to set a WebHook a private key file and public certificate must be used. Since August 29, 2015 Telegram supports self signed ones, to generate them:
+```bash
+# Our private cert will be key.pem, keep in private this file.
+openssl genrsa -out key.pem 2048
+# Our public certificate will be crt.pem
+openssl req -new -sha256 -key key.pem -out crt.pem
+```
+Once they are generated, the `crt.pem` can be provided to `telegramBot.setWebHook(url, crt)` as `crt`.
 
 ## API Reference
 <a name="TelegramBot"></a>
@@ -38,7 +48,7 @@ TelegramBot
 * [TelegramBot](#TelegramBot)
   * [new TelegramBot(token, [options])](#new_TelegramBot_new)
   * [.getMe()](#TelegramBot+getMe) ⇒ <code>Promise</code>
-  * [.setWebHook(url)](#TelegramBot+setWebHook)
+  * [.setWebHook(url, [cert])](#TelegramBot+setWebHook)
   * [.getUpdates([timeout], [limit], [offset])](#TelegramBot+getUpdates) ⇒ <code>Promise</code>
   * [.sendMessage(chatId, text, [options])](#TelegramBot+sendMessage) ⇒ <code>Promise</code>
   * [.forwardMessage(chatId, fromChatId, messageId)](#TelegramBot+forwardMessage) ⇒ <code>Promise</code>
@@ -58,7 +68,7 @@ TelegramBot
 <a name="new_TelegramBot_new"></a>
 ### new TelegramBot(token, [options])
 Both request method to obtain messages are implemented. To use standard polling, set `polling: true`
-on `options`. Notice that [webHook](https://core.telegram.org/bots/api#setwebhook) will need a valid (not self signed) SSL certificate.
+on `options`. Notice that [webHook](https://core.telegram.org/bots/api#setwebhook) will need a SSL certificate.
 Emits `message` when a message arrives.
 
 
@@ -70,8 +80,8 @@ Emits `message` when a message arrives.
 | [options.polling.timeout] | <code>String</code> &#124; <code>Number</code> | <code>4</code> | Polling time |
 | [options.polling.interval] | <code>String</code> &#124; <code>Number</code> | <code>2000</code> | Interval between requests in miliseconds |
 | [options.webHook] | <code>Boolean</code> &#124; <code>Object</code> | <code>false</code> | Set true to enable WebHook or set options |
-| [options.webHook.key] | <code>String</code> |  | PEM private key to webHook server |
-| [options.webHook.cert] | <code>String</code> |  | PEM certificate key to webHook server |
+| [options.webHook.key] | <code>String</code> |  | PEM private key to webHook server. |
+| [options.webHook.cert] | <code>String</code> |  | PEM certificate (public) to webHook server. |
 
 <a name="TelegramBot+getMe"></a>
 ### telegramBot.getMe() ⇒ <code>Promise</code>
@@ -80,7 +90,7 @@ Returns basic information about the bot in form of a `User` object.
 **Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
 **See**: https://core.telegram.org/bots/api#getme  
 <a name="TelegramBot+setWebHook"></a>
-### telegramBot.setWebHook(url)
+### telegramBot.setWebHook(url, [cert])
 Specify an url to receive incoming updates via an outgoing webHook.
 
 **Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
@@ -89,6 +99,7 @@ Specify an url to receive incoming updates via an outgoing webHook.
 | Param | Type | Description |
 | --- | --- | --- |
 | url | <code>String</code> | URL where Telegram will make HTTP Post. Leave empty to delete webHook. |
+| [cert] | <code>String</code> &#124; <code>stream.Stream</code> | PEM certificate key (public). |
 
 <a name="TelegramBot+getUpdates"></a>
 ### telegramBot.getUpdates([timeout], [limit], [offset]) ⇒ <code>Promise</code>

@@ -19,7 +19,17 @@ describe('Telegram', function () {
   describe('#setWebHook', function () {
     it('should set a webHook', function (done) {
       var bot = new Telegram(TOKEN);
+      // Google IP ¯\_(ツ)_/¯
       bot.setWebHook('216.58.210.174').then(function (resp) {
+        resp.should.be.exactly(true);
+        done();
+      });
+    });
+
+    it('should set a webHook with certificate', function (done) {
+      var bot = new Telegram(TOKEN);
+      var cert = __dirname+'/../examples/crt.pem';
+      bot.setWebHook('216.58.210.174', cert).then(function (resp) {
         resp.should.be.exactly(true);
         done();
       });
