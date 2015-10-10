@@ -41,6 +41,7 @@ var TelegramBot = function (token, options) {
     'location', 'new_chat_participant', 'left_chat_participant', 'new_chat_title',
     'new_chat_photo', 'delete_chat_photo', 'group_chat_created'
   ]; // Telegram message events
+  this.textRegexpCallbacks = [];
 
   this.processUpdate = this._processUpdate.bind(this);
 
@@ -76,6 +77,17 @@ TelegramBot.prototype._processUpdate = function (update) {
       }
     };
     this.messageTypes.forEach(processMessageType.bind(this));
+    if (message.text) {
+      debug('Text message');
+      this.textRegexpCallbacks.forEach(function (reg) {
+        debug('Matching %s whith', message.text, reg.regexp);
+        var result = reg.regexp.exec(message.text);
+        if (result) {
+          debug('Matches', reg.regexp);
+          reg.callback(message, result);
+        }
+      });
+    }
   }
 };
 
@@ -474,6 +486,16 @@ TelegramBot.prototype.downloadFile = function(fileId, downloadDir) {
     });
   });
 
+};
+
+/**
+ * Register a RegExp to test against an incomming text message
+ * @param  {RegExp}   regexp [RegExp to be executed with `exec`]
+ * @param  {Function} fn     [Callback receives 2 parameters, the msg and the
+ *                           result of executing `regexp.exec` on message text]
+ */
+TelegramBot.prototype.onText = function (regexp, fn) {
+  this.textRegexpCallbacks.push({regexp: regexp, callback: fn});
 };
 
 module.exports = TelegramBot;

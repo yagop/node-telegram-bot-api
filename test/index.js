@@ -463,7 +463,24 @@ describe('Telegram', function () {
     });
   });
 
-
+  it('should call `onText` callback on match', function (done) {
+    var bot = new Telegram(TOKEN, {webHook: true});
+    bot.onText(/\/echo (.+)/, function (msg, match) {
+      bot._WebHook._webServer.close();
+      match[1].should.be.exactly('ECHO ALOHA');
+      done();
+    });
+    var url = 'http://localhost:8443/bot'+TOKEN;
+    request({
+      url: url,
+      method: 'POST',
+      json: true,
+      headers: {
+        'content-type': 'application/json',
+      },
+      body: {update_id: 0, message: {text: '/echo ECHO ALOHA'}}
+    });
+  });
 }); // End Telegram
 
 
