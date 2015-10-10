@@ -489,13 +489,13 @@ TelegramBot.prototype.downloadFile = function(fileId, downloadDir) {
 };
 
 /**
- * Register a RegExp to test against an incomming text message
- * @param  {RegExp}   regexp [RegExp to be executed with `exec`]
- * @param  {Function} fn     [Callback receives 2 parameters, the msg and the
- *                           result of executing `regexp.exec` on message text]
+ * Register a RegExp to test against an incomming text message.
+ * @param  {RegExp}   regexp       RegExp to be executed with `exec`.
+ * @param  {Function} callback     Callback will be called with 2 parameters,
+ * the `msg` and the result of executing `regexp.exec` on message text.
  */
-TelegramBot.prototype.onText = function (regexp, fn) {
-  this.textRegexpCallbacks.push({regexp: regexp, callback: fn});
+TelegramBot.prototype.onText = function (regexp, callback) {
+  this.textRegexpCallbacks.push({regexp: regexp, callback: callback});
 };
 
 module.exports = TelegramBot;

@@ -12,7 +12,15 @@ var TelegramBot = require('node-telegram-bot-api');
 var token = 'YOUR_TELEGRAM_BOT_TOKEN';
 // Setup polling way
 var bot = new TelegramBot(token, {polling: true});
-bot.on('text', function (msg) {
+
+bot.onText(/\/echo (.+)/, function (msg, match) {
+  var fromId = msg.from.id;
+  var resp = match[1];
+  bot.sendMessage(fromId, resp);
+});
+
+// Any kind of message
+bot.on('message', function (msg) {
   var chatId = msg.chat.id;
   // photo can be: a file path, a stream or a Telegram file_id
   var photo = 'cats.png';
@@ -64,6 +72,7 @@ TelegramBot
   * [.getFile(fileId)](#TelegramBot+getFile) ⇒ <code>Promise</code>
   * [.getFileLink(fileId)](#TelegramBot+getFileLink) ⇒ <code>Promise</code>
   * [.downloadFile(fileId, downloadDir)](#TelegramBot+downloadFile) ⇒ <code>Promise</code>
+  * [.onText(regexp, callback)](#TelegramBot+onText)
 
 <a name="new_TelegramBot_new"></a>
 ### new TelegramBot(token, [options])
@@ -304,5 +313,16 @@ This is just a sugar for (getFile)[#getfilefiled] method
 | --- | --- | --- |
 | fileId | <code>String</code> | File identifier to get info about |
 | downloadDir | <code>String</code> | Absolute path to the folder in which file will be saved |
+
+<a name="TelegramBot+onText"></a>
+### telegramBot.onText(regexp, callback)
+Register a RegExp to test against an incomming text message.
+
+**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| regexp | <code>RegExp</code> | RegExp to be executed with `exec`. |
+| callback | <code>function</code> | Callback will be called with 2 parameters, the `msg` and the result of executing `regexp.exec` on message text. |
 
 * * *
