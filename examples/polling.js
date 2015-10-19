@@ -11,26 +11,30 @@ var bot = new TelegramBot(token, options);
 bot.getMe().then(function (me) {
   console.log('Hi my name is %s!', me.username);
 });
-bot.on('text', function (msg) {
-  var chatId = msg.chat.id;
-  if (msg.text == '/photo') {
-    // From file
-    var photo = __dirname+'/../test/bot.gif';
-    bot.sendPhoto(chatId, photo, {caption: "I'm a bot!"});
-  }
-  if (msg.text == '/audio') {
-    var url = 'https://upload.wikimedia.org/wikipedia/commons/c/c8/Example.ogg';
+
+bot.onText(/\/photo.*/, function (msg) {
+  var fromId = msg.from.id;
+  // From file
+  var photo = __dirname+'/../test/bot.gif';
+  bot.sendPhoto(fromId, photo, {caption: "I'm a bot!"});
+});
+
+bot.onText(/\/audio.*/, function (msg) {
+  var fromId = msg.from.id;
+  var url = 'https://upload.wikimedia.org/wikipedia/commons/c/c8/Example.ogg';
     // From HTTP request!
     var audio = request(url);
-    bot.sendAudio(chatId, audio)
+    bot.sendAudio(fromId, audio)
       .then(function (resp) {
         // Forward the msg
         var messageId = resp.message_id;
-        bot.forwardMessage(chatId, chatId, messageId);
+        bot.forwardMessage(fromId, fromId, messageId);
       });
-  }
-  if (msg.text == '/love') {
-    var opts = {
+});
+
+bot.onText(/\/love.*/, function (msg) {
+  var fromId = msg.from.id;
+  var opts = {
       reply_to_message_id: msg.message_id,
       reply_markup: JSON.stringify({
         keyboard: [
@@ -38,6 +42,11 @@ bot.on('text', function (msg) {
           ['No, sorry there is another one...']]
       })
     };
-    bot.sendMessage(chatId, 'Do you love me?', opts);
-  }
+    bot.sendMessage(fromId, 'Do you love me?', opts);
+});
+
+bot.onText(/\/echo (.+)/, function (msg, match) {
+  var fromId = msg.from.id;
+  var resp = match[1];
+  bot.sendMessage(fromId, resp);
 });
