@@ -13,27 +13,27 @@ bot.getMe().then(function (me) {
 });
 
 bot.onText(/\/photo.*/, function (msg) {
-  var fromId = msg.from.id;
+  var chatId = msg.chat.id;
   // From file
   var photo = __dirname+'/../test/bot.gif';
-  bot.sendPhoto(fromId, photo, {caption: "I'm a bot!"});
+  bot.sendPhoto(chatId, photo, {caption: "I'm a bot!"});
 });
 
 bot.onText(/\/audio.*/, function (msg) {
-  var fromId = msg.from.id;
+  var chatId = msg.chat.id;
   var url = 'https://upload.wikimedia.org/wikipedia/commons/c/c8/Example.ogg';
     // From HTTP request!
     var audio = request(url);
-    bot.sendAudio(fromId, audio)
+    bot.sendAudio(chatId, audio)
       .then(function (resp) {
         // Forward the msg
         var messageId = resp.message_id;
-        bot.forwardMessage(fromId, fromId, messageId);
+        bot.forwardMessage(chatId, chatId, messageId);
       });
 });
 
 bot.onText(/\/love.*/, function (msg) {
-  var fromId = msg.from.id;
+  var chatId = msg.chat.id;
   var opts = {
       reply_to_message_id: msg.message_id,
       reply_markup: JSON.stringify({
@@ -42,11 +42,11 @@ bot.onText(/\/love.*/, function (msg) {
           ['No, sorry there is another one...']]
       })
     };
-    bot.sendMessage(fromId, 'Do you love me?', opts);
+    bot.sendMessage(chatId, 'Do you love me?', opts);
 });
 
 bot.onText(/\/echo (.+)/, function (msg, match) {
-  var fromId = msg.from.id;
+  var chatId = msg.chat.id;
   var resp = match[1];
-  bot.sendMessage(fromId, resp);
+  bot.sendMessage(chatId, resp);
 });
