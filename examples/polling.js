@@ -12,14 +12,14 @@ bot.getMe().then(function (me) {
   console.log('Hi my name is %s!', me.username);
 });
 
-bot.onText(/\/photo.*/, function (msg) {
+bot.onText(/\/photo/, function (msg) {
   var chatId = msg.chat.id;
   // From file
   var photo = __dirname+'/../test/bot.gif';
   bot.sendPhoto(chatId, photo, {caption: "I'm a bot!"});
 });
 
-bot.onText(/\/audio.*/, function (msg) {
+bot.onText(/\/audio/, function (msg) {
   var chatId = msg.chat.id;
   var url = 'https://upload.wikimedia.org/wikipedia/commons/c/c8/Example.ogg';
     // From HTTP request!
@@ -32,7 +32,7 @@ bot.onText(/\/audio.*/, function (msg) {
       });
 });
 
-bot.onText(/\/love.*/, function (msg) {
+bot.onText(/\/love/, function (msg) {
   var chatId = msg.chat.id;
   var opts = {
       reply_to_message_id: msg.message_id,
