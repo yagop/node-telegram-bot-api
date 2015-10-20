@@ -13,6 +13,7 @@ var token = 'YOUR_TELEGRAM_BOT_TOKEN';
 // Setup polling way
 var bot = new TelegramBot(token, {polling: true});
 
+// Matches /echo [whatever]
 bot.onText(/\/echo (.+)/, function (msg, match) {
   var fromId = msg.from.id;
   var resp = match[1];
