@@ -12,6 +12,7 @@ bot.getMe().then(function (me) {
   console.log('Hi my name is %s!', me.username);
 });
 
+// Matches /photo
 bot.onText(/\/photo/, function (msg) {
   var chatId = msg.chat.id;
   // From file
@@ -19,6 +20,7 @@ bot.onText(/\/photo/, function (msg) {
   bot.sendPhoto(chatId, photo, {caption: "I'm a bot!"});
 });
 
+// Matches /audio
 bot.onText(/\/audio/, function (msg) {
   var chatId = msg.chat.id;
   var url = 'https://upload.wikimedia.org/wikipedia/commons/c/c8/Example.ogg';
@@ -32,6 +34,7 @@ bot.onText(/\/audio/, function (msg) {
       });
 });
 
+// Matches /love
 bot.onText(/\/love/, function (msg) {
   var chatId = msg.chat.id;
   var opts = {
