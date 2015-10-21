@@ -381,9 +381,9 @@ describe('Telegram', function () {
   });
 
   describe('#getFile', function () {
-		var fileId;
+	var fileId;
 
-		// To get a file we have to send any file first
+	// To get a file we have to send any file first
     it('should send a photo from file', function (done) {
       var bot = new Telegram(TOKEN);
       var photo = __dirname + '/bot.gif';
@@ -407,9 +407,9 @@ describe('Telegram', function () {
   });
 
   describe('#getFileLink', function () {
-		var fileId;
+	var fileId;
 
-		// To get a file we have to send any file first
+	// To get a file we have to send any file first
     it('should send a photo from file', function (done) {
       var bot = new Telegram(TOKEN);
       var photo = __dirname + '/bot.gif';
