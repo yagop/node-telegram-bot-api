@@ -98,6 +98,13 @@ TelegramBot.prototype._request = function (path, options) {
   options = options || {};
   options.url = this._buildURL(path);
   debug('HTTP request: %j', options);
+  // Parse filename from stream for photo and document
+  if ( options.formData && ( options.formData.photo || options.formData.document  )) {
+    var obj = (options.formData.photo) ? options.formData.photo : options.formData.document;
+    var fileName = obj.value.req.path.split('/').pop();
+
+    obj.options.filename = fileName;
+  }
   return requestPromise(options)
     .then(function (resp) {
       if (resp[0].statusCode !== 200) {
