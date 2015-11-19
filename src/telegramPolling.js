@@ -16,7 +16,7 @@ var TelegramBotPolling = function (token, options, callback) {
   this.offset = 0;
   this.token = token;
   this.callback = callback;
-  this.timeout = options.timeout || 0;
+  this.timeout = options.timeout || 10;
   this.interval = (typeof options.interval === 'number') ? options.interval : 300;
   this.lastUpdate = 0;
   this.lastRequest = null;
