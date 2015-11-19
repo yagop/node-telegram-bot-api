@@ -202,6 +202,9 @@ TelegramBot.prototype.sendMessage = function (chatId, text, options) {
   var form = options || {};
   form.chat_id = chatId;
   form.text = text;
+  if(form.reply_markup) {
+    form.reply_markup = JSON.stringify(form.reply_markup);
+  }
   return this._request('sendMessage', {form: form});
 };
 
