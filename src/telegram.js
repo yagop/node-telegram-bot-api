@@ -96,6 +96,13 @@ TelegramBot.prototype._request = function (path, options) {
     throw new Error('Telegram Bot Token not provided!');
   }
   options = options || {};
+  if (options.form) {
+    var replyMarkup = options.form.reply_markup;
+    if (replyMarkup && typeof replyMarkup !== 'string') {
+      // reply_markup must be passed as JSON stringified to Telegram
+      options.form.reply_markup = JSON.stringify(replyMarkup);
+    }
+  }
   options.url = this._buildURL(path);
   debug('HTTP request: %j', options);
   return requestPromise(options)
