@@ -200,6 +200,9 @@ TelegramBot.prototype.getUpdates = function (timeout, limit, offset) {
  */
 TelegramBot.prototype.sendMessage = function (chatId, text, options) {
   var form = options || {};
+  if (form.reply_markup instanceof Object) {
+    form.reply_markup = JSON.stringify(form.reply_markup);
+  }
   form.chat_id = chatId;
   form.text = text;
   return this._request('sendMessage', {form: form});
