@@ -65,17 +65,25 @@ TelegramBotPolling.prototype._getUpdates = function () {
     })
   };
   debug('polling with options: %j', opts);
-  return requestPromise(opts).cancellable().then(function (resp) {
-    if (resp[0].statusCode !== 200) {
-      throw new Error(resp[0].statusCode+' '+resp[0].body);
-    }
-    var data = JSON.parse(resp[0].body);
-    if (data.ok) {
-      return data.result;
-    } else {
-      throw new Error(data.error_code+' '+data.description);
-    }
-  });
+  return requestPromise(opts)
+    .cancellable()
+    .timeout((10 + this.timeout) * 1000)
+    .then(function (resp) {
+      if (resp[0].statusCode !== 200) {
+        throw new Error(resp[0].statusCode+' '+resp[0].body);
+      }
+      var data;
+      try {
+        data = JSON.parse(resp[0].body);
+      } catch (err) {
+        throw new Error('Error parsing Telegram response: %s', resp[0].body);
+      }
+      if (data.ok) {
+        return data.result;
+      } else {
+        throw new Error(data.error_code+' '+data.description);
+      }
+    });
 };
 
 module.exports = TelegramBotPolling;
