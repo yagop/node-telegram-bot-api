@@ -9,6 +9,7 @@ var request = require('request');
 var stream = require('stream');
 var util = require('util');
 var mime = require('mime');
+var fileType = require('file-type');
 var path = require('path');
 var URL = require('url');
 var fs = require('fs');
@@ -234,6 +235,16 @@ TelegramBot.prototype._formatSendData = function (type, data) {
       options: {
         filename: fileName,
         contentType: mime.lookup(fileName)
+      }
+    };
+  } else if(util.isBuffer(data)){
+    var filetype = fileType(data);
+    formData = {};
+    formData[type] = {
+      value: data,
+      options: {
+        filename: 'data.' + filetype.ext,
+        contentType: filetype.mime
       }
     };
   } else if (fs.existsSync(data)) {
