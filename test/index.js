@@ -197,6 +197,15 @@ describe('Telegram', function () {
         done();
       });
     });
+
+    it('should send a photo from a Buffer', function (done) {
+      var bot = new Telegram(TOKEN);
+      var photo = fs.readFileSync(__dirname+'/bot.gif');
+      bot.sendPhoto(USERID, photo).then(function (resp) {
+        resp.should.be.an.instanceOf(Object);
+        done();
+      });
+    });
   });
 
   describe('#sendChatAction', function () {
@@ -260,6 +269,15 @@ describe('Telegram', function () {
         done();
       });
     });
+
+    it('should send a document from a Buffer', function (done) {
+      var bot = new Telegram(TOKEN);
+      var document = fs.readFileSync(__dirname+'/bot.gif');
+      bot.sendDocument(USERID, document).then(function (resp) {
+        resp.should.be.an.instanceOf(Object);
+        done();
+      });
+    });
   });
 
   describe('#sendSticker', function () {
@@ -296,6 +314,15 @@ describe('Telegram', function () {
       var bot = new Telegram(TOKEN);
       var sticker = request('https://www.gstatic.com/webp/gallery3/1_webp_ll.webp');
       bot.sendSticker(USERID, sticker).then(function (resp) {
+        resp.should.be.an.instanceOf(Object);
+        done();
+      });
+    });
+
+    it('should send a sticker from a Buffer', function (done) {
+      var bot = new Telegram(TOKEN);
+      var sticker = fs.readFileSync(__dirname+'/sticker.webp');
+      bot.sendDocument(USERID, sticker).then(function (resp) {
         resp.should.be.an.instanceOf(Object);
         done();
       });
