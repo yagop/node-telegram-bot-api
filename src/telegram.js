@@ -269,7 +269,7 @@ TelegramBot.prototype._formatSendData = function (type, data) {
 /**
  * Send photo
  * @param  {Number|String} chatId  Unique identifier for the message recipient
- * @param  {String|stream.Stream} photo A file path or a Stream. Can
+ * @param  {String|stream.Stream|Buffer} photo A file path or a Stream. Can
  * also be a `file_id` previously uploaded
  * @param  {Object} [options] Additional Telegram query options
  * @return {Promise}
@@ -289,8 +289,8 @@ TelegramBot.prototype.sendPhoto = function (chatId, photo, options) {
 /**
  * Send audio
  * @param  {Number|String} chatId  Unique identifier for the message recipient
- * @param  {String|stream.Stream} audio A file path or a Stream. Can
- * also be a `file_id` previously uploaded.
+ * @param  {String|stream.Stream|Buffer} audio A file path, Stream or Buffer.
+ * Can also be a `file_id` previously uploaded.
  * @param  {Object} [options] Additional Telegram query options
  * @return {Promise}
  * @see https://core.telegram.org/bots/api#sendaudio
@@ -309,8 +309,8 @@ TelegramBot.prototype.sendAudio = function (chatId, audio, options) {
 /**
  * Send Document
  * @param  {Number|String} chatId  Unique identifier for the message recipient
- * @param  {String|stream.Stream} A file path or a Stream. Can
- * also be a `file_id` previously uploaded.
+ * @param  {String|stream.Stream|Buffer} doc A file path, Stream or Buffer.
+ * Can also be a `file_id` previously uploaded.
  * @param  {Object} [options] Additional Telegram query options
  * @return {Promise}
  * @see https://core.telegram.org/bots/api#sendDocument
@@ -329,8 +329,8 @@ TelegramBot.prototype.sendDocument = function (chatId, doc, options) {
 /**
  * Send .webp stickers.
  * @param  {Number|String} chatId  Unique identifier for the message recipient
- * @param  {String|stream.Stream} A file path or a Stream. Can
- * also be a `file_id` previously uploaded.
+ * @param  {String|stream.Stream|Buffer} sticker A file path, Stream or Buffer.
+ * Can also be a `file_id` previously uploaded. Stickers are WebP format files.
  * @param  {Object} [options] Additional Telegram query options
  * @return {Promise}
  * @see https://core.telegram.org/bots/api#sendsticker
@@ -349,8 +349,8 @@ TelegramBot.prototype.sendSticker = function (chatId, sticker, options) {
 /**
  * Use this method to send video files, Telegram clients support mp4 videos (other formats may be sent as Document).
  * @param  {Number|String} chatId  Unique identifier for the message recipient
- * @param  {String|stream.Stream} A file path or a Stream. Can
- * also be a `file_id` previously uploaded.
+ * @param  {String|stream.Stream} video A file path or Stream.
+ * Can also be a `file_id` previously uploaded.
  * @param  {Object} [options] Additional Telegram query options
  * @return {Promise}
  * @see https://core.telegram.org/bots/api#sendvideo
@@ -369,8 +369,8 @@ TelegramBot.prototype.sendVideo = function (chatId, video, options) {
 /**
  * Send voice
  * @param  {Number|String} chatId  Unique identifier for the message recipient
- * @param  {String|stream.Stream} voice A file path or a Stream. Can
- * also be a `file_id` previously uploaded.
+ * @param  {String|stream.Stream|Buffer} voice A file path, Stream or Buffer.
+ * Can also be a `file_id` previously uploaded.
  * @param  {Object} [options] Additional Telegram query options
  * @return {Promise}
  * @see https://core.telegram.org/bots/api#sendvoice

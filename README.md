@@ -13,6 +13,7 @@ var token = 'YOUR_TELEGRAM_BOT_TOKEN';
 // Setup polling way
 var bot = new TelegramBot(token, {polling: true});
 
+// Matches /echo [whatever]
 bot.onText(/\/echo (.+)/, function (msg, match) {
   var fromId = msg.from.id;
   var resp = match[1];
@@ -62,9 +63,9 @@ TelegramBot
   * [.forwardMessage(chatId, fromChatId, messageId)](#TelegramBot+forwardMessage) ⇒ <code>Promise</code>
   * [.sendPhoto(chatId, photo, [options])](#TelegramBot+sendPhoto) ⇒ <code>Promise</code>
   * [.sendAudio(chatId, audio, [options])](#TelegramBot+sendAudio) ⇒ <code>Promise</code>
-  * [.sendDocument(chatId, A, [options])](#TelegramBot+sendDocument) ⇒ <code>Promise</code>
-  * [.sendSticker(chatId, A, [options])](#TelegramBot+sendSticker) ⇒ <code>Promise</code>
-  * [.sendVideo(chatId, A, [options])](#TelegramBot+sendVideo) ⇒ <code>Promise</code>
+  * [.sendDocument(chatId, doc, [options])](#TelegramBot+sendDocument) ⇒ <code>Promise</code>
+  * [.sendSticker(chatId, sticker, [options])](#TelegramBot+sendSticker) ⇒ <code>Promise</code>
+  * [.sendVideo(chatId, video, [options])](#TelegramBot+sendVideo) ⇒ <code>Promise</code>
   * [.sendVoice(chatId, voice, [options])](#TelegramBot+sendVoice) ⇒ <code>Promise</code>
   * [.sendChatAction(chatId, action)](#TelegramBot+sendChatAction) ⇒ <code>Promise</code>
   * [.getUserProfilePhotos(userId, [offset], [limit])](#TelegramBot+getUserProfilePhotos) ⇒ <code>Promise</code>
@@ -159,7 +160,7 @@ Send photo
 | Param | Type | Description |
 | --- | --- | --- |
 | chatId | <code>Number</code> &#124; <code>String</code> | Unique identifier for the message recipient |
-| photo | <code>String</code> &#124; <code>stream.Stream</code> | A file path or a Stream. Can also be a `file_id` previously uploaded |
+| photo | <code>String</code> &#124; <code>stream.Stream</code> &#124; <code>Buffer</code> | A file path or a Stream. Can also be a `file_id` previously uploaded |
 | [options] | <code>Object</code> | Additional Telegram query options |
 
 <a name="TelegramBot+sendAudio"></a>
@@ -172,11 +173,11 @@ Send audio
 | Param | Type | Description |
 | --- | --- | --- |
 | chatId | <code>Number</code> &#124; <code>String</code> | Unique identifier for the message recipient |
-| audio | <code>String</code> &#124; <code>stream.Stream</code> | A file path or a Stream. Can also be a `file_id` previously uploaded. |
+| audio | <code>String</code> &#124; <code>stream.Stream</code> &#124; <code>Buffer</code> | A file path, Stream or Buffer. Can also be a `file_id` previously uploaded. |
 | [options] | <code>Object</code> | Additional Telegram query options |
 
 <a name="TelegramBot+sendDocument"></a>
-### telegramBot.sendDocument(chatId, A, [options]) ⇒ <code>Promise</code>
+### telegramBot.sendDocument(chatId, doc, [options]) ⇒ <code>Promise</code>
 Send Document
 
 **Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
@@ -185,11 +186,11 @@ Send Document
 | Param | Type | Description |
 | --- | --- | --- |
 | chatId | <code>Number</code> &#124; <code>String</code> | Unique identifier for the message recipient |
-| A | <code>String</code> &#124; <code>stream.Stream</code> | file path or a Stream. Can also be a `file_id` previously uploaded. |
+| doc | <code>String</code> &#124; <code>stream.Stream</code> &#124; <code>Buffer</code> | A file path, Stream or Buffer. Can also be a `file_id` previously uploaded. |
 | [options] | <code>Object</code> | Additional Telegram query options |
 
 <a name="TelegramBot+sendSticker"></a>
-### telegramBot.sendSticker(chatId, A, [options]) ⇒ <code>Promise</code>
+### telegramBot.sendSticker(chatId, sticker, [options]) ⇒ <code>Promise</code>
 Send .webp stickers.
 
 **Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
@@ -198,11 +199,11 @@ Send .webp stickers.
 | Param | Type | Description |
 | --- | --- | --- |
 | chatId | <code>Number</code> &#124; <code>String</code> | Unique identifier for the message recipient |
-| A | <code>String</code> &#124; <code>stream.Stream</code> | file path or a Stream. Can also be a `file_id` previously uploaded. |
+| sticker | <code>String</code> &#124; <code>stream.Stream</code> &#124; <code>Buffer</code> | A file path, Stream or Buffer. Can also be a `file_id` previously uploaded. Stickers are WebP format files. |
 | [options] | <code>Object</code> | Additional Telegram query options |
 
 <a name="TelegramBot+sendVideo"></a>
-### telegramBot.sendVideo(chatId, A, [options]) ⇒ <code>Promise</code>
+### telegramBot.sendVideo(chatId, video, [options]) ⇒ <code>Promise</code>
 Use this method to send video files, Telegram clients support mp4 videos (other formats may be sent as Document).
 
 **Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
@@ -211,7 +212,7 @@ Use this method to send video files, Telegram clients support mp4 videos (other 
 | Param | Type | Description |
 | --- | --- | --- |
 | chatId | <code>Number</code> &#124; <code>String</code> | Unique identifier for the message recipient |
-| A | <code>String</code> &#124; <code>stream.Stream</code> | file path or a Stream. Can also be a `file_id` previously uploaded. |
+| video | <code>String</code> &#124; <code>stream.Stream</code> | A file path or Stream. Can also be a `file_id` previously uploaded. |
 | [options] | <code>Object</code> | Additional Telegram query options |
 
 <a name="TelegramBot+sendVoice"></a>
@@ -224,7 +225,7 @@ Send voice
 | Param | Type | Description |
 | --- | --- | --- |
 | chatId | <code>Number</code> &#124; <code>String</code> | Unique identifier for the message recipient |
-| voice | <code>String</code> &#124; <code>stream.Stream</code> | A file path or a Stream. Can also be a `file_id` previously uploaded. |
+| voice | <code>String</code> &#124; <code>stream.Stream</code> &#124; <code>Buffer</code> | A file path, Stream or Buffer. Can also be a `file_id` previously uploaded. |
 | [options] | <code>Object</code> | Additional Telegram query options |
 
 <a name="TelegramBot+sendChatAction"></a>
