@@ -239,6 +239,9 @@ TelegramBot.prototype._formatSendData = function (type, data) {
     };
   } else if (Buffer.isBuffer(data)) {
     var filetype = fileType(data);
+    if (!filetype) {
+      throw new Error('Unsupported Buffer file type');
+    }
     formData = {};
     formData[type] = {
       value: data,
