@@ -4,12 +4,12 @@ var TelegramBotWebHook = require('./telegramWebHook');
 var TelegramBotPolling = require('./telegramPolling');
 var debug = require('debug')('node-telegram-bot-api');
 var EventEmitter = require('events').EventEmitter;
+var fileType = require('file-type');
 var Promise = require('bluebird');
 var request = require('request');
 var stream = require('stream');
 var util = require('util');
 var mime = require('mime');
-var fileType = require('file-type');
 var path = require('path');
 var URL = require('url');
 var fs = require('fs');
@@ -237,7 +237,7 @@ TelegramBot.prototype._formatSendData = function (type, data) {
         contentType: mime.lookup(fileName)
       }
     };
-  } else if(util.isBuffer(data)){
+  } else if (Buffer.isBuffer(data)) {
     var filetype = fileType(data);
     formData = {};
     formData[type] = {
