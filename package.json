@@ -48,21 +48,30 @@
   "homepage": "https://github.com/yagop/node-telegram-bot-api",
   "contributors": [
     {
-      "name": "Guido García",
-      "email": "palmerabollo@gmail.com",
-      "url": "https://github.com/palmerabollo",
-      "contributions": 1,
-      "additions": 1,
-      "deletions": 1,
+      "name": "Ivan Skorokhodov",
+      "email": "iskorokhodov@gmail.com",
+      "url": "https://github.com/universome",
+      "contributions": 3,
+      "additions": 219,
+      "deletions": 5,
+      "hireable": null
+    },
+    {
+      "name": "Riddler",
+      "email": null,
+      "url": "https://github.com/Waterloo",
+      "contributions": 3,
+      "additions": 64,
+      "deletions": 2,
       "hireable": true
     },
     {
-      "name": "Yago",
-      "email": "yago@yago.me",
-      "url": "https://github.com/yagop",
-      "contributions": 99,
-      "additions": 1685,
-      "deletions": 504,
+      "name": "Patricio López Juri",
+      "email": "patricio@lopezjuri.com",
+      "url": "https://github.com/mrpatiwi",
+      "contributions": 1,
+      "additions": 49,
+      "deletions": 2,
       "hireable": true
     },
     {
@@ -75,6 +84,42 @@
       "hireable": null
     },
     {
+      "name": "Guido García",
+      "email": "palmerabollo@gmail.com",
+      "url": "https://github.com/palmerabollo",
+      "contributions": 1,
+      "additions": 1,
+      "deletions": 1,
+      "hireable": true
+    },
+    {
+      "name": "Matthew Brandly",
+      "email": "matt@brandly.me",
+      "url": "https://github.com/brandly",
+      "contributions": 1,
+      "additions": 1,
+      "deletions": 1,
+      "hireable": null
+    },
+    {
+      "name": "Rey",
+      "email": null,
+      "url": "https://github.com/reyy",
+      "contributions": 2,
+      "additions": 34,
+      "deletions": 25,
+      "hireable": null
+    },
+    {
+      "name": "Vítor Augusto da Silva Vasconcellos",
+      "email": "vasvas10@gmail.com",
+      "url": "https://github.com/HeavenVolkoff",
+      "contributions": 2,
+      "additions": 12,
+      "deletions": 0,
+      "hireable": null
+    },
+    {
       "name": "Sebastian Troć",
       "email": "sebastian.troc@gucman.pl",
       "url": "https://github.com/SebastianTroc",
@@ -84,31 +129,13 @@
       "hireable": null
     },
     {
-      "name": "Patricio López Juri",
-      "email": "lopezjuripatricio@gmail.com",
-      "url": "https://github.com/mrpatiwi",
-      "contributions": 1,
-      "additions": 49,
-      "deletions": 2,
+      "name": "Yago",
+      "email": "yago@yago.me",
+      "url": "https://github.com/yagop",
+      "contributions": 130,
+      "additions": 2252,
+      "deletions": 812,
       "hireable": true
-    },
-    {
-      "name": "Riddler",
-      "email": null,
-      "url": "https://github.com/Waterloo",
-      "contributions": 3,
-      "additions": 64,
-      "deletions": 2,
-      "hireable": true
-    },
-    {
-      "name": "Ivan Skorokhodov",
-      "email": "iskorokhodov@gmail.com",
-      "url": "https://github.com/universome",
-      "contributions": 3,
-      "additions": 219,
-      "deletions": 5,
-      "hireable": null
     },
     {
       "name": "Ilias Ismanalijev",
