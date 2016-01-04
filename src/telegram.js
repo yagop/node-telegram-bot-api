@@ -68,8 +68,11 @@ TelegramBot.prototype.initPolling = function() {
 TelegramBot.prototype._processUpdate = function (update) {
   debug('Process Update %j', update);
   var message = update.message;
-  debug('Process Update message %j', message);
+  var inline_query = update.inline_query;
+  var chosen_inline_result = update.chosen_inline_result;
+  
   if (message) {
+    debug('Process Update message %j', message);
     this.emit('message', message);
     var processMessageType = function (messageType) {
       if (message[messageType]) {
@@ -89,6 +92,12 @@ TelegramBot.prototype._processUpdate = function (update) {
         }
       });
     }
+  } else if(inline_query) {
+    debug('Process Update inline_query %j', inline_query);
+    this.emit('inline_query', inline_query);
+  } else if(chosen_inline_result) {
+    debug('Process Update chosen_inline_result %j', chosen_inline_result);
+    this.emit('chosen_inline_result', chosen_inline_result);
   }
 };
 
