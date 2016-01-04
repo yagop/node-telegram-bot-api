@@ -216,6 +216,22 @@ TelegramBot.prototype.sendMessage = function (chatId, text, options) {
 };
 
 /**
+ * Send answers to an inline query.
+ * @param  {String} queryId Unique identifier of the query
+ * @param  {Array of InlineQueryResult} results An array of results for the inline query
+ * @param  {Object} [options] Additional Telegram query options
+ * @return {Promise}
+ * @see https://core.telegram.org/bots/api#answerinlinequery
+ */
+TelegramBot.prototype.answerInlineQuery = function (inline_query_id, results, options) {
+  var form = options || {};
+  form.inline_query_id = inline_query_id;
+  form.results = JSON.stringify(results);
+  return this._request('answerInlineQuery', {form: form});
+};
+
+
+/**
  * Forward messages of any kind.
  * @param  {Number|String} chatId     Unique identifier for the message recipient
  * @param  {Number|String} fromChatId Unique identifier for the chat where the
