@@ -56,26 +56,26 @@ TelegramBot
 **See**: https://core.telegram.org/bots/api  
 
 * [TelegramBot](#TelegramBot)
-  * [new TelegramBot(token, [options])](#new_TelegramBot_new)
-  * [.getMe()](#TelegramBot+getMe) ⇒ <code>Promise</code>
-  * [.setWebHook(url, [cert])](#TelegramBot+setWebHook)
-  * [.getUpdates([timeout], [limit], [offset])](#TelegramBot+getUpdates) ⇒ <code>Promise</code>
-  * [.sendMessage(chatId, text, [options])](#TelegramBot+sendMessage) ⇒ <code>Promise</code>
-  * [.answerInlineQuery(inlineQueryId, results, [options])](#TelegramBot+answerInlineQuery) ⇒ <code>Promise</code>
-  * [.forwardMessage(chatId, fromChatId, messageId)](#TelegramBot+forwardMessage) ⇒ <code>Promise</code>
-  * [.sendPhoto(chatId, photo, [options])](#TelegramBot+sendPhoto) ⇒ <code>Promise</code>
-  * [.sendAudio(chatId, audio, [options])](#TelegramBot+sendAudio) ⇒ <code>Promise</code>
-  * [.sendDocument(chatId, doc, [options])](#TelegramBot+sendDocument) ⇒ <code>Promise</code>
-  * [.sendSticker(chatId, sticker, [options])](#TelegramBot+sendSticker) ⇒ <code>Promise</code>
-  * [.sendVideo(chatId, video, [options])](#TelegramBot+sendVideo) ⇒ <code>Promise</code>
-  * [.sendVoice(chatId, voice, [options])](#TelegramBot+sendVoice) ⇒ <code>Promise</code>
-  * [.sendChatAction(chatId, action)](#TelegramBot+sendChatAction) ⇒ <code>Promise</code>
-  * [.getUserProfilePhotos(userId, [offset], [limit])](#TelegramBot+getUserProfilePhotos) ⇒ <code>Promise</code>
-  * [.sendLocation(chatId, latitude, longitude, [options])](#TelegramBot+sendLocation) ⇒ <code>Promise</code>
-  * [.getFile(fileId)](#TelegramBot+getFile) ⇒ <code>Promise</code>
-  * [.getFileLink(fileId)](#TelegramBot+getFileLink) ⇒ <code>Promise</code>
-  * [.downloadFile(fileId, downloadDir)](#TelegramBot+downloadFile) ⇒ <code>Promise</code>
-  * [.onText(regexp, callback)](#TelegramBot+onText)
+    * [new TelegramBot(token, [options])](#new_TelegramBot_new)
+    * [.getMe()](#TelegramBot+getMe) ⇒ <code>Promise</code>
+    * [.setWebHook(url, [cert])](#TelegramBot+setWebHook)
+    * [.getUpdates([timeout], [limit], [offset])](#TelegramBot+getUpdates) ⇒ <code>Promise</code>
+    * [.sendMessage(chatId, text, [options])](#TelegramBot+sendMessage) ⇒ <code>Promise</code>
+    * [.answerInlineQuery(inlineQueryId, results, [options])](#TelegramBot+answerInlineQuery) ⇒ <code>Promise</code>
+    * [.forwardMessage(chatId, fromChatId, messageId)](#TelegramBot+forwardMessage) ⇒ <code>Promise</code>
+    * [.sendPhoto(chatId, photo, [options])](#TelegramBot+sendPhoto) ⇒ <code>Promise</code>
+    * [.sendAudio(chatId, audio, [options])](#TelegramBot+sendAudio) ⇒ <code>Promise</code>
+    * [.sendDocument(chatId, doc, [options])](#TelegramBot+sendDocument) ⇒ <code>Promise</code>
+    * [.sendSticker(chatId, sticker, [options])](#TelegramBot+sendSticker) ⇒ <code>Promise</code>
+    * [.sendVideo(chatId, video, [options])](#TelegramBot+sendVideo) ⇒ <code>Promise</code>
+    * [.sendVoice(chatId, voice, [options])](#TelegramBot+sendVoice) ⇒ <code>Promise</code>
+    * [.sendChatAction(chatId, action)](#TelegramBot+sendChatAction) ⇒ <code>Promise</code>
+    * [.getUserProfilePhotos(userId, [offset], [limit])](#TelegramBot+getUserProfilePhotos) ⇒ <code>Promise</code>
+    * [.sendLocation(chatId, latitude, longitude, [options])](#TelegramBot+sendLocation) ⇒ <code>Promise</code>
+    * [.getFile(fileId)](#TelegramBot+getFile) ⇒ <code>Promise</code>
+    * [.getFileLink(fileId)](#TelegramBot+getFileLink) ⇒ <code>Promise</code>
+    * [.downloadFile(fileId, downloadDir)](#TelegramBot+downloadFile) ⇒ <code>Promise</code>
+    * [.onText(regexp, callback)](#TelegramBot+onText)
 
 <a name="new_TelegramBot_new"></a>
 ### new TelegramBot(token, [options])
