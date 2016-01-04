@@ -368,7 +368,6 @@ describe('Telegram', function () {
       });
     });
 
-    /* Currently unsupported (https://github.com/sindresorhus/file-type/pull/44)
     it('should send a video from a Buffer', function (done) {
       var bot = new Telegram(TOKEN);
       var video = fs.readFileSync(__dirname+'/video.mp4');
@@ -377,7 +376,6 @@ describe('Telegram', function () {
         done();
       });
     });
-    */
   });
 
   describe('#sendVoice', function () {
