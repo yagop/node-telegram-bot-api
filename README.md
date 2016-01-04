@@ -32,7 +32,8 @@ bot.on('message', function (msg) {
 There are some other examples on [examples](https://github.com/yagop/node-telegram-bot-api/tree/master/examples).
 
 ### Events
-Every time  TelegramBot receives a message, it emits a `message`. Depending on which  [message](https://core.telegram.org/bots/api#message) was received, emits an event from this ones: `text`, `audio`, `document`, `photo`, `sticker`, `video`, `voice`, `contact`, `location`, `new_chat_participant`, `left_chat_participant`, `new_chat_title`, `new_chat_photo`, `delete_chat_photo`, `group_chat_created`. Its much better to listen a specific event rather than a `message` in order to stay safe from the content.
+Every time TelegramBot receives a message, it emits a `message`. Depending on which  [message](https://core.telegram.org/bots/api#message) was received, emits an event from this ones: `text`, `audio`, `document`, `photo`, `sticker`, `video`, `voice`, `contact`, `location`, `new_chat_participant`, `left_chat_participant`, `new_chat_title`, `new_chat_photo`, `delete_chat_photo`, `group_chat_created`. Its much better to listen a specific event rather than a `message` in order to stay safe from the content.
+TelegramBot emits `inline_query` when receives an [https://core.telegram.org/bots/api#inlinequery](Inline Query) and `chosen_inline_result` when receives a [ChosenInlineResult](https://core.telegram.org/bots/api#choseninlineresult). Bot must be enabled on [inline mode](https://core.telegram.org/bots/api#inline-mode)
 * * *
 
 ### WebHooks
@@ -60,6 +61,7 @@ TelegramBot
   * [.setWebHook(url, [cert])](#TelegramBot+setWebHook)
   * [.getUpdates([timeout], [limit], [offset])](#TelegramBot+getUpdates) ⇒ <code>Promise</code>
   * [.sendMessage(chatId, text, [options])](#TelegramBot+sendMessage) ⇒ <code>Promise</code>
+  * [.answerInlineQuery(inlineQueryId, results, [options])](#TelegramBot+answerInlineQuery) ⇒ <code>Promise</code>
   * [.forwardMessage(chatId, fromChatId, messageId)](#TelegramBot+forwardMessage) ⇒ <code>Promise</code>
   * [.sendPhoto(chatId, photo, [options])](#TelegramBot+sendPhoto) ⇒ <code>Promise</code>
   * [.sendAudio(chatId, audio, [options])](#TelegramBot+sendAudio) ⇒ <code>Promise</code>
@@ -138,6 +140,19 @@ Send text message.
 | text | <code>String</code> | Text of the message to be sent |
 | [options] | <code>Object</code> | Additional Telegram query options |
 
+<a name="TelegramBot+answerInlineQuery"></a>
+### telegramBot.answerInlineQuery(inlineQueryId, results, [options]) ⇒ <code>Promise</code>
+Send answers to an inline query.
+
+**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
+**See**: https://core.telegram.org/bots/api#answerinlinequery  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| inlineQueryId | <code>String</code> | Unique identifier of the query |
+| results | <code>Array.&lt;InlineQueryResult&gt;</code> | An array of results for the inline query |
+| [options] | <code>Object</code> | Additional Telegram query options |
+
 <a name="TelegramBot+forwardMessage"></a>
 ### telegramBot.forwardMessage(chatId, fromChatId, messageId) ⇒ <code>Promise</code>
 Forward messages of any kind.
@@ -212,7 +227,7 @@ Use this method to send video files, Telegram clients support mp4 videos (other 
 | Param | Type | Description |
 | --- | --- | --- |
 | chatId | <code>Number</code> &#124; <code>String</code> | Unique identifier for the message recipient |
-| video | <code>String</code> &#124; <code>stream.Stream</code> | A file path or Stream. Can also be a `file_id` previously uploaded. |
+| video | <code>String</code> &#124; <code>stream.Stream</code> &#124; <code>Buffer</code> | A file path or Stream. Can also be a `file_id` previously uploaded. |
 | [options] | <code>Object</code> | Additional Telegram query options |
 
 <a name="TelegramBot+sendVoice"></a>

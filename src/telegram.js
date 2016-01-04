@@ -70,7 +70,7 @@ TelegramBot.prototype._processUpdate = function (update) {
   var message = update.message;
   var inline_query = update.inline_query;
   var chosen_inline_result = update.chosen_inline_result;
-  
+
   if (message) {
     debug('Process Update message %j', message);
     this.emit('message', message);
@@ -92,10 +92,10 @@ TelegramBot.prototype._processUpdate = function (update) {
         }
       });
     }
-  } else if(inline_query) {
+  } else if (inline_query) {
     debug('Process Update inline_query %j', inline_query);
     this.emit('inline_query', inline_query);
-  } else if(chosen_inline_result) {
+  } else if (chosen_inline_result) {
     debug('Process Update chosen_inline_result %j', chosen_inline_result);
     this.emit('chosen_inline_result', chosen_inline_result);
   }
@@ -217,15 +217,15 @@ TelegramBot.prototype.sendMessage = function (chatId, text, options) {
 
 /**
  * Send answers to an inline query.
- * @param  {String} queryId Unique identifier of the query
- * @param  {Array of InlineQueryResult} results An array of results for the inline query
+ * @param  {String} inlineQueryId Unique identifier of the query
+ * @param  {InlineQueryResult[]} results An array of results for the inline query
  * @param  {Object} [options] Additional Telegram query options
  * @return {Promise}
  * @see https://core.telegram.org/bots/api#answerinlinequery
  */
-TelegramBot.prototype.answerInlineQuery = function (inline_query_id, results, options) {
+TelegramBot.prototype.answerInlineQuery = function (inlineQueryId, results, options) {
   var form = options || {};
-  form.inline_query_id = inline_query_id;
+  form.inline_query_id = inlineQueryId;
   form.results = JSON.stringify(results);
   return this._request('answerInlineQuery', {form: form});
 };
@@ -374,7 +374,7 @@ TelegramBot.prototype.sendSticker = function (chatId, sticker, options) {
 /**
  * Use this method to send video files, Telegram clients support mp4 videos (other formats may be sent as Document).
  * @param  {Number|String} chatId  Unique identifier for the message recipient
- * @param  {String|stream.Stream} video A file path or Stream.
+ * @param  {String|stream.Stream|Buffer} video A file path or Stream.
  * Can also be a `file_id` previously uploaded.
  * @param  {Object} [options] Additional Telegram query options
  * @return {Promise}
