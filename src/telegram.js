@@ -68,6 +68,7 @@ TelegramBot.prototype.initPolling = function() {
 TelegramBot.prototype._processUpdate = function (update) {
   debug('Process Update %j', update);
   var message = update.message;
+  var query = update.inline_query;
   debug('Process Update message %j', message);
   if (message) {
     this.emit('message', message);
@@ -89,6 +90,9 @@ TelegramBot.prototype._processUpdate = function (update) {
         }
       });
     }
+  }
+  if (query) {
+    this.emit('query', query);
   }
 };
 
