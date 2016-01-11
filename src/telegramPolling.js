@@ -25,30 +25,30 @@ var TelegramBotPolling = function (token, options, callback) {
 };
 
 TelegramBotPolling.prototype._polling = function () {
-  var self = this;
-
-  this.lastRequest = this._getUpdates().then(function (updates) {
-    self.lastUpdate = Date.now();
-    debug('polling data %j', updates);
-    updates.forEach(function (update, index) {
-      // If is the latest, update the offset.
-      if (index === updates.length - 1) {
-        self.offset = update.update_id;
-        debug('updated offset: %s', self.offset);
+  this.lastRequest = this._getUpdates()
+    .then(function (updates) {
+      this.lastUpdate = Date.now();
+      debug('polling data %j', updates);
+      updates.forEach(function (update, index) {
+        // If is the latest, update the offset.
+        if (index === updates.length - 1) {
+          this.offset = update.update_id;
+          debug('updated offset: %s', this.offset);
+        }
+        this.callback(update);
+      });
+    }.bind(this))
+    .catch(function (err) {
+      debug('polling error: %j', err);
+    })
+    .finally(function () {
+      if (this.abort) {
+        debug('Polling is aborted!');
+      } else {
+        debug('setTimeout for %s miliseconds', this.interval);
+        setTimeout(this._polling.bind(this), this.interval);
       }
-      self.callback(update);
-    });
-  }).catch(function (err) {
-    debug('polling error: %j', err);
-  }).finally(function () {
-    if (self.abort) {
-      debug('Polling is aborted!');
-      return;
-    }
-
-    debug('setTimeout for %s miliseconds', self.interval);
-    setTimeout(self._polling.bind(self), self.interval);
-  });
+    }.bind(this));
 };
 
 TelegramBotPolling.prototype._getUpdates = function () {
