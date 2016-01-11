@@ -36,7 +36,7 @@ TelegramBotPolling.prototype._polling = function () {
           debug('updated offset: %s', this.offset);
         }
         this.callback(update);
-      });
+      }.bind(this));
     }.bind(this))
     .catch(function (err) {
       debug('polling error: %j', err);
