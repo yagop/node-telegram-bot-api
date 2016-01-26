@@ -257,7 +257,7 @@ TelegramBot.prototype._formatSendData = function (type, data) {
   var formData;
   var fileName;
   var fileId;
-  if (data instanceof stream.Readable) {
+  if (data instanceof stream.Readable || (data instanceof stream.Stream && data.readable)) {
     fileName = URL.parse(path.basename(data.path)).pathname;
     formData = {};
     formData[type] = {
