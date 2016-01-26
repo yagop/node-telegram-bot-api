@@ -172,19 +172,20 @@ TelegramBot.prototype.setWebHook = function (url, cert) {
     qs: {url: url}
   };
 
-  if (cert) {
-    var content = this._formatSendData('certificate', cert);
-    opts.formData = content[0];
-    opts.qs.certificate = content[1];
-  }
+  return Promise.try(function() {
+    if(cert){
+      var content         = this._formatSendData('certificate', cert);
+      opts.formData       = content[0];
+      opts.qs.certificate = content[1];
+    }
 
-  return this._request(path, opts)
-    .then(function (resp) {
-      if (!resp) {
-        throw new Error(resp);
-      }
-      return resp;
-    });
+    return this._request(path, opts);
+  }.bind(this)).then(function (resp) {
+    if (!resp) {
+      throw new Error(resp);
+    }
+    return resp;
+  });
 };
 
 /**
@@ -318,10 +319,12 @@ TelegramBot.prototype.sendPhoto = function (chatId, photo, options) {
     qs: options || {}
   };
   opts.qs.chat_id = chatId;
-  var content = this._formatSendData('photo', photo);
-  opts.formData = content[0];
-  opts.qs.photo = content[1];
-  return this._request('sendPhoto', opts);
+  return Promise.try(function() {
+    var content   = this._formatSendData('photo', photo);
+    opts.formData = content[0];
+    opts.qs.photo = content[1];
+    return this._request('sendPhoto', opts);
+  }.bind(this));
 };
 
 /**
@@ -338,10 +341,12 @@ TelegramBot.prototype.sendAudio = function (chatId, audio, options) {
     qs: options || {}
   };
   opts.qs.chat_id = chatId;
-  var content = this._formatSendData('audio', audio);
-  opts.formData = content[0];
-  opts.qs.audio = content[1];
-  return this._request('sendAudio', opts);
+  return Promise.try(function() {
+    var content   = this._formatSendData('audio', audio);
+    opts.formData = content[0];
+    opts.qs.audio = content[1];
+    return this._request('sendAudio', opts);
+  }.bind(this));
 };
 
 /**
@@ -358,10 +363,12 @@ TelegramBot.prototype.sendDocument = function (chatId, doc, options) {
     qs: options || {}
   };
   opts.qs.chat_id = chatId;
-  var content = this._formatSendData('document', doc);
-  opts.formData = content[0];
-  opts.qs.document = content[1];
-  return this._request('sendDocument', opts);
+  return Promise.try(function() {
+    var content      = this._formatSendData('document', doc);
+    opts.formData    = content[0];
+    opts.qs.document = content[1];
+    return this._request('sendDocument', opts);
+  }.bind(this));
 };
 
 /**
@@ -378,10 +385,12 @@ TelegramBot.prototype.sendSticker = function (chatId, sticker, options) {
     qs: options || {}
   };
   opts.qs.chat_id = chatId;
-  var content = this._formatSendData('sticker', sticker);
-  opts.formData = content[0];
-  opts.qs.sticker = content[1];
-  return this._request('sendSticker', opts);
+  return Promise.try(function() {
+    var content     = this._formatSendData('sticker', sticker);
+    opts.formData   = content[0];
+    opts.qs.sticker = content[1];
+    return this._request('sendSticker', opts);
+  }.bind(this));
 };
 
 /**
@@ -398,10 +407,12 @@ TelegramBot.prototype.sendVideo = function (chatId, video, options) {
     qs: options || {}
   };
   opts.qs.chat_id = chatId;
-  var content = this._formatSendData('video', video);
-  opts.formData = content[0];
-  opts.qs.video = content[1];
-  return this._request('sendVideo', opts);
+  return Promise.try(function() {
+    var content   = this._formatSendData('video', video);
+    opts.formData = content[0];
+    opts.qs.video = content[1];
+    return this._request('sendVideo', opts);
+  }.bind(this));
 };
 
 /**
@@ -418,10 +429,12 @@ TelegramBot.prototype.sendVoice = function (chatId, voice, options) {
     qs: options || {}
   };
   opts.qs.chat_id = chatId;
-  var content = this._formatSendData('voice', voice);
-  opts.formData = content[0];
-  opts.qs.voice = content[1];
-  return this._request('sendVoice', opts);
+  return Promise.try(function() {
+    var content   = this._formatSendData('voice', voice);
+    opts.formData = content[0];
+    opts.qs.voice = content[1];
+    return this._request('sendVoice', opts);
+  }.bind(this));
 };
 
 
