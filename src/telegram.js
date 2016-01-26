@@ -257,7 +257,7 @@ TelegramBot.prototype._formatSendData = function (type, data) {
   var formData;
   var fileName;
   var fileId;
-  if (data instanceof stream.Stream) {
+  if (data instanceof stream.Readable) {
     fileName = URL.parse(path.basename(data.path)).pathname;
     formData = {};
     formData[type] = {
@@ -280,19 +280,25 @@ TelegramBot.prototype._formatSendData = function (type, data) {
         contentType: filetype.mime
       }
     };
-  } else if (fs.existsSync(data)) {
-    fileName = path.basename(data);
-    formData = {};
-    formData[type] = {
-      value: fs.createReadStream(data),
-      options: {
-        filename: fileName,
-        contentType: mime.lookup(fileName)
+  } else if (typeof data === "string"){
+      if (fs.existsSync(data)) {
+        fileName = path.basename(data);
+        formData = {};
+        formData[type] = {
+          value: fs.createReadStream(data),
+          options: {
+            filename: fileName,
+            contentType: mime.lookup(fileName)
+          }
+        };
+      } else {
+        fileId = data;
       }
-    };
-  } else {
-    fileId = data;
+  } else{
+    throw new Error("Unsupported file data");
   }
+
+
   return [formData, fileId];
 };
 
