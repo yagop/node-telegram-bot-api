@@ -281,7 +281,9 @@ TelegramBot.prototype._formatSendData = function (type, data) {
       }
     };
   } else if (typeof data === "string"){
-      if (fs.existsSync(data)) {
+      try {
+        fs.accessSync(data); //check if file exists
+
         fileName = path.basename(data);
         formData = {};
         formData[type] = {
@@ -291,7 +293,7 @@ TelegramBot.prototype._formatSendData = function (type, data) {
             contentType: mime.lookup(fileName)
           }
         };
-      } else {
+      } catch(ex) {
         fileId = data;
       }
   } else{
