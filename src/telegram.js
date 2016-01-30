@@ -45,6 +45,7 @@ var TelegramBot = function (token, options) {
   ]; // Telegram message events
   this.textRegexpCallbacks = [];
   this.waiting = {}; // Waiting for response
+  this.options.response = this.options.response || {timeout: 20000};
   this.processUpdate = this._processUpdate.bind(this);
 
   if (options.polling) {
@@ -567,13 +568,14 @@ TelegramBot.prototype.onText = function (regexp, callback) {
 TelegramBot.prototype.waitResponse = function(message) {
   var id = message.chat.id + ',' + message.from.id;
   var waiting = this.waiting;
+  timeout = timeout || this.options.response.timeout;
   return function() {
     return new Promise(function (resolve, reject) {
       waiting[id] = {resolve: resolve, reject: reject};
       console.log('created wait')
     })
     .cancellable()
-    .timeout(timeout || options.response.timeout || 20000)
+    .timeout(timeout)
     .catch(Promise.TimeoutError, function(err) {
       if (id !== '') {
         waiting[id].reject();
