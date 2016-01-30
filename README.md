@@ -76,6 +76,7 @@ TelegramBot
     * [.getFileLink(fileId)](#TelegramBot+getFileLink) ⇒ <code>Promise</code>
     * [.downloadFile(fileId, downloadDir)](#TelegramBot+downloadFile) ⇒ <code>Promise</code>
     * [.onText(regexp, callback)](#TelegramBot+onText)
+    * [.onReplyToMessage(messageId, callback)](#TelegramBot+onReplyToMessage)
 
 <a name="new_TelegramBot_new"></a>
 ### new TelegramBot(token, [options])
@@ -340,5 +341,16 @@ Register a RegExp to test against an incomming text message.
 | --- | --- | --- |
 | regexp | <code>RegExp</code> | RegExp to be executed with `exec`. |
 | callback | <code>function</code> | Callback will be called with 2 parameters, the `msg` and the result of executing `regexp.exec` on message text. |
+
+<a name="TelegramBot+onReplyToMessage"></a>
+### telegramBot.onReplyToMessage(messageId, callback)
+Register a reply to wait for a message response.
+
+**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| messageId | <code>Number</code> &#124; <code>String</code> | The ID of the message to be replied |
+| callback | <code>function</code> | Callback will be called with the reply  message. |
 
 * * *
