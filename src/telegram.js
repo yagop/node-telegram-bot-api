@@ -31,6 +31,7 @@ var requestPromise = Promise.promisify(request);
  * @param {Boolean|Object} [options.webHook=false] Set true to enable WebHook or set options
  * @param {String} [options.webHook.key] PEM private key to webHook server.
  * @param {String} [options.webHook.cert] PEM certificate (public) to webHook server.
+ * @param {String|Number} [options.response.timeout=20000] Response waiting time.
  * @see https://core.telegram.org/bots/api
  */
 var TelegramBot = function (token, options) {
@@ -43,7 +44,8 @@ var TelegramBot = function (token, options) {
     'new_chat_photo', 'delete_chat_photo', 'group_chat_created'
   ]; // Telegram message events
   this.textRegexpCallbacks = [];
-
+  this.waiting = {}; // Waiting for response
+  this.options.response = this.options.response || {timeout: 20000};
   this.processUpdate = this._processUpdate.bind(this);
 
   if (options.polling) {
@@ -73,6 +75,13 @@ TelegramBot.prototype._processUpdate = function (update) {
 
   if (message) {
     debug('Process Update message %j', message);
+    var id = message.chat.id + ',' + message.from.id;
+    if (this.waiting[id]) {
+      debug('Processing awaited response %j', message);
+      this.waiting[id].resolve(message);
+      delete this.waiting[id];
+      return;
+    }
     this.emit('message', message);
     var processMessageType = function (messageType) {
       if (message[messageType]) {
@@ -548,5 +557,32 @@ TelegramBot.prototype.downloadFile = function(fileId, downloadDir) {
 TelegramBot.prototype.onText = function (regexp, callback) {
   this.textRegexpCallbacks.push({regexp: regexp, callback: callback});
 };
+
+/**
+ * Waits for a response message on the same chat and the same sender of the
+ * provided message and the optional timeout.
+ * @param  {Object} [message] The Telegram message to extract chat.id and from.id to wait for.
+ * @param  {Number|String} [timeout] Timeout in milliseconds.
+ * @return {Promise}
+ */
+TelegramBot.prototype.waitResponse = function(message) {
+  var id = message.chat.id + ',' + message.from.id;
+  var waiting = this.waiting;
+  timeout = timeout || this.options.response.timeout;
+  return function() {
+    return new Promise(function (resolve, reject) {
+      waiting[id] = {resolve: resolve, reject: reject};
+      console.log('created wait')
+    })
+    .cancellable()
+    .timeout(timeout)
+    .catch(Promise.TimeoutError, function(err) {
+      if (id !== '') {
+        waiting[id].reject();
+        delete waiting[id];
+      }
+    });
+  }
+}
 
 module.exports = TelegramBot;
