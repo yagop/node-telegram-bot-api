@@ -43,6 +43,7 @@ var TelegramBot = function (token, options) {
     'new_chat_photo', 'delete_chat_photo', 'group_chat_created'
   ]; // Telegram message events
   this.textRegexpCallbacks = [];
+  this.onReplyToMessages = [];
 
   this.processUpdate = this._processUpdate.bind(this);
 
@@ -89,6 +90,19 @@ TelegramBot.prototype._processUpdate = function (update) {
         if (result) {
           debug('Matches', reg.regexp);
           reg.callback(message, result);
+        }
+      });
+    }
+    if (message.reply_to_message) {
+      // Only callbacks waiting for this message
+      this.onReplyToMessages.forEach(function (reply) {
+        // Message from the same chat
+        if (reply.chatId === message.chat.id) {
+          // Responding to that message
+          if (reply.messageId === message.reply_to_message.message_id) {
+            // Resolve the promise
+            reply.callback(message);
+          }
         }
       });
     }
@@ -547,6 +561,20 @@ TelegramBot.prototype.downloadFile = function(fileId, downloadDir) {
  */
 TelegramBot.prototype.onText = function (regexp, callback) {
   this.textRegexpCallbacks.push({regexp: regexp, callback: callback});
+};
+
+/**
+ * Register a reply to wait for a message response.
+ * @param  {Number|String}   messageId       The ID of the message to be replied
+ * @param  {Function} callback     Callback will be called with the reply 
+ * message.
+ */
+TelegramBot.prototype.onReplyToMessage = function (chatId, messageId, callback) {
+  this.onReplyToMessages.push({
+    chatId: chatId,
+    messageId: messageId,
+    callback: callback
+  });
 };
 
 module.exports = TelegramBot;
