@@ -565,7 +565,8 @@ TelegramBot.prototype.onText = function (regexp, callback) {
 
 /**
  * Register a reply to wait for a message response.
- * @param  {Number|String}   messageId       The ID of the message to be replied
+ * @param  {Number|String}   chatId       The chat id where the message cames from.
+ * @param  {Number|String}   messageId    The message id to be replied.
  * @param  {Function} callback     Callback will be called with the reply 
  * message.
  */
