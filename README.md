@@ -76,7 +76,7 @@ TelegramBot
     * [.getFileLink(fileId)](#TelegramBot+getFileLink) ⇒ <code>Promise</code>
     * [.downloadFile(fileId, downloadDir)](#TelegramBot+downloadFile) ⇒ <code>Promise</code>
     * [.onText(regexp, callback)](#TelegramBot+onText)
-    * [.onReplyToMessage(messageId, callback)](#TelegramBot+onReplyToMessage)
+    * [.onReplyToMessage(chatId, messageId, callback)](#TelegramBot+onReplyToMessage)
 
 <a name="new_TelegramBot_new"></a>
 ### new TelegramBot(token, [options])
@@ -90,7 +90,7 @@ Emits `message` when a message arrives.
 | token | <code>String</code> |  | Bot Token |
 | [options] | <code>Object</code> |  |  |
 | [options.polling] | <code>Boolean</code> &#124; <code>Object</code> | <code>false</code> | Set true to enable polling or set options |
-| [options.polling.timeout] | <code>String</code> &#124; <code>Number</code> | <code>4</code> | Polling time |
+| [options.polling.timeout] | <code>String</code> &#124; <code>Number</code> | <code>10</code> | Polling time in seconds |
 | [options.polling.interval] | <code>String</code> &#124; <code>Number</code> | <code>2000</code> | Interval between requests in miliseconds |
 | [options.webHook] | <code>Boolean</code> &#124; <code>Object</code> | <code>false</code> | Set true to enable WebHook or set options |
 | [options.webHook.key] | <code>String</code> |  | PEM private key to webHook server. |
@@ -343,14 +343,15 @@ Register a RegExp to test against an incomming text message.
 | callback | <code>function</code> | Callback will be called with 2 parameters, the `msg` and the result of executing `regexp.exec` on message text. |
 
 <a name="TelegramBot+onReplyToMessage"></a>
-### telegramBot.onReplyToMessage(messageId, callback)
+### telegramBot.onReplyToMessage(chatId, messageId, callback)
 Register a reply to wait for a message response.
 
 **Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
 
 | Param | Type | Description |
 | --- | --- | --- |
-| messageId | <code>Number</code> &#124; <code>String</code> | The ID of the message to be replied |
+| chatId | <code>Number</code> &#124; <code>String</code> | The chat id where the message cames from. |
+| messageId | <code>Number</code> &#124; <code>String</code> | The message id to be replied. |
 | callback | <code>function</code> | Callback will be called with the reply  message. |
 
 * * *
