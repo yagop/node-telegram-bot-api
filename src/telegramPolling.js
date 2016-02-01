@@ -40,6 +40,7 @@ TelegramBotPolling.prototype._polling = function () {
     }.bind(this))
     .catch(function (err) {
       debug('polling error: %j', err);
+      throw err;
     })
     .finally(function () {
       if (this.abort) {
