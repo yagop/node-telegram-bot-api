@@ -578,4 +578,26 @@ TelegramBot.prototype.onReplyToMessage = function (chatId, messageId, callback) 
   });
 };
 
+/**
+ * Removes a reply that has been prev. registered for a message response.
+ * @param   {Number|String}   chatId      The chat id that the reply is awaited from
+ * @param   {Number|String}   messageId   The message_id of the msg to which a reply waited for
+ * @return  {Object}    deletedListener   Returns the deleted listener if one
+ * matched the params, otherwise returns null
+ */
+TelegramBot.prototype.removeReplyListener = function (chatId, messageId) {
+  var index = -1;
+  for (var i=0; i<this.onReplyToMessages.length; ++i) {
+    if ((reply.chatId === chatId) && (reply.messageId === messageId)) {
+      index = i;
+      break;
+    }
+  }
+  if (index === -1) {
+    return null;
+  }
+  var removedListener = this.onReplyToMessages.splice(index);
+  return removedListener;
+}
+
 module.exports = TelegramBot;
