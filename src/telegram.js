@@ -588,6 +588,7 @@ TelegramBot.prototype.onReplyToMessage = function (chatId, messageId, callback) 
 TelegramBot.prototype.removeReplyListener = function (chatId, messageId) {
   var index = -1;
   for (var i=0; i<this.onReplyToMessages.length; ++i) {
+    var reply = this.onReplyToMessages[i];
     if ((reply.chatId === chatId) && (reply.messageId === messageId)) {
       index = i;
       break;
