@@ -356,14 +356,13 @@ Register a reply to wait for a message response.
 
 
 <a name="TelegramBot+removeReplyListener"></a>
-### telegramBot.removeReplyListener(chatId, messageId)
+### telegramBot.removeReplyListener(replyToMessageId)
 Removes a callback for a message reply previously registered using <code>[onReplyToMessage](#TelegramBot+onReplyToMessage)</code>.
 
 **Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
 
 | Param | Type | Description |
 | --- | --- | --- |
-| chatId | <code>Number</code> &#124; <code>String</code> | The chat id the callback was registered for. |
-| messageId | <code>Number</code> &#124; <code>String</code> | The message id that the callback was registered for. |
+| replyToMessageId | <code>Number</code> &#124; <code>String</code> | The id of the registered onReplyToMessages instance. This id is returned by onReplyToMessage. |
 
 * * *

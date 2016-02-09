@@ -107,7 +107,7 @@ TelegramBot.prototype._processUpdate = function (update) {
           // Responding to that message
           if (reply.messageId === message.reply_to_message.message_id) {
             // Resolve the promise
-            reply.callback(reply.id);
+            reply.callback(message);
           }
         }
       });
@@ -573,17 +573,19 @@ TelegramBot.prototype.onText = function (regexp, callback) {
  * Register a reply to wait for a message response.
  * @param  {Number|String}   chatId       The chat id where the message cames from.
  * @param  {Number|String}   messageId    The message id to be replied.
- * @param  {Function} callback     Callback will be called with the reply 
+ * @param  {Function} callback      Callback will be called with the reply 
+ * @return {Number} newId           The id of the onReplyToMessages object.
  * message.
  */
 TelegramBot.prototype.onReplyToMessage = function (chatId, messageId, callback) {
-  var newId = newReplyId();
+  var newId = this.newReplyId();
   this.onReplyToMessages.push({
     id: newId,
     chatId: chatId,
     messageId: messageId,
     callback: callback
   });
+  return newId;
 };
 
 /**
@@ -605,7 +607,7 @@ TelegramBot.prototype.removeReplyListener = function (replyId) {
   if (index === -1) {
     return null;
   }
-  var removedListener = this.onReplyToMessages.splice(index);
+  var removedListener = this.onReplyToMessages.splice(index, 1);
   return removedListener;
 }
 
