@@ -570,16 +570,6 @@ TelegramBot.prototype.onText = function (regexp, callback) {
 };
 
 /**
- * Id generator for use in TelegramBot.onReplyToMessage() and
- * .removeReplyListener().
- * NOT a member of TelegramBot.
- */
-var i=0;
-function newId() {
-  return i++;
-}
-
-/**
  * Register a reply to wait for a message response.
  * @param  {Number|String}   chatId       The chat id where the message cames from.
  * @param  {Number|String}   messageId    The message id to be replied.
