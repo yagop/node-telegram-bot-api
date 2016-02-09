@@ -54,6 +54,12 @@ var TelegramBot = function (token, options) {
   if (options.webHook) {
     this._WebHook = new TelegramBotWebHook(token, options.webHook, this.processUpdate);
   }
+
+  // id generator for reply messages
+  var idx=0;
+  this.newReplyId = function() {
+    return idx++;
+  }
 };
 
 util.inherits(TelegramBot, EventEmitter);
@@ -101,7 +107,7 @@ TelegramBot.prototype._processUpdate = function (update) {
           // Responding to that message
           if (reply.messageId === message.reply_to_message.message_id) {
             // Resolve the promise
-            reply.callback(message);
+            reply.callback(reply.id);
           }
         }
       });
@@ -564,6 +570,16 @@ TelegramBot.prototype.onText = function (regexp, callback) {
 };
 
 /**
+ * Id generator for use in TelegramBot.onReplyToMessage() and
+ * .removeReplyListener().
+ * NOT a member of TelegramBot.
+ */
+var i=0;
+function newId() {
+  return i++;
+}
+
+/**
  * Register a reply to wait for a message response.
  * @param  {Number|String}   chatId       The chat id where the message cames from.
  * @param  {Number|String}   messageId    The message id to be replied.
@@ -571,7 +587,9 @@ TelegramBot.prototype.onText = function (regexp, callback) {
  * message.
  */
 TelegramBot.prototype.onReplyToMessage = function (chatId, messageId, callback) {
+  var newId = newReplyId();
   this.onReplyToMessages.push({
+    id: newId,
     chatId: chatId,
     messageId: messageId,
     callback: callback
@@ -585,11 +603,11 @@ TelegramBot.prototype.onReplyToMessage = function (chatId, messageId, callback) 
  * @return  {Object}    deletedListener   Returns the deleted listener if one
  * matched the params, otherwise returns null
  */
-TelegramBot.prototype.removeReplyListener = function (chatId, messageId) {
+TelegramBot.prototype.removeReplyListener = function (replyId) {
   var index = -1;
   for (var i=0; i<this.onReplyToMessages.length; ++i) {
     var reply = this.onReplyToMessages[i];
-    if ((reply.chatId === chatId) && (reply.messageId === messageId)) {
+    if (reply.id === replyId) {
       index = i;
       break;
     }
