@@ -7,6 +7,7 @@ var EventEmitter = require('events').EventEmitter;
 var fileType = require('file-type');
 var Promise = require('bluebird');
 var request = require('request');
+var qs = require('querystring');
 var stream = require('stream');
 var util = require('util');
 var mime = require('mime');
