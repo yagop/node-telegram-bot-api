@@ -277,7 +277,7 @@ TelegramBot.prototype._formatSendData = function (type, data) {
     formData[type] = {
       value: data,
       options: {
-        filename: decodeURIComponent(fileName),
+        filename: qs.unescape(fileName),
         contentType: mime.lookup(fileName)
       }
     };
