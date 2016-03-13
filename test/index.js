@@ -519,8 +519,10 @@ describe('Telegram', function () {
 describe('#TelegramBotPolling', function () {
   it('should call the callback on polling', function (done) {
     var opts = {interval: 100, timeout: 1};
-    var polling = new TelegramPolling(TOKEN, opts, function () {
-      done();
+    var polling = new TelegramPolling(TOKEN, opts, function (msg) {
+      if (msg.update_id === 10) {
+        done();
+      }
     });
     // The second time _getUpdates is called it will return a message
     // Really dirty but it works
