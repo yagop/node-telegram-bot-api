@@ -30,16 +30,13 @@ TelegramBotPolling.prototype._polling = function () {
       this.lastUpdate = Date.now();
       debug('polling data %j', updates);
       updates.forEach(function (update, index) {
-        // If is the latest, update the offset.
-        if (index === updates.length - 1) {
-          this.offset = update.update_id;
-          debug('updated offset: %s', this.offset);
-        }
+        this.offset = update.update_id;
+        debug('updated offset: %s', this.offset);
         this.callback(update);
       }.bind(this));
     }.bind(this))
     .catch(function (err) {
-      debug('polling error: %j', err);
+      debug('polling error: %s', err.message);
       throw err;
     })
     .finally(function () {
