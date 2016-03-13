@@ -2,6 +2,7 @@
 
 var TelegramPolling = require('../src/telegramPolling');
 var Telegram = require('../index');
+var Promise = require('bluebird');
 var request = require('request');
 var should = require('should');
 var fs = require('fs');
@@ -517,23 +518,14 @@ describe('Telegram', function () {
 
 describe('#TelegramBotPolling', function () {
   it('should call the callback on polling', function (done) {
-    function onUpdate (update) {
-      update.should.be.an.instanceOf(Object);
+    var opts = {interval: 100, timeout: 1};
+    var polling = new TelegramPolling(TOKEN, opts, function () {
       done();
-    }
-    var polling = new TelegramPolling(null, {interval: 500}, onUpdate);
-    // Not the best way to mock, but it works
-    polling._getUpdates = function() {
-      return {
-        then: function (cb) {
-          cb([{update_id: 10, message: {}}]);
-          return this;
-        },
-        catch: function () {
-          return this;
-        },
-        finally: function () {}
-      };
+    });
+    // The second time _getUpdates is called it will return a message
+    // Really dirty but it works
+    polling._getUpdates = function () {
+      return new Promise.resolve([{update_id: 10, message: {}}]);
     };
   });
 });
