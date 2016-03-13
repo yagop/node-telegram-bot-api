@@ -24,19 +24,19 @@
   "dependencies": {
     "bluebird": "^2.10.2",
     "debug": "^2.2.0",
-    "file-type": "^3.4.0",
+    "file-type": "^3.8.0",
     "mime": "^1.3.4",
-    "request": "^2.67.0"
+    "request": "^2.69.0"
   },
   "devDependencies": {
     "contributor": "^0.1.25",
-    "coveralls": "^2.11.6",
-    "istanbul": "^0.4.1",
+    "coveralls": "^2.11.8",
+    "istanbul": "^0.4.2",
     "jsdoc-to-markdown": "^1.3.3",
-    "jshint": "^2.9.1-rc2",
-    "mocha": "^2.3.4",
-    "mocha-lcov-reporter": "^1.0.0",
-    "should": "^8.0.2"
+    "jshint": "^2.9.1",
+    "mocha": "^2.4.5",
+    "mocha-lcov-reporter": "^1.2.0",
+    "should": "^8.2.2"
   },
   "repository": {
     "type": "git",
