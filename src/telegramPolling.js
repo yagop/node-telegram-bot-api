@@ -3,6 +3,7 @@
 var debug = require('debug')('node-telegram-bot-api');
 var Promise = require('bluebird');
 var request = require('request');
+var util = require('util');
 var URL = require('url');
 
 var requestPromise = Promise.promisify(request);
@@ -74,7 +75,9 @@ TelegramBotPolling.prototype._getUpdates = function () {
       try {
         data = JSON.parse(resp[0].body);
       } catch (err) {
-        throw new Error('Error parsing Telegram response: %s', resp[0].body);
+        var text = util.format('Error parsing Telegram response: %s', 
+          resp[0].body);
+        throw new Error(text);
       }
       if (data.ok) {
         return data.result;
