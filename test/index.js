@@ -470,33 +470,28 @@ describe('Telegram', function () {
 
   describe('#downloadFile', function () {
 
-  	var fileId;
-  	var downloadPath = __dirname;
+    var downloadPath = __dirname;
 
-  	// To get a file we have to send some file first
-    it('should send a photo from file', function (done) {
-
+    it('should download a file', function (done) {
+      
       var bot = new Telegram(TOKEN);
       var photo = __dirname + '/bot.gif';
 
+      // Send a file to get the ID
       bot.sendPhoto(USERID, photo).then(function (resp) {
         resp.should.be.an.instanceOf(Object);
-        fileId = resp.photo[0].file_id;
-        done();
+        var fileId = resp.photo[0].file_id;
+        
+        bot.downloadFile(fileId, downloadPath)
+          .then(function (filePath) {
+            filePath.should.be.an.instanceOf(String);
+            fs.existsSync(filePath).should.be.true();
+            fs.unlinkSync(filePath); // Delete file after test
+            done();
+        });
       });
     });
 
-    it('should download a file', function (done) {
-
-      var bot = new Telegram(TOKEN);
-
-      bot.downloadFile(fileId, downloadPath).then(function (filePath) {
-        filePath.should.be.an.instanceOf(String);
-        fs.existsSync(filePath).should.be.true();
-        fs.unlinkSync(filePath); // Delete file after test
-        done();
-      });
-    });
   });
 
   it('should call `onText` callback on match', function (done) {
