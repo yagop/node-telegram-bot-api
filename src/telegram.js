@@ -515,16 +515,14 @@ TelegramBot.prototype.getFile = function(fileId) {
  * @see https://core.telegram.org/bots/api#getfile
  */
 TelegramBot.prototype.getFileLink = function(fileId) {
-
-  var self = this;
-  return self.getFile(fileId).then(function (resp) {
-    return URL.format({
-      protocol: 'https',
-      host: 'api.telegram.org',
-      pathname: '/file/bot' + self.token + '/' + resp.file_path
-    });
-  });
-
+  return this.getFile(fileId)
+    .then(function (resp) {
+      return URL.format({
+        protocol: 'https',
+        host: 'api.telegram.org',
+        pathname: '/file/bot' + this.token + '/' + resp.file_path
+      });
+    }.bind(this));
 };
 
 /**
