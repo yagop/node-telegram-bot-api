@@ -1,0 +1,11 @@
+{
+  "plugins": [
+    "transform-es2015-spread",
+    "transform-es2015-destructuring",
+    "transform-strict-mode",
+    "transform-es2015-parameters",
+    "transform-es2015-shorthand-properties",
+    "transform-object-rest-spread",
+    "transform-class-properties"
+  ]
+}
