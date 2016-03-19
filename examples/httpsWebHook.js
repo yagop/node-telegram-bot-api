@@ -1,3 +1,4 @@
+"use strict";
 var TelegramBot = require('../src/telegram');
 
 var options = {

@@ -1,3 +1,4 @@
+"use strict";
 var TelegramBot = require('../src/telegram');
 var request = require('request');
 
@@ -17,7 +18,7 @@ bot.onText(/\/photo/, function (msg) {
   var chatId = msg.chat.id;
   // From file
   var photo = __dirname+'/../test/bot.gif';
-  bot.sendPhoto(chatId, photo, {caption: "I'm a bot!"});
+  bot.sendPhoto(chatId, photo, {caption: 'I\'m a bot!'});
 });
 
 // Matches /audio
