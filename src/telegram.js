@@ -55,6 +55,12 @@ var TelegramBot = function (token, options) {
   if (options.webHook) {
     this._WebHook = new TelegramBotWebHook(token, options.webHook, this.processUpdate);
   }
+
+  // id generator for reply messages
+  var idx=0;
+  this.newReplyId = function() {
+    return idx++;
+  }
 };
 
 util.inherits(TelegramBot, EventEmitter);
@@ -566,15 +572,42 @@ TelegramBot.prototype.onText = function (regexp, callback) {
  * Register a reply to wait for a message response.
  * @param  {Number|String}   chatId       The chat id where the message cames from.
  * @param  {Number|String}   messageId    The message id to be replied.
- * @param  {Function} callback     Callback will be called with the reply 
+ * @param  {Function} callback      Callback will be called with the reply 
+ * @return {Number} newId           The id of the onReplyToMessages object.
  * message.
  */
 TelegramBot.prototype.onReplyToMessage = function (chatId, messageId, callback) {
+  var newId = this.newReplyId();
   this.onReplyToMessages.push({
+    id: newId,
     chatId: chatId,
     messageId: messageId,
     callback: callback
   });
+  return newId;
 };
+
+/**
+ * Removes a reply that has been prev. registered for a message response.
+ * @param   {Number|String}   chatId      The chat id that the reply is awaited from
+ * @param   {Number|String}   messageId   The message_id of the msg to which a reply waited for
+ * @return  {Object}    deletedListener   Returns the deleted listener if one
+ * matched the params, otherwise returns null
+ */
+TelegramBot.prototype.removeReplyListener = function (replyId) {
+  var index = -1;
+  for (var i=0; i<this.onReplyToMessages.length; ++i) {
+    var reply = this.onReplyToMessages[i];
+    if (reply.id === replyId) {
+      index = i;
+      break;
+    }
+  }
+  if (index === -1) {
+    return null;
+  }
+  var removedListener = this.onReplyToMessages.splice(index, 1);
+  return removedListener;
+}
 
 module.exports = TelegramBot;
