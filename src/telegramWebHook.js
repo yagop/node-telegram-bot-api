@@ -17,6 +17,7 @@ var TelegramBotWebHook = function (token, options, callback) {
   if (options.key && options.cert) { // HTTPS Server
     debug('HTTPS WebHook enabled');
     var opts = {
+      ca: options.ca
       key: fs.readFileSync(options.key),
       cert: fs.readFileSync(options.cert)
     };
