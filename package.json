@@ -2,7 +2,7 @@
   "name": "node-telegram-bot-api",
   "version": "0.21.1",
   "description": "Telegram Bot API",
-  "main": "index.js",
+  "main": "./lib/telegram.js",
   "directories": {
     "example": "examples",
     "test": "test"
@@ -14,29 +14,46 @@
     "bot"
   ],
   "scripts": {
+    "prepublish": "./node_modules/.bin/babel -d ./lib src",
     "test": "./node_modules/.bin/mocha test/index.js",
     "test-cov": "./node_modules/.bin/istanbul cover ./node_modules/mocha/bin/_mocha --report lcovonly -- -R spec && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js && rm -rf ./coverage",
     "gen-doc": "./node_modules/.bin/jsdoc2md --src src/telegram.js -t README.hbs > README.md",
-    "jshint": "./node_modules/.bin/jshint src test"
+    "eslint": "./node_modules/.bin/eslint ./src"
   },
   "author": "Yago Pérez <yagoperezs@gmail.com>",
   "license": "MIT",
   "dependencies": {
-    "bluebird": "^2.10.2",
+    "bl": "^1.1.2",
+    "bluebird": "^3.3.4",
     "debug": "^2.2.0",
+    "eventemitter3": "^1.2.0",
     "file-type": "^3.8.0",
     "mime": "^1.3.4",
-    "request": "^2.69.0"
+    "pump": "^1.0.1",
+    "request": "^2.69.0",
+    "request-promise": "^2.0.1"
   },
   "devDependencies": {
+    "babel-cli": "^6.6.5",
+    "babel-eslint": "^5.0.0",
+    "babel-plugin-transform-class-properties": "^6.6.0",
+    "babel-plugin-transform-es2015-destructuring": "^6.6.5",
+    "babel-plugin-transform-es2015-parameters": "^6.7.0",
+    "babel-plugin-transform-es2015-shorthand-properties": "^6.5.0",
+    "babel-plugin-transform-es2015-spread": "^6.6.5",
+    "babel-plugin-transform-object-rest-spread": "^6.6.5",
+    "babel-plugin-transform-strict-mode": "^6.6.5",
+    "babel-register": "^6.7.2",
     "contributor": "^0.1.25",
     "coveralls": "^2.11.8",
+    "eslint": "^2.4.0",
+    "eslint-config-airbnb": "^6.1.0",
+    "eslint-plugin-mocha": "^2.0.0",
+    "is": "^3.1.0",
     "istanbul": "^0.4.2",
     "jsdoc-to-markdown": "^1.3.3",
-    "jshint": "^2.9.1",
     "mocha": "^2.4.5",
-    "mocha-lcov-reporter": "^1.2.0",
-    "should": "^8.2.2"
+    "mocha-lcov-reporter": "^1.2.0"
   },
   "repository": {
     "type": "git",
