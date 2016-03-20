@@ -1,5 +1,5 @@
-const TelegramPolling = require('../src/telegramPolling');
-const Telegram = require('../index');
+const TelegramPolling = require('../lib/telegramPolling');
+const Telegram = require('../lib/telegram');
 const Promise = require('bluebird');
 const request = require('request-promise');
 const assert = require('assert');

@@ -10,6 +10,7 @@ output/
 src/
 test/
 examples/
+lib-doc/
 
 # dotfiles
 .travis.yml
