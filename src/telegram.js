@@ -14,23 +14,6 @@ const URL = require('url');
 const fs = require('fs');
 const pump = require('pump');
 
-/**
- * Both request method to obtain messages are implemented. To use standard polling, set `polling: true`
- * on `options`. Notice that [webHook](https://core.telegram.org/bots/api#setwebhook) will need a SSL certificate.
- * Emits `message` when a message arrives.
- *
- * @class TelegramBot
- * @constructor
- * @param {String} token Bot Token
- * @param {Object} [options]
- * @param {Boolean|Object} [options.polling=false] Set true to enable polling or set options
- * @param {String|Number} [options.polling.timeout=10] Polling time in seconds
- * @param {String|Number} [options.polling.interval=2000] Interval between requests in miliseconds
- * @param {Boolean|Object} [options.webHook=false] Set true to enable WebHook or set options
- * @param {String} [options.webHook.key] PEM private key to webHook server.
- * @param {String} [options.webHook.cert] PEM certificate (public) to webHook server.
- * @see https://core.telegram.org/bots/api
- */
 class TelegramBot extends EventEmitter {
 
   // Telegram message events
@@ -39,7 +22,24 @@ class TelegramBot extends EventEmitter {
     'location', 'new_chat_participant', 'left_chat_participant', 'new_chat_title',
     'new_chat_photo', 'delete_chat_photo', 'group_chat_created'
   ];
-
+  
+  /**
+   * Both request method to obtain messages are implemented. To use standard polling, set `polling: true`
+   * on `options`. Notice that [webHook](https://core.telegram.org/bots/api#setwebhook) will need a SSL certificate.
+   * Emits `message` when a message arrives.
+   *
+   * @class TelegramBot
+   * @constructor
+   * @param {String} token Bot Token
+   * @param {Object} [options]
+   * @param {Boolean|Object} [options.polling=false] Set true to enable polling or set options
+   * @param {String|Number} [options.polling.timeout=10] Polling time in seconds
+   * @param {String|Number} [options.polling.interval=2000] Interval between requests in miliseconds
+   * @param {Boolean|Object} [options.webHook=false] Set true to enable WebHook or set options
+   * @param {String} [options.webHook.key] PEM private key to webHook server.
+   * @param {String} [options.webHook.cert] PEM certificate (public) to webHook server.
+   * @see https://core.telegram.org/bots/api
+   */
   constructor(token, options = {}) {
     super();
     this.options = options;
