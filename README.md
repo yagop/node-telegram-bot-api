@@ -49,6 +49,7 @@ Once they are generated, the `crt.pem` can be provided to `telegramBot.setWebHoo
 
 ## API Reference
 <a name="TelegramBot"></a>
+
 ## TelegramBot
 TelegramBot
 
@@ -79,6 +80,7 @@ TelegramBot
     * [.onReplyToMessage(chatId, messageId, callback)](#TelegramBot+onReplyToMessage)
 
 <a name="new_TelegramBot_new"></a>
+
 ### new TelegramBot(token, [options])
 Both request method to obtain messages are implemented. To use standard polling, set `polling: true`
 on `options`. Notice that [webHook](https://core.telegram.org/bots/api#setwebhook) will need a SSL certificate.
@@ -97,12 +99,14 @@ Emits `message` when a message arrives.
 | [options.webHook.cert] | <code>String</code> |  | PEM certificate (public) to webHook server. |
 
 <a name="TelegramBot+getMe"></a>
+
 ### telegramBot.getMe() ⇒ <code>Promise</code>
 Returns basic information about the bot in form of a `User` object.
 
 **Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
 **See**: https://core.telegram.org/bots/api#getme  
 <a name="TelegramBot+setWebHook"></a>
+
 ### telegramBot.setWebHook(url, [cert])
 Specify an url to receive incoming updates via an outgoing webHook.
 
@@ -115,6 +119,7 @@ Specify an url to receive incoming updates via an outgoing webHook.
 | [cert] | <code>String</code> &#124; <code>stream.Stream</code> | PEM certificate key (public). |
 
 <a name="TelegramBot+getUpdates"></a>
+
 ### telegramBot.getUpdates([timeout], [limit], [offset]) ⇒ <code>Promise</code>
 Use this method to receive incoming updates using long polling
 
@@ -129,6 +134,7 @@ Use this method to receive incoming updates using long polling
 | [offset] | <code>Number</code> &#124; <code>String</code> | Identifier of the first update to be returned. |
 
 <a name="TelegramBot+sendMessage"></a>
+
 ### telegramBot.sendMessage(chatId, text, [options]) ⇒ <code>Promise</code>
 Send text message.
 
@@ -142,6 +148,7 @@ Send text message.
 | [options] | <code>Object</code> | Additional Telegram query options |
 
 <a name="TelegramBot+answerInlineQuery"></a>
+
 ### telegramBot.answerInlineQuery(inlineQueryId, results, [options]) ⇒ <code>Promise</code>
 Send answers to an inline query.
 
@@ -155,6 +162,7 @@ Send answers to an inline query.
 | [options] | <code>Object</code> | Additional Telegram query options |
 
 <a name="TelegramBot+forwardMessage"></a>
+
 ### telegramBot.forwardMessage(chatId, fromChatId, messageId) ⇒ <code>Promise</code>
 Forward messages of any kind.
 
@@ -167,6 +175,7 @@ Forward messages of any kind.
 | messageId | <code>Number</code> &#124; <code>String</code> | Unique message identifier |
 
 <a name="TelegramBot+sendPhoto"></a>
+
 ### telegramBot.sendPhoto(chatId, photo, [options]) ⇒ <code>Promise</code>
 Send photo
 
@@ -180,6 +189,7 @@ Send photo
 | [options] | <code>Object</code> | Additional Telegram query options |
 
 <a name="TelegramBot+sendAudio"></a>
+
 ### telegramBot.sendAudio(chatId, audio, [options]) ⇒ <code>Promise</code>
 Send audio
 
@@ -193,6 +203,7 @@ Send audio
 | [options] | <code>Object</code> | Additional Telegram query options |
 
 <a name="TelegramBot+sendDocument"></a>
+
 ### telegramBot.sendDocument(chatId, doc, [options]) ⇒ <code>Promise</code>
 Send Document
 
@@ -206,6 +217,7 @@ Send Document
 | [options] | <code>Object</code> | Additional Telegram query options |
 
 <a name="TelegramBot+sendSticker"></a>
+
 ### telegramBot.sendSticker(chatId, sticker, [options]) ⇒ <code>Promise</code>
 Send .webp stickers.
 
@@ -219,6 +231,7 @@ Send .webp stickers.
 | [options] | <code>Object</code> | Additional Telegram query options |
 
 <a name="TelegramBot+sendVideo"></a>
+
 ### telegramBot.sendVideo(chatId, video, [options]) ⇒ <code>Promise</code>
 Use this method to send video files, Telegram clients support mp4 videos (other formats may be sent as Document).
 
@@ -232,6 +245,7 @@ Use this method to send video files, Telegram clients support mp4 videos (other 
 | [options] | <code>Object</code> | Additional Telegram query options |
 
 <a name="TelegramBot+sendVoice"></a>
+
 ### telegramBot.sendVoice(chatId, voice, [options]) ⇒ <code>Promise</code>
 Send voice
 
@@ -245,6 +259,7 @@ Send voice
 | [options] | <code>Object</code> | Additional Telegram query options |
 
 <a name="TelegramBot+sendChatAction"></a>
+
 ### telegramBot.sendChatAction(chatId, action) ⇒ <code>Promise</code>
 Send chat action.
 `typing` for text messages,
@@ -261,6 +276,7 @@ Send chat action.
 | action | <code>String</code> | Type of action to broadcast. |
 
 <a name="TelegramBot+getUserProfilePhotos"></a>
+
 ### telegramBot.getUserProfilePhotos(userId, [offset], [limit]) ⇒ <code>Promise</code>
 Use this method to get a list of profile pictures for a user.
 Returns a [UserProfilePhotos](https://core.telegram.org/bots/api#userprofilephotos) object.
@@ -275,6 +291,7 @@ Returns a [UserProfilePhotos](https://core.telegram.org/bots/api#userprofilephot
 | [limit] | <code>Number</code> | Limits the number of photos to be retrieved. Values between 1—100 are accepted. Defaults to 100. |
 
 <a name="TelegramBot+sendLocation"></a>
+
 ### telegramBot.sendLocation(chatId, latitude, longitude, [options]) ⇒ <code>Promise</code>
 Send location.
 Use this method to send point on the map.
@@ -290,6 +307,7 @@ Use this method to send point on the map.
 | [options] | <code>Object</code> | Additional Telegram query options |
 
 <a name="TelegramBot+getFile"></a>
+
 ### telegramBot.getFile(fileId) ⇒ <code>Promise</code>
 Get file.
 Use this method to get basic info about a file and prepare it for downloading.
@@ -303,12 +321,14 @@ Attention: link will be valid for 1 hour.
 | fileId | <code>String</code> | File identifier to get info about |
 
 <a name="TelegramBot+getFileLink"></a>
+
 ### telegramBot.getFileLink(fileId) ⇒ <code>Promise</code>
 Get link for file.
 Use this method to get link for file for subsequent use.
 Attention: link will be valid for 1 hour.
 
-This method is a sugar extension of the (getFile)[#getfilefileid] method, which returns just path to file on remote server (you will have to manually build full uri after that).
+This method is a sugar extension of the (getFile)[#getfilefileid] method,
+which returns just path to file on remote server (you will have to manually build full uri after that).
 
 **Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
 **Returns**: <code>Promise</code> - promise Promise which will have *fileURI* in resolve callback  
@@ -319,6 +339,7 @@ This method is a sugar extension of the (getFile)[#getfilefileid] method, which 
 | fileId | <code>String</code> | File identifier to get info about |
 
 <a name="TelegramBot+downloadFile"></a>
+
 ### telegramBot.downloadFile(fileId, downloadDir) ⇒ <code>Promise</code>
 Downloads file in the specified folder.
 This is just a sugar for (getFile)[#getfilefiled] method
@@ -332,6 +353,7 @@ This is just a sugar for (getFile)[#getfilefiled] method
 | downloadDir | <code>String</code> | Absolute path to the folder in which file will be saved |
 
 <a name="TelegramBot+onText"></a>
+
 ### telegramBot.onText(regexp, callback)
 Register a RegExp to test against an incomming text message.
 
@@ -343,6 +365,7 @@ Register a RegExp to test against an incomming text message.
 | callback | <code>function</code> | Callback will be called with 2 parameters, the `msg` and the result of executing `regexp.exec` on message text. |
 
 <a name="TelegramBot+onReplyToMessage"></a>
+
 ### telegramBot.onReplyToMessage(chatId, messageId, callback)
 Register a reply to wait for a message response.
 
@@ -352,6 +375,6 @@ Register a reply to wait for a message response.
 | --- | --- | --- |
 | chatId | <code>Number</code> &#124; <code>String</code> | The chat id where the message cames from. |
 | messageId | <code>Number</code> &#124; <code>String</code> | The message id to be replied. |
-| callback | <code>function</code> | Callback will be called with the reply  message. |
+| callback | <code>function</code> | Callback will be called with the reply message. |
 
 * * *
