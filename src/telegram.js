@@ -69,6 +69,7 @@ class TelegramBot extends EventEmitter {
     const message = update.message;
     const inlineQuery = update.inline_query;
     const chosenInlineResult = update.chosen_inline_result;
+    const callbackQuery = update.callback_query;
 
     if (message) {
       debug('Process Update message %j', message);
@@ -110,6 +111,9 @@ class TelegramBot extends EventEmitter {
     } else if (chosenInlineResult) {
       debug('Process Update chosen_inline_result %j', chosenInlineResult);
       this.emit('chosen_inline_result', chosenInlineResult);
+    } else if (callbackQuery) {
+      debug('Process Update callback_query %j', callbackQuery);
+      this.emit('callback_query', callbackQuery);
     }
   }
 
