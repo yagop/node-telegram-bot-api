@@ -69,6 +69,7 @@ class TelegramBot extends EventEmitter {
     const message = update.message;
     const inlineQuery = update.inline_query;
     const chosenInlineResult = update.chosen_inline_result;
+    const callbackQuery = update.callback_query;
 
     if (message) {
       debug('Process Update message %j', message);
@@ -110,6 +111,9 @@ class TelegramBot extends EventEmitter {
     } else if (chosenInlineResult) {
       debug('Process Update chosen_inline_result %j', chosenInlineResult);
       this.emit('chosen_inline_result', chosenInlineResult);
+    } else if (callbackQuery) {
+      debug('Process Update callback_query %j', callbackQuery);
+      this.emit('callback_query', callbackQuery);
     }
   }
 
@@ -505,13 +509,15 @@ class TelegramBot extends EventEmitter {
    *
    * @param  {Number|String} callbackQueryId  Unique identifier for the query to be answered
    * @param  {String} text  Text of the notification. If not specified, nothing will be shown to the user
+   * @param  {Boolean} showAlert  Whether to show an alert or a notification at the top of the screen
    * @param  {Object} [options] Additional Telegram query options
    * @return {Promise}
    * @see https://core.telegram.org/bots/api#answercallbackquery
    */
-  answerCallbackQuery(callbackQueryId, text, form = {}) {
+  answerCallbackQuery(callbackQueryId, text, showAlert, form = {}) {
     form.callback_query_id = callbackQueryId;
     form.text = text;
+    form.show_alert = showAlert;
     return this._request('answerCallbackQuery', { form });
   }
 
