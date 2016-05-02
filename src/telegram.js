@@ -22,7 +22,7 @@ class TelegramBot extends EventEmitter {
     'location', 'new_chat_participant', 'left_chat_participant', 'new_chat_title',
     'new_chat_photo', 'delete_chat_photo', 'group_chat_created'
   ];
-  
+
   /**
    * Both request method to obtain messages are implemented. To use standard polling, set `polling: true`
    * on `options`. Notice that [webHook](https://core.telegram.org/bots/api#setwebhook) will need a SSL certificate.
@@ -69,6 +69,7 @@ class TelegramBot extends EventEmitter {
     const message = update.message;
     const inlineQuery = update.inline_query;
     const chosenInlineResult = update.chosen_inline_result;
+    const callbackQuery = update.callback_query;
 
     if (message) {
       debug('Process Update message %j', message);
@@ -110,6 +111,9 @@ class TelegramBot extends EventEmitter {
     } else if (chosenInlineResult) {
       debug('Process Update chosen_inline_result %j', chosenInlineResult);
       this.emit('chosen_inline_result', chosenInlineResult);
+    } else if (callbackQuery) {
+      debug('Process Update callback_query %j', callbackQuery);
+      this.emit('callback_query', callbackQuery);
     }
   }
 
