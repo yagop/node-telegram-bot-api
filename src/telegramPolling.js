@@ -2,6 +2,7 @@ const Promise = require('bluebird');
 const debug = require('debug')('node-telegram-bot-api');
 const request = require('request-promise');
 const URL = require('url');
+const ANOTHER_WEB_HOOK_USED = 409;
 
 class TelegramBotPolling {
 
@@ -62,6 +63,25 @@ class TelegramBotPolling {
     }
   }
 
+  _unsetWebHook() {
+    return request({
+      url: URL.format({
+        protocol: 'https',
+        host: 'api.telegram.org',
+        pathname: `/bot${this.token}/setWebHook`
+      }),
+      simple: false,
+      resolveWithFullResponse: true
+    })
+      .promise()
+      .then(resp => {
+        if (!resp) {
+          throw new Error(resp);
+        }
+        return [];
+      });
+  }
+
   _getUpdates() {
     const opts = {
       qs: {
@@ -84,6 +104,10 @@ class TelegramBotPolling {
       .promise()
       .timeout((10 + this.timeout) * 1000)
       .then(resp => {
+        if (resp.statusCode === ANOTHER_WEB_HOOK_USED) {
+          return this._unsetWebHook();
+        }
+
         if (resp.statusCode !== 200) {
           throw new Error(`${resp.statusCode} ${resp.body}`);
         }
