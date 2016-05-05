@@ -15,7 +15,7 @@
   ],
   "scripts": {
     "prepublish": "./node_modules/.bin/babel -d ./lib src",
-    "test": "./node_modules/.bin/mocha test/index.js",
+    "test": "./node_modules/.bin/mocha test/index.js --timeout 10000",
     "test-cov": "./node_modules/.bin/istanbul cover ./node_modules/mocha/bin/_mocha --report lcovonly -- -R spec && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js && rm -rf ./coverage",
     "gen-doc": "./node_modules/.bin/babel --no-babelrc --plugins transform-es2015-spread,transform-es2015-destructuring,transform-strict-mode,transform-es2015-parameters,transform-es2015-shorthand-properties,transform-object-rest-spread,transform-class-properties -d lib-doc src && ./node_modules/.bin/jsdoc2md --src lib-doc/telegram.js -t README.hbs > README.md",
     "eslint": "./node_modules/.bin/eslint ./src"
