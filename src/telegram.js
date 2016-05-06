@@ -490,6 +490,28 @@ class TelegramBot extends EventEmitter {
     form.longitude = longitude;
     return this._request('sendLocation', { form });
   }
+  
+  /**
+   * Send venue.
+   * Use this method to send information about a venue.
+   *
+   * @param  {Number|String} chatId  Unique identifier for the message recipient
+   * @param  {Float} latitude Latitude of location
+   * @param  {Float} longitude Longitude of location
+   * @param  {String} title Name of the venue
+   * @param  {String} address Address of the venue
+   * @param  {Object} [options] Additional Telegram query options
+   * @return {Promise}
+   * @see https://core.telegram.org/bots/api#sendvenue
+   */
+  sendVenue(chatId, latitude, longitude, title, address, form = {}) {
+    form.chat_id = chatId;
+    form.latitude = latitude;
+    form.longitude = longitude;
+    form.title = title;
+    form.address = address;
+    return this._request('sendVenue', { form });
+  }
 
   /**
    * Get file.
