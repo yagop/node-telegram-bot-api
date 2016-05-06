@@ -394,6 +394,24 @@ describe('Telegram', function telegramSuite() {
       });
     });
   });
+  
+  describe('#sendVenue', function sendVenueSuite() {
+    it('should send a venue', function test() {
+      const bot = new Telegram(TOKEN);
+      const lat = 47.5351072;
+      const long = -52.7508537;
+      const title = `The Village Shopping Centre`;
+      const address = `430 Topsail Rd,St. John's, NL A1E 4N1, Canada`;
+      return bot.sendVenue(USERID, lat, long, title, address).then(resp => {
+        assert.ok(is.object(resp));
+        assert.ok(is.object(resp.location));
+        assert.ok(is.number(resp.location.latitude));
+        assert.ok(is.number(resp.location.longitude));
+        assert.ok(is.string(resp.title));
+        assert.ok(is.string(resp.address));
+      });
+    });
+  });
 
   describe('#getFile', function getFileSuite() {
     let fileId;
