@@ -17,14 +17,13 @@ const USERID = process.env.TEST_USER_ID || 777000;
 
 describe('Telegram', function telegramSuite() {
   describe('#setWebHook', function setWebHookSuite() {
-    it('should set a webHook', function test(done) {
+    it('should set a webHook', function test() {
       const bot = new Telegram(TOKEN);
       // Google IP ¯\_(ツ)_/¯
       return bot
         .setWebHook('216.58.210.174')
         .then(resp => {
           assert.equal(resp, true);
-          done();
         });
     });
 
@@ -151,14 +150,13 @@ describe('Telegram', function telegramSuite() {
   });
 
   describe('#forwardMessage', function forwardMessageSuite() {
-    it('should forward a message', function test(done) {
+    it('should forward a message', function test() {
       const bot = new Telegram(TOKEN);
       return bot.sendMessage(USERID, 'test').then(resp => {
         const messageId = resp.message_id;
         return bot.forwardMessage(USERID, USERID, messageId)
           .then(forwarded => {
             assert.ok(is.object(forwarded));
-            done();
           });
       });
     });
@@ -166,67 +164,61 @@ describe('Telegram', function telegramSuite() {
 
   describe('#sendPhoto', function sendPhotoSuite() {
     let photoId;
-    it('should send a photo from file', function test(done) {
+    it('should send a photo from file', function test() {
       const bot = new Telegram(TOKEN);
       const photo = `${__dirname}/bot.gif`;
       return bot.sendPhoto(USERID, photo).then(resp => {
         assert.ok(is.object(resp));
         photoId = resp.photo[0].file_id;
-        done();
       });
     });
 
-    it('should send a photo from id', function test(done) {
+    it('should send a photo from id', function test() {
       const bot = new Telegram(TOKEN);
       // Send the same photo as before
       const photo = photoId;
       return bot.sendPhoto(USERID, photo).then(resp => {
         assert.ok(is.object(resp));
-        done();
       });
     });
 
-    it('should send a photo from fs.readStream', function test(done) {
+    it('should send a photo from fs.readStream', function test() {
       const bot = new Telegram(TOKEN);
       const photo = fs.createReadStream(`${__dirname}/bot.gif`);
       return bot.sendPhoto(USERID, photo).then(resp => {
         assert.ok(is.object(resp));
-        done();
       });
     });
 
-    it('should send a photo from request Stream', function test(done) {
+    it('should send a photo from request Stream', function test() {
       const bot = new Telegram(TOKEN);
       const photo = request('https://telegram.org/img/t_logo.png');
       return bot.sendPhoto(USERID, photo).then(resp => {
         assert.ok(is.object(resp));
-        done();
       });
     });
 
-    it('should send a photo from a Buffer', function test(done) {
+    it('should send a photo from a Buffer', function test() {
       const bot = new Telegram(TOKEN);
       const photo = fs.readFileSync(`${__dirname}/bot.gif`);
       return bot.sendPhoto(USERID, photo).then(resp => {
         assert.ok(is.object(resp));
-        done();
       });
     });
   });
 
   describe('#sendChatAction', function sendChatActionSuite() {
-    it('should send a chat action', function test(done) {
+    it('should send a chat action', function test() {
       const bot = new Telegram(TOKEN);
       const action = 'typing';
       return bot.sendChatAction(USERID, action).then(resp => {
         assert.equal(resp, true);
-        done();
       });
     });
   });
 
   describe('#editMessageText', function editMessageTextSuite() {
-    it('should edit a message sent by the bot', function test(done) {
+    it('should edit a message sent by the bot', function test() {
       const bot = new Telegram(TOKEN);
       return bot.sendMessage(USERID, 'test').then(resp => {
         assert.equal(resp.text, 'test');
@@ -236,14 +228,13 @@ describe('Telegram', function telegramSuite() {
         };
         return bot.editMessageText('edit test', opts).then(msg => {
           assert.equal(msg.text, 'edit test');
-          done();
         });
       });
     });
   });
 
   describe('#editMessageCaption', function editMessageCaptionSuite() {
-    it('should edit a caption sent by the bot', function test(done) {
+    it('should edit a caption sent by the bot', function test() {
       const bot = new Telegram(TOKEN);
       const photo = `${__dirname}/bot.gif`;
       const options = { caption: 'test caption' };
@@ -255,14 +246,13 @@ describe('Telegram', function telegramSuite() {
         };
         return bot.editMessageCaption('new test caption', opts).then(msg => {
           assert.equal(msg.caption, 'new test caption');
-          done();
         });
       });
     });
   });
 
   describe('#editMessageReplyMarkup', function editMessageReplyMarkupSuite() {
-    it('should edit previously-set reply markup', function test(done) {
+    it('should edit previously-set reply markup', function test() {
       const bot = new Telegram(TOKEN);
       return bot.sendMessage(USERID, 'test').then(resp => {
         const replyMarkup = JSON.stringify({
@@ -278,178 +268,160 @@ describe('Telegram', function telegramSuite() {
         return bot.editMessageReplyMarkup(replyMarkup, opts).then(msg => {
           // Keyboard markup is not returned, do a simple object check
           assert.ok(is.object(msg));
-          done();
         });
       });
     });
   });
 
   describe('#sendAudio', function sendAudioSuite() {
-    it('should send an OGG audio', function test(done) {
+    it('should send an OGG audio', function test() {
       const bot = new Telegram(TOKEN);
       const audio = request('https://upload.wikimedia.org/wikipedia/commons/c/c8/Example.ogg');
       return bot.sendAudio(USERID, audio).then(resp => {
         assert.ok(is.object(resp));
-        done();
       });
     });
   });
 
   describe('#sendDocument', function sendDocumentSuite() {
     let documentId;
-    it('should send a document from file', function test(done) {
+    it('should send a document from file', function test() {
       const bot = new Telegram(TOKEN);
       const document = `${__dirname}/bot.gif`;
       return bot.sendDocument(USERID, document).then(resp => {
         assert.ok(is.object(resp));
         documentId = resp.document.file_id;
-        done();
       });
     });
 
-    it('should send a document from id', function test(done) {
+    it('should send a document from id', function test() {
       const bot = new Telegram(TOKEN);
       // Send the same photo as before
       const document = documentId;
       return bot.sendDocument(USERID, document).then(resp => {
         assert.ok(is.object(resp));
-        done();
       });
     });
 
-    it('should send a document from fs.readStream', function test(done) {
+    it('should send a document from fs.readStream', function test() {
       const bot = new Telegram(TOKEN);
       const document = fs.createReadStream(`${__dirname}/bot.gif`);
       return bot.sendDocument(USERID, document).then(resp => {
         assert.ok(is.object(resp));
-        done();
       });
     });
 
-    it('should send a document from request Stream', function test(done) {
+    it('should send a document from request Stream', function test() {
       const bot = new Telegram(TOKEN);
       const document = request('https://telegram.org/img/t_logo.png');
       return bot.sendDocument(USERID, document).then(resp => {
         assert.ok(is.object(resp));
-        done();
       });
     });
 
-    it('should send a document from a Buffer', function test(done) {
+    it('should send a document from a Buffer', function test() {
       const bot = new Telegram(TOKEN);
       const document = fs.readFileSync(`${__dirname}/bot.gif`);
       return bot.sendDocument(USERID, document).then(resp => {
         assert.ok(is.object(resp));
-        done();
       });
     });
   });
 
   describe('#sendSticker', function sendStickerSuite() {
     let stickerId;
-    it('should send a sticker from file', function test(done) {
+    it('should send a sticker from file', function test() {
       const bot = new Telegram(TOKEN);
       const sticker = `${__dirname}/sticker.webp`;
       return bot.sendSticker(USERID, sticker).then(resp => {
         assert.ok(is.object(resp));
         stickerId = resp.sticker.file_id;
-        done();
       });
     });
 
-    it('should send a sticker from id', function test(done) {
+    it('should send a sticker from id', function test() {
       const bot = new Telegram(TOKEN);
       // Send the same photo as before
       return bot.sendSticker(USERID, stickerId).then(resp => {
         assert.ok(is.object(resp));
-        done();
       });
     });
 
-    it('should send a sticker from fs.readStream', function test(done) {
+    it('should send a sticker from fs.readStream', function test() {
       const bot = new Telegram(TOKEN);
       const sticker = fs.createReadStream(`${__dirname}/sticker.webp`);
       return bot.sendSticker(USERID, sticker).then(resp => {
         assert.ok(is.object(resp));
-        done();
       });
     });
 
-    it('should send a sticker from request Stream', function test(done) {
+    it('should send a sticker from request Stream', function test() {
       const bot = new Telegram(TOKEN);
       const sticker = request('https://www.gstatic.com/webp/gallery3/1_webp_ll.webp');
       return bot.sendSticker(USERID, sticker).then(resp => {
         assert.ok(is.object(resp));
-        done();
       });
     });
 
-    it('should send a sticker from a Buffer', function test(done) {
+    it('should send a sticker from a Buffer', function test() {
       const bot = new Telegram(TOKEN);
       const sticker = fs.readFileSync(`${__dirname}/sticker.webp`);
       return bot.sendDocument(USERID, sticker).then(resp => {
         assert.ok(is.object(resp));
-        done();
       });
     });
   });
 
   describe('#sendVideo', function sendVideoSuite() {
     let videoId;
-    it('should send a video from file', function test(done) {
+    it('should send a video from file', function test() {
       const bot = new Telegram(TOKEN);
       const video = `${__dirname}/video.mp4`;
       return bot.sendVideo(USERID, video).then(resp => {
         assert.ok(is.object(resp));
         videoId = resp.video.file_id;
-        done();
       });
     });
 
-    it('should send a video from id', function test(done) {
+    it('should send a video from id', function test() {
       const bot = new Telegram(TOKEN);
       // Send the same photo as before
       return bot.sendVideo(USERID, videoId).then(resp => {
         assert.ok(is.object(resp));
-        done();
       });
     });
 
-    it('should send a video from fs.readStream', function test(done) {
+    it('should send a video from fs.readStream', function test() {
       const bot = new Telegram(TOKEN);
       const video = fs.createReadStream(`${__dirname}/video.mp4`);
       return bot.sendVideo(USERID, video).then(resp => {
         assert.ok(is.object(resp));
-        done();
       });
     });
 
-    it('should send a video from request Stream', function test(done) {
+    it('should send a video from request Stream', function test() {
       const bot = new Telegram(TOKEN);
       const sticker = request('http://techslides.com/demos/sample-videos/small.mp4');
       return bot.sendVideo(USERID, sticker).then(resp => {
         assert.ok(is.object(resp));
-        done();
       });
     });
 
-    it('should send a video from a Buffer', function test(done) {
+    it('should send a video from a Buffer', function test() {
       const bot = new Telegram(TOKEN);
       const video = fs.readFileSync(`${__dirname}/video.mp4`);
       return bot.sendVideo(USERID, video).then(resp => {
         assert.ok(is.object(resp));
-        done();
       });
     });
   });
 
   describe('#sendVoice', function sendVoiceSuite() {
-    it('should send an OGG audio as voice', function test(done) {
+    it('should send an OGG audio as voice', function test() {
       const bot = new Telegram(TOKEN);
       const voice = request('https://upload.wikimedia.org/wikipedia/commons/c/c8/Example.ogg');
       return bot.sendVoice(USERID, voice).then(resp => {
         assert.ok(is.object(resp));
-        done();
       });
     });
   });
@@ -483,17 +455,16 @@ describe('Telegram', function telegramSuite() {
     let fileId;
 
     // To get a file we have to send any file first
-    it('should send a photo from file', function test(done) {
+    it('should send a photo from file', function test() {
       const bot = new Telegram(TOKEN);
       const photo = `${__dirname}/bot.gif`;
       return bot.sendPhoto(USERID, photo).then(resp => {
         assert.ok(is.object(resp));
         fileId = resp.photo[0].file_id;
-        done();
       });
     });
 
-    it('should get a file', function test(done) {
+    it('should get a file', function test() {
       const bot = new Telegram(TOKEN);
 
       return bot
@@ -501,7 +472,6 @@ describe('Telegram', function telegramSuite() {
         .then(resp => {
           assert.ok(is.object(resp));
           assert.ok(is.string(resp.file_path));
-          done();
         });
     });
   });
@@ -510,17 +480,16 @@ describe('Telegram', function telegramSuite() {
     let fileId;
 
     // To get a file we have to send any file first
-    it('should send a photo from file', function test(done) {
+    it('should send a photo from file', function test() {
       const bot = new Telegram(TOKEN);
       const photo = `${__dirname}/bot.gif`;
       return bot.sendPhoto(USERID, photo).then(resp => {
         assert.ok(is.object(resp));
         fileId = resp.photo[0].file_id;
-        done();
       });
     });
 
-    it('should get a file link', function test(done) {
+    it('should get a file link', function test() {
       const bot = new Telegram(TOKEN);
 
       return bot
@@ -528,7 +497,6 @@ describe('Telegram', function telegramSuite() {
         .then(fileURI => {
           assert.ok(is.string(fileURI));
           assert.equal(fileURI.indexOf('https'), 0);
-          done();
           // TODO: validate URL with some library or regexp
         });
     });
@@ -537,7 +505,7 @@ describe('Telegram', function telegramSuite() {
   describe('#downloadFile', function downloadFileSuite() {
     const downloadPath = __dirname;
 
-    it('should download a file', function test(done) {
+    it('should download a file', function test() {
       const bot = new Telegram(TOKEN);
       const photo = `${__dirname}/bot.gif`;
 
@@ -552,7 +520,6 @@ describe('Telegram', function telegramSuite() {
             assert.ok(is.string(filePath));
             assert.ok(fs.existsSync(filePath));
             fs.unlinkSync(filePath); // Delete file after test
-            done();
           });
       });
     });
