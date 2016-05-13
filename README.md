@@ -310,12 +310,12 @@ Use this method to send point on the map.
 
 <a name="TelegramBot+sendVenue"></a>
 
-### telegramBot.sendVenue(chatId, latitude, longitude, name, addressm, [options]) ⇒ <code>Promise</code>
+### telegramBot.sendVenue(chatId, latitude, longitude, name, address, [options]) ⇒ <code>Promise</code>
 Send venue.
 Use this method to send information about a venue.
 
 **Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
-**See**: https://core.telegram.org/bots/api#sendVenue  
+**See**: https://core.telegram.org/bots/api#sendvenue  
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -326,12 +326,14 @@ Use this method to send information about a venue.
 | address | <code>String</code> | Address of location |
 | [options] | <code>Object</code> | Additional Telegram query options |
 
+<a name="TelegramBot+sendContact"></a>
+
 ### telegramBot.sendContact(chatId, phone_number, first_name, [options]) ⇒ <code>Promise</code>
 Send contact.
 Use this method to send phone contacts.
 
 **Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
-**See**: https://core.telegram.org/bots/api#sendContact  
+**See**: https://core.telegram.org/bots/api#sendcontact  
 
 | Param | Type | Description |
 | --- | --- | --- |
