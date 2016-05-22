@@ -4,5 +4,4 @@ npm-debug.log
 .package.json
 output.md
 output/
-lib/
 lib-doc/
