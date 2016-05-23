@@ -71,7 +71,7 @@ class TelegramBotWebHook {
     } else if (req.method === 'POST') {
       req
         .pipe(bl(this._parseBody))
-        .on('end', () => res.end('OK'));
+        .on('finish', () => res.end('OK'));
     } else {
       // Authorized but not a POST
       debug('WebHook request isn\'t a POST');
