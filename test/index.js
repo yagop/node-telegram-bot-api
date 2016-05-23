@@ -217,6 +217,62 @@ describe('Telegram', function telegramSuite() {
     });
   });
 
+  describe('#editMessageText', function editMessageTextSuite() {
+    it('should edit a message sent by the bot', function test() {
+      const bot = new Telegram(TOKEN);
+      return bot.sendMessage(USERID, 'test').then(resp => {
+        assert.equal(resp.text, 'test');
+        const opts = {
+          chat_id: USERID,
+          message_id: resp.message_id
+        };
+        return bot.editMessageText('edit test', opts).then(msg => {
+          assert.equal(msg.text, 'edit test');
+        });
+      });
+    });
+  });
+
+  describe('#editMessageCaption', function editMessageCaptionSuite() {
+    it('should edit a caption sent by the bot', function test() {
+      const bot = new Telegram(TOKEN);
+      const photo = `${__dirname}/bot.gif`;
+      const options = { caption: 'test caption' };
+      return bot.sendPhoto(USERID, photo, options).then(resp => {
+        assert.equal(resp.caption, 'test caption');
+        const opts = {
+          chat_id: USERID,
+          message_id: resp.message_id
+        };
+        return bot.editMessageCaption('new test caption', opts).then(msg => {
+          assert.equal(msg.caption, 'new test caption');
+        });
+      });
+    });
+  });
+
+  describe('#editMessageReplyMarkup', function editMessageReplyMarkupSuite() {
+    it('should edit previously-set reply markup', function test() {
+      const bot = new Telegram(TOKEN);
+      return bot.sendMessage(USERID, 'test').then(resp => {
+        const replyMarkup = JSON.stringify({
+          inline_keyboard: [[{
+            text: 'Test button',
+            callback_data: 'test'
+          }]]
+        });
+        const opts = {
+          chat_id: USERID,
+          message_id: resp.message_id
+        };
+        return bot.editMessageReplyMarkup(replyMarkup, opts).then(msg => {
+          // Keyboard markup is not returned, do a simple object check
+          assert.ok(is.object(msg));
+        });
+      });
+    });
+  });
+
   describe('#sendAudio', function sendAudioSuite() {
     it('should send an OGG audio', function test() {
       const bot = new Telegram(TOKEN);
@@ -398,7 +454,7 @@ describe('Telegram', function telegramSuite() {
   describe('#getFile', function getFileSuite() {
     let fileId;
 
-		// To get a file we have to send any file first
+    // To get a file we have to send any file first
     it('should send a photo from file', function test() {
       const bot = new Telegram(TOKEN);
       const photo = `${__dirname}/bot.gif`;
@@ -423,7 +479,7 @@ describe('Telegram', function telegramSuite() {
   describe('#getFileLink', function getFileLinkSuite() {
     let fileId;
 
-		// To get a file we have to send any file first
+    // To get a file we have to send any file first
     it('should send a photo from file', function test() {
       const bot = new Telegram(TOKEN);
       const photo = `${__dirname}/bot.gif`;
