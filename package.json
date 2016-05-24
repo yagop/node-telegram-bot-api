@@ -1,6 +1,6 @@
 {
   "name": "node-telegram-bot-api",
-  "version": "0.21.2",
+  "version": "0.22.0",
   "description": "Telegram Bot API",
   "main": "./lib/telegram.js",
   "directories": {
@@ -20,7 +20,7 @@
     "gen-doc": "./node_modules/.bin/babel --no-babelrc --plugins transform-es2015-spread,transform-es2015-destructuring,transform-strict-mode,transform-es2015-parameters,transform-es2015-shorthand-properties,transform-object-rest-spread,transform-class-properties -d lib-doc src && ./node_modules/.bin/jsdoc2md --src lib-doc/telegram.js -t README.hbs > README.md",
     "eslint": "./node_modules/.bin/eslint ./src"
   },
-  "author": "Yago Pérez <yagoperezs@gmail.com>",
+  "author": "Alexsandr Liynskyi <w.siteee@gmail.com>",
   "license": "MIT",
   "dependencies": {
     "bl": "^1.1.2",
@@ -58,12 +58,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/yagop/node-telegram-bot-api.git"
+    "url": "https://github.com/w-site/node-telegram-bot-api.git"
   },
   "bugs": {
-    "url": "https://github.com/yagop/node-telegram-bot-api/issues"
+    "url": "https://github.com/w-site/node-telegram-bot-api/issues"
   },
-  "homepage": "https://github.com/yagop/node-telegram-bot-api",
+  "homepage": "https://github.com/w-site/node-telegram-bot-api",
   "contributors": [
     {
       "name": "Sebastian Troć",
