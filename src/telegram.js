@@ -435,7 +435,6 @@ TelegramBot.prototype.sendVoice = function (chatId, voice, options) {
   return this._request('sendVoice', opts);
 };
 
-
 /**
  * Send chat action.
  * `typing` for text messages,
@@ -455,6 +454,123 @@ TelegramBot.prototype.sendChatAction = function (chatId, action) {
   };
   return this._request('sendChatAction', {form: form});
 };
+
+/**
+ * Use this method to kick a user from a group or a supergroup.
+ * In the case of supergroups, the user will not be able to return
+ * to the group on their own using invite links, etc., unless unbanned
+ * first. The bot must be an administrator in the group for this to work.
+ * Returns True on success.
+ *
+ * @param  {Number|String} chatId  Unique identifier for the target group or username of the target supergroup
+ * @param  {String} userId  Unique identifier of the target user
+ * @return {Promise}
+ * @see https://core.telegram.org/bots/api#kickchatmember
+ */
+TelegramBot.prototype.kickChatMember = function (chatId, userId) {
+  const form = {
+    chat_id: chatId,
+    user_id: userId
+  };
+  return this._request('kickChatMember', {form: form});
+}
+
+/**
+ * Use this method to unban a previously kicked user in a supergroup.
+ * The user will not return to the group automatically, but will be
+ * able to join via link, etc. The bot must be an administrator in
+ * the group for this to work. Returns True on success.
+ *
+ * @param  {Number|String} chatId  Unique identifier for the target group or username of the target supergroup
+ * @param  {String} userId  Unique identifier of the target user
+ * @return {Promise}
+ * @see https://core.telegram.org/bots/api#unbanchatmember
+ */
+TelegramBot.prototype.unbanChatMember = function (chatId, userId) {
+  const form = {
+    chat_id: chatId,
+    user_id: userId
+  };
+  return this._request('unbanChatMember', {form: form});
+}
+
+/**
+ * Use this method to send answers to callback queries sent from
+ * inline keyboards. The answer will be displayed to the user as
+ * a notification at the top of the chat screen or as an alert.
+ * On success, True is returned.
+ *
+ * @param  {Number|String} callbackQueryId  Unique identifier for the query to be answered
+ * @param  {String} text  Text of the notification. If not specified, nothing will be shown to the user
+ * @param  {Boolean} showAlert  Whether to show an alert or a notification at the top of the screen
+ * @param  {Object} [options] Additional Telegram query options
+ * @return {Promise}
+ * @see https://core.telegram.org/bots/api#answercallbackquery
+ */
+TelegramBot.prototype.answerCallbackQuery = function (callbackQueryId, text, showAlert, options) {
+  var form = options || {};
+  form.callback_query_id = callbackQueryId;
+  form.text = text;
+  form.show_alert = showAlert;
+  return this._request('answerCallbackQuery', {form: form});
+}
+
+/**
+ * Use this method to edit text messages sent by the bot or via
+ * the bot (for inline bots). On success, the edited Message is
+ * returned.
+ *
+ * Note that you must provide one of chat_id, message_id, or
+ * inline_message_id in your request.
+ *
+ * @param  {String} text  New text of the message
+ * @param  {Object} [options] Additional Telegram query options (provide either one of chat_id, message_id, or inline_message_id here)
+ * @return {Promise}
+ * @see https://core.telegram.org/bots/api#editmessagetext
+ */
+TelegramBot.prototype.editMessageText = function (text, options) {
+  var form = options || {};
+  form.text = text;
+  return this._request('editMessageText', {form: form});
+}
+
+/**
+ * Use this method to edit captions of messages sent by the
+ * bot or via the bot (for inline bots). On success, the
+ * edited Message is returned.
+ *
+ * Note that you must provide one of chat_id, message_id, or
+ * inline_message_id in your request.
+ *
+ * @param  {String} caption  New caption of the message
+ * @param  {Object} [options] Additional Telegram query options (provide either one of chat_id, message_id, or inline_message_id here)
+ * @return {Promise}
+ * @see https://core.telegram.org/bots/api#editmessagetext
+ */
+TelegramBot.prototype.editMessageCaption = function (caption, options) {
+  var form = options || {};
+  form.caption = caption;
+  return this._request('editMessageCaption', {form: form});
+}
+
+/**
+ * Use this method to edit only the reply markup of messages
+ * sent by the bot or via the bot (for inline bots).
+ * On success, the edited Message is returned.
+ *
+ * Note that you must provide one of chat_id, message_id, or
+ * inline_message_id in your request.
+ *
+ * @param  {Object} replyMarkup  A JSON-serialized object for an inline keyboard.
+ * @param  {Object} [options] Additional Telegram query options (provide either one of chat_id, message_id, or inline_message_id here)
+ * @return {Promise}
+ * @see https://core.telegram.org/bots/api#editmessagetext
+ */
+TelegramBot.prototype.editMessageReplyMarkup = function (replyMarkup, options) {
+  var form = options || {};
+  form.reply_markup = replyMarkup;
+  return this._request('editMessageReplyMarkup', {form: form});
+}
 
 /**
  * Use this method to get a list of profile pictures for a user.
@@ -570,7 +686,7 @@ TelegramBot.prototype.onText = function (regexp, callback) {
  * Register a reply to wait for a message response.
  * @param  {Number|String}   chatId       The chat id where the message cames from.
  * @param  {Number|String}   messageId    The message id to be replied.
- * @param  {Function} callback     Callback will be called with the reply 
+ * @param  {Function} callback     Callback will be called with the reply
  * message.
  */
 TelegramBot.prototype.onReplyToMessage = function (chatId, messageId, callback) {
