@@ -140,6 +140,14 @@ class TelegramBot extends EventEmitter {
       throw new Error(`Error parsing Telegram response: ${String(json)}`);
     }
   }
+  
+  _fixReplyMarkup(obj) {
+    const replyMarkup = obj.reply_markup;
+    if (replyMarkup && typeof replyMarkup !== 'string') {
+      // reply_markup must be passed as JSON stringified to Telegram
+      obj.reply_markup = JSON.stringify(replyMarkup);
+    }
+  }
 
   // request-promise
   _request(_path, options = {}) {
@@ -148,11 +156,10 @@ class TelegramBot extends EventEmitter {
     }
 
     if (options.form) {
-      const replyMarkup = options.form.reply_markup;
-      if (replyMarkup && typeof replyMarkup !== 'string') {
-        // reply_markup must be passed as JSON stringified to Telegram
-        options.form.reply_markup = JSON.stringify(replyMarkup);
-      }
+      this._fixReplyMarkup(options.form);
+    }
+    if (options.qs) {
+      this._fixReplyMarkup(options.qs);
     }
     options.url = this._buildURL(_path);
     options.simple = false;
