@@ -492,6 +492,28 @@ class TelegramBot extends EventEmitter {
   }
 
   /**
+   * Send venue.
+   * Use this method to send information about a venue.
+   *
+   * @param  {Number|String} chatId  Unique identifier for the message recipient
+   * @param  {Float} latitude Latitude of the venue
+   * @param  {Float} longitude Longitude of the venue
+   * @param  {String} title Title of the venue
+   * @param  {String} address Address of the venue
+   * @param  {Object} [options] Additional Telegram query options
+   * @return {Promise}
+   * @see https://core.telegram.org/bots/api#sendvenue
+   */
+  sendVenue(chatId, latitude, longitude, title, address, form = {}) {
+    form.chat_id = chatId;
+    form.latitude = latitude;
+    form.longitude = longitude;
+    form.title = title;
+    form.address = address;
+    return this._request('sendVenue', { form });
+  }
+
+  /**
    * Get file.
    * Use this method to get basic info about a file and prepare it for downloading.
    * Attention: link will be valid for 1 hour.

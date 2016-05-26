@@ -73,6 +73,7 @@ TelegramBot
     * [.sendChatAction(chatId, action)](#TelegramBot+sendChatAction) ⇒ <code>Promise</code>
     * [.getUserProfilePhotos(userId, [offset], [limit])](#TelegramBot+getUserProfilePhotos) ⇒ <code>Promise</code>
     * [.sendLocation(chatId, latitude, longitude, [options])](#TelegramBot+sendLocation) ⇒ <code>Promise</code>
+    * [.sendVenue(chatId, latitude, longitude, title, address, [options])](#TelegramBot+sendVenue) ⇒ <code>Promise</code>
     * [.getFile(fileId)](#TelegramBot+getFile) ⇒ <code>Promise</code>
     * [.getFileLink(fileId)](#TelegramBot+getFileLink) ⇒ <code>Promise</code>
     * [.downloadFile(fileId, downloadDir)](#TelegramBot+downloadFile) ⇒ <code>Promise</code>
@@ -304,6 +305,24 @@ Use this method to send point on the map.
 | chatId | <code>Number</code> &#124; <code>String</code> | Unique identifier for the message recipient |
 | latitude | <code>Float</code> | Latitude of location |
 | longitude | <code>Float</code> | Longitude of location |
+| [options] | <code>Object</code> | Additional Telegram query options |
+
+<a name="TelegramBot+sendVenue"></a>
+
+### telegramBot.sendVenue(chatId, latitude, longitude, title, address, [options]) ⇒ <code>Promise</code>
+Send venue.
+Use this method to send information about a venue.
+
+**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>
+**See**: https://core.telegram.org/bots/api#sendvenue
+
+| Param | Type | Description |
+| --- | --- | --- |
+| chatId | <code>Number</code> &#124; <code>String</code> | Unique identifier for the message recipient |
+| latitude | <code>Float</code> | Latitude of the venue |
+| longitude | <code>Float</code> | Longitude of the venue |
+| title | <code>String</code> | Title of the venue |
+| address | <code>String</code> | Address of the venue |
 | [options] | <code>Object</code> | Additional Telegram query options |
 
 <a name="TelegramBot+getFile"></a>
