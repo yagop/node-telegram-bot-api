@@ -35,7 +35,7 @@
   },
   "devDependencies": {
     "babel-cli": "^6.6.5",
-    "babel-eslint": "^5.0.0",
+    "babel-eslint": "^6.0.4",
     "babel-plugin-transform-class-properties": "^6.6.0",
     "babel-plugin-transform-es2015-destructuring": "^6.6.5",
     "babel-plugin-transform-es2015-parameters": "^6.7.0",
@@ -47,7 +47,7 @@
     "babel-register": "^6.7.2",
     "contributor": "^0.1.25",
     "coveralls": "^2.11.8",
-    "eslint": "^2.4.0",
+    "eslint": "^2.11.1",
     "eslint-config-airbnb": "^6.1.0",
     "eslint-plugin-mocha": "^2.0.0",
     "is": "^3.1.0",
