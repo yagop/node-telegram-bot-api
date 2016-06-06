@@ -71,6 +71,12 @@ TelegramBot
     * [.sendVideo(chatId, video, [options])](#TelegramBot+sendVideo) ⇒ <code>Promise</code>
     * [.sendVoice(chatId, voice, [options])](#TelegramBot+sendVoice) ⇒ <code>Promise</code>
     * [.sendChatAction(chatId, action)](#TelegramBot+sendChatAction) ⇒ <code>Promise</code>
+    * [.kickChatMember(chatId, userId)](#TelegramBot+kickChatMember) ⇒ <code>Promise</code>
+    * [.unbanChatMember(chatId, userId)](#TelegramBot+unbanChatMember) ⇒ <code>Promise</code>
+    * [.answerCallbackQuery(callbackQueryId, text, showAlert, [options])](#TelegramBot+answerCallbackQuery) ⇒ <code>Promise</code>
+    * [.editMessageText(text, [options])](#TelegramBot+editMessageText) ⇒ <code>Promise</code>
+    * [.editMessageCaption(caption, [options])](#TelegramBot+editMessageCaption) ⇒ <code>Promise</code>
+    * [.editMessageReplyMarkup(replyMarkup, [options])](#TelegramBot+editMessageReplyMarkup) ⇒ <code>Promise</code>
     * [.getUserProfilePhotos(userId, [offset], [limit])](#TelegramBot+getUserProfilePhotos) ⇒ <code>Promise</code>
     * [.sendLocation(chatId, latitude, longitude, [options])](#TelegramBot+sendLocation) ⇒ <code>Promise</code>
     * [.getFile(fileId)](#TelegramBot+getFile) ⇒ <code>Promise</code>
@@ -274,6 +280,111 @@ Send chat action.
 | --- | --- | --- |
 | chatId | <code>Number</code> &#124; <code>String</code> | Unique identifier for the message recipient |
 | action | <code>String</code> | Type of action to broadcast. |
+
+<a name="TelegramBot+kickChatMember"></a>
+
+### telegramBot.kickChatMember(chatId, userId) ⇒ <code>Promise</code>
+Use this method to kick a user from a group or a supergroup.
+In the case of supergroups, the user will not be able to return
+to the group on their own using invite links, etc., unless unbanned
+first. The bot must be an administrator in the group for this to work.
+Returns True on success.
+
+**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
+**See**: https://core.telegram.org/bots/api#kickchatmember  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| chatId | <code>Number</code> &#124; <code>String</code> | Unique identifier for the target group or username of the target supergroup |
+| userId | <code>String</code> | Unique identifier of the target user |
+
+<a name="TelegramBot+unbanChatMember"></a>
+
+### telegramBot.unbanChatMember(chatId, userId) ⇒ <code>Promise</code>
+Use this method to unban a previously kicked user in a supergroup.
+The user will not return to the group automatically, but will be
+able to join via link, etc. The bot must be an administrator in
+the group for this to work. Returns True on success.
+
+**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
+**See**: https://core.telegram.org/bots/api#unbanchatmember  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| chatId | <code>Number</code> &#124; <code>String</code> | Unique identifier for the target group or username of the target supergroup |
+| userId | <code>String</code> | Unique identifier of the target user |
+
+<a name="TelegramBot+answerCallbackQuery"></a>
+
+### telegramBot.answerCallbackQuery(callbackQueryId, text, showAlert, [options]) ⇒ <code>Promise</code>
+Use this method to send answers to callback queries sent from
+inline keyboards. The answer will be displayed to the user as
+a notification at the top of the chat screen or as an alert.
+On success, True is returned.
+
+**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
+**See**: https://core.telegram.org/bots/api#answercallbackquery  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| callbackQueryId | <code>Number</code> &#124; <code>String</code> | Unique identifier for the query to be answered |
+| text | <code>String</code> | Text of the notification. If not specified, nothing will be shown to the user |
+| showAlert | <code>Boolean</code> | Whether to show an alert or a notification at the top of the screen |
+| [options] | <code>Object</code> | Additional Telegram query options |
+
+<a name="TelegramBot+editMessageText"></a>
+
+### telegramBot.editMessageText(text, [options]) ⇒ <code>Promise</code>
+Use this method to edit text messages sent by the bot or via
+the bot (for inline bots). On success, the edited Message is
+returned.
+
+Note that you must provide one of chat_id, message_id, or
+inline_message_id in your request.
+
+**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
+**See**: https://core.telegram.org/bots/api#editmessagetext  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| text | <code>String</code> | New text of the message |
+| [options] | <code>Object</code> | Additional Telegram query options (provide either one of chat_id, message_id, or inline_message_id here) |
+
+<a name="TelegramBot+editMessageCaption"></a>
+
+### telegramBot.editMessageCaption(caption, [options]) ⇒ <code>Promise</code>
+Use this method to edit captions of messages sent by the
+bot or via the bot (for inline bots). On success, the
+edited Message is returned.
+
+Note that you must provide one of chat_id, message_id, or
+inline_message_id in your request.
+
+**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
+**See**: https://core.telegram.org/bots/api#editmessagetext  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| caption | <code>String</code> | New caption of the message |
+| [options] | <code>Object</code> | Additional Telegram query options (provide either one of chat_id, message_id, or inline_message_id here) |
+
+<a name="TelegramBot+editMessageReplyMarkup"></a>
+
+### telegramBot.editMessageReplyMarkup(replyMarkup, [options]) ⇒ <code>Promise</code>
+Use this method to edit only the reply markup of messages
+sent by the bot or via the bot (for inline bots).
+On success, the edited Message is returned.
+
+Note that you must provide one of chat_id, message_id, or
+inline_message_id in your request.
+
+**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
+**See**: https://core.telegram.org/bots/api#editmessagetext  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| replyMarkup | <code>Object</code> | A JSON-serialized object for an inline keyboard. |
+| [options] | <code>Object</code> | Additional Telegram query options (provide either one of chat_id, message_id, or inline_message_id here) |
 
 <a name="TelegramBot+getUserProfilePhotos"></a>
 
