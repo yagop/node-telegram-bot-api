@@ -366,10 +366,11 @@ class TelegramBot extends EventEmitter {
    * @param  {String|stream.Stream|Buffer} doc A file path, Stream or Buffer.
    * Can also be a `file_id` previously uploaded.
    * @param  {Object} [options] Additional Telegram query options
+   * @param  {Object} [fileOpts] Optional file related meta-data
    * @return {Promise}
    * @see https://core.telegram.org/bots/api#sendDocument
    */
-  sendDocument(chatId, doc, options = {}) {
+  sendDocument(chatId, doc, options = {}, fileOpts = {}) {
     const opts = {
       qs: options
     };
@@ -377,6 +378,9 @@ class TelegramBot extends EventEmitter {
     const content = this._formatSendData('document', doc);
     opts.formData = content[0];
     opts.qs.document = content[1];
+    if (opts.formData && Object.keys(fileOpts).length) {
+      opts.formData.document.options = fileOpts;
+    }
     return this._request('sendDocument', opts);
   }
 
