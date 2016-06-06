@@ -14,14 +14,17 @@ const URL = require('url');
 const fs = require('fs');
 const pump = require('pump');
 
+const _messageTypes = [
+  'text', 'audio', 'document', 'photo', 'sticker', 'video', 'voice', 'contact',
+  'location', 'new_chat_participant', 'left_chat_participant', 'new_chat_title',
+  'new_chat_photo', 'delete_chat_photo', 'group_chat_created'
+];
+
 class TelegramBot extends EventEmitter {
 
-  // Telegram message events
-  static messageTypes = [
-    'text', 'audio', 'document', 'photo', 'sticker', 'video', 'voice', 'contact',
-    'location', 'new_chat_participant', 'left_chat_participant', 'new_chat_title',
-    'new_chat_photo', 'delete_chat_photo', 'group_chat_created'
-  ];
+  static get messageTypes() {
+    return _messageTypes;
+  }
 
   /**
    * Both request method to obtain messages are implemented. To use standard polling, set `polling: true`
@@ -64,7 +67,7 @@ class TelegramBot extends EventEmitter {
     this._polling = new TelegramBotPolling(this.token, this.options.polling, this.processUpdate);
   }
 
-  processUpdate = (update) => {
+  processUpdate(update) {
     debug('Process Update %j', update);
     const message = update.message;
     const inlineQuery = update.inline_query;
