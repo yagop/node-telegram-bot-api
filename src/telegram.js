@@ -55,7 +55,7 @@ class TelegramBot extends EventEmitter {
     }
 
     if (options.webHook) {
-      this._WebHook = new TelegramBotWebHook(token, options.webHook, this.processUpdate);
+      this._WebHook = new TelegramBotWebHook(token, options.webHook, this.processUpdate.bind(this));
     }
   }
 
@@ -64,10 +64,10 @@ class TelegramBot extends EventEmitter {
       this._polling.abort = true;
       this._polling.lastRequest.cancel('Polling restart');
     }
-    this._polling = new TelegramBotPolling(this.token, this.options.polling, this.processUpdate);
+    this._polling = new TelegramBotPolling(this.token, this.options.polling, this.processUpdate.bind(this));
   }
 
-  processUpdate = (update) => {
+  processUpdate(update) {
     debug('Process Update %j', update);
     const message = update.message;
     const inlineQuery = update.inline_query;
