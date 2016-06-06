@@ -67,7 +67,7 @@ class TelegramBot extends EventEmitter {
     this._polling = new TelegramBotPolling(this.token, this.options.polling, this.processUpdate);
   }
 
-  processUpdate(update) {
+  processUpdate = (update) => {
     debug('Process Update %j', update);
     const message = update.message;
     const inlineQuery = update.inline_query;
