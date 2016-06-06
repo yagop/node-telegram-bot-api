@@ -66,7 +66,7 @@ TelegramBot
     * [.forwardMessage(chatId, fromChatId, messageId)](#TelegramBot+forwardMessage) ⇒ <code>Promise</code>
     * [.sendPhoto(chatId, photo, [options])](#TelegramBot+sendPhoto) ⇒ <code>Promise</code>
     * [.sendAudio(chatId, audio, [options])](#TelegramBot+sendAudio) ⇒ <code>Promise</code>
-    * [.sendDocument(chatId, doc, [options])](#TelegramBot+sendDocument) ⇒ <code>Promise</code>
+    * [.sendDocument(chatId, doc, [options], [fileOpts])](#TelegramBot+sendDocument) ⇒ <code>Promise</code>
     * [.sendSticker(chatId, sticker, [options])](#TelegramBot+sendSticker) ⇒ <code>Promise</code>
     * [.sendVideo(chatId, video, [options])](#TelegramBot+sendVideo) ⇒ <code>Promise</code>
     * [.sendVoice(chatId, voice, [options])](#TelegramBot+sendVoice) ⇒ <code>Promise</code>
@@ -210,7 +210,7 @@ Send audio
 
 <a name="TelegramBot+sendDocument"></a>
 
-### telegramBot.sendDocument(chatId, doc, [options]) ⇒ <code>Promise</code>
+### telegramBot.sendDocument(chatId, doc, [options], [fileOpts]) ⇒ <code>Promise</code>
 Send Document
 
 **Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
@@ -221,6 +221,7 @@ Send Document
 | chatId | <code>Number</code> &#124; <code>String</code> | Unique identifier for the message recipient |
 | doc | <code>String</code> &#124; <code>stream.Stream</code> &#124; <code>Buffer</code> | A file path, Stream or Buffer. Can also be a `file_id` previously uploaded. |
 | [options] | <code>Object</code> | Additional Telegram query options |
+| [fileOpts] | <code>Object</code> | Optional file related meta-data |
 
 <a name="TelegramBot+sendSticker"></a>
 
