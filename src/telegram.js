@@ -553,7 +553,7 @@ class TelegramBot extends EventEmitter {
    * @param  {String} caption  New caption of the message
    * @param  {Object} [options] Additional Telegram query options (provide either one of chat_id, message_id, or inline_message_id here)
    * @return {Promise}
-   * @see https://core.telegram.org/bots/api#editmessagetext
+   * @see https://core.telegram.org/bots/api#editmessagecaption
    */
   editMessageCaption(caption, form = {}) {
     form.caption = caption;
