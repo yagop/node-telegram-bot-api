@@ -131,6 +131,15 @@ describe('Telegram', function telegramSuite() {
     });
   });
 
+  describe('#getChat', function getMeSuite() {
+    it('should return an User object', function test() {
+      const bot = new Telegram(TOKEN);
+      return bot.getChat(USERID).then(resp => {
+        assert.ok(is.object(resp));
+      });
+    });
+  });
+
   describe('#getUpdates', function getUpdatesSuite() {
     it('should return an Array', function test() {
       const bot = new Telegram(TOKEN);

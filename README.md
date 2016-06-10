@@ -59,6 +59,7 @@ TelegramBot
 * [TelegramBot](#TelegramBot)
     * [new TelegramBot(token, [options])](#new_TelegramBot_new)
     * [.getMe()](#TelegramBot+getMe) ⇒ <code>Promise</code>
+    * [.getChat()](#TelegramBot+getChat) ⇒ <code>Promise</code>
     * [.setWebHook(url, [cert])](#TelegramBot+setWebHook)
     * [.getUpdates([timeout], [limit], [offset])](#TelegramBot+getUpdates) ⇒ <code>Promise</code>
     * [.sendMessage(chatId, text, [options])](#TelegramBot+sendMessage) ⇒ <code>Promise</code>
@@ -111,6 +112,15 @@ Returns basic information about the bot in form of a `User` object.
 
 **Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
 **See**: https://core.telegram.org/bots/api#getme  
+<a name="TelegramBot+getChat"></a>
+
+### telegramBot.getChat() ⇒ <code>Promise</code>
+Use this method to get up to date information about the chat
+(current name of the user for one-on-one conversations, current
+username of a user, group or channel, etc.).
+
+**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
+**See**: https://core.telegram.org/bots/api#getchat  
 <a name="TelegramBot+setWebHook"></a>
 
 ### telegramBot.setWebHook(url, [cert])
@@ -362,7 +372,7 @@ Note that you must provide one of chat_id, message_id, or
 inline_message_id in your request.
 
 **Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
-**See**: https://core.telegram.org/bots/api#editmessagetext  
+**See**: https://core.telegram.org/bots/api#editmessagecaption  
 
 | Param | Type | Description |
 | --- | --- | --- |
