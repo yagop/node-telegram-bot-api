@@ -14,15 +14,18 @@ const URL = require('url');
 const fs = require('fs');
 const pump = require('pump');
 
+const _messageTypes = [
+  'text', 'audio', 'document', 'photo', 'sticker', 'video', 'voice', 'contact',
+  'location', 'new_chat_participant', 'left_chat_participant', 'new_chat_title',
+  'new_chat_photo', 'delete_chat_photo', 'group_chat_created'
+];
+
 class TelegramBot extends EventEmitter {
 
-  // Telegram message events
-  static messageTypes = [
-    'text', 'audio', 'document', 'photo', 'sticker', 'video', 'voice', 'contact',
-    'location', 'new_chat_participant', 'left_chat_participant', 'new_chat_title',
-    'new_chat_photo', 'delete_chat_photo', 'group_chat_created'
-  ];
-  
+  static get messageTypes() {
+    return _messageTypes;
+  }
+
   /**
    * Both request method to obtain messages are implemented. To use standard polling, set `polling: true`
    * on `options`. Notice that [webHook](https://core.telegram.org/bots/api#setwebhook) will need a SSL certificate.
@@ -52,7 +55,7 @@ class TelegramBot extends EventEmitter {
     }
 
     if (options.webHook) {
-      this._WebHook = new TelegramBotWebHook(token, options.webHook, this.processUpdate);
+      this._WebHook = new TelegramBotWebHook(token, options.webHook, this.processUpdate.bind(this));
     }
   }
 
@@ -61,14 +64,15 @@ class TelegramBot extends EventEmitter {
       this._polling.abort = true;
       this._polling.lastRequest.cancel('Polling restart');
     }
-    this._polling = new TelegramBotPolling(this.token, this.options.polling, this.processUpdate);
+    this._polling = new TelegramBotPolling(this.token, this.options.polling, this.processUpdate.bind(this));
   }
 
-  processUpdate = (update) => {
+  processUpdate(update) {
     debug('Process Update %j', update);
     const message = update.message;
     const inlineQuery = update.inline_query;
     const chosenInlineResult = update.chosen_inline_result;
+    const callbackQuery = update.callback_query;
 
     if (message) {
       debug('Process Update message %j', message);
@@ -110,6 +114,9 @@ class TelegramBot extends EventEmitter {
     } else if (chosenInlineResult) {
       debug('Process Update chosen_inline_result %j', chosenInlineResult);
       this.emit('chosen_inline_result', chosenInlineResult);
+    } else if (callbackQuery) {
+      debug('Process Update callback_query %j', callbackQuery);
+      this.emit('callback_query', callbackQuery);
     }
   }
 
@@ -359,10 +366,11 @@ class TelegramBot extends EventEmitter {
    * @param  {String|stream.Stream|Buffer} doc A file path, Stream or Buffer.
    * Can also be a `file_id` previously uploaded.
    * @param  {Object} [options] Additional Telegram query options
+   * @param  {Object} [fileOpts] Optional file related meta-data
    * @return {Promise}
    * @see https://core.telegram.org/bots/api#sendDocument
    */
-  sendDocument(chatId, doc, options = {}) {
+  sendDocument(chatId, doc, options = {}, fileOpts = {}) {
     const opts = {
       qs: options
     };
@@ -370,6 +378,9 @@ class TelegramBot extends EventEmitter {
     const content = this._formatSendData('document', doc);
     opts.formData = content[0];
     opts.qs.document = content[1];
+    if (opts.formData && Object.keys(fileOpts).length) {
+      opts.formData.document.options = fileOpts;
+    }
     return this._request('sendDocument', opts);
   }
 
@@ -452,6 +463,119 @@ class TelegramBot extends EventEmitter {
       chat_id: chatId
     };
     return this._request('sendChatAction', { form });
+  }
+
+  /**
+   * Use this method to kick a user from a group or a supergroup.
+   * In the case of supergroups, the user will not be able to return
+   * to the group on their own using invite links, etc., unless unbanned
+   * first. The bot must be an administrator in the group for this to work.
+   * Returns True on success.
+   *
+   * @param  {Number|String} chatId  Unique identifier for the target group or username of the target supergroup
+   * @param  {String} userId  Unique identifier of the target user
+   * @return {Promise}
+   * @see https://core.telegram.org/bots/api#kickchatmember
+   */
+  kickChatMember(chatId, userId) {
+    const form = {
+      chat_id: chatId,
+      user_id: userId
+    };
+    return this._request('kickChatMember', { form });
+  }
+
+  /**
+   * Use this method to unban a previously kicked user in a supergroup.
+   * The user will not return to the group automatically, but will be
+   * able to join via link, etc. The bot must be an administrator in
+   * the group for this to work. Returns True on success.
+   *
+   * @param  {Number|String} chatId  Unique identifier for the target group or username of the target supergroup
+   * @param  {String} userId  Unique identifier of the target user
+   * @return {Promise}
+   * @see https://core.telegram.org/bots/api#unbanchatmember
+   */
+  unbanChatMember(chatId, userId) {
+    const form = {
+      chat_id: chatId,
+      user_id: userId
+    };
+    return this._request('unbanChatMember', { form });
+  }
+
+  /**
+   * Use this method to send answers to callback queries sent from
+   * inline keyboards. The answer will be displayed to the user as
+   * a notification at the top of the chat screen or as an alert.
+   * On success, True is returned.
+   *
+   * @param  {Number|String} callbackQueryId  Unique identifier for the query to be answered
+   * @param  {String} text  Text of the notification. If not specified, nothing will be shown to the user
+   * @param  {Boolean} showAlert  Whether to show an alert or a notification at the top of the screen
+   * @param  {Object} [options] Additional Telegram query options
+   * @return {Promise}
+   * @see https://core.telegram.org/bots/api#answercallbackquery
+   */
+  answerCallbackQuery(callbackQueryId, text, showAlert, form = {}) {
+    form.callback_query_id = callbackQueryId;
+    form.text = text;
+    form.show_alert = showAlert;
+    return this._request('answerCallbackQuery', { form });
+  }
+
+  /**
+   * Use this method to edit text messages sent by the bot or via
+   * the bot (for inline bots). On success, the edited Message is
+   * returned.
+   *
+   * Note that you must provide one of chat_id, message_id, or
+   * inline_message_id in your request.
+   *
+   * @param  {String} text  New text of the message
+   * @param  {Object} [options] Additional Telegram query options (provide either one of chat_id, message_id, or inline_message_id here)
+   * @return {Promise}
+   * @see https://core.telegram.org/bots/api#editmessagetext
+   */
+  editMessageText(text, form = {}) {
+    form.text = text;
+    return this._request('editMessageText', { form });
+  }
+
+  /**
+   * Use this method to edit captions of messages sent by the
+   * bot or via the bot (for inline bots). On success, the
+   * edited Message is returned.
+   *
+   * Note that you must provide one of chat_id, message_id, or
+   * inline_message_id in your request.
+   *
+   * @param  {String} caption  New caption of the message
+   * @param  {Object} [options] Additional Telegram query options (provide either one of chat_id, message_id, or inline_message_id here)
+   * @return {Promise}
+   * @see https://core.telegram.org/bots/api#editmessagecaption
+   */
+  editMessageCaption(caption, form = {}) {
+    form.caption = caption;
+    return this._request('editMessageCaption', { form });
+  }
+
+  /**
+   * Use this method to edit only the reply markup of messages
+   * sent by the bot or via the bot (for inline bots).
+   * On success, the edited Message is returned.
+   *
+   * Note that you must provide one of chat_id, message_id, or
+   * inline_message_id in your request.
+   *
+   * @param  {Object} replyMarkup  A JSON-serialized object for an inline keyboard.
+   * @param  {Object} [options] Additional Telegram query options (provide either one of chat_id, message_id, or inline_message_id here)
+   * @return {Promise}
+   * @see https://core.telegram.org/bots/api#editmessagetext
+   */
+  editMessageReplyMarkup(replyMarkup, form = {}) {
+    form.reply_markup = replyMarkup;
+    return this._request('editMessageReplyMarkup', { form });
   }
 
   /**
