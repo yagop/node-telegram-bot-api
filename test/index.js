@@ -326,6 +326,15 @@ describe('Telegram', function telegramSuite() {
         assert.ok(is.object(resp));
       });
     });
+    
+    it('should send a document specifying filename and content type', function test() {
+      const bot = new Telegram(TOKEN);
+      const document = `${__dirname}/bot_docx`;
+      const fileOpts = { filename: 'newfilename.docx', contentType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' };
+      return bot.sendDocument(USERID, document, {}, fileOpts).then(resp => {
+        assert.ok(is.object(resp));
+      });
+    });
   });
 
   describe('#sendSticker', function sendStickerSuite() {
