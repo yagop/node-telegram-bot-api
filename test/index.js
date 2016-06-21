@@ -546,11 +546,14 @@ describe('Telegram', function telegramSuite() {
 }); // End Telegram
 
 describe('#TelegramBotPolling', function TelegramBotPollingSuite() {
+
   it('should call the callback on polling', function test(done) {
     const opts = { interval: 100, timeout: 1 };
     const polling = new TelegramPolling(TOKEN, opts, (msg) => {
       if (msg.update_id === 10) {
-        done();
+        polling.stopPolling().then(() => {
+          done();
+        });
       }
     });
     // The second time _getUpdates is called it will return a message
@@ -559,4 +562,26 @@ describe('#TelegramBotPolling', function TelegramBotPollingSuite() {
       return new Promise.resolve([{ update_id: 10, message: {} }]);
     };
   });
+
+  describe('#stopPolling', function stopPollingSuite() {
+    it('should stop polling after last poll request', function test(done) {
+      const opts = { interval: 200, timeout: 0.5 };
+      const polling = new TelegramPolling(TOKEN, opts, (msg) => {
+        // error if message received as only one poll will complete and there should be no more because of stopPolling
+        done(msg);
+      });
+      polling.stopPolling()
+        .then(() => {
+          setInterval(() => {
+            done();
+          }, 1000);
+        }).catch(done);
+      // The second time _getUpdates is called it will return a message
+      // Really dirty but it works
+      polling._getUpdates = () => {
+        return new Promise.resolve([{ update_id: 11, message: {} }]);
+      };
+    });
+  });
+
 });
