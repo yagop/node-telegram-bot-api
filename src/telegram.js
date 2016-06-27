@@ -699,6 +699,60 @@ class TelegramBot extends EventEmitter {
       callback
     });
   }
+
+  /**
+   * Returns information about the chat in form of a `Chat` object.
+   * @param  {Number|String} chatId  Unique identifier for the target group or username of the target supergroup
+   * @return {Promise}
+   * @see https://core.telegram.org/bots/api#getchat
+   */
+  getChat(chatId) {
+    const form = {
+      chat_id: chatId
+    };
+    return this._request('getChat', { form });
+  }
+
+  /**
+   * Returns the administrators in a chat in form of an Array of `ChatMember` objects.
+   * @param  {Number|String} chatId  Unique identifier for the target group or username of the target supergroup
+   * @return {Promise}
+   * @see https://core.telegram.org/bots/api#getchatadministrators
+   */
+  getChatAdministrators(chatId) {
+    const form = {
+      chat_id: chatId
+    };
+    return this._request('getChatAdministrators', { form });
+  }
+
+  /**
+   * Returns the number of members in a chat in form of an `Int` object.
+   * @param  {Number|String} chatId  Unique identifier for the target group or username of the target supergroup
+   * @return {Promise}
+   * @see https://core.telegram.org/bots/api#getchatmemberscount
+   */
+  getChatMembersCount(chatId) {
+    const form = {
+      chat_id: chatId
+    };
+    return this._request('getChatMembersCount', { form });
+  }
+
+  /**
+   * Returns information about a member of a chat in form of a `ChatMember` object.
+   * @param  {Number|String} chatId  Unique identifier for the target group or username of the target supergroup
+   * @param  {String} userId  Unique identifier of the target user
+   * @return {Promise}
+   * @see https://core.telegram.org/bots/api#getchatmember
+   */
+  getChatMember(chatId, userId) {
+    const form = {
+      chat_id: chatId,
+      user_id: userId
+    };
+    return this._request('getChatMember', { form });
+  }
 }
 
 module.exports = TelegramBot;
