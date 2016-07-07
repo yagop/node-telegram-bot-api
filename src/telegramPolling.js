@@ -28,6 +28,12 @@ class TelegramBotPolling {
     this._polling();
   }
 
+  stopPolling() {
+    this.abort = true;
+    // wait until the last request is fulfilled
+    return this.lastRequest;
+  }
+
   _polling() {
     this.lastRequest = this
       ._getUpdates()

@@ -489,4 +489,10 @@ Register a reply to wait for a message response.
 | messageId | <code>Number</code> &#124; <code>String</code> | The message id to be replied. |
 | callback | <code>function</code> | Callback will be called with the reply message. |
 
+### telegramBot.stopPolling() => Promise
+Stops polling after the last polling request resolves.
+
+**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
+**Returns**: <code>Promise</code> - The resolved promise for the last poll request
+
 * * *

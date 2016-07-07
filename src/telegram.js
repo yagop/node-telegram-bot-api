@@ -67,6 +67,18 @@ class TelegramBot extends EventEmitter {
     this._polling = new TelegramBotPolling(this.token, this.options.polling, this.processUpdate.bind(this));
   }
 
+  /**
+   * Stops polling after the last polling request resolves
+   *
+   * @return {Promise} promise Promise, of last polling request
+   */
+  stopPolling() {
+    if (this._polling) {
+      return this._polling.stopPolling();
+    }
+    return Promise.resolve();
+  }
+
   processUpdate(update) {
     debug('Process Update %j', update);
     const message = update.message;
