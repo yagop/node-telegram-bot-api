@@ -58,6 +58,7 @@ TelegramBot
 
 * [TelegramBot](#TelegramBot)
     * [new TelegramBot(token, [options])](#new_TelegramBot_new)
+    * [.stopPolling()](#TelegramBot+stopPolling) ⇒ <code>Promise</code>
     * [.getMe()](#TelegramBot+getMe) ⇒ <code>Promise</code>
     * [.setWebHook(url, [cert])](#TelegramBot+setWebHook)
     * [.getUpdates([timeout], [limit], [offset])](#TelegramBot+getUpdates) ⇒ <code>Promise</code>
@@ -104,6 +105,13 @@ Emits `message` when a message arrives.
 | [options.webHook.key] | <code>String</code> |  | PEM private key to webHook server. |
 | [options.webHook.cert] | <code>String</code> |  | PEM certificate (public) to webHook server. |
 
+<a name="TelegramBot+stopPolling"></a>
+
+### telegramBot.stopPolling() ⇒ <code>Promise</code>
+Stops polling after the last polling request resolves
+
+**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
+**Returns**: <code>Promise</code> - promise Promise, of last polling request  
 <a name="TelegramBot+getMe"></a>
 
 ### telegramBot.getMe() ⇒ <code>Promise</code>
@@ -362,7 +370,7 @@ Note that you must provide one of chat_id, message_id, or
 inline_message_id in your request.
 
 **Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
-**See**: https://core.telegram.org/bots/api#editmessagetext  
+**See**: https://core.telegram.org/bots/api#editmessagecaption  
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -488,11 +496,5 @@ Register a reply to wait for a message response.
 | chatId | <code>Number</code> &#124; <code>String</code> | The chat id where the message cames from. |
 | messageId | <code>Number</code> &#124; <code>String</code> | The message id to be replied. |
 | callback | <code>function</code> | Callback will be called with the reply message. |
-
-### telegramBot.stopPolling() => Promise
-Stops polling after the last polling request resolves.
-
-**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
-**Returns**: <code>Promise</code> - The resolved promise for the last poll request
 
 * * *
