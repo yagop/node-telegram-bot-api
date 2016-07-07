@@ -15,9 +15,8 @@
   ],
   "scripts": {
     "prepublish": "babel -d ./lib src",
-    "test": "mocha test/index.js --timeout 10000",
+    "test": "istanbul cover ./node_modules/mocha/bin/_mocha -- -R spec --timeout 10000",
     "prepublish:test": "npm run prepublish && npm run test",
-    "test-cov": "istanbul cover ./node_modules/mocha/bin/_mocha --report lcovonly -- -R spec && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js && rm -rf ./coverage",
     "gen-doc": "jsdoc2md --src src/telegram.js -t README.hbs > README.md",
     "eslint": "eslint ./src"
   },
