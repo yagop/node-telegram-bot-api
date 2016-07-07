@@ -4,7 +4,7 @@ node_js:
   - "4"
   - "0.12.12"
 after_success:
-  - npm run test-cov
+  - bash <(curl -s https://codecov.io/bash)
 cache:
   directories:
     - node_modules
