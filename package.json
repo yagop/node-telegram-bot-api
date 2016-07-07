@@ -14,8 +14,9 @@
     "bot"
   ],
   "scripts": {
-    "prepublish": "./node_modules/.bin/babel -d ./lib src",
-    "test": "./node_modules/.bin/mocha test/index.js --timeout 10000",
+    "prepublish": "babel -d ./lib src",
+    "test": "mocha test/index.js --timeout 10000",
+    "prepublish:test": "npm run prepublish && npm run test",
     "test-cov": "./node_modules/.bin/istanbul cover ./node_modules/mocha/bin/_mocha --report lcovonly -- -R spec && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js && rm -rf ./coverage",
     "gen-doc": "./node_modules/.bin/jsdoc2md --src src/telegram.js -t README.hbs > README.md",
     "eslint": "./node_modules/.bin/eslint ./src"
