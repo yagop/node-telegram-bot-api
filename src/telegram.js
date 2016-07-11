@@ -471,7 +471,7 @@ class TelegramBot extends EventEmitter {
    */
   sendChatAction(chatId, action) {
     const form = {
-      action,
+      action: action,
       chat_id: chatId
     };
     return this._request('sendChatAction', { form });
@@ -625,6 +625,28 @@ class TelegramBot extends EventEmitter {
     form.latitude = latitude;
     form.longitude = longitude;
     return this._request('sendLocation', { form });
+  }
+  
+  /**
+   * Send Venue.
+   * Use this method to send Venue infomration
+   *
+   * @param  {Number|String} chatId  Unique identifier for the message recipient
+   * @param  {Float} latitude Latitude of venue
+   * @param  {Float} longitude Longitude of venue
+   * @param  {String} title Title of venue
+   * @param  {String} address Address of venue
+   * @param  {Object} [options] Additional Telegram query options
+   * @return {Promise}
+   * @see https://core.telegram.org/bots/api#sendlocation
+   */
+  sendVenue(chatId, latitude, longitude, title, address, form = {}) {
+    form.chat_id = chatId;
+    form.latitude = latitude;
+    form.longitude = longitude;
+    form.title = title;
+    form.address = address;
+    return this._request('sendVenue', { form });
   }
 
   /**
