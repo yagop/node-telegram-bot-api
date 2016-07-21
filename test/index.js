@@ -451,6 +451,25 @@ describe('Telegram', function telegramSuite() {
     });
   });
 
+  describe('#sendVenue', function sendVenueSuite() {
+    it('should send a venue', function test() {
+      const bot = new Telegram(TOKEN);
+      const lat = 52.950371;
+      const long = -1.154119;
+      const title = 'Nottingham Castle Grounds';
+      const address = 'Lenton Rd, Nottingham NG1 6GB';
+      return bot.sendVenue(USERID, lat, long, title, address).then(resp => {
+        assert.ok(is.object(resp));
+        assert.ok(is.object(resp.venue));
+        assert.ok(is.object(resp.venue.location));
+        assert.ok(is.number(resp.venue.location.latitude));
+        assert.ok(is.number(resp.venue.location.longitude));
+        assert.ok(is.string(resp.venue.title));
+        assert.ok(is.string(resp.venue.address));
+      });
+    });
+  });
+
   describe('#getFile', function getFileSuite() {
     let fileId;
 

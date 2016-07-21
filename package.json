@@ -65,6 +65,15 @@
   "homepage": "https://github.com/yagop/node-telegram-bot-api",
   "contributors": [
     {
+      "name": "Alexander Myadzel",
+      "email": "myadzel@gmail.com",
+      "url": "https://github.com/myadzel",
+      "contributions": 1,
+      "additions": 1,
+      "deletions": 0,
+      "hireable": null
+    },
+    {
       "name": "Sebastian Troć",
       "email": "sebastian.troc@gucman.pl",
       "url": "https://github.com/SebastianTroc",
