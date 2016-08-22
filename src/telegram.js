@@ -147,13 +147,18 @@ class TelegramBot extends EventEmitter {
       throw new Error('Telegram Bot Token not provided!');
     }
 
-    if (options.form) {
-      const replyMarkup = options.form.reply_markup;
-      if (replyMarkup && typeof replyMarkup !== 'string') {
-        // reply_markup must be passed as JSON stringified to Telegram
-        options.form.reply_markup = JSON.stringify(replyMarkup);
-      }
+    let markupKey;
+    if (options.form && options.form.reply_markup) {
+      markupKey = 'form';
+    } else if (options.qs && options.qs.reply_markup) {
+      markupKey = 'qs';
     }
+
+    if (markupKey) {
+      // reply_markup must be passed as stringified JSON to Telegram
+      options[markupKey].reply_markup = JSON.stringify(options[markupKey]);
+    }
+    
     options.url = this._buildURL(_path);
     options.simple = false;
     options.resolveWithFullResponse = true;
