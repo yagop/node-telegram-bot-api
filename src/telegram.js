@@ -796,6 +796,19 @@ class TelegramBot extends EventEmitter {
     };
     return this._request('getChatMember', { form });
   }
+
+  /**
+   * Leave a group, supergroup or channel.
+   * @param  {Number|String} chatId Unique identifier for the target group or username of the target supergroup (in the format @supergroupusername)
+   * @return {Promise}
+   * @see https://core.telegram.org/bots/api#leavechat
+   */
+  leaveChat(chatId) {
+    const form = {
+      chat_id: chatId
+    };
+    return this._request('leaveChat', { form });
+  }
 }
 
 module.exports = TelegramBot;
