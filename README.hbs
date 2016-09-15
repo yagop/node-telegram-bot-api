@@ -32,8 +32,8 @@ bot.on('message', function (msg) {
 There are some other examples on [examples](https://github.com/yagop/node-telegram-bot-api/tree/master/examples).
 
 ### Events
-Every time TelegramBot receives a message, it emits a `message`. Depending on which  [message](https://core.telegram.org/bots/api#message) was received, emits an event from this ones: `text`, `audio`, `document`, `photo`, `sticker`, `video`, `voice`, `contact`, `location`, `new_chat_participant`, `left_chat_participant`, `new_chat_title`, `new_chat_photo`, `delete_chat_photo`, `group_chat_created`. Its much better to listen a specific event rather than a `message` in order to stay safe from the content.
-TelegramBot emits `inline_query` when receives an [Inline Query](https://core.telegram.org/bots/api#inlinequery) and `chosen_inline_result` when receives a [ChosenInlineResult](https://core.telegram.org/bots/api#choseninlineresult). Bot must be enabled on [inline mode](https://core.telegram.org/bots/api#inline-mode)
+Every time TelegramBot receives a message, it emits a `message`. Depending on which [message](https://core.telegram.org/bots/api#message) was received, emits an event from this ones: `text`, `audio`, `document`, `photo`, `sticker`, `video`, `voice`, `contact`, `location`, `new_chat_participant`, `left_chat_participant`, `new_chat_title`, `new_chat_photo`, `delete_chat_photo`, `group_chat_created`. It's much better to listen a specific event rather than a `message` in order to stay safe from the content.
+TelegramBot also emits `edited_message` when a message is edited, `inline_query` when it receives an [Inline Query](https://core.telegram.org/bots/api#inlinequery) and `chosen_inline_result` when it receives a [ChosenInlineResult](https://core.telegram.org/bots/api#choseninlineresult). Bot must be enabled on [inline mode](https://core.telegram.org/bots/api#inline-mode).
 * * *
 
 ### WebHooks
