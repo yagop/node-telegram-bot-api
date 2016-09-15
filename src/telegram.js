@@ -124,6 +124,12 @@ class TelegramBot extends EventEmitter {
     } else if (editedMessage) {
       debug('Process Update edited_message %j', editedMessage);
       this.emit('edited_message', editedMessage);
+      if (editedMessage.text) {
+        this.emit('edited_message_text', editedMessage);
+      }
+      if (editedMessage.caption) {
+        this.emit('edited_message_caption', editedMessage);
+      }
     } else if (inlineQuery) {
       debug('Process Update inline_query %j', inlineQuery);
       this.emit('inline_query', inlineQuery);
