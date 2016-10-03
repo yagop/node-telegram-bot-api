@@ -711,6 +711,34 @@ class TelegramBot extends EventEmitter {
       callback
     });
   }
+
+  /**
+   * Send game.
+   * @param  {Number|String} chatId Unique identifier for the message recipient
+   * @param  {String} gameShortName name of the game to be sent.
+   * @param  {Object} [options] Additional Telegram query options
+   * @return {Promise}
+   * @see https://core.telegram.org/bots/api#sendgame
+   */
+  sendGame(chatId, gameShortName, form = {}) {
+    form.chat_id = chatId;
+    form.game_short_name = gameShortName;
+    return this._request('sendGame', { form: form });
+  }
+
+  /**
+   * Send new game score.
+   * @param  {String} userId  Unique identifier of the target user
+   * @param  {Number} score New score value.
+   * @param  {Object} [options] Additional Telegram query options
+   * @return {Promise}
+   * @see https://core.telegram.org/bots/api#sendgame
+   */
+  setGameScore(userId, score, form = {}) {
+    form.user_id = userId;
+    form.score = score;
+    return this._request('setGameScore', { form: form });
+  }
 }
 
 module.exports = TelegramBot;

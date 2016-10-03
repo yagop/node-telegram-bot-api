@@ -85,6 +85,8 @@ TelegramBot
     * [.downloadFile(fileId, downloadDir)](#TelegramBot+downloadFile) ⇒ <code>Promise</code>
     * [.onText(regexp, callback)](#TelegramBot+onText)
     * [.onReplyToMessage(chatId, messageId, callback)](#TelegramBot+onReplyToMessage)
+    * [.sendGame(chatId, gameShortName, [options])](#TelegramBot+sendGame) ⇒ <code>Promise</code>
+    * [.setGameScore(userId, score, [options])](#TelegramBot+setGameScore) ⇒ <code>Promise</code>
 
 <a name="new_TelegramBot_new"></a>
 
@@ -496,5 +498,33 @@ Register a reply to wait for a message response.
 | chatId | <code>Number</code> &#124; <code>String</code> | The chat id where the message cames from. |
 | messageId | <code>Number</code> &#124; <code>String</code> | The message id to be replied. |
 | callback | <code>function</code> | Callback will be called with the reply message. |
+
+<a name="TelegramBot+sendGame"></a>
+
+### telegramBot.sendGame(chatId, gameShortName, [options]) ⇒ <code>Promise</code>
+Send game.
+
+**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
+**See**: https://core.telegram.org/bots/api#sendgame  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| chatId | <code>Number</code> &#124; <code>String</code> | Unique identifier for the message recipient |
+| gameShortName | <code>String</code> | name of the game to be sent. |
+| [options] | <code>Object</code> | Additional Telegram query options |
+
+<a name="TelegramBot+setGameScore"></a>
+
+### telegramBot.setGameScore(userId, score, [options]) ⇒ <code>Promise</code>
+Send new game score.
+
+**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
+**See**: https://core.telegram.org/bots/api#sendgame  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| userId | <code>String</code> | Unique identifier of the target user |
+| score | <code>Number</code> | New score value. |
+| [options] | <code>Object</code> | Additional Telegram query options |
 
 * * *
