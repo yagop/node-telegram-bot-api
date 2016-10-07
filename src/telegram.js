@@ -294,7 +294,7 @@ class TelegramBot extends EventEmitter {
     let fileName;
     let fileId;
     if (data instanceof stream.Stream) {
-      fileName = URL.parse(path.basename(data.path)).pathname;
+      fileName = URL.parse(path.basename(data.path.toString())).pathname;
       formData = {};
       formData[type] = {
         value: data,
