@@ -755,7 +755,7 @@ class TelegramBot extends EventEmitter {
    * Use this method to get up to date information about the chat
    * (current name of the user for one-on-one conversations, current
    * username of a user, group or channel, etc.).
-   * @param  {Number|String} chatId Unique identifier for the target chat or username of the target supergroup or channel (in the format @channelusername)
+   * @param  {Number|String} chatId Unique identifier for the target chat or username of the target supergroup or channel
    * @return {Promise}
    * @see https://core.telegram.org/bots/api#getchat
    */
