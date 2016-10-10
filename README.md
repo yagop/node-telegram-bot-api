@@ -60,7 +60,7 @@ TelegramBot
     * [new TelegramBot(token, [options])](#new_TelegramBot_new)
     * [.stopPolling()](#TelegramBot+stopPolling) ⇒ <code>Promise</code>
     * [.getMe()](#TelegramBot+getMe) ⇒ <code>Promise</code>
-    * [.getChat()](#TelegramBot+getChat) ⇒ <code>Promise</code>
+    * [.getChat(chatId)](#TelegramBot+getChat) ⇒ <code>Promise</code>
     * [.setWebHook(url, [cert])](#TelegramBot+setWebHook)
     * [.getUpdates([timeout], [limit], [offset])](#TelegramBot+getUpdates) ⇒ <code>Promise</code>
     * [.sendMessage(chatId, text, [options])](#TelegramBot+sendMessage) ⇒ <code>Promise</code>
@@ -81,6 +81,7 @@ TelegramBot
     * [.editMessageReplyMarkup(replyMarkup, [options])](#TelegramBot+editMessageReplyMarkup) ⇒ <code>Promise</code>
     * [.getUserProfilePhotos(userId, [offset], [limit])](#TelegramBot+getUserProfilePhotos) ⇒ <code>Promise</code>
     * [.sendLocation(chatId, latitude, longitude, [options])](#TelegramBot+sendLocation) ⇒ <code>Promise</code>
+    * [.sendVenue(chatId, latitude, longitude, title, address, [options])](#TelegramBot+sendVenue) ⇒ <code>Promise</code>
     * [.getFile(fileId)](#TelegramBot+getFile) ⇒ <code>Promise</code>
     * [.getFileLink(fileId)](#TelegramBot+getFileLink) ⇒ <code>Promise</code>
     * [.downloadFile(fileId, downloadDir)](#TelegramBot+downloadFile) ⇒ <code>Promise</code>
@@ -122,13 +123,18 @@ Returns basic information about the bot in form of a `User` object.
 **See**: https://core.telegram.org/bots/api#getme  
 <a name="TelegramBot+getChat"></a>
 
-### telegramBot.getChat() ⇒ <code>Promise</code>
+### telegramBot.getChat(chatId) ⇒ <code>Promise</code>
 Use this method to get up to date information about the chat
 (current name of the user for one-on-one conversations, current
 username of a user, group or channel, etc.).
 
 **Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
 **See**: https://core.telegram.org/bots/api#getchat  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| chatId | <code>Number</code> &#124; <code>String</code> | Unique identifier for the target chat or username of the target supergroup or channel (in the format @channelusername) |
+
 <a name="TelegramBot+setWebHook"></a>
 
 ### telegramBot.setWebHook(url, [cert])
@@ -434,6 +440,24 @@ Use this method to send point on the map.
 | chatId | <code>Number</code> &#124; <code>String</code> | Unique identifier for the message recipient |
 | latitude | <code>Float</code> | Latitude of location |
 | longitude | <code>Float</code> | Longitude of location |
+| [options] | <code>Object</code> | Additional Telegram query options |
+
+<a name="TelegramBot+sendVenue"></a>
+
+### telegramBot.sendVenue(chatId, latitude, longitude, title, address, [options]) ⇒ <code>Promise</code>
+Send venue.
+Use this method to send information about a venue.
+
+**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
+**See**: https://core.telegram.org/bots/api#sendvenue  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| chatId | <code>Number</code> &#124; <code>String</code> | Unique identifier for the message recipient |
+| latitude | <code>Float</code> | Latitude of location |
+| longitude | <code>Float</code> | Longitude of location |
+| title | <code>String</code> | Name of the venue |
+| address | <code>String</code> | Address of the venue |
 | [options] | <code>Object</code> | Additional Telegram query options |
 
 <a name="TelegramBot+getFile"></a>
