@@ -450,7 +450,7 @@ describe('Telegram', function telegramSuite() {
       });
     });
   });
-  
+
   describe('#sendVenue', function sendVenueSuite() {
     it('should send a venue', function test() {
       const bot = new Telegram(TOKEN);
@@ -460,11 +460,12 @@ describe('Telegram', function telegramSuite() {
       const address = `430 Topsail Rd,St. John's, NL A1E 4N1, Canada`;
       return bot.sendVenue(USERID, lat, long, title, address).then(resp => {
         assert.ok(is.object(resp));
-        assert.ok(is.object(resp.location));
-        assert.ok(is.number(resp.location.latitude));
-        assert.ok(is.number(resp.location.longitude));
-        assert.ok(is.string(resp.title));
-        assert.ok(is.string(resp.address));
+        assert.ok(is.object(resp.venue));
+        assert.ok(is.object(resp.venue.location));
+        assert.ok(is.number(resp.venue.location.latitude));
+        assert.ok(is.number(resp.venue.location.longitude));
+        assert.ok(is.string(resp.venue.title));
+        assert.ok(is.string(resp.venue.address));
       });
     });
   });
