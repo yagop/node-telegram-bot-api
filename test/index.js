@@ -14,6 +14,7 @@ if (!TOKEN) {
 
 // Telegram service if not User Id
 const USERID = process.env.TEST_USER_ID || 777000;
+const GROUPID = process.env.TEST_GROUP_ID || -1001075450562;
 
 describe('Telegram', function telegramSuite() {
   describe('#setWebHook', function setWebHookSuite() {
@@ -136,6 +137,34 @@ describe('Telegram', function telegramSuite() {
       const bot = new Telegram(TOKEN);
       return bot.getChat(USERID).then(resp => {
         assert.ok(is.object(resp));
+      });
+    });
+  });
+
+  describe('#getChatAdministrators', function getChatAdministratorsSuite() {
+    it('should return an Array', function test() {
+      const bot = new Telegram(TOKEN);
+      return bot.getChatAdministrators(GROUPID).then(resp => {
+        assert.ok(Array.isArray(resp));
+      });
+    });
+  });
+
+  describe('#getChatMembersCount', function getChatMembersCountSuite() {
+    it('should return an Integer', function test() {
+      const bot = new Telegram(TOKEN);
+      return bot.getChatMembersCount(GROUPID).then(resp => {
+        assert.ok(Number.isInteger(resp));
+      });
+    });
+  });
+
+  describe('#getChatMember', function getChatMemberSuite() {
+    it('should return a ChatMember', function test() {
+      const bot = new Telegram(TOKEN);
+      return bot.getChatMember(GROUPID, USERID).then(resp => {
+        assert.ok(is.object(resp.user));
+        assert.ok(is.string(resp.status));
       });
     });
   });
