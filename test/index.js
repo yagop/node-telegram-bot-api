@@ -205,6 +205,18 @@ describe('Telegram', function telegramSuite() {
         assert.ok(is.object(resp));
       });
     });
+
+    it('should send a photo along with reply_markup', function test() {
+      const bot = new Telegram(TOKEN);
+      const photo = fs.readFileSync(`${__dirname}/bot.gif`);
+      return bot.sendPhoto(USERID, photo, {
+        reply_markup: {
+          hide_keyboard: true
+        }
+      }).then(resp => {
+        assert.ok(is.object(resp));
+      });
+    });
   });
 
   describe('#sendChatAction', function sendChatActionSuite() {
