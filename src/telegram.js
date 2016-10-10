@@ -206,6 +206,21 @@ class TelegramBot extends EventEmitter {
   }
 
   /**
+   * Use this method to get up to date information about the chat
+   * (current name of the user for one-on-one conversations, current
+   * username of a user, group or channel, etc.).
+   * @return {Promise}
+   * @see https://core.telegram.org/bots/api#getchat
+   */
+  getChat(chatId) {
+    const form = {
+      chat_id: chatId
+    };
+
+    return this._request('getChat', {form: form});
+  }
+
+  /**
    * Specify an url to receive incoming updates via an outgoing webHook.
    * @param {String} url URL where Telegram will make HTTP Post. Leave empty to
    * delete webHook.
