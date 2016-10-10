@@ -92,6 +92,8 @@ TelegramBot
     * [.getChatMembersCount(chatId)](#TelegramBot+getChatMembersCount) ⇒ <code>Promise</code>
     * [.getChatMember(chatId, userId)](#TelegramBot+getChatMember) ⇒ <code>Promise</code>
     * [.leaveChat(chatId)](#TelegramBot+leaveChat) ⇒ <code>Promise</code>
+    * [.sendGame(chatId, gameShortName, [options])](#TelegramBot+sendGame) ⇒ <code>Promise</code>
+    * [.setGameScore(userId, score, [options])](#TelegramBot+setGameScore) ⇒ <code>Promise</code>
 
 <a name="new_TelegramBot_new"></a>
 
@@ -584,5 +586,33 @@ Leave a group, supergroup or channel.
 | Param | Type | Description |
 | --- | --- | --- |
 | chatId | <code>Number</code> &#124; <code>String</code> | Unique identifier for the target group or username of the target supergroup (in the format @supergroupusername) |
+
+<a name="TelegramBot+sendGame"></a>
+
+### telegramBot.sendGame(chatId, gameShortName, [options]) ⇒ <code>Promise</code>
+Use this method to send a game.
+
+**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
+**See**: https://core.telegram.org/bots/api#sendgame  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| chatId | <code>Number</code> &#124; <code>String</code> | Unique identifier for the message recipient |
+| gameShortName | <code>String</code> | name of the game to be sent. |
+| [options] | <code>Object</code> | Additional Telegram query options |
+
+<a name="TelegramBot+setGameScore"></a>
+
+### telegramBot.setGameScore(userId, score, [options]) ⇒ <code>Promise</code>
+Use this method to set the score of the specified user in a game.
+
+**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
+**See**: https://core.telegram.org/bots/api#setgamescore  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| userId | <code>String</code> | Unique identifier of the target user |
+| score | <code>Number</code> | New score value. |
+| [options] | <code>Object</code> | Additional Telegram query options |
 
 * * *
