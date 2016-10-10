@@ -91,6 +91,7 @@ TelegramBot
     * [.getChatAdministrators(chatId)](#TelegramBot+getChatAdministrators) ⇒ <code>Promise</code>
     * [.getChatMembersCount(chatId)](#TelegramBot+getChatMembersCount) ⇒ <code>Promise</code>
     * [.getChatMember(chatId, userId)](#TelegramBot+getChatMember) ⇒ <code>Promise</code>
+    * [.leaveChat(chatId)](#TelegramBot+leaveChat) ⇒ <code>Promise</code>
 
 <a name="new_TelegramBot_new"></a>
 
@@ -571,5 +572,17 @@ Use this method to get information about a member of a chat.
 | --- | --- | --- |
 | chatId | <code>Number</code> &#124; <code>String</code> | Unique identifier for the target group or username of the target supergroup |
 | userId | <code>String</code> | Unique identifier of the target user |
+
+<a name="TelegramBot+leaveChat"></a>
+
+### telegramBot.leaveChat(chatId) ⇒ <code>Promise</code>
+Leave a group, supergroup or channel.
+
+**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
+**See**: https://core.telegram.org/bots/api#leavechat  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| chatId | <code>Number</code> &#124; <code>String</code> | Unique identifier for the target group or username of the target supergroup (in the format @supergroupusername) |
 
 * * *
