@@ -203,7 +203,14 @@ describe('Telegram', function telegramSuite() {
   describe('#_formatSendData', function _formatSendData() {
     it('should handle buffer path from fs.readStream', function test() {
       const bot = new Telegram(TOKEN);
-      const photo = fs.createReadStream(Buffer.from(`${__dirname}/bot.gif`));
+      let photo;
+      try {
+        photo = fs.createReadStream(Buffer.from(`${__dirname}/bot.gif`));
+      } catch(ex) {
+        // Older Node.js versions do not support passing a Buffer
+        // representation of the path to fs.createReadStream()
+        if (ex instanceof TypeError) return;
+      }
       return bot.sendPhoto(USERID, photo).then(resp => {
         assert.ok(is.object(resp));
       });
