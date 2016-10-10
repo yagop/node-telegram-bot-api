@@ -87,6 +87,10 @@ TelegramBot
     * [.downloadFile(fileId, downloadDir)](#TelegramBot+downloadFile) ⇒ <code>Promise</code>
     * [.onText(regexp, callback)](#TelegramBot+onText)
     * [.onReplyToMessage(chatId, messageId, callback)](#TelegramBot+onReplyToMessage)
+    * [.getChat(chatId)](#TelegramBot+getChat) ⇒ <code>Promise</code>
+    * [.getChatAdministrators(chatId)](#TelegramBot+getChatAdministrators) ⇒ <code>Promise</code>
+    * [.getChatMembersCount(chatId)](#TelegramBot+getChatMembersCount) ⇒ <code>Promise</code>
+    * [.getChatMember(chatId, userId)](#TelegramBot+getChatMember) ⇒ <code>Promise</code>
 
 <a name="new_TelegramBot_new"></a>
 
@@ -530,5 +534,54 @@ Register a reply to wait for a message response.
 | chatId | <code>Number</code> &#124; <code>String</code> | The chat id where the message cames from. |
 | messageId | <code>Number</code> &#124; <code>String</code> | The message id to be replied. |
 | callback | <code>function</code> | Callback will be called with the reply message. |
+
+<a name="TelegramBot+getChat"></a>
+
+### telegramBot.getChat(chatId) ⇒ <code>Promise</code>
+Returns information about the chat in form of a `Chat` object.
+
+**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
+**See**: https://core.telegram.org/bots/api#getchat  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| chatId | <code>Number</code> &#124; <code>String</code> | Unique identifier for the target group or username of the target supergroup |
+
+<a name="TelegramBot+getChatAdministrators"></a>
+
+### telegramBot.getChatAdministrators(chatId) ⇒ <code>Promise</code>
+Returns the administrators in a chat in form of an Array of `ChatMember` objects.
+
+**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
+**See**: https://core.telegram.org/bots/api#getchatadministrators  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| chatId | <code>Number</code> &#124; <code>String</code> | Unique identifier for the target group or username of the target supergroup |
+
+<a name="TelegramBot+getChatMembersCount"></a>
+
+### telegramBot.getChatMembersCount(chatId) ⇒ <code>Promise</code>
+Returns the number of members in a chat in form of an `Int` object.
+
+**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
+**See**: https://core.telegram.org/bots/api#getchatmemberscount  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| chatId | <code>Number</code> &#124; <code>String</code> | Unique identifier for the target group or username of the target supergroup |
+
+<a name="TelegramBot+getChatMember"></a>
+
+### telegramBot.getChatMember(chatId, userId) ⇒ <code>Promise</code>
+Returns information about a member of a chat in form of a `ChatMember` object.
+
+**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
+**See**: https://core.telegram.org/bots/api#getchatmember  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| chatId | <code>Number</code> &#124; <code>String</code> | Unique identifier for the target group or username of the target supergroup |
+| userId | <code>String</code> | Unique identifier of the target user |
 
 * * *
