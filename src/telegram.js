@@ -809,6 +809,34 @@ class TelegramBot extends EventEmitter {
     };
     return this._request('leaveChat', { form });
   }
+
+  /**
+   * Use this method to send a game.
+   * @param  {Number|String} chatId Unique identifier for the message recipient
+   * @param  {String} gameShortName name of the game to be sent.
+   * @param  {Object} [options] Additional Telegram query options
+   * @return {Promise}
+   * @see https://core.telegram.org/bots/api#sendgame
+   */
+  sendGame(chatId, gameShortName, form = {}) {
+    form.chat_id = chatId;
+    form.game_short_name = gameShortName;
+    return this._request('sendGame', { form });
+  }
+
+  /**
+   * Use this method to set the score of the specified user in a game.
+   * @param  {String} userId  Unique identifier of the target user
+   * @param  {Number} score New score value.
+   * @param  {Object} [options] Additional Telegram query options
+   * @return {Promise}
+   * @see https://core.telegram.org/bots/api#setgamescore
+   */
+  setGameScore(userId, score, form = {}) {
+    form.user_id = userId;
+    form.score = score;
+    return this._request('setGameScore', { form });
+  }
 }
 
 module.exports = TelegramBot;
