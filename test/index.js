@@ -200,6 +200,16 @@ describe('Telegram', function telegramSuite() {
     });
   });
 
+  describe('#_formatSendData', function _formatSendData() {
+    it('should handle buffer path from fs.readStream', function test() {
+      const bot = new Telegram(TOKEN);
+      const photo = fs.createReadStream(Buffer.from(`${__dirname}/bot.gif`));
+      return bot.sendPhoto(USERID, photo).then(resp => {
+        assert.ok(is.object(resp));
+      });
+    });
+  });
+
   describe('#sendPhoto', function sendPhotoSuite() {
     let photoId;
     it('should send a photo from file', function test() {
