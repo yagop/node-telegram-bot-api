@@ -140,7 +140,7 @@ class TelegramBot extends EventEmitter {
       throw new Error(`Error parsing Telegram response: ${String(json)}`);
     }
   }
-  
+
   _fixReplyMarkup(obj) {
     const replyMarkup = obj.reply_markup;
     if (replyMarkup && typeof replyMarkup !== 'string') {
@@ -203,6 +203,21 @@ class TelegramBot extends EventEmitter {
   getMe() {
     const _path = 'getMe';
     return this._request(_path);
+  }
+
+  /**
+   * Use this method to get up to date information about the chat
+   * (current name of the user for one-on-one conversations, current
+   * username of a user, group or channel, etc.).
+   * @param  {Number|String} chatId Unique identifier for the target chat or username of the target supergroup or channel (in the format @channelusername)
+   * @return {Promise}
+   * @see https://core.telegram.org/bots/api#getchat
+   */
+  getChat(chatId) {
+    const form = {
+      chat_id: chatId
+    };
+    return this._request('getChat', { form });
   }
 
   /**
@@ -633,7 +648,7 @@ class TelegramBot extends EventEmitter {
     form.longitude = longitude;
     return this._request('sendLocation', { form });
   }
-  
+
   /**
    * Send venue.
    * Use this method to send information about a venue.
