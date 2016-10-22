@@ -847,6 +847,18 @@ class TelegramBot extends EventEmitter {
     form.score = score;
     return this._request('setGameScore', { form });
   }
+
+  /**
+   * Use this method to get data for high score table.
+   * @param  {String} userId  Unique identifier of the target user
+   * @param  {Object} [options] Additional Telegram query options
+   * @return {Promise}
+   * @see https://core.telegram.org/bots/api#getgamehighscores
+   */
+  getGameHighScores(userId, form = {}) {
+    form.user_id = userId;
+    return this._request('getGameHighScores', { form });
+  }
 }
 
 module.exports = TelegramBot;
