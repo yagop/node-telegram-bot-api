@@ -41,6 +41,7 @@ class TelegramBot extends EventEmitter {
    * @param {Boolean|Object} [options.webHook=false] Set true to enable WebHook or set options
    * @param {String} [options.webHook.key] PEM private key to webHook server.
    * @param {String} [options.webHook.cert] PEM certificate (public) to webHook server.
+   * @param {Boolean} [options.onlyFirstMatch=false] Set to true to stop after first match. Otherwise, all regexps are executed
    * @see https://core.telegram.org/bots/api
    */
   constructor(token, options = {}) {
@@ -99,12 +100,14 @@ class TelegramBot extends EventEmitter {
       TelegramBot.messageTypes.forEach(processMessageType);
       if (message.text) {
         debug('Text message');
-        this.textRegexpCallbacks.forEach(reg => {
+        this.textRegexpCallbacks.some(reg => {
           debug('Matching %s whith', message.text, reg.regexp);
           const result = reg.regexp.exec(message.text);
           if (result) {
             debug('Matches', reg.regexp);
             reg.callback(message, result);
+            // returning truthy value exits .some
+            return this.options.onlyFirstMatch;
           }
         });
       }
