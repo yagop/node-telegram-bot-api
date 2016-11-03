@@ -95,6 +95,7 @@ TelegramBot
     * [.leaveChat(chatId)](#TelegramBot+leaveChat) ⇒ <code>Promise</code>
     * [.sendGame(chatId, gameShortName, [options])](#TelegramBot+sendGame) ⇒ <code>Promise</code>
     * [.setGameScore(userId, score, [options])](#TelegramBot+setGameScore) ⇒ <code>Promise</code>
+    * [.getGameHighScores(userId, [options])](#TelegramBot+getGameHighScores) ⇒ <code>Promise</code>
 
 <a name="new_TelegramBot_new"></a>
 
@@ -615,6 +616,19 @@ Use this method to set the score of the specified user in a game.
 | --- | --- | --- |
 | userId | <code>String</code> | Unique identifier of the target user |
 | score | <code>Number</code> | New score value. |
+| [options] | <code>Object</code> | Additional Telegram query options |
+
+<a name="TelegramBot+getGameHighScores"></a>
+
+### telegramBot.getGameHighScores(userId, [options]) ⇒ <code>Promise</code>
+Use this method to get data for high score table.
+
+**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
+**See**: https://core.telegram.org/bots/api#getgamehighscores  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| userId | <code>String</code> | Unique identifier of the target user |
 | [options] | <code>Object</code> | Additional Telegram query options |
 
 * * *
