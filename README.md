@@ -114,6 +114,7 @@ Emits `message` when a message arrives.
 | [options.webHook] | <code>Boolean</code> &#124; <code>Object</code> | <code>false</code> | Set true to enable WebHook or set options |
 | [options.webHook.key] | <code>String</code> |  | PEM private key to webHook server. |
 | [options.webHook.cert] | <code>String</code> |  | PEM certificate (public) to webHook server. |
+| [options.onlyFirstMatch] | <code>Boolean</code> | <code>false</code> | false: try matching all regexps; true: stop after first match |
 
 <a name="TelegramBot+stopPolling"></a>
 
@@ -537,7 +538,7 @@ username of a user, group or channel, etc.).
 
 | Param | Type | Description |
 | --- | --- | --- |
-| chatId | <code>Number</code> &#124; <code>String</code> | Unique identifier for the target chat or username of the target supergroup or channel (in the format @channelusername) |
+| chatId | <code>Number</code> &#124; <code>String</code> | Unique identifier for the target chat or username of the target supergroup or channel |
 
 <a name="TelegramBot+getChatAdministrators"></a>
 
