@@ -674,8 +674,8 @@ class TelegramBot extends EventEmitter {
    * Use this method to send phone contacts.
    *
    * @param  {Number|String} chatId  Unique identifier for the message recipient
-   * @param  {String} phone_number Contact's phone number
-   * @param  {String} first_name Contact's first name
+   * @param  {String} phoneNumber Contact's phone number
+   * @param  {String} firstName Contact's first name
    * @param  {Object} [options] Additional Telegram query options
    * @return {Promise}
    * @see https://core.telegram.org/bots/api#sendcontact

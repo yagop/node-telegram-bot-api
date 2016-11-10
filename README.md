@@ -83,7 +83,7 @@ TelegramBot
     * [.getUserProfilePhotos(userId, [offset], [limit])](#TelegramBot+getUserProfilePhotos) ⇒ <code>Promise</code>
     * [.sendLocation(chatId, latitude, longitude, [options])](#TelegramBot+sendLocation) ⇒ <code>Promise</code>
     * [.sendVenue(chatId, latitude, longitude, title, address, [options])](#TelegramBot+sendVenue) ⇒ <code>Promise</code>
-    * [.sendContact(chatId, phone_number, first_name, [options])](#TelegramBot+sendContact) ⇒ <code>Promise</code>
+    * [.sendContact(chatId, phoneNumber, firstName, [options])](#TelegramBot+sendContact) ⇒ <code>Promise</code>
     * [.getFile(fileId)](#TelegramBot+getFile) ⇒ <code>Promise</code>
     * [.getFileLink(fileId)](#TelegramBot+getFileLink) ⇒ <code>Promise</code>
     * [.downloadFile(fileId, downloadDir)](#TelegramBot+downloadFile) ⇒ <code>Promise</code>
@@ -459,7 +459,7 @@ Use this method to send information about a venue.
 
 <a name="TelegramBot+sendContact"></a>
 
-### telegramBot.sendContact(chatId, phone_number, first_name, [options]) ⇒ <code>Promise</code>
+### telegramBot.sendContact(chatId, phoneNumber, firstName, [options]) ⇒ <code>Promise</code>
 Send contact.
 Use this method to send phone contacts.
 
@@ -469,8 +469,8 @@ Use this method to send phone contacts.
 | Param | Type | Description |
 | --- | --- | --- |
 | chatId | <code>Number</code> &#124; <code>String</code> | Unique identifier for the message recipient |
-| phone_number | <code>String</code> | Contact's phone number |
-| first_name | <code>String</code> | Contact's first name |
+| phoneNumber | <code>String</code> | Contact's phone number |
+| firstName | <code>String</code> | Contact's first name |
 | [options] | <code>Object</code> | Additional Telegram query options |
 
 <a name="TelegramBot+getFile"></a>
