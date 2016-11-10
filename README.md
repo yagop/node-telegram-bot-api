@@ -83,6 +83,7 @@ TelegramBot
     * [.getUserProfilePhotos(userId, [offset], [limit])](#TelegramBot+getUserProfilePhotos) ⇒ <code>Promise</code>
     * [.sendLocation(chatId, latitude, longitude, [options])](#TelegramBot+sendLocation) ⇒ <code>Promise</code>
     * [.sendVenue(chatId, latitude, longitude, title, address, [options])](#TelegramBot+sendVenue) ⇒ <code>Promise</code>
+    * [.sendContact(chatId, phone_number, first_name, [options])](#TelegramBot+sendContact) ⇒ <code>Promise</code>
     * [.getFile(fileId)](#TelegramBot+getFile) ⇒ <code>Promise</code>
     * [.getFileLink(fileId)](#TelegramBot+getFileLink) ⇒ <code>Promise</code>
     * [.downloadFile(fileId, downloadDir)](#TelegramBot+downloadFile) ⇒ <code>Promise</code>
@@ -115,7 +116,7 @@ Emits `message` when a message arrives.
 | [options.webHook] | <code>Boolean</code> &#124; <code>Object</code> | <code>false</code> | Set true to enable WebHook or set options |
 | [options.webHook.key] | <code>String</code> |  | PEM private key to webHook server. |
 | [options.webHook.cert] | <code>String</code> |  | PEM certificate (public) to webHook server. |
-| [options.onlyFirstMatch] | <code>Boolean</code> | <code>false</code> | false: try matching all regexps; true: stop after first match |
+| [options.onlyFirstMatch] | <code>Boolean</code> | <code>false</code> | Set to true to stop after first match. Otherwise, all regexps are executed |
 
 <a name="TelegramBot+stopPolling"></a>
 
@@ -454,6 +455,22 @@ Use this method to send information about a venue.
 | longitude | <code>Float</code> | Longitude of location |
 | title | <code>String</code> | Name of the venue |
 | address | <code>String</code> | Address of the venue |
+| [options] | <code>Object</code> | Additional Telegram query options |
+
+<a name="TelegramBot+sendContact"></a>
+
+### telegramBot.sendContact(chatId, phone_number, first_name, [options]) ⇒ <code>Promise</code>
+Send contact.
+Use this method to send phone contacts.
+
+**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
+**See**: https://core.telegram.org/bots/api#sendcontact  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| chatId | <code>Number</code> &#124; <code>String</code> | Unique identifier for the message recipient |
+| phone_number | <code>String</code> | Contact's phone number |
+| first_name | <code>String</code> | Contact's first name |
 | [options] | <code>Object</code> | Additional Telegram query options |
 
 <a name="TelegramBot+getFile"></a>

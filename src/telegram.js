@@ -670,6 +670,25 @@ class TelegramBot extends EventEmitter {
   }
 
   /**
+   * Send contact.
+   * Use this method to send phone contacts.
+   *
+   * @param  {Number|String} chatId  Unique identifier for the message recipient
+   * @param  {String} phone_number Contact's phone number
+   * @param  {String} first_name Contact's first name
+   * @param  {Object} [options] Additional Telegram query options
+   * @return {Promise}
+   * @see https://core.telegram.org/bots/api#sendcontact
+   */
+  sendContact(chatId, phoneNumber, firstName, form = {}) {
+    form.chat_id = chatId;
+    form.phone_number = phoneNumber;
+    form.first_name = firstName;
+    return this._request('sendContact', { form });
+  }
+
+
+  /**
    * Get file.
    * Use this method to get basic info about a file and prepare it for downloading.
    * Attention: link will be valid for 1 hour.
