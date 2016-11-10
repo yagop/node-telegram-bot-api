@@ -60,7 +60,7 @@ class TelegramBotWebHook {
 
   // bound req listener
   _requestListener = (req, res) => {
-    debug('WebHook request URL:', req.url);
+    debug('WebHook request URL: %s', req.url);
     debug('WebHook request headers: %j', req.headers);
 
     // If there isn't token on URL
