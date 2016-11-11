@@ -20,13 +20,13 @@ bot.onText(/\/echo (.+)/, function (msg, match) {
   bot.sendMessage(fromId, resp);
 });
 
-// Any kind of message
+// Log the message and echo user's text
 bot.on('message', function (msg) {
-  var chatId = msg.chat.id;
-  // photo can be: a file path, a stream or a Telegram file_id
-  var photo = 'cats.png';
-  bot.sendPhoto(chatId, photo, {caption: 'Lovely kittens'});
+    console.log('Received message:',msg);
+    var chatId = msg.chat.id;
+    bot.sendMessage(chatId, 'You said: "' + msg.text + '"');
 });
+
 ```
 
 There are some other examples on [examples](https://github.com/yagop/node-telegram-bot-api/tree/master/examples).
