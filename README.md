@@ -13,20 +13,20 @@ var token = 'YOUR_TELEGRAM_BOT_TOKEN';
 // Setup polling way
 var bot = new TelegramBot(token, {polling: true});
 
-// Matches /echo [whatever]
+// Matches "/echo [whatever]"
 bot.onText(/\/echo (.+)/, function (msg, match) {
   var fromId = msg.from.id;
   var resp = match[1];
+  // send the matched "whatever" to the sender
   bot.sendMessage(fromId, resp);
 });
 
-// Log the message and echo user's text
+// Listen for any kind of message
 bot.on('message', function (msg) {
-    console.log('Received message:',msg);
-    var chatId = msg.chat.id;
-    bot.sendMessage(chatId, 'You said: "' + msg.text + '"');
+  var chatId = msg.chat.id;
+  // send a message to the sender to acknowledge receiving their message
+  bot.sendMessage(chatId, "Received your message");
 });
-
 ```
 
 There are some other examples on [examples](https://github.com/yagop/node-telegram-bot-api/tree/master/examples).
