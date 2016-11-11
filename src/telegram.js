@@ -13,7 +13,6 @@ const path = require('path');
 const URL = require('url');
 const fs = require('fs');
 const pump = require('pump');
-const extend = require('extend');
 
 const _messageTypes = [
   'text', 'audio', 'document', 'photo', 'sticker', 'video', 'voice', 'contact',
@@ -171,7 +170,7 @@ class TelegramBot extends EventEmitter {
     }
 
     if (this.options.request) {
-      extend(true, options, this.options.request);
+      Object.assign(options, this.options.request);
     }
 
     if (options.form) {
