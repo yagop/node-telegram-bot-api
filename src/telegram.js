@@ -42,6 +42,7 @@ class TelegramBot extends EventEmitter {
    * @param {String} [options.webHook.key] PEM private key to webHook server.
    * @param {String} [options.webHook.cert] PEM certificate (public) to webHook server.
    * @param {Boolean} [options.onlyFirstMatch=false] Set to true to stop after first match. Otherwise, all regexps are executed
+   * @param {Object} [options.request] Options which will be added for all requests to telegram api.
    * @see https://core.telegram.org/bots/api
    */
   constructor(token, options = {}) {
@@ -166,6 +167,10 @@ class TelegramBot extends EventEmitter {
   _request(_path, options = {}) {
     if (!this.token) {
       throw new Error('Telegram Bot Token not provided!');
+    }
+
+    if (this.options.request) {
+      Object.assign(options, this.options.request);
     }
 
     if (options.form) {
