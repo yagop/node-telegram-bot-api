@@ -177,6 +177,7 @@ class TelegramBot extends EventEmitter {
     options.url = this._buildURL(_path);
     options.simple = false;
     options.resolveWithFullResponse = true;
+    options.forever = true;
     debug('HTTP request: %j', options);
     return request(options)
       .then(resp => {
