@@ -43,6 +43,7 @@ class TelegramBot extends EventEmitter {
    * @param {String} [options.webHook.cert] PEM certificate (public) to webHook server.
    * @param {Boolean} [options.onlyFirstMatch=false] Set to true to stop after first match. Otherwise, all regexps are executed
    * @param {Object} [options.request] Options which will be added for all requests to telegram api.
+   *  See https://github.com/request/request#requestoptions-callback for more information.
    * @see https://core.telegram.org/bots/api
    */
   constructor(token, options = {}) {

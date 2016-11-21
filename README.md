@@ -126,6 +126,7 @@ Emits `message` when a message arrives.
 | [options.webHook.key] | <code>String</code> |  | PEM private key to webHook server. |
 | [options.webHook.cert] | <code>String</code> |  | PEM certificate (public) to webHook server. |
 | [options.onlyFirstMatch] | <code>Boolean</code> | <code>false</code> | Set to true to stop after first match. Otherwise, all regexps are executed |
+| [options.request] | <code>Object</code> |  | Options which will be added for all requests to telegram api.  See https://github.com/request/request#requestoptions-callback for more information. |
 
 <a name="TelegramBot+stopPolling"></a>
 
