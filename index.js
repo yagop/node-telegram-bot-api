@@ -1,1 +1,1 @@
-module.exports = require('./src/telegram');
+module.exports = require('./lib/telegram');
