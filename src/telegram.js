@@ -570,10 +570,11 @@ class TelegramBot extends EventEmitter {
    * @return {Promise}
    * @see https://core.telegram.org/bots/api#answercallbackquery
    */
-  answerCallbackQuery(callbackQueryId, text, showAlert, form = {}) {
+  answerCallbackQuery(callbackQueryId, text, showAlert, url, form = {}) {
     form.callback_query_id = callbackQueryId;
     form.text = text;
     form.show_alert = showAlert;
+	form.url = url;
     return this._request('answerCallbackQuery', { form });
   }
 

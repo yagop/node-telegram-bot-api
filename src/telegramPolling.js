@@ -125,7 +125,10 @@ class TelegramBotPolling {
         }
 
         throw new Error(`${data.error_code} ${data.description}`);
-      });
+      })
+	  .catch(err => {
+		  throw new Error(`Unhandled error on _getUpdates: ${err}`);
+	  });
   }
 
 }
