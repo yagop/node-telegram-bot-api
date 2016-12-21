@@ -169,6 +169,14 @@ class TelegramBot extends EventEmitter {
       throw new Error(`Error parsing Telegram response: ${String(json)}`);
     }
   }
+  
+  _fixReplyMarkup(obj) {
+    const replyMarkup = obj.reply_markup;
+    if (replyMarkup && typeof replyMarkup !== 'string') {
+      // reply_markup must be passed as JSON stringified to Telegram
+      obj.reply_markup = JSON.stringify(replyMarkup);
+    }
+  }
 
   _fixReplyMarkup(obj) {
     const replyMarkup = obj.reply_markup;
