@@ -9,7 +9,7 @@ class TelegramBotWebHook {
   constructor(token, options, callback) {
     this.token = token;
     this.callback = callback;
-    this.regex = new RegExp(this.token);
+    this.urlValidator = path => path.indexOf(token) >= 0;
 
     // define opts
     if (typeof options === 'boolean') {
@@ -64,7 +64,7 @@ class TelegramBotWebHook {
     debug('WebHook request headers: %j', req.headers);
 
     // If there isn't token on URL
-    if (!this.regex.test(req.url)) {
+    if (!this.urlValidator(req.url)) {
       debug('WebHook request unauthorized');
       res.statusCode = 401;
       res.end();
