@@ -78,12 +78,12 @@ TelegramBot
     * [.closeWebHook()](#TelegramBot+closeWebHook) ⇒ <code>Promise</code>
     * [.hasOpenWebHook()](#TelegramBot+hasOpenWebHook) ⇒ <code>Boolean</code>
     * [.getMe()](#TelegramBot+getMe) ⇒ <code>Promise</code>
-    * [.setWebHook(url, [cert])](#TelegramBot+setWebHook)
-    * [.getUpdates([timeout], [limit], [offset])](#TelegramBot+getUpdates) ⇒ <code>Promise</code>
+    * [.setWebHook(url, [options])](#TelegramBot+setWebHook)
+    * [.getUpdates([options])](#TelegramBot+getUpdates) ⇒ <code>Promise</code>
     * [.processUpdate(update)](#TelegramBot+processUpdate)
     * [.sendMessage(chatId, text, [options])](#TelegramBot+sendMessage) ⇒ <code>Promise</code>
     * [.answerInlineQuery(inlineQueryId, results, [options])](#TelegramBot+answerInlineQuery) ⇒ <code>Promise</code>
-    * [.forwardMessage(chatId, fromChatId, messageId)](#TelegramBot+forwardMessage) ⇒ <code>Promise</code>
+    * [.forwardMessage(chatId, fromChatId, messageId, [options])](#TelegramBot+forwardMessage) ⇒ <code>Promise</code>
     * [.sendPhoto(chatId, photo, [options])](#TelegramBot+sendPhoto) ⇒ <code>Promise</code>
     * [.sendAudio(chatId, audio, [options])](#TelegramBot+sendAudio) ⇒ <code>Promise</code>
     * [.sendDocument(chatId, doc, [options], [fileOpts])](#TelegramBot+sendDocument) ⇒ <code>Promise</code>
@@ -97,7 +97,7 @@ TelegramBot
     * [.editMessageText(text, [options])](#TelegramBot+editMessageText) ⇒ <code>Promise</code>
     * [.editMessageCaption(caption, [options])](#TelegramBot+editMessageCaption) ⇒ <code>Promise</code>
     * [.editMessageReplyMarkup(replyMarkup, [options])](#TelegramBot+editMessageReplyMarkup) ⇒ <code>Promise</code>
-    * [.getUserProfilePhotos(userId, [offset], [limit])](#TelegramBot+getUserProfilePhotos) ⇒ <code>Promise</code>
+    * [.getUserProfilePhotos(userId, [options])](#TelegramBot+getUserProfilePhotos) ⇒ <code>Promise</code>
     * [.sendLocation(chatId, latitude, longitude, [options])](#TelegramBot+sendLocation) ⇒ <code>Promise</code>
     * [.sendVenue(chatId, latitude, longitude, title, address, [options])](#TelegramBot+sendVenue) ⇒ <code>Promise</code>
     * [.sendContact(chatId, phoneNumber, firstName, [options])](#TelegramBot+sendContact) ⇒ <code>Promise</code>
@@ -188,7 +188,7 @@ Returns basic information about the bot in form of a `User` object.
 **See**: https://core.telegram.org/bots/api#getme  
 <a name="TelegramBot+setWebHook"></a>
 
-### telegramBot.setWebHook(url, [cert])
+### telegramBot.setWebHook(url, [options])
 Specify an url to receive incoming updates via an outgoing webHook.
 
 **Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
@@ -197,22 +197,20 @@ Specify an url to receive incoming updates via an outgoing webHook.
 | Param | Type | Description |
 | --- | --- | --- |
 | url | <code>String</code> | URL where Telegram will make HTTP Post. Leave empty to delete webHook. |
-| [cert] | <code>String</code> &#124; <code>stream.Stream</code> | PEM certificate key (public). |
+| [options] | <code>Object</code> | Additional Telegram query options |
+| [options.certificate] | <code>String</code> &#124; <code>stream.Stream</code> | PEM certificate key (public). |
 
 <a name="TelegramBot+getUpdates"></a>
 
-### telegramBot.getUpdates([timeout], [limit], [offset]) ⇒ <code>Promise</code>
+### telegramBot.getUpdates([options]) ⇒ <code>Promise</code>
 Use this method to receive incoming updates using long polling
 
 **Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
-**Returns**: <code>Promise</code> - Updates  
 **See**: https://core.telegram.org/bots/api#getupdates  
 
 | Param | Type | Description |
 | --- | --- | --- |
-| [timeout] | <code>Number</code> &#124; <code>String</code> | Timeout in seconds for long polling. |
-| [limit] | <code>Number</code> &#124; <code>String</code> | Limits the number of updates to be retrieved. |
-| [offset] | <code>Number</code> &#124; <code>String</code> | Identifier of the first update to be returned. |
+| [options] | <code>Object</code> | Additional Telegram query options |
 
 <a name="TelegramBot+processUpdate"></a>
 
@@ -258,7 +256,7 @@ Send answers to an inline query.
 
 <a name="TelegramBot+forwardMessage"></a>
 
-### telegramBot.forwardMessage(chatId, fromChatId, messageId) ⇒ <code>Promise</code>
+### telegramBot.forwardMessage(chatId, fromChatId, messageId, [options]) ⇒ <code>Promise</code>
 Forward messages of any kind.
 
 **Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
@@ -268,6 +266,7 @@ Forward messages of any kind.
 | chatId | <code>Number</code> &#124; <code>String</code> | Unique identifier for the message recipient |
 | fromChatId | <code>Number</code> &#124; <code>String</code> | Unique identifier for the chat where the original message was sent |
 | messageId | <code>Number</code> &#124; <code>String</code> | Unique message identifier |
+| [options] | <code>Object</code> | Additional Telegram query options |
 
 <a name="TelegramBot+sendPhoto"></a>
 
@@ -478,7 +477,7 @@ inline_message_id in your request.
 
 <a name="TelegramBot+getUserProfilePhotos"></a>
 
-### telegramBot.getUserProfilePhotos(userId, [offset], [limit]) ⇒ <code>Promise</code>
+### telegramBot.getUserProfilePhotos(userId, [options]) ⇒ <code>Promise</code>
 Use this method to get a list of profile pictures for a user.
 Returns a [UserProfilePhotos](https://core.telegram.org/bots/api#userprofilephotos) object.
 
@@ -488,8 +487,7 @@ Returns a [UserProfilePhotos](https://core.telegram.org/bots/api#userprofilephot
 | Param | Type | Description |
 | --- | --- | --- |
 | userId | <code>Number</code> &#124; <code>String</code> | Unique identifier of the target user |
-| [offset] | <code>Number</code> | Sequential number of the first photo to be returned. By default, all photos are returned. |
-| [limit] | <code>Number</code> | Limits the number of photos to be retrieved. Values between 1—100 are accepted. Defaults to 100. |
+| [options] | <code>Object</code> | Additional Telegram query options |
 
 <a name="TelegramBot+sendLocation"></a>
 
