@@ -130,6 +130,7 @@ Emits `message` when a message arrives.
 | [options.webHook.port] | <code>Number</code> | <code>8443</code> | Port to bind to |
 | [options.webHook.key] | <code>String</code> |  | Path to file with PEM private key for webHook server. (Read synchronously!) |
 | [options.webHook.cert] | <code>String</code> |  | Path to file with PEM certificate (public) for webHook server. (Read synchronously!) |
+| [options.webHook.autoOpen] | <code>Boolean</code> | <code>true</code> | Open webHook immediately |
 | [options.onlyFirstMatch] | <code>Boolean</code> | <code>false</code> | Set to true to stop after first match. Otherwise, all regexps are executed |
 | [options.request] | <code>Object</code> |  | Options which will be added for all requests to telegram api. See https://github.com/request/request#requestoptions-callback for more information. |
 

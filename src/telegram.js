@@ -48,6 +48,7 @@ class TelegramBot extends EventEmitter {
    * @param {Number} [options.webHook.port=8443] Port to bind to
    * @param {String} [options.webHook.key] Path to file with PEM private key for webHook server. (Read synchronously!)
    * @param {String} [options.webHook.cert] Path to file with PEM certificate (public) for webHook server. (Read synchronously!)
+   * @param {Boolean} [options.webHook.autoOpen=true] Open webHook immediately
    * @param {Boolean} [options.onlyFirstMatch=false] Set to true to stop after first match. Otherwise, all regexps are executed
    * @param {Object} [options.request] Options which will be added for all requests to telegram api. See https://github.com/request/request#requestoptions-callback for more information.
    * @see https://core.telegram.org/bots/api
@@ -67,7 +68,10 @@ class TelegramBot extends EventEmitter {
     }
 
     if (options.webHook) {
-      this._WebHook = new TelegramBotWebHook(token, options.webHook, this.processUpdate.bind(this));
+      const autoOpen = options.webHook.autoOpen;
+      if (typeof autoOpen === 'undefined' || autoOpen === true) {
+        this._WebHook = new TelegramBotWebHook(token, options.webHook, this.processUpdate.bind(this));
+      }
     }
   }
 
