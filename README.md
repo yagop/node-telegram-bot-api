@@ -73,6 +73,10 @@ TelegramBot
     * [new TelegramBot(token, [options])](#new_TelegramBot_new)
     * [.initPolling()](#TelegramBot+initPolling)
     * [.stopPolling()](#TelegramBot+stopPolling) ⇒ <code>Promise</code>
+    * [.isPolling()](#TelegramBot+isPolling) ⇒ <code>Boolean</code>
+    * [.openWebHook()](#TelegramBot+openWebHook)
+    * [.closeWebHook()](#TelegramBot+closeWebHook) ⇒ <code>Promise</code>
+    * [.hasOpenWebHook()](#TelegramBot+hasOpenWebHook) ⇒ <code>Boolean</code>
     * [.getMe()](#TelegramBot+getMe) ⇒ <code>Promise</code>
     * [.setWebHook(url, [cert])](#TelegramBot+setWebHook)
     * [.getUpdates([timeout], [limit], [offset])](#TelegramBot+getUpdates) ⇒ <code>Promise</code>
@@ -139,7 +143,7 @@ Emits `message` when a message arrives.
 ### telegramBot.initPolling()
 Start polling
 
-**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>
+**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
 <a name="TelegramBot+stopPolling"></a>
 
 ### telegramBot.stopPolling() ⇒ <code>Promise</code>
@@ -147,6 +151,32 @@ Stops polling after the last polling request resolves
 
 **Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
 **Returns**: <code>Promise</code> - promise Promise, of last polling request  
+<a name="TelegramBot+isPolling"></a>
+
+### telegramBot.isPolling() ⇒ <code>Boolean</code>
+Return true if polling. Otherwise, false.
+
+**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
+<a name="TelegramBot+openWebHook"></a>
+
+### telegramBot.openWebHook()
+Open webhook
+
+**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
+<a name="TelegramBot+closeWebHook"></a>
+
+### telegramBot.closeWebHook() ⇒ <code>Promise</code>
+Close webhook after closing all current connections
+
+**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
+**Returns**: <code>Promise</code> - promise  
+<a name="TelegramBot+hasOpenWebHook"></a>
+
+### telegramBot.hasOpenWebHook() ⇒ <code>Boolean</code>
+Return true if using webhook and it is open i.e. accepts connections.
+Otherwise, false.
+
+**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
 <a name="TelegramBot+getMe"></a>
 
 ### telegramBot.getMe() ⇒ <code>Promise</code>

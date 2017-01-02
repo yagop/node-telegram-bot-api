@@ -3,6 +3,7 @@ const https = require('https');
 const http = require('http');
 const fs = require('fs');
 const bl = require('bl');
+const Promise = require('bluebird');
 
 
 class TelegramBotWebHook {
@@ -98,6 +99,19 @@ class TelegramBotWebHook {
     }
   }
 
+  /**
+   * Close the webHook
+   * @return {Promise}
+   */
+  close() {
+    const self = this;
+    return new Promise(function closePromise(resolve, reject) {
+      self._webServer.close(function closeCb(error) {
+        if (error) return reject(error);
+        return resolve();
+      });
+    });
+  }
 }
 
 module.exports = TelegramBotWebHook;

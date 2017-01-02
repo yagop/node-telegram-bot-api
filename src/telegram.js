@@ -70,7 +70,7 @@ class TelegramBot extends EventEmitter {
     if (options.webHook) {
       const autoOpen = options.webHook.autoOpen;
       if (typeof autoOpen === 'undefined' || autoOpen === true) {
-        this._WebHook = new TelegramBotWebHook(token, options.webHook, this.processUpdate.bind(this));
+        this.openWebHook();
       }
     }
   }
@@ -323,6 +323,46 @@ class TelegramBot extends EventEmitter {
     const polling = this._polling;
     delete this._polling;
     return polling.stopPolling();
+  }
+
+  /**
+   * Return true if polling. Otherwise, false.
+   * @return {Boolean}
+   */
+  isPolling() {
+    return !!this._polling;
+  }
+
+  /**
+   * Open webhook
+   */
+  openWebHook() {
+    if (this._webHook) {
+      return;
+    }
+    this._webHook = new TelegramBotWebHook(this.token, this.options.webHook, this._processUpdate.bind(this));
+  }
+
+  /**
+   * Close webhook after closing all current connections
+   * @return {Promise} promise
+   */
+  closeWebHook() {
+    if (!this._webHook) {
+      return Promise.resolve();
+    }
+    const webHook = this._webHook;
+    delete this._webHook;
+    return webHook.close();
+  }
+
+  /**
+   * Return true if using webhook and it is open i.e. accepts connections.
+   * Otherwise, false.
+   * @return {Boolean}
+   */
+  hasOpenWebHook() {
+    return !!this._webHook;
   }
 
   /**
