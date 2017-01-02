@@ -43,6 +43,7 @@ class TelegramBot extends EventEmitter {
    * @param {Boolean|Object} [options.polling=false] Set true to enable polling or set options
    * @param {String|Number} [options.polling.timeout=10] Timeout in seconds for long polling
    * @param {String|Number} [options.polling.interval=300] Interval between requests in miliseconds
+   * @param {Boolean} [options.polling.autoStart=true] Start polling immediately
    * @param {Boolean|Object} [options.webHook=false] Set true to enable WebHook or set options
    * @param {Number} [options.webHook.port=8443] Port to bind to
    * @param {String} [options.webHook.key] Path to file with PEM private key for webHook server. (Read synchronously!)
@@ -59,7 +60,10 @@ class TelegramBot extends EventEmitter {
     this._onReplyToMessages = [];
 
     if (options.polling) {
-      this.initPolling();
+      const autoStart = options.polling.autoStart;
+      if (typeof autoStart === 'undefined' || autoStart === true) {
+        this.initPolling();
+      }
     }
 
     if (options.webHook) {
