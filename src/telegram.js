@@ -50,7 +50,8 @@ class TelegramBot extends EventEmitter {
    * @param {String} [options.webHook.cert] Path to file with PEM certificate (public) for webHook server. (Read synchronously!)
    * @param {Boolean} [options.webHook.autoOpen=true] Open webHook immediately
    * @param {Boolean} [options.onlyFirstMatch=false] Set to true to stop after first match. Otherwise, all regexps are executed
-   * @param {Object} [options.request] Options which will be added for all requests to telegram api. See https://github.com/request/request#requestoptions-callback for more information.
+   * @param {Object} [options.request] Options which will be added for all requests to telegram api.
+   *  See https://github.com/request/request#requestoptions-callback for more information.
    * @param {String} [options.baseApiUrl=https://api.telegram.org] API Base URl; useful for proxying and testing
    * @see https://core.telegram.org/bots/api
    */

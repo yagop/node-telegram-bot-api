@@ -136,7 +136,7 @@ Emits `message` when a message arrives.
 | [options.webHook.cert] | <code>String</code> |  | Path to file with PEM certificate (public) for webHook server. (Read synchronously!) |
 | [options.webHook.autoOpen] | <code>Boolean</code> | <code>true</code> | Open webHook immediately |
 | [options.onlyFirstMatch] | <code>Boolean</code> | <code>false</code> | Set to true to stop after first match. Otherwise, all regexps are executed |
-| [options.request] | <code>Object</code> |  | Options which will be added for all requests to telegram api. See https://github.com/request/request#requestoptions-callback for more information. |
+| [options.request] | <code>Object</code> |  | Options which will be added for all requests to telegram api.  See https://github.com/request/request#requestoptions-callback for more information. |
 | [options.baseApiUrl] | <code>String</code> | <code>https://api.telegram.org</code> | API Base URl; useful for proxying and testing |
 
 <a name="TelegramBot+initPolling"></a>
