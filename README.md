@@ -71,6 +71,7 @@ TelegramBot
 
 * [TelegramBot](#TelegramBot)
     * [new TelegramBot(token, [options])](#new_TelegramBot_new)
+    * [.initPolling()](#TelegramBot+initPolling)
     * [.stopPolling()](#TelegramBot+stopPolling) ⇒ <code>Promise</code>
     * [.getMe()](#TelegramBot+getMe) ⇒ <code>Promise</code>
     * [.setWebHook(url, [cert])](#TelegramBot+setWebHook)
@@ -122,14 +123,21 @@ Emits `message` when a message arrives.
 | token | <code>String</code> |  | Bot Token |
 | [options] | <code>Object</code> |  |  |
 | [options.polling] | <code>Boolean</code> &#124; <code>Object</code> | <code>false</code> | Set true to enable polling or set options |
-| [options.polling.timeout] | <code>String</code> &#124; <code>Number</code> | <code>10</code> | Polling time in seconds |
-| [options.polling.interval] | <code>String</code> &#124; <code>Number</code> | <code>2000</code> | Interval between requests in miliseconds |
+| [options.polling.timeout] | <code>String</code> &#124; <code>Number</code> | <code>10</code> | Timeout in seconds for long polling |
+| [options.polling.interval] | <code>String</code> &#124; <code>Number</code> | <code>300</code> | Interval between requests in miliseconds |
 | [options.webHook] | <code>Boolean</code> &#124; <code>Object</code> | <code>false</code> | Set true to enable WebHook or set options |
-| [options.webHook.key] | <code>String</code> |  | PEM private key to webHook server. |
-| [options.webHook.cert] | <code>String</code> |  | PEM certificate (public) to webHook server. |
+| [options.webHook.port] | <code>Number</code> | <code>8443</code> | Port to bind to |
+| [options.webHook.key] | <code>String</code> |  | Path to file with PEM private key for webHook server. (Read synchronously!) |
+| [options.webHook.cert] | <code>String</code> |  | Path to file with PEM certificate (public) for webHook server. (Read synchronously!) |
 | [options.onlyFirstMatch] | <code>Boolean</code> | <code>false</code> | Set to true to stop after first match. Otherwise, all regexps are executed |
-| [options.request] | <code>Object</code> |  | Options which will be added for all requests to telegram api.  See https://github.com/request/request#requestoptions-callback for more information. |
+| [options.request] | <code>Object</code> |  | Options which will be added for all requests to telegram api. See https://github.com/request/request#requestoptions-callback for more information. |
 
+<a name="TelegramBot+initPolling"></a>
+
+### telegramBot.initPolling()
+Start polling
+
+**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>
 <a name="TelegramBot+stopPolling"></a>
 
 ### telegramBot.stopPolling() ⇒ <code>Promise</code>

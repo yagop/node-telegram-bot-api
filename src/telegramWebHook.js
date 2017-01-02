@@ -4,18 +4,28 @@ const http = require('http');
 const fs = require('fs');
 const bl = require('bl');
 
+
 class TelegramBotWebHook {
-
+  /**
+   * Sets up a webhook to receive updates
+   *
+   * @param  {String} token Telegram API token
+   * @param  {Boolean|Object} options WebHook options
+   * @param  {Number} [options.port=8443] Port to bind to
+   * @param  {Function} callback Function for process a new update
+   */
   constructor(token, options, callback) {
-    this.token = token;
-    this.callback = callback;
-    this.regex = new RegExp(this.token);
-
     // define opts
     if (typeof options === 'boolean') {
       options = {}; // eslint-disable-line no-param-reassign
     }
-    options.port = options.port || 8443;
+
+    this.token = token;
+    this.options = options;
+    this.options.port = options.port || 8443;
+    this.callback = callback;
+    this._regex = new RegExp(this.token);
+    this._webServer = null;
 
     if (options.key && options.cert) { // HTTPS Server
       debug('HTTPS WebHook enabled');
@@ -44,7 +54,10 @@ class TelegramBotWebHook {
     }
   }
 
-  // pipe+parse body
+  /**
+   * Handle request body by passing it to 'callback'
+   * @private
+   */
   _parseBody = (err, body) => {
     if (err) {
       return debug(err);
@@ -58,13 +71,18 @@ class TelegramBotWebHook {
     return null;
   }
 
-  // bound req listener
+  /**
+   * Listener for 'request' event on server
+   * @private
+   * @see https://nodejs.org/docs/latest/api/http.html#http_http_createserver_requestlistener
+   * @see https://nodejs.org/docs/latest/api/https.html#https_https_createserver_options_requestlistener
+   */
   _requestListener = (req, res) => {
     debug('WebHook request URL: %s', req.url);
     debug('WebHook request headers: %j', req.headers);
 
     // If there isn't token on URL
-    if (!this.regex.test(req.url)) {
+    if (!this._regex.test(req.url)) {
       debug('WebHook request unauthorized');
       res.statusCode = 401;
       res.end();

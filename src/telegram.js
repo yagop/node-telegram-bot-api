@@ -20,6 +20,11 @@ const _messageTypes = [
   'new_chat_photo', 'delete_chat_photo', 'group_chat_created'
 ];
 
+// enable cancellation
+Promise.config({
+  cancellation: true,
+});
+
 class TelegramBot extends EventEmitter {
 
   static get messageTypes() {
@@ -36,22 +41,22 @@ class TelegramBot extends EventEmitter {
    * @param {String} token Bot Token
    * @param {Object} [options]
    * @param {Boolean|Object} [options.polling=false] Set true to enable polling or set options
-   * @param {String|Number} [options.polling.timeout=10] Polling time in seconds
-   * @param {String|Number} [options.polling.interval=2000] Interval between requests in miliseconds
+   * @param {String|Number} [options.polling.timeout=10] Timeout in seconds for long polling
+   * @param {String|Number} [options.polling.interval=300] Interval between requests in miliseconds
    * @param {Boolean|Object} [options.webHook=false] Set true to enable WebHook or set options
-   * @param {String} [options.webHook.key] PEM private key to webHook server.
-   * @param {String} [options.webHook.cert] PEM certificate (public) to webHook server.
+   * @param {Number} [options.webHook.port=8443] Port to bind to
+   * @param {String} [options.webHook.key] Path to file with PEM private key for webHook server. (Read synchronously!)
+   * @param {String} [options.webHook.cert] Path to file with PEM certificate (public) for webHook server. (Read synchronously!)
    * @param {Boolean} [options.onlyFirstMatch=false] Set to true to stop after first match. Otherwise, all regexps are executed
-   * @param {Object} [options.request] Options which will be added for all requests to telegram api.
-   *  See https://github.com/request/request#requestoptions-callback for more information.
+   * @param {Object} [options.request] Options which will be added for all requests to telegram api. See https://github.com/request/request#requestoptions-callback for more information.
    * @see https://core.telegram.org/bots/api
    */
   constructor(token, options = {}) {
     super();
-    this.options = options;
     this.token = token;
-    this.textRegexpCallbacks = [];
-    this.onReplyToMessages = [];
+    this.options = options;
+    this._textRegexpCallbacks = [];
+    this._onReplyToMessages = [];
 
     if (options.polling) {
       this.initPolling();
@@ -62,27 +67,13 @@ class TelegramBot extends EventEmitter {
     }
   }
 
-  initPolling() {
-    if (this._polling) {
-      this._polling.abort = true;
-      this._polling.lastRequest.cancel('Polling restart');
-    }
-    this._polling = new TelegramBotPolling(this.token, this.options.polling, this.processUpdate.bind(this));
-  }
-
   /**
-   * Stops polling after the last polling request resolves
-   *
-   * @return {Promise} promise Promise, of last polling request
+   * Process an update; emitting the proper events and executing regexp
+   * callbacks
+   * @param  {Object} update
+   * @private
    */
-  stopPolling() {
-    if (this._polling) {
-      return this._polling.stopPolling();
-    }
-    return Promise.resolve();
-  }
-
-  processUpdate(update) {
+  _processUpdate(update) {
     debug('Process Update %j', update);
     const message = update.message;
     const editedMessage = update.edited_message;
@@ -97,27 +88,28 @@ class TelegramBot extends EventEmitter {
       this.emit('message', message);
       const processMessageType = messageType => {
         if (message[messageType]) {
-          debug('Emtting %s: %j', messageType, message);
+          debug('Emitting %s: %j', messageType, message);
           this.emit(messageType, message);
         }
       };
       TelegramBot.messageTypes.forEach(processMessageType);
       if (message.text) {
         debug('Text message');
-        this.textRegexpCallbacks.some(reg => {
+        this._textRegexpCallbacks.some(reg => {
           debug('Matching %s with %s', message.text, reg.regexp);
           const result = reg.regexp.exec(message.text);
-          if (result) {
-            debug('Matches %s', reg.regexp);
-            reg.callback(message, result);
-            // returning truthy value exits .some
-            return this.options.onlyFirstMatch;
+          if (!result) {
+            return false;
           }
+          debug('Matches %s', reg.regexp);
+          reg.callback(message, result);
+          // returning truthy value exits .some
+          return this.options.onlyFirstMatch;
         });
       }
       if (message.reply_to_message) {
         // Only callbacks waiting for this message
-        this.onReplyToMessages.forEach(reply => {
+        this._onReplyToMessages.forEach(reply => {
           // Message from the same chat
           if (reply.chatId === message.chat.id) {
             // Responding to that message
@@ -139,7 +131,7 @@ class TelegramBot extends EventEmitter {
       }
     } else if (channelPost) {
       debug('Process Update channel_post %j', channelPost);
-      this.emit('channel_post', channelPost);   
+      this.emit('channel_post', channelPost);
     } else if (editedChannelPost) {
       debug('Process Update edited_channel_post %j', editedChannelPost);
       this.emit('edited_channel_post', editedChannelPost);
@@ -148,7 +140,7 @@ class TelegramBot extends EventEmitter {
       }
       if (editedChannelPost.caption) {
         this.emit('edited_channel_post_caption', editedChannelPost);
-      }         
+      }
     } else if (inlineQuery) {
       debug('Process Update inline_query %j', inlineQuery);
       this.emit('inline_query', inlineQuery);
@@ -161,24 +153,42 @@ class TelegramBot extends EventEmitter {
     }
   }
 
-  // used so that other funcs are not non-optimizable
-  _safeParse(json) {
-    try {
-      return JSON.parse(json);
-    } catch (err) {
-      throw new Error(`Error parsing Telegram response: ${String(json)}`);
-    }
+  /**
+   * Generates url with bot token and provided path/method you want to be got/executed by bot
+   * @param  {String} path
+   * @return {String} url
+   * @private
+   * @see https://core.telegram.org/bots/api#making-requests
+   */
+  _buildURL(_path) {
+    return URL.format({
+      protocol: 'https',
+      host: 'api.telegram.org',
+      pathname: `/bot${this.token}/${_path}`
+    });
   }
 
+  /**
+   * Fix 'reply_markup' parameter by making it JSON-serialized, as
+   * required by the Telegram Bot API
+   * @param {Object} obj Object; either 'form' or 'qs'
+   * @private
+   * @see https://core.telegram.org/bots/api#sendmessage
+   */
   _fixReplyMarkup(obj) {
     const replyMarkup = obj.reply_markup;
     if (replyMarkup && typeof replyMarkup !== 'string') {
-      // reply_markup must be passed as JSON stringified to Telegram
       obj.reply_markup = JSON.stringify(replyMarkup);
     }
   }
 
-  // request-promise
+  /**
+   * Make request against the API
+   * @param  {String} _path API endpoint
+   * @param  {Object} [options]
+   * @private
+   * @return {Promise}
+   */
   _request(_path, options = {}) {
     if (!this.token) {
       throw new Error('Telegram Bot Token not provided!');
@@ -194,6 +204,7 @@ class TelegramBot extends EventEmitter {
     if (options.qs) {
       this._fixReplyMarkup(options.qs);
     }
+
     options.url = this._buildURL(_path);
     options.simple = false;
     options.resolveWithFullResponse = true;
@@ -202,31 +213,108 @@ class TelegramBot extends EventEmitter {
     return request(options)
       .then(resp => {
         if (resp.statusCode !== 200) {
-          throw new Error(`${resp.statusCode} ${resp.body}`);
+          const error = new Error(`${resp.statusCode} ${resp.body}`);
+          error.response = resp;
+          throw error;
         }
 
-        const data = this._safeParse(resp.body);
+        let data;
+
+        try {
+          data = JSON.parse(resp.body);
+        } catch (err) {
+          const error = new Error(`Error parsing Telegram response: ${resp.body}`);
+          error.response = resp;
+          throw error;
+        }
+
         if (data.ok) {
           return data.result;
         }
 
-        throw new Error(`${data.error_code} ${data.description}`);
+        const error = new Error(`${data.error_code} ${data.description}`);
+        error.response = resp;
+        error.response.body = data;
+        throw error;
       });
   }
 
   /**
-   * Generates url with bot token and provided path/method you want to be got/executed by bot
-   * @return {String} url
-   * @param {String} path
+   * Format data to be uploaded; handles file paths, streams and buffers
+   * @param  {String} type
+   * @param  {String|stream.Stream|Buffer} data
+   * @return {Array} formatted
+   * @return {Object} formatted[0] formData
+   * @return {String} formatted[1] fileId
    * @private
-   * @see https://core.telegram.org/bots/api#making-requests
    */
-  _buildURL(_path) {
-    return URL.format({
-      protocol: 'https',
-      host: 'api.telegram.org',
-      pathname: `/bot${this.token}/${_path}`
-    });
+  _formatSendData(type, data) {
+    let formData;
+    let fileName;
+    let fileId;
+    if (data instanceof stream.Stream) {
+      fileName = URL.parse(path.basename(data.path.toString())).pathname;
+      formData = {};
+      formData[type] = {
+        value: data,
+        options: {
+          filename: qs.unescape(fileName),
+          contentType: mime.lookup(fileName)
+        }
+      };
+    } else if (Buffer.isBuffer(data)) {
+      const filetype = fileType(data);
+      if (!filetype) {
+        throw new Error('Unsupported Buffer file type');
+      }
+      formData = {};
+      formData[type] = {
+        value: data,
+        options: {
+          filename: `data.${filetype.ext}`,
+          contentType: filetype.mime
+        }
+      };
+    } else if (fs.existsSync(data)) {
+      fileName = path.basename(data);
+      formData = {};
+      formData[type] = {
+        value: fs.createReadStream(data),
+        options: {
+          filename: fileName,
+          contentType: mime.lookup(fileName)
+        }
+      };
+    } else {
+      fileId = data;
+    }
+    return [formData, fileId];
+  }
+
+  /**
+   * Start polling
+   */
+  initPolling() {
+    if (this._polling) {
+      this._polling.stopPolling({
+        cancel: true,
+        reason: 'Polling restart',
+      });
+    }
+    this._polling = new TelegramBotPolling(this._request.bind(this), this.options.polling, this._processUpdate.bind(this));
+  }
+
+  /**
+   * Stops polling after the last polling request resolves
+   * @return {Promise} promise Promise, of last polling request
+   */
+  stopPolling() {
+    if (!this._polling) {
+      return Promise.resolve();
+    }
+    const polling = this._polling;
+    delete this._polling;
+    return polling.stopPolling();
   }
 
   /**
@@ -328,49 +416,6 @@ class TelegramBot extends EventEmitter {
     };
 
     return this._request('forwardMessage', { form });
-  }
-
-  _formatSendData(type, data) {
-    let formData;
-    let fileName;
-    let fileId;
-    if (data instanceof stream.Stream) {
-      fileName = URL.parse(path.basename(data.path.toString())).pathname;
-      formData = {};
-      formData[type] = {
-        value: data,
-        options: {
-          filename: qs.unescape(fileName),
-          contentType: mime.lookup(fileName)
-        }
-      };
-    } else if (Buffer.isBuffer(data)) {
-      const filetype = fileType(data);
-      if (!filetype) {
-        throw new Error('Unsupported Buffer file type');
-      }
-      formData = {};
-      formData[type] = {
-        value: data,
-        options: {
-          filename: `data.${filetype.ext}`,
-          contentType: filetype.mime
-        }
-      };
-    } else if (fs.existsSync(data)) {
-      fileName = path.basename(data);
-      formData = {};
-      formData[type] = {
-        value: fs.createReadStream(data),
-        options: {
-          filename: fileName,
-          contentType: mime.lookup(fileName)
-        }
-      };
-    } else {
-      fileId = data;
-    }
-    return [formData, fileId];
   }
 
   /**
@@ -776,7 +821,7 @@ class TelegramBot extends EventEmitter {
    * the `msg` and the result of executing `regexp.exec` on message text.
    */
   onText(regexp, callback) {
-    this.textRegexpCallbacks.push({ regexp, callback });
+    this._textRegexpCallbacks.push({ regexp, callback });
   }
 
   /**
@@ -787,7 +832,7 @@ class TelegramBot extends EventEmitter {
    * message.
    */
   onReplyToMessage(chatId, messageId, callback) {
-    this.onReplyToMessages.push({
+    this._onReplyToMessages.push({
       chatId,
       messageId,
       callback
