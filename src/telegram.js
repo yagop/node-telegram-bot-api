@@ -51,12 +51,14 @@ class TelegramBot extends EventEmitter {
    * @param {Boolean} [options.webHook.autoOpen=true] Open webHook immediately
    * @param {Boolean} [options.onlyFirstMatch=false] Set to true to stop after first match. Otherwise, all regexps are executed
    * @param {Object} [options.request] Options which will be added for all requests to telegram api. See https://github.com/request/request#requestoptions-callback for more information.
+   * @param {String} [options.baseApiUrl=https://api.telegram.org] API Base URl; useful for proxying and testing
    * @see https://core.telegram.org/bots/api
    */
   constructor(token, options = {}) {
     super();
     this.token = token;
     this.options = options;
+    this.options.baseApiUrl = options.baseApiUrl || 'https://api.telegram.org';
     this._textRegexpCallbacks = [];
     this._onReplyToMessages = [];
 
@@ -169,11 +171,7 @@ class TelegramBot extends EventEmitter {
    * @see https://core.telegram.org/bots/api#making-requests
    */
   _buildURL(_path) {
-    return URL.format({
-      protocol: 'https',
-      host: 'api.telegram.org',
-      pathname: `/bot${this.token}/${_path}`
-    });
+    return `${this.options.baseApiUrl}/bot${this.token}/${_path}`;
   }
 
   /**
@@ -830,11 +828,7 @@ class TelegramBot extends EventEmitter {
    */
   getFileLink(fileId) {
     return this.getFile(fileId)
-      .then(resp => URL.format({
-        protocol: 'https',
-        host: 'api.telegram.org',
-        pathname: `/file/bot${this.token}/${resp.file_path}`
-      }));
+      .then(resp => `${this.options.baseApiUrl}/file/bot${this.token}/${resp.file_path}`);
   }
 
   /**
