@@ -32,6 +32,7 @@ class TelegramBotPolling {
     this._lastUpdate = 0;
     this._lastRequest = null;
     this._abort = false;
+    this._pollingTimeout = null;
     this._polling();
   }
 
@@ -43,6 +44,7 @@ class TelegramBotPolling {
    */
   stopPolling(options = {}) {
     this._abort = true;
+    clearTimeout(this._pollingTimeout);
     if (options.cancel) {
       const reason = options.reason || 'Polling stop';
       return this._lastRequest.cancel(reason);
@@ -76,7 +78,7 @@ class TelegramBotPolling {
           debug('Polling is aborted!');
         } else {
           debug('setTimeout for %s miliseconds', this.options.interval);
-          setTimeout(() => this._polling(), this.options.interval);
+          this._pollingTimeout = setTimeout(() => this._polling(), this.options.interval);
         }
       });
   }
