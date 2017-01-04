@@ -45,7 +45,7 @@ class TelegramBotWebHook {
   }
 
   // pipe+parse body
-  _parseBody = (err, body) => {
+  _parseBody(err, body) {
     if (err) {
       return debug(err);
     }
@@ -58,8 +58,7 @@ class TelegramBotWebHook {
     return null;
   }
 
-  // bound req listener
-  _requestListener = (req, res) => {
+  _requestListener(req, res) {
     debug('WebHook request URL: %s', req.url);
     debug('WebHook request headers: %j', req.headers);
 
