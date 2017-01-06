@@ -336,6 +336,28 @@ class TelegramBot extends EventEmitter {
   }
 
   /**
+   * Use this method to remove webhook integration if you decide to
+   * switch back to getUpdates. Returns True on success.
+   * @return {Promise}
+   * @see https://core.telegram.org/bots/api#deletewebhook
+   */
+  deleteWebHook() {
+    return this._request('deleteWebhook');
+  }
+
+  /**
+   * Use this method to get current webhook status.
+   * On success, returns a [WebhookInfo](https://core.telegram.org/bots/api#webhookinfo) object.
+   * If the bot is using getUpdates, will return an object with the
+   * url field empty.
+   * @return {Promise}
+   * @see https://core.telegram.org/bots/api#getwebhookinfo
+   */
+  getWebHookInfo() {
+    return this._request('getWebhookInfo');
+  }
+
+  /**
    * Use this method to receive incoming updates using long polling.
    * This method has an [older, compatible signature][getUpdates-v0.25.0]
    * that is being deprecated.
