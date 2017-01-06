@@ -190,6 +190,8 @@ Returns basic information about the bot in form of a `User` object.
 
 ### telegramBot.setWebHook(url, [options])
 Specify an url to receive incoming updates via an outgoing webHook.
+This method has an [older, compatible signature][setWebHook-v0.25.0]
+that is being deprecated.
 
 **Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
 **See**: https://core.telegram.org/bots/api#setwebhook  
@@ -203,7 +205,9 @@ Specify an url to receive incoming updates via an outgoing webHook.
 <a name="TelegramBot+getUpdates"></a>
 
 ### telegramBot.getUpdates([options]) ⇒ <code>Promise</code>
-Use this method to receive incoming updates using long polling
+Use this method to receive incoming updates using long polling.
+This method has an [older, compatible signature][getUpdates-v0.25.0]
+that is being deprecated.
 
 **Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
 **See**: https://core.telegram.org/bots/api#getupdates  
@@ -480,6 +484,8 @@ inline_message_id in your request.
 ### telegramBot.getUserProfilePhotos(userId, [options]) ⇒ <code>Promise</code>
 Use this method to get a list of profile pictures for a user.
 Returns a [UserProfilePhotos](https://core.telegram.org/bots/api#userprofilephotos) object.
+This method has an [older, compatible signature][getUserProfilePhotos-v0.25.0]
+that is being deprecated.
 
 **Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
 **See**: https://core.telegram.org/bots/api#getuserprofilephotos  
@@ -715,3 +721,7 @@ Use this method to get data for high score table.
 | [options] | <code>Object</code> | Additional Telegram query options |
 
 * * *
+
+[setWebHook-v0.25.0]:https://github.com/yagop/node-telegram-bot-api/tree/4e5a493cadfaad5589a8d79e55d9e0d103000ce4#telegrambotsetwebhookurl-cert
+[getUpdates-v0.25.0]:https://github.com/yagop/node-telegram-bot-api/tree/4e5a493cadfaad5589a8d79e55d9e0d103000ce4#TelegramBot+getUpdates
+[getUserProfilePhotos-v0.25.0]:https://github.com/yagop/node-telegram-bot-api/tree/4e5a493cadfaad5589a8d79e55d9e0d103000ce4#TelegramBot+getUserProfilePhotos

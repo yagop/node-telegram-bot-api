@@ -290,6 +290,9 @@ class TelegramBot extends EventEmitter {
 
   /**
    * Specify an url to receive incoming updates via an outgoing webHook.
+   * This method has an [older, compatible signature][setWebHook-v0.25.0]
+   * that is being deprecated.
+   *
    * @param  {String} url URL where Telegram will make HTTP Post. Leave empty to
    * delete webHook.
    * @param  {Object} [options] Additional Telegram query options
@@ -331,7 +334,10 @@ class TelegramBot extends EventEmitter {
   }
 
   /**
-   * Use this method to receive incoming updates using long polling
+   * Use this method to receive incoming updates using long polling.
+   * This method has an [older, compatible signature][getUpdates-v0.25.0]
+   * that is being deprecated.
+   *
    * @param  {Object} [options] Additional Telegram query options
    * @return {Promise}
    * @see https://core.telegram.org/bots/api#getupdates
@@ -745,6 +751,8 @@ class TelegramBot extends EventEmitter {
   /**
    * Use this method to get a list of profile pictures for a user.
    * Returns a [UserProfilePhotos](https://core.telegram.org/bots/api#userprofilephotos) object.
+   * This method has an [older, compatible signature][getUserProfilePhotos-v0.25.0]
+   * that is being deprecated.
    *
    * @param  {Number|String} userId  Unique identifier of the target user
    * @param  {Object} [options] Additional Telegram query options
