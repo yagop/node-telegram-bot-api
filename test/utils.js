@@ -153,11 +153,12 @@ function handleRatelimit(bot, methodName, suite) {
   const backupMethodName = `__${methodName}`;
   if (!bot[backupMethodName]) bot[backupMethodName] = bot[methodName];
 
+  const maxRetries = 3;
+  const addSecs = 5;
   const method = bot[backupMethodName];
   assert.equal(typeof method, 'function');
 
   bot[methodName] = (...args) => {
-    const minute = 60 * 1000;
     let retry = 0;
     function exec() {
       return method.call(bot, ...args)
@@ -166,16 +167,20 @@ function handleRatelimit(bot, methodName, suite) {
             throw error;
           }
           retry++;
-          if (retry > 3) {
+          if (retry > maxRetries) {
             throw error;
           }
-          console.error('tests: Handling rate-limit error'); // eslint-disable-line no-console
-          const timeout = minute * retry;
-          suite.timeout(timeout);
+          if (typeof error.response.body === 'string') {
+            error.response.body = JSON.parse(error.response.body);
+          }
+          const retrySecs = error.response.body.parameters.retry_after;
+          const timeout = (1000 * retrySecs) + (1000 * addSecs);
+          console.error('tests: Handling rate-limit error. Retrying after %d secs', timeout / 1000); // eslint-disable-line no-console
+          suite.timeout(timeout * 2);
           return new Promise(function timeoutPromise(resolve, reject) {
             setTimeout(function execTimeout() {
               return exec().then(resolve).catch(reject);
-            }, timeout / 2);
+            }, timeout);
           });
         });
     }
