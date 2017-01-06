@@ -13,6 +13,7 @@ const path = require('path');
 const URL = require('url');
 const fs = require('fs');
 const pump = require('pump');
+const deprecate = require('depd')('node-telegram-bot-api');
 
 const _messageTypes = [
   'text', 'audio', 'document', 'photo', 'sticker', 'video', 'voice', 'contact',
@@ -306,6 +307,7 @@ class TelegramBot extends EventEmitter {
     let cert;
     // Note: 'options' could be an object, if a stream was provided (in place of 'cert')
     if (typeof options !== 'object' || options instanceof stream.Stream) {
+      deprecate('The method signature setWebHook(url, cert) has been deprecated since v0.25.0');
       cert = options;
       options = {}; // eslint-disable-line no-param-reassign
     } else {
@@ -348,6 +350,7 @@ class TelegramBot extends EventEmitter {
      * consistency of the method signatures throughout the library */
     if (typeof form !== 'object') {
       /* eslint-disable no-param-reassign, prefer-rest-params */
+      deprecate('The method signature getUpdates(timeout, limit, offset) has been deprecated since v0.25.0');
       form = {
         timeout: arguments[0],
         limit: arguments[1],
@@ -765,6 +768,7 @@ class TelegramBot extends EventEmitter {
      * consistency of the method signatures throughout the library */
     if (typeof form !== 'object') {
       /* eslint-disable no-param-reassign, prefer-rest-params */
+      deprecate('The method signature getUserProfilePhotos(userId, offset, limit) has been deprecated since v0.25.0');
       form = {
         offset: arguments[1],
         limit: arguments[2],
