@@ -14,11 +14,13 @@
     "bot"
   ],
   "scripts": {
-    "prepublish": "babel -d ./lib src",
-    "test": "istanbul cover ./node_modules/mocha/bin/_mocha -- -R spec --timeout 10000",
+    "build": "babel -d ./lib src",
+    "prepublish": "npm run build",
+    "test": "istanbul cover ./node_modules/mocha/bin/_mocha",
     "prepublish:test": "npm run prepublish && npm run test",
     "gen-doc": "jsdoc2md --src src/telegram.js -t README.hbs > README.md",
-    "eslint": "eslint ./src"
+    "eslint": "eslint ./src ./test",
+    "pretest": "npm run eslint && npm run build"
   },
   "author": "Yago Pérez <yagoperezs@gmail.com>",
   "license": "MIT",
@@ -53,7 +55,8 @@
     "istanbul": "^1.1.0-alpha.1",
     "jsdoc-to-markdown": "^1.3.3",
     "mocha": "^2.4.5",
-    "mocha-lcov-reporter": "^1.2.0"
+    "mocha-lcov-reporter": "^1.2.0",
+    "node-static": "^0.7.9"
   },
   "repository": {
     "type": "git",

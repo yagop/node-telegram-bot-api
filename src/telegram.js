@@ -20,6 +20,11 @@ const _messageTypes = [
   'new_chat_photo', 'delete_chat_photo', 'group_chat_created'
 ];
 
+// enable cancellation
+Promise.config({
+  cancellation: true,
+});
+
 class TelegramBot extends EventEmitter {
 
   static get messageTypes() {
@@ -36,149 +41,75 @@ class TelegramBot extends EventEmitter {
    * @param {String} token Bot Token
    * @param {Object} [options]
    * @param {Boolean|Object} [options.polling=false] Set true to enable polling or set options
-   * @param {String|Number} [options.polling.timeout=10] Polling time in seconds
-   * @param {String|Number} [options.polling.interval=2000] Interval between requests in miliseconds
+   * @param {String|Number} [options.polling.timeout=10] Timeout in seconds for long polling
+   * @param {String|Number} [options.polling.interval=300] Interval between requests in miliseconds
+   * @param {Boolean} [options.polling.autoStart=true] Start polling immediately
    * @param {Boolean|Object} [options.webHook=false] Set true to enable WebHook or set options
-   * @param {String} [options.webHook.key] PEM private key to webHook server.
-   * @param {String} [options.webHook.cert] PEM certificate (public) to webHook server.
+   * @param {Number} [options.webHook.port=8443] Port to bind to
+   * @param {String} [options.webHook.key] Path to file with PEM private key for webHook server. (Read synchronously!)
+   * @param {String} [options.webHook.cert] Path to file with PEM certificate (public) for webHook server. (Read synchronously!)
+   * @param {Boolean} [options.webHook.autoOpen=true] Open webHook immediately
    * @param {Boolean} [options.onlyFirstMatch=false] Set to true to stop after first match. Otherwise, all regexps are executed
    * @param {Object} [options.request] Options which will be added for all requests to telegram api.
    *  See https://github.com/request/request#requestoptions-callback for more information.
+   * @param {String} [options.baseApiUrl=https://api.telegram.org] API Base URl; useful for proxying and testing
    * @see https://core.telegram.org/bots/api
    */
   constructor(token, options = {}) {
     super();
-    this.options = options;
     this.token = token;
-    this.textRegexpCallbacks = [];
-    this.onReplyToMessages = [];
+    this.options = options;
+    this.options.baseApiUrl = options.baseApiUrl || 'https://api.telegram.org';
+    this._textRegexpCallbacks = [];
+    this._onReplyToMessages = [];
 
     if (options.polling) {
-      this.initPolling();
+      const autoStart = options.polling.autoStart;
+      if (typeof autoStart === 'undefined' || autoStart === true) {
+        this.initPolling();
+      }
     }
 
     if (options.webHook) {
-      this._WebHook = new TelegramBotWebHook(token, options.webHook, this.processUpdate.bind(this));
+      const autoOpen = options.webHook.autoOpen;
+      if (typeof autoOpen === 'undefined' || autoOpen === true) {
+        this.openWebHook();
+      }
     }
-  }
-
-  initPolling() {
-    if (this._polling) {
-      this._polling.abort = true;
-      this._polling.lastRequest.cancel('Polling restart');
-    }
-    this._polling = new TelegramBotPolling(this.token, this.options.polling, this.processUpdate.bind(this));
   }
 
   /**
-   * Stops polling after the last polling request resolves
-   *
-   * @return {Promise} promise Promise, of last polling request
+   * Generates url with bot token and provided path/method you want to be got/executed by bot
+   * @param  {String} path
+   * @return {String} url
+   * @private
+   * @see https://core.telegram.org/bots/api#making-requests
    */
-  stopPolling() {
-    if (this._polling) {
-      return this._polling.stopPolling();
-    }
-    return Promise.resolve();
+  _buildURL(_path) {
+    return `${this.options.baseApiUrl}/bot${this.token}/${_path}`;
   }
 
-  processUpdate(update) {
-    debug('Process Update %j', update);
-    const message = update.message;
-    const editedMessage = update.edited_message;
-    const channelPost = update.channel_post;
-    const editedChannelPost = update.edited_channel_post;
-    const inlineQuery = update.inline_query;
-    const chosenInlineResult = update.chosen_inline_result;
-    const callbackQuery = update.callback_query;
-
-    if (message) {
-      debug('Process Update message %j', message);
-      this.emit('message', message);
-      const processMessageType = messageType => {
-        if (message[messageType]) {
-          debug('Emtting %s: %j', messageType, message);
-          this.emit(messageType, message);
-        }
-      };
-      TelegramBot.messageTypes.forEach(processMessageType);
-      if (message.text) {
-        debug('Text message');
-        this.textRegexpCallbacks.some(reg => {
-          debug('Matching %s with %s', message.text, reg.regexp);
-          const result = reg.regexp.exec(message.text);
-          if (result) {
-            debug('Matches %s', reg.regexp);
-            reg.callback(message, result);
-            // returning truthy value exits .some
-            return this.options.onlyFirstMatch;
-          }
-        });
-      }
-      if (message.reply_to_message) {
-        // Only callbacks waiting for this message
-        this.onReplyToMessages.forEach(reply => {
-          // Message from the same chat
-          if (reply.chatId === message.chat.id) {
-            // Responding to that message
-            if (reply.messageId === message.reply_to_message.message_id) {
-              // Resolve the promise
-              reply.callback(message);
-            }
-          }
-        });
-      }
-    } else if (editedMessage) {
-      debug('Process Update edited_message %j', editedMessage);
-      this.emit('edited_message', editedMessage);
-      if (editedMessage.text) {
-        this.emit('edited_message_text', editedMessage);
-      }
-      if (editedMessage.caption) {
-        this.emit('edited_message_caption', editedMessage);
-      }
-    } else if (channelPost) {
-      debug('Process Update channel_post %j', channelPost);
-      this.emit('channel_post', channelPost);   
-    } else if (editedChannelPost) {
-      debug('Process Update edited_channel_post %j', editedChannelPost);
-      this.emit('edited_channel_post', editedChannelPost);
-      if (editedChannelPost.text) {
-        this.emit('edited_channel_post_text', editedChannelPost);
-      }
-      if (editedChannelPost.caption) {
-        this.emit('edited_channel_post_caption', editedChannelPost);
-      }         
-    } else if (inlineQuery) {
-      debug('Process Update inline_query %j', inlineQuery);
-      this.emit('inline_query', inlineQuery);
-    } else if (chosenInlineResult) {
-      debug('Process Update chosen_inline_result %j', chosenInlineResult);
-      this.emit('chosen_inline_result', chosenInlineResult);
-    } else if (callbackQuery) {
-      debug('Process Update callback_query %j', callbackQuery);
-      this.emit('callback_query', callbackQuery);
-    }
-  }
-
-  // used so that other funcs are not non-optimizable
-  _safeParse(json) {
-    try {
-      return JSON.parse(json);
-    } catch (err) {
-      throw new Error(`Error parsing Telegram response: ${String(json)}`);
-    }
-  }
-
+  /**
+   * Fix 'reply_markup' parameter by making it JSON-serialized, as
+   * required by the Telegram Bot API
+   * @param {Object} obj Object; either 'form' or 'qs'
+   * @private
+   * @see https://core.telegram.org/bots/api#sendmessage
+   */
   _fixReplyMarkup(obj) {
     const replyMarkup = obj.reply_markup;
     if (replyMarkup && typeof replyMarkup !== 'string') {
-      // reply_markup must be passed as JSON stringified to Telegram
       obj.reply_markup = JSON.stringify(replyMarkup);
     }
   }
 
-  // request-promise
+  /**
+   * Make request against the API
+   * @param  {String} _path API endpoint
+   * @param  {Object} [options]
+   * @private
+   * @return {Promise}
+   */
   _request(_path, options = {}) {
     if (!this.token) {
       throw new Error('Telegram Bot Token not provided!');
@@ -194,6 +125,7 @@ class TelegramBot extends EventEmitter {
     if (options.qs) {
       this._fixReplyMarkup(options.qs);
     }
+
     options.url = this._buildURL(_path);
     options.simple = false;
     options.resolveWithFullResponse = true;
@@ -202,31 +134,148 @@ class TelegramBot extends EventEmitter {
     return request(options)
       .then(resp => {
         if (resp.statusCode !== 200) {
-          throw new Error(`${resp.statusCode} ${resp.body}`);
+          const error = new Error(`${resp.statusCode} ${resp.body}`);
+          error.response = resp;
+          throw error;
         }
 
-        const data = this._safeParse(resp.body);
+        let data;
+
+        try {
+          data = JSON.parse(resp.body);
+        } catch (err) {
+          const error = new Error(`Error parsing Telegram response: ${resp.body}`);
+          error.response = resp;
+          throw error;
+        }
+
         if (data.ok) {
           return data.result;
         }
 
-        throw new Error(`${data.error_code} ${data.description}`);
+        const error = new Error(`${data.error_code} ${data.description}`);
+        error.response = resp;
+        error.response.body = data;
+        throw error;
       });
   }
 
   /**
-   * Generates url with bot token and provided path/method you want to be got/executed by bot
-   * @return {String} url
-   * @param {String} path
+   * Format data to be uploaded; handles file paths, streams and buffers
+   * @param  {String} type
+   * @param  {String|stream.Stream|Buffer} data
+   * @return {Array} formatted
+   * @return {Object} formatted[0] formData
+   * @return {String} formatted[1] fileId
    * @private
-   * @see https://core.telegram.org/bots/api#making-requests
    */
-  _buildURL(_path) {
-    return URL.format({
-      protocol: 'https',
-      host: 'api.telegram.org',
-      pathname: `/bot${this.token}/${_path}`
-    });
+  _formatSendData(type, data) {
+    let formData;
+    let fileName;
+    let fileId;
+    if (data instanceof stream.Stream) {
+      fileName = URL.parse(path.basename(data.path.toString())).pathname;
+      formData = {};
+      formData[type] = {
+        value: data,
+        options: {
+          filename: qs.unescape(fileName),
+          contentType: mime.lookup(fileName)
+        }
+      };
+    } else if (Buffer.isBuffer(data)) {
+      const filetype = fileType(data);
+      if (!filetype) {
+        throw new Error('Unsupported Buffer file type');
+      }
+      formData = {};
+      formData[type] = {
+        value: data,
+        options: {
+          filename: `data.${filetype.ext}`,
+          contentType: filetype.mime
+        }
+      };
+    } else if (fs.existsSync(data)) {
+      fileName = path.basename(data);
+      formData = {};
+      formData[type] = {
+        value: fs.createReadStream(data),
+        options: {
+          filename: fileName,
+          contentType: mime.lookup(fileName)
+        }
+      };
+    } else {
+      fileId = data;
+    }
+    return [formData, fileId];
+  }
+
+  /**
+   * Start polling
+   */
+  initPolling() {
+    if (this._polling) {
+      this._polling.stopPolling({
+        cancel: true,
+        reason: 'Polling restart',
+      });
+    }
+    this._polling = new TelegramBotPolling(this._request.bind(this), this.options.polling, this.processUpdate.bind(this));
+  }
+
+  /**
+   * Stops polling after the last polling request resolves
+   * @return {Promise} promise Promise, of last polling request
+   */
+  stopPolling() {
+    if (!this._polling) {
+      return Promise.resolve();
+    }
+    const polling = this._polling;
+    delete this._polling;
+    return polling.stopPolling();
+  }
+
+  /**
+   * Return true if polling. Otherwise, false.
+   * @return {Boolean}
+   */
+  isPolling() {
+    return !!this._polling;
+  }
+
+  /**
+   * Open webhook
+   */
+  openWebHook() {
+    if (this._webHook) {
+      return;
+    }
+    this._webHook = new TelegramBotWebHook(this.token, this.options.webHook, this.processUpdate.bind(this));
+  }
+
+  /**
+   * Close webhook after closing all current connections
+   * @return {Promise} promise
+   */
+  closeWebHook() {
+    if (!this._webHook) {
+      return Promise.resolve();
+    }
+    const webHook = this._webHook;
+    delete this._webHook;
+    return webHook.close();
+  }
+
+  /**
+   * Return true if using webhook and it is open i.e. accepts connections.
+   * Otherwise, false.
+   * @return {Boolean}
+   */
+  hasOpenWebHook() {
+    return !!this._webHook;
   }
 
   /**
@@ -285,6 +334,93 @@ class TelegramBot extends EventEmitter {
   }
 
   /**
+   * Process an update; emitting the proper events and executing regexp
+   * callbacks. This method is useful should you be using a different
+   * way to fetch updates, other than those provided by TelegramBot.
+   * @param  {Object} update
+   * @see https://core.telegram.org/bots/api#update
+   */
+  processUpdate(update) {
+    debug('Process Update %j', update);
+    const message = update.message;
+    const editedMessage = update.edited_message;
+    const channelPost = update.channel_post;
+    const editedChannelPost = update.edited_channel_post;
+    const inlineQuery = update.inline_query;
+    const chosenInlineResult = update.chosen_inline_result;
+    const callbackQuery = update.callback_query;
+
+    if (message) {
+      debug('Process Update message %j', message);
+      this.emit('message', message);
+      const processMessageType = messageType => {
+        if (message[messageType]) {
+          debug('Emitting %s: %j', messageType, message);
+          this.emit(messageType, message);
+        }
+      };
+      TelegramBot.messageTypes.forEach(processMessageType);
+      if (message.text) {
+        debug('Text message');
+        this._textRegexpCallbacks.some(reg => {
+          debug('Matching %s with %s', message.text, reg.regexp);
+          const result = reg.regexp.exec(message.text);
+          if (!result) {
+            return false;
+          }
+          debug('Matches %s', reg.regexp);
+          reg.callback(message, result);
+          // returning truthy value exits .some
+          return this.options.onlyFirstMatch;
+        });
+      }
+      if (message.reply_to_message) {
+        // Only callbacks waiting for this message
+        this._onReplyToMessages.forEach(reply => {
+          // Message from the same chat
+          if (reply.chatId === message.chat.id) {
+            // Responding to that message
+            if (reply.messageId === message.reply_to_message.message_id) {
+              // Resolve the promise
+              reply.callback(message);
+            }
+          }
+        });
+      }
+    } else if (editedMessage) {
+      debug('Process Update edited_message %j', editedMessage);
+      this.emit('edited_message', editedMessage);
+      if (editedMessage.text) {
+        this.emit('edited_message_text', editedMessage);
+      }
+      if (editedMessage.caption) {
+        this.emit('edited_message_caption', editedMessage);
+      }
+    } else if (channelPost) {
+      debug('Process Update channel_post %j', channelPost);
+      this.emit('channel_post', channelPost);
+    } else if (editedChannelPost) {
+      debug('Process Update edited_channel_post %j', editedChannelPost);
+      this.emit('edited_channel_post', editedChannelPost);
+      if (editedChannelPost.text) {
+        this.emit('edited_channel_post_text', editedChannelPost);
+      }
+      if (editedChannelPost.caption) {
+        this.emit('edited_channel_post_caption', editedChannelPost);
+      }
+    } else if (inlineQuery) {
+      debug('Process Update inline_query %j', inlineQuery);
+      this.emit('inline_query', inlineQuery);
+    } else if (chosenInlineResult) {
+      debug('Process Update chosen_inline_result %j', chosenInlineResult);
+      this.emit('chosen_inline_result', chosenInlineResult);
+    } else if (callbackQuery) {
+      debug('Process Update callback_query %j', callbackQuery);
+      this.emit('callback_query', callbackQuery);
+    }
+  }
+
+  /**
    * Send text message.
    * @param  {Number|String} chatId Unique identifier for the message recipient
    * @param  {String} text Text of the message to be sent
@@ -328,49 +464,6 @@ class TelegramBot extends EventEmitter {
     };
 
     return this._request('forwardMessage', { form });
-  }
-
-  _formatSendData(type, data) {
-    let formData;
-    let fileName;
-    let fileId;
-    if (data instanceof stream.Stream) {
-      fileName = URL.parse(path.basename(data.path.toString())).pathname;
-      formData = {};
-      formData[type] = {
-        value: data,
-        options: {
-          filename: qs.unescape(fileName),
-          contentType: mime.lookup(fileName)
-        }
-      };
-    } else if (Buffer.isBuffer(data)) {
-      const filetype = fileType(data);
-      if (!filetype) {
-        throw new Error('Unsupported Buffer file type');
-      }
-      formData = {};
-      formData[type] = {
-        value: data,
-        options: {
-          filename: `data.${filetype.ext}`,
-          contentType: filetype.mime
-        }
-      };
-    } else if (fs.existsSync(data)) {
-      fileName = path.basename(data);
-      formData = {};
-      formData[type] = {
-        value: fs.createReadStream(data),
-        options: {
-          filename: fileName,
-          contentType: mime.lookup(fileName)
-        }
-      };
-    } else {
-      fileId = data;
-    }
-    return [formData, fileId];
   }
 
   /**
@@ -737,11 +830,7 @@ class TelegramBot extends EventEmitter {
    */
   getFileLink(fileId) {
     return this.getFile(fileId)
-      .then(resp => URL.format({
-        protocol: 'https',
-        host: 'api.telegram.org',
-        pathname: `/file/bot${this.token}/${resp.file_path}`
-      }));
+      .then(resp => `${this.options.baseApiUrl}/file/bot${this.token}/${resp.file_path}`);
   }
 
   /**
@@ -776,7 +865,7 @@ class TelegramBot extends EventEmitter {
    * the `msg` and the result of executing `regexp.exec` on message text.
    */
   onText(regexp, callback) {
-    this.textRegexpCallbacks.push({ regexp, callback });
+    this._textRegexpCallbacks.push({ regexp, callback });
   }
 
   /**
@@ -787,7 +876,7 @@ class TelegramBot extends EventEmitter {
    * message.
    */
   onReplyToMessage(chatId, messageId, callback) {
-    this.onReplyToMessages.push({
+    this._onReplyToMessages.push({
       chatId,
       messageId,
       callback

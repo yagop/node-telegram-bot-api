@@ -71,10 +71,16 @@ TelegramBot
 
 * [TelegramBot](#TelegramBot)
     * [new TelegramBot(token, [options])](#new_TelegramBot_new)
+    * [.initPolling()](#TelegramBot+initPolling)
     * [.stopPolling()](#TelegramBot+stopPolling) ⇒ <code>Promise</code>
+    * [.isPolling()](#TelegramBot+isPolling) ⇒ <code>Boolean</code>
+    * [.openWebHook()](#TelegramBot+openWebHook)
+    * [.closeWebHook()](#TelegramBot+closeWebHook) ⇒ <code>Promise</code>
+    * [.hasOpenWebHook()](#TelegramBot+hasOpenWebHook) ⇒ <code>Boolean</code>
     * [.getMe()](#TelegramBot+getMe) ⇒ <code>Promise</code>
     * [.setWebHook(url, [cert])](#TelegramBot+setWebHook)
     * [.getUpdates([timeout], [limit], [offset])](#TelegramBot+getUpdates) ⇒ <code>Promise</code>
+    * [.processUpdate(update)](#TelegramBot+processUpdate)
     * [.sendMessage(chatId, text, [options])](#TelegramBot+sendMessage) ⇒ <code>Promise</code>
     * [.answerInlineQuery(inlineQueryId, results, [options])](#TelegramBot+answerInlineQuery) ⇒ <code>Promise</code>
     * [.forwardMessage(chatId, fromChatId, messageId)](#TelegramBot+forwardMessage) ⇒ <code>Promise</code>
@@ -122,14 +128,24 @@ Emits `message` when a message arrives.
 | token | <code>String</code> |  | Bot Token |
 | [options] | <code>Object</code> |  |  |
 | [options.polling] | <code>Boolean</code> &#124; <code>Object</code> | <code>false</code> | Set true to enable polling or set options |
-| [options.polling.timeout] | <code>String</code> &#124; <code>Number</code> | <code>10</code> | Polling time in seconds |
-| [options.polling.interval] | <code>String</code> &#124; <code>Number</code> | <code>2000</code> | Interval between requests in miliseconds |
+| [options.polling.timeout] | <code>String</code> &#124; <code>Number</code> | <code>10</code> | Timeout in seconds for long polling |
+| [options.polling.interval] | <code>String</code> &#124; <code>Number</code> | <code>300</code> | Interval between requests in miliseconds |
+| [options.polling.autoStart] | <code>Boolean</code> | <code>true</code> | Start polling immediately |
 | [options.webHook] | <code>Boolean</code> &#124; <code>Object</code> | <code>false</code> | Set true to enable WebHook or set options |
-| [options.webHook.key] | <code>String</code> |  | PEM private key to webHook server. |
-| [options.webHook.cert] | <code>String</code> |  | PEM certificate (public) to webHook server. |
+| [options.webHook.port] | <code>Number</code> | <code>8443</code> | Port to bind to |
+| [options.webHook.key] | <code>String</code> |  | Path to file with PEM private key for webHook server. (Read synchronously!) |
+| [options.webHook.cert] | <code>String</code> |  | Path to file with PEM certificate (public) for webHook server. (Read synchronously!) |
+| [options.webHook.autoOpen] | <code>Boolean</code> | <code>true</code> | Open webHook immediately |
 | [options.onlyFirstMatch] | <code>Boolean</code> | <code>false</code> | Set to true to stop after first match. Otherwise, all regexps are executed |
 | [options.request] | <code>Object</code> |  | Options which will be added for all requests to telegram api.  See https://github.com/request/request#requestoptions-callback for more information. |
+| [options.baseApiUrl] | <code>String</code> | <code>https://api.telegram.org</code> | API Base URl; useful for proxying and testing |
 
+<a name="TelegramBot+initPolling"></a>
+
+### telegramBot.initPolling()
+Start polling
+
+**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
 <a name="TelegramBot+stopPolling"></a>
 
 ### telegramBot.stopPolling() ⇒ <code>Promise</code>
@@ -137,6 +153,32 @@ Stops polling after the last polling request resolves
 
 **Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
 **Returns**: <code>Promise</code> - promise Promise, of last polling request  
+<a name="TelegramBot+isPolling"></a>
+
+### telegramBot.isPolling() ⇒ <code>Boolean</code>
+Return true if polling. Otherwise, false.
+
+**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
+<a name="TelegramBot+openWebHook"></a>
+
+### telegramBot.openWebHook()
+Open webhook
+
+**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
+<a name="TelegramBot+closeWebHook"></a>
+
+### telegramBot.closeWebHook() ⇒ <code>Promise</code>
+Close webhook after closing all current connections
+
+**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
+**Returns**: <code>Promise</code> - promise  
+<a name="TelegramBot+hasOpenWebHook"></a>
+
+### telegramBot.hasOpenWebHook() ⇒ <code>Boolean</code>
+Return true if using webhook and it is open i.e. accepts connections.
+Otherwise, false.
+
+**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
 <a name="TelegramBot+getMe"></a>
 
 ### telegramBot.getMe() ⇒ <code>Promise</code>
@@ -171,6 +213,20 @@ Use this method to receive incoming updates using long polling
 | [timeout] | <code>Number</code> &#124; <code>String</code> | Timeout in seconds for long polling. |
 | [limit] | <code>Number</code> &#124; <code>String</code> | Limits the number of updates to be retrieved. |
 | [offset] | <code>Number</code> &#124; <code>String</code> | Identifier of the first update to be returned. |
+
+<a name="TelegramBot+processUpdate"></a>
+
+### telegramBot.processUpdate(update)
+Process an update; emitting the proper events and executing regexp
+callbacks. This method is useful should you be using a different
+way to fetch updates, other than those provided by TelegramBot.
+
+**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
+**See**: https://core.telegram.org/bots/api#update  
+
+| Param | Type |
+| --- | --- |
+| update | <code>Object</code> | 
 
 <a name="TelegramBot+sendMessage"></a>
 
