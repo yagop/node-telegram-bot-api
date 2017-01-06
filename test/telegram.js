@@ -250,6 +250,30 @@ describe('Telegram', function telegramSuite() {
     });
   });
 
+  describe('#deleteWebHook', function deleteWebHookSuite() {
+    before(function before() {
+      utils.handleRatelimit(bot, 'deleteWebHook', this);
+    });
+    it('should delete webhook', function test() {
+      return bot.deleteWebHook().then(resp => {
+        assert.equal(resp, true);
+      });
+    });
+  });
+
+  describe('#getWebHookInfo', function getWebHookInfoSuite() {
+    before(function before() {
+      utils.handleRatelimit(bot, 'getWebHookInfo', this);
+    });
+    it('should return WebhookInfo', function test() {
+      return bot.getWebHookInfo().then(resp => {
+        assert.ok(is.object(resp));
+        assert.ok(is.boolean(resp.has_custom_certificate));
+        assert.ok(is.number(resp.pending_update_count));
+      });
+    });
+  });
+
   describe('#getUpdates', function getUpdatesSuite() {
     const opts = {
       timeout: 0,
@@ -258,7 +282,7 @@ describe('Telegram', function telegramSuite() {
     before(function before() {
       utils.handleRatelimit(bot, 'setWebHook', this);
       utils.handleRatelimit(bot, 'getUpdates', this);
-      return bot.setWebHook('');
+      return bot.deleteWebHook();
     });
     it('should return an Array', function test() {
       return bot.getUpdates(opts).then(resp => {
