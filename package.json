@@ -16,7 +16,7 @@
   "scripts": {
     "build": "babel -d ./lib src",
     "prepublish": "npm run build",
-    "test": "istanbul cover ./node_modules/mocha/bin/_mocha -- -R spec --timeout 10000",
+    "test": "istanbul cover ./node_modules/mocha/bin/_mocha",
     "prepublish:test": "npm run prepublish && npm run test",
     "gen-doc": "jsdoc2md --src src/telegram.js -t README.hbs > README.md",
     "eslint": "eslint ./src ./test",
