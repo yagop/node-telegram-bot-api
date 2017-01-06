@@ -79,6 +79,7 @@ TelegramBot
     * [.hasOpenWebHook()](#TelegramBot+hasOpenWebHook) ⇒ <code>Boolean</code>
     * [.getMe()](#TelegramBot+getMe) ⇒ <code>Promise</code>
     * [.setWebHook(url, [options])](#TelegramBot+setWebHook)
+    * [.deleteWebHook()](#TelegramBot+deleteWebHook) ⇒ <code>Promise</code>
     * [.getWebHookInfo()](#TelegramBot+getWebHookInfo) ⇒ <code>Promise</code>
     * [.getUpdates([options])](#TelegramBot+getUpdates) ⇒ <code>Promise</code>
     * [.processUpdate(update)](#TelegramBot+processUpdate)
@@ -203,6 +204,14 @@ that is being deprecated.
 | [options] | <code>Object</code> | Additional Telegram query options |
 | [options.certificate] | <code>String</code> &#124; <code>stream.Stream</code> | PEM certificate key (public). |
 
+<a name="TelegramBot+deleteWebHook"></a>
+
+### telegramBot.deleteWebHook() ⇒ <code>Promise</code>
+Use this method to remove webhook integration if you decide to
+switch back to getUpdates. Returns True on success.
+
+**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
+**See**: https://core.telegram.org/bots/api#deletewebhook  
 <a name="TelegramBot+getWebHookInfo"></a>
 
 ### telegramBot.getWebHookInfo() ⇒ <code>Promise</code>

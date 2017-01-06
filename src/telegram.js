@@ -335,7 +335,7 @@ class TelegramBot extends EventEmitter {
       });
   }
 
-  /*
+  /**
    * Use this method to remove webhook integration if you decide to
    * switch back to getUpdates. Returns True on success.
    * @return {Promise}
