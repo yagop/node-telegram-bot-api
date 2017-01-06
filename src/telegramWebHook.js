@@ -27,6 +27,8 @@ class TelegramBotWebHook {
     this.callback = callback;
     this._regex = new RegExp(this.token);
     this._webServer = null;
+    this._requestListener = this._requestListener.bind(this);
+    this._parseBody = this._parseBody.bind(this);
 
     if (options.key && options.cert) { // HTTPS Server
       debug('HTTPS WebHook enabled');
@@ -59,7 +61,7 @@ class TelegramBotWebHook {
    * Handle request body by passing it to 'callback'
    * @private
    */
-  _parseBody = (err, body) => {
+  _parseBody(err, body) {
     if (err) {
       return debug(err);
     }
@@ -78,7 +80,7 @@ class TelegramBotWebHook {
    * @see https://nodejs.org/docs/latest/api/http.html#http_http_createserver_requestlistener
    * @see https://nodejs.org/docs/latest/api/https.html#https_https_createserver_options_requestlistener
    */
-  _requestListener = (req, res) => {
+  _requestListener(req, res) {
     debug('WebHook request URL: %s', req.url);
     debug('WebHook request headers: %j', req.headers);
 
