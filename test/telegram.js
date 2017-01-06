@@ -149,8 +149,9 @@ describe('Telegram', function telegramSuite() {
       return utils.isPollingMockServer(pollingPort);
     });
     it('returns false if bot is not polling', function test() {
-      return testbot.stopPolling(() => {
+      return testbot.stopPolling().then(() => {
         assert.equal(testbot.isPolling(), false);
+        utils.clearPollingCheck(pollingPort);
         return utils.isPollingMockServer(pollingPort, true);
       });
     });
@@ -162,7 +163,6 @@ describe('Telegram', function telegramSuite() {
   describe('#stopPolling', function stopPollingSuite() {
     it('stops polling by bot', function test() {
       return testbot.stopPolling().then(() => {
-        assert.equal(testbot.isPolling(), false);
         utils.clearPollingCheck(pollingPort);
         return utils.isPollingMockServer(pollingPort, true);
       });
