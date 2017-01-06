@@ -80,6 +80,7 @@ TelegramBot
     * [.getMe()](#TelegramBot+getMe) ⇒ <code>Promise</code>
     * [.setWebHook(url, [cert])](#TelegramBot+setWebHook)
     * [.getUpdates([timeout], [limit], [offset])](#TelegramBot+getUpdates) ⇒ <code>Promise</code>
+    * [.processUpdate(update)](#TelegramBot+processUpdate)
     * [.sendMessage(chatId, text, [options])](#TelegramBot+sendMessage) ⇒ <code>Promise</code>
     * [.answerInlineQuery(inlineQueryId, results, [options])](#TelegramBot+answerInlineQuery) ⇒ <code>Promise</code>
     * [.forwardMessage(chatId, fromChatId, messageId)](#TelegramBot+forwardMessage) ⇒ <code>Promise</code>
@@ -212,6 +213,20 @@ Use this method to receive incoming updates using long polling
 | [timeout] | <code>Number</code> &#124; <code>String</code> | Timeout in seconds for long polling. |
 | [limit] | <code>Number</code> &#124; <code>String</code> | Limits the number of updates to be retrieved. |
 | [offset] | <code>Number</code> &#124; <code>String</code> | Identifier of the first update to be returned. |
+
+<a name="TelegramBot+processUpdate"></a>
+
+### telegramBot.processUpdate(update)
+Process an update; emitting the proper events and executing regexp
+callbacks. This method is useful should you be using a different
+way to fetch updates, other than those provided by TelegramBot.
+
+**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
+**See**: https://core.telegram.org/bots/api#update  
+
+| Param | Type |
+| --- | --- |
+| update | <code>Object</code> | 
 
 <a name="TelegramBot+sendMessage"></a>
 

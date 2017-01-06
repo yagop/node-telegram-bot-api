@@ -79,92 +79,6 @@ class TelegramBot extends EventEmitter {
   }
 
   /**
-   * Process an update; emitting the proper events and executing regexp
-   * callbacks
-   * @param  {Object} update
-   * @private
-   */
-  _processUpdate(update) {
-    debug('Process Update %j', update);
-    const message = update.message;
-    const editedMessage = update.edited_message;
-    const channelPost = update.channel_post;
-    const editedChannelPost = update.edited_channel_post;
-    const inlineQuery = update.inline_query;
-    const chosenInlineResult = update.chosen_inline_result;
-    const callbackQuery = update.callback_query;
-
-    if (message) {
-      debug('Process Update message %j', message);
-      this.emit('message', message);
-      const processMessageType = messageType => {
-        if (message[messageType]) {
-          debug('Emitting %s: %j', messageType, message);
-          this.emit(messageType, message);
-        }
-      };
-      TelegramBot.messageTypes.forEach(processMessageType);
-      if (message.text) {
-        debug('Text message');
-        this._textRegexpCallbacks.some(reg => {
-          debug('Matching %s with %s', message.text, reg.regexp);
-          const result = reg.regexp.exec(message.text);
-          if (!result) {
-            return false;
-          }
-          debug('Matches %s', reg.regexp);
-          reg.callback(message, result);
-          // returning truthy value exits .some
-          return this.options.onlyFirstMatch;
-        });
-      }
-      if (message.reply_to_message) {
-        // Only callbacks waiting for this message
-        this._onReplyToMessages.forEach(reply => {
-          // Message from the same chat
-          if (reply.chatId === message.chat.id) {
-            // Responding to that message
-            if (reply.messageId === message.reply_to_message.message_id) {
-              // Resolve the promise
-              reply.callback(message);
-            }
-          }
-        });
-      }
-    } else if (editedMessage) {
-      debug('Process Update edited_message %j', editedMessage);
-      this.emit('edited_message', editedMessage);
-      if (editedMessage.text) {
-        this.emit('edited_message_text', editedMessage);
-      }
-      if (editedMessage.caption) {
-        this.emit('edited_message_caption', editedMessage);
-      }
-    } else if (channelPost) {
-      debug('Process Update channel_post %j', channelPost);
-      this.emit('channel_post', channelPost);
-    } else if (editedChannelPost) {
-      debug('Process Update edited_channel_post %j', editedChannelPost);
-      this.emit('edited_channel_post', editedChannelPost);
-      if (editedChannelPost.text) {
-        this.emit('edited_channel_post_text', editedChannelPost);
-      }
-      if (editedChannelPost.caption) {
-        this.emit('edited_channel_post_caption', editedChannelPost);
-      }
-    } else if (inlineQuery) {
-      debug('Process Update inline_query %j', inlineQuery);
-      this.emit('inline_query', inlineQuery);
-    } else if (chosenInlineResult) {
-      debug('Process Update chosen_inline_result %j', chosenInlineResult);
-      this.emit('chosen_inline_result', chosenInlineResult);
-    } else if (callbackQuery) {
-      debug('Process Update callback_query %j', callbackQuery);
-      this.emit('callback_query', callbackQuery);
-    }
-  }
-
-  /**
    * Generates url with bot token and provided path/method you want to be got/executed by bot
    * @param  {String} path
    * @return {String} url
@@ -308,7 +222,7 @@ class TelegramBot extends EventEmitter {
         reason: 'Polling restart',
       });
     }
-    this._polling = new TelegramBotPolling(this._request.bind(this), this.options.polling, this._processUpdate.bind(this));
+    this._polling = new TelegramBotPolling(this._request.bind(this), this.options.polling, this.processUpdate.bind(this));
   }
 
   /**
@@ -339,7 +253,7 @@ class TelegramBot extends EventEmitter {
     if (this._webHook) {
       return;
     }
-    this._webHook = new TelegramBotWebHook(this.token, this.options.webHook, this._processUpdate.bind(this));
+    this._webHook = new TelegramBotWebHook(this.token, this.options.webHook, this.processUpdate.bind(this));
   }
 
   /**
@@ -417,6 +331,93 @@ class TelegramBot extends EventEmitter {
     };
 
     return this._request('getUpdates', { form });
+  }
+
+  /**
+   * Process an update; emitting the proper events and executing regexp
+   * callbacks. This method is useful should you be using a different
+   * way to fetch updates, other than those provided by TelegramBot.
+   * @param  {Object} update
+   * @see https://core.telegram.org/bots/api#update
+   */
+  processUpdate(update) {
+    debug('Process Update %j', update);
+    const message = update.message;
+    const editedMessage = update.edited_message;
+    const channelPost = update.channel_post;
+    const editedChannelPost = update.edited_channel_post;
+    const inlineQuery = update.inline_query;
+    const chosenInlineResult = update.chosen_inline_result;
+    const callbackQuery = update.callback_query;
+
+    if (message) {
+      debug('Process Update message %j', message);
+      this.emit('message', message);
+      const processMessageType = messageType => {
+        if (message[messageType]) {
+          debug('Emitting %s: %j', messageType, message);
+          this.emit(messageType, message);
+        }
+      };
+      TelegramBot.messageTypes.forEach(processMessageType);
+      if (message.text) {
+        debug('Text message');
+        this._textRegexpCallbacks.some(reg => {
+          debug('Matching %s with %s', message.text, reg.regexp);
+          const result = reg.regexp.exec(message.text);
+          if (!result) {
+            return false;
+          }
+          debug('Matches %s', reg.regexp);
+          reg.callback(message, result);
+          // returning truthy value exits .some
+          return this.options.onlyFirstMatch;
+        });
+      }
+      if (message.reply_to_message) {
+        // Only callbacks waiting for this message
+        this._onReplyToMessages.forEach(reply => {
+          // Message from the same chat
+          if (reply.chatId === message.chat.id) {
+            // Responding to that message
+            if (reply.messageId === message.reply_to_message.message_id) {
+              // Resolve the promise
+              reply.callback(message);
+            }
+          }
+        });
+      }
+    } else if (editedMessage) {
+      debug('Process Update edited_message %j', editedMessage);
+      this.emit('edited_message', editedMessage);
+      if (editedMessage.text) {
+        this.emit('edited_message_text', editedMessage);
+      }
+      if (editedMessage.caption) {
+        this.emit('edited_message_caption', editedMessage);
+      }
+    } else if (channelPost) {
+      debug('Process Update channel_post %j', channelPost);
+      this.emit('channel_post', channelPost);
+    } else if (editedChannelPost) {
+      debug('Process Update edited_channel_post %j', editedChannelPost);
+      this.emit('edited_channel_post', editedChannelPost);
+      if (editedChannelPost.text) {
+        this.emit('edited_channel_post_text', editedChannelPost);
+      }
+      if (editedChannelPost.caption) {
+        this.emit('edited_channel_post_caption', editedChannelPost);
+      }
+    } else if (inlineQuery) {
+      debug('Process Update inline_query %j', inlineQuery);
+      this.emit('inline_query', inlineQuery);
+    } else if (chosenInlineResult) {
+      debug('Process Update chosen_inline_result %j', chosenInlineResult);
+      this.emit('chosen_inline_result', chosenInlineResult);
+    } else if (callbackQuery) {
+      debug('Process Update callback_query %j', callbackQuery);
+      this.emit('callback_query', callbackQuery);
+    }
   }
 
   /**
