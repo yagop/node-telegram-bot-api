@@ -686,7 +686,13 @@ describe('Telegram', function telegramSuite() {
     });
   });
 
-  describe('#sendContact', function sendContactSuite() {
+  // NOTE: We are skipping TelegramBot#sendContact() as the
+  // corresponding rate-limits enforced by the Telegram servers
+  // are too strict! During our initial tests, we were required
+  // to retry after ~72000 secs (1200 mins / 20 hrs).
+  // We surely can NOT wait for that much time during testing
+  // (or in most practical cases for that matter!)
+  describe.skip('#sendContact', function sendContactSuite() {
     before(function before() {
       utils.handleRatelimit(bot, 'sendContact', this);
     });
