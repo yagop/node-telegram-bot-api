@@ -13,6 +13,7 @@ const path = require('path');
 const URL = require('url');
 const fs = require('fs');
 const pump = require('pump');
+const deprecate = require('depd')('node-telegram-bot-api');
 
 const _messageTypes = [
   'text', 'audio', 'document', 'photo', 'sticker', 'video', 'voice', 'contact',
@@ -290,14 +291,33 @@ class TelegramBot extends EventEmitter {
 
   /**
    * Specify an url to receive incoming updates via an outgoing webHook.
-   * @param {String} url URL where Telegram will make HTTP Post. Leave empty to
+   * This method has an [older, compatible signature][setWebHook-v0.25.0]
+   * that is being deprecated.
+   *
+   * @param  {String} url URL where Telegram will make HTTP Post. Leave empty to
    * delete webHook.
-   * @param {String|stream.Stream} [cert] PEM certificate key (public).
+   * @param  {Object} [options] Additional Telegram query options
+   * @param  {String|stream.Stream} [options.certificate] PEM certificate key (public).
    * @see https://core.telegram.org/bots/api#setwebhook
    */
-  setWebHook(url, cert) {
-    const _path = 'setWebHook';
-    const opts = { qs: { url } };
+  setWebHook(url, options = {}) {
+    /* The older method signature was setWebHook(url, cert).
+     * We need to ensure backwards-compatibility while maintaining
+     * consistency of the method signatures throughout the library */
+    let cert;
+    // Note: 'options' could be an object, if a stream was provided (in place of 'cert')
+    if (typeof options !== 'object' || options instanceof stream.Stream) {
+      deprecate('The method signature setWebHook(url, cert) has been deprecated since v0.25.0');
+      cert = options;
+      options = {}; // eslint-disable-line no-param-reassign
+    } else {
+      cert = options.certificate;
+    }
+
+    const opts = {
+      qs: options,
+    };
+    opts.qs.url = url;
 
     if (cert) {
       const [formData, certificate] = this._formatSendData('certificate', cert);
@@ -305,7 +325,7 @@ class TelegramBot extends EventEmitter {
       opts.qs.certificate = certificate;
     }
 
-    return this._request(_path, opts)
+    return this._request('setWebHook', opts)
       .then(resp => {
         if (!resp) {
           throw new Error(resp);
@@ -316,19 +336,28 @@ class TelegramBot extends EventEmitter {
   }
 
   /**
-   * Use this method to receive incoming updates using long polling
-   * @param  {Number|String} [timeout] Timeout in seconds for long polling.
-   * @param  {Number|String} [limit] Limits the number of updates to be retrieved.
-   * @param  {Number|String} [offset] Identifier of the first update to be returned.
-   * @return {Promise} Updates
+   * Use this method to receive incoming updates using long polling.
+   * This method has an [older, compatible signature][getUpdates-v0.25.0]
+   * that is being deprecated.
+   *
+   * @param  {Object} [options] Additional Telegram query options
+   * @return {Promise}
    * @see https://core.telegram.org/bots/api#getupdates
    */
-  getUpdates(timeout, limit, offset) {
-    const form = {
-      offset,
-      limit,
-      timeout,
-    };
+  getUpdates(form = {}) {
+    /* The older method signature was getUpdates(timeout, limit, offset).
+     * We need to ensure backwards-compatibility while maintaining
+     * consistency of the method signatures throughout the library */
+    if (typeof form !== 'object') {
+      /* eslint-disable no-param-reassign, prefer-rest-params */
+      deprecate('The method signature getUpdates(timeout, limit, offset) has been deprecated since v0.25.0');
+      form = {
+        timeout: arguments[0],
+        limit: arguments[1],
+        offset: arguments[2],
+      };
+      /* eslint-enable no-param-reassign, prefer-rest-params */
+    }
 
     return this._request('getUpdates', { form });
   }
@@ -454,15 +483,13 @@ class TelegramBot extends EventEmitter {
    * @param  {Number|String} fromChatId Unique identifier for the chat where the
    * original message was sent
    * @param  {Number|String} messageId  Unique message identifier
+   * @param  {Object} [options] Additional Telegram query options
    * @return {Promise}
    */
-  forwardMessage(chatId, fromChatId, messageId) {
-    const form = {
-      chat_id: chatId,
-      from_chat_id: fromChatId,
-      message_id: messageId
-    };
-
+  forwardMessage(chatId, fromChatId, messageId, form = {}) {
+    form.chat_id = chatId;
+    form.from_chat_id = fromChatId;
+    form.message_id = messageId;
     return this._request('forwardMessage', { form });
   }
 
@@ -727,19 +754,28 @@ class TelegramBot extends EventEmitter {
   /**
    * Use this method to get a list of profile pictures for a user.
    * Returns a [UserProfilePhotos](https://core.telegram.org/bots/api#userprofilephotos) object.
+   * This method has an [older, compatible signature][getUserProfilePhotos-v0.25.0]
+   * that is being deprecated.
    *
    * @param  {Number|String} userId  Unique identifier of the target user
-   * @param  {Number} [offset] Sequential number of the first photo to be returned. By default, all photos are returned.
-   * @param  {Number} [limit] Limits the number of photos to be retrieved. Values between 1—100 are accepted. Defaults to 100.
+   * @param  {Object} [options] Additional Telegram query options
    * @return {Promise}
    * @see https://core.telegram.org/bots/api#getuserprofilephotos
    */
-  getUserProfilePhotos(userId, offset, limit) {
-    const form = {
-      user_id: userId,
-      offset,
-      limit
-    };
+  getUserProfilePhotos(userId, form = {}) {
+    /* The older method signature was getUserProfilePhotos(userId, offset, limit).
+     * We need to ensure backwards-compatibility while maintaining
+     * consistency of the method signatures throughout the library */
+    if (typeof form !== 'object') {
+      /* eslint-disable no-param-reassign, prefer-rest-params */
+      deprecate('The method signature getUserProfilePhotos(userId, offset, limit) has been deprecated since v0.25.0');
+      form = {
+        offset: arguments[1],
+        limit: arguments[2],
+      };
+      /* eslint-enable no-param-reassign, prefer-rest-params */
+    }
+    form.user_id = userId;
     return this._request('getUserProfilePhotos', { form });
   }
 

@@ -215,6 +215,7 @@ describe('Telegram', function telegramSuite() {
 
   describe('#setWebHook', function setWebHookSuite() {
     const ip = '216.58.210.174';
+    const cert = `${__dirname}/../examples/crt.pem`;
     before(function before() {
       utils.handleRatelimit(bot, 'setWebHook', this);
     });
@@ -227,7 +228,13 @@ describe('Telegram', function telegramSuite() {
         });
     });
     it('should set a webHook with certificate', function test() {
-      const cert = `${__dirname}/../examples/crt.pem`;
+      return bot
+        .setWebHook(ip, { certificate: cert })
+        .then(resp => {
+          assert.equal(resp, true);
+        });
+    });
+    it('(v0.25.0 and lower) should set a webHook with certificate', function test() {
       return bot
         .setWebHook(ip, cert)
         .then(resp => {
@@ -244,11 +251,22 @@ describe('Telegram', function telegramSuite() {
   });
 
   describe('#getUpdates', function getUpdatesSuite() {
+    const opts = {
+      timeout: 0,
+      limit: 10,
+    };
     before(function before() {
+      utils.handleRatelimit(bot, 'setWebHook', this);
       utils.handleRatelimit(bot, 'getUpdates', this);
+      return bot.setWebHook('');
     });
     it('should return an Array', function test() {
-      return bot.getUpdates().then(resp => {
+      return bot.getUpdates(opts).then(resp => {
+        assert.equal(Array.isArray(resp), true);
+      });
+    });
+    it('(v0.25.0 and lower) should return an Array', function test() {
+      return bot.getUpdates(opts.timeout, opts.limit).then(resp => {
         assert.equal(Array.isArray(resp), true);
       });
     });
@@ -637,11 +655,22 @@ describe('Telegram', function telegramSuite() {
   });
 
   describe('#getUserProfilePhotos', function getUserProfilePhotosSuite() {
+    const opts = {
+      offset: 0,
+      limit: 1,
+    };
     before(function before() {
       utils.handleRatelimit(bot, 'getUserProfilePhotos', this);
     });
     it('should get user profile photos', function test() {
-      return bot.getUserProfilePhotos(USERID).then(resp => {
+      return bot.getUserProfilePhotos(USERID, opts).then(resp => {
+        assert.ok(is.object(resp));
+        assert.ok(is.number(resp.total_count));
+        assert.ok(is.array(resp.photos));
+      });
+    });
+    it('(v0.25.0 and lower) should get user profile photos', function test() {
+      return bot.getUserProfilePhotos(USERID, opts.offset, opts.limit).then(resp => {
         assert.ok(is.object(resp));
         assert.ok(is.number(resp.total_count));
         assert.ok(is.array(resp.photos));
