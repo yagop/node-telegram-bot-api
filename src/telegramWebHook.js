@@ -31,16 +31,16 @@ class TelegramBotWebHook {
     this._requestListener = this._requestListener.bind(this);
     this._parseBody = this._parseBody.bind(this);
 
-    if (options.key && options.cert) {
+    if (this.options.key && this.options.cert) {
       debug('HTTPS WebHook enabled (by key/cert)');
-      this.options.https.key = fs.readFileSync(options.key);
-      this.options.https.cert = fs.readFileSync(options.cert);
+      this.options.https.key = fs.readFileSync(this.options.key);
+      this.options.https.cert = fs.readFileSync(this.options.cert);
       this._webServer = https.createServer(this.options.https, this._requestListener);
-    } else if (options.pfx) {
+    } else if (this.options.pfx) {
       debug('HTTPS WebHook enabled (by pfx)');
-      this.options.https.pfx = fs.readFileSync(options.pfx);
+      this.options.https.pfx = fs.readFileSync(this.options.pfx);
       this._webServer = https.createServer(this.options.https, this._requestListener);
-    } else if (options.https) {
+    } else if (Object.keys(this.options.https).length) {
       debug('HTTPS WebHook enabled by (https)');
       this._webServer = https.createServer(this.options.https, this._requestListener);
     } else {
@@ -48,8 +48,8 @@ class TelegramBotWebHook {
       this._webServer = http.createServer(this._requestListener);
     }
 
-    this._webServer.listen(options.port, options.host, () => {
-      debug('WebHook listening on port %s', options.port);
+    this._webServer.listen(this.options.port, this.options.host, () => {
+      debug('WebHook listening on port %s', this.options.port);
     });
   }
 
