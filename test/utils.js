@@ -37,6 +37,7 @@ exports = module.exports = {
    * @param  {Object} [options]
    * @param  {String} [options.method=POST] Method to use
    * @param  {Object} [options.message] Message to send. Default to a generic text message
+   * @param  {Boolean} [options.https=false] Use https
    * @return {Promise}
    */
   sendWebHookMessage,
@@ -136,7 +137,8 @@ function hasOpenWebHook(port, reverse) {
 function sendWebHookMessage(port, token, options = {}) {
   assert.ok(port);
   assert.ok(token);
-  const url = `http://127.0.0.1:${port}/bot${token}`;
+  const protocol = options.https ? 'https' : 'http';
+  const url = `${protocol}://127.0.0.1:${port}/bot${token}`;
   return request({
     url,
     method: options.method || 'POST',

@@ -47,9 +47,17 @@ class TelegramBot extends EventEmitter {
    * @param {Boolean} [options.polling.autoStart=true] Start polling immediately
    * @param {Boolean|Object} [options.webHook=false] Set true to enable WebHook or set options
    * @param {Number} [options.webHook.port=8443] Port to bind to
-   * @param {String} [options.webHook.key] Path to file with PEM private key for webHook server. (Read synchronously!)
-   * @param {String} [options.webHook.cert] Path to file with PEM certificate (public) for webHook server. (Read synchronously!)
+   * @param {String} [options.webHook.key] Path to file with PEM private key for webHook server.
+   *  The file is read **synchronously**!
+   * @param {String} [options.webHook.cert] Path to file with PEM certificate (public) for webHook server.
+   *  The file is read **synchronously**!
+   * @param {String} [options.webHook.pfx] Path to file with PFX private key and certificate chain for webHook server.
+   *  The file is read **synchronously**!
    * @param {Boolean} [options.webHook.autoOpen=true] Open webHook immediately
+   * @param {Object} [options.webHook.https] Options to be passed to `https.createServer()`.
+   *  Note that `options.webHook.key`, `options.webHook.cert` and `options.webHook.pfx`, if provided, will be
+   *  used to override `key`, `cert` and `pfx` in this object, respectively.
+   *  See https://nodejs.org/api/https.html#https_https_createserver_options_requestlistener for more information.
    * @param {Boolean} [options.onlyFirstMatch=false] Set to true to stop after first match. Otherwise, all regexps are executed
    * @param {Object} [options.request] Options which will be added for all requests to telegram api.
    *  See https://github.com/request/request#requestoptions-callback for more information.

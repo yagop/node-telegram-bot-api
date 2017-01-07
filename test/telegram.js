@@ -1,4 +1,4 @@
-const Telegram = require('../lib/telegram');
+const TelegramBot = require('../lib/telegram');
 const Promise = require('bluebird');
 const request = require('request-promise');
 const assert = require('assert');
@@ -8,7 +8,9 @@ const path = require('path');
 const is = require('is');
 const utils = require('./utils');
 
+// Allows self-signed certificates to be used in our tests
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+
 const TOKEN = process.env.TEST_TELEGRAM_TOKEN;
 if (!TOKEN) {
   throw new Error('Bot token not provided');
@@ -19,12 +21,15 @@ const USERID = process.env.TEST_USER_ID || 777000;
 const GROUPID = process.env.TEST_GROUP_ID || -1001075450562;
 const GAME_SHORT_NAME = process.env.TEST_GAME_SHORT_NAME || 'medusalab_test';
 const timeout = 60 * 1000;
-const staticPort = 8091;
-const pollingPort = 8092;
-const webHookPort = 8093;
-const pollingPort2 = 8094;
-const webHookPort2 = 8095;
+let portindex = 8091;
+const staticPort = portindex++;
+const pollingPort = portindex++;
+const webHookPort = portindex++;
+const pollingPort2 = portindex++;
+const webHookPort2 = portindex++;
 const staticUrl = `http://127.0.0.1:${staticPort}`;
+const key = `${__dirname}/../examples/key.pem`;
+const cert = `${__dirname}/../examples/crt.pem`;
 let FILE_ID;
 let GAME_CHAT_ID;
 let GAME_MSG_ID;
@@ -37,7 +42,7 @@ before(function beforeAll() {
     });
 });
 
-describe('Telegram', function telegramSuite() {
+describe('TelegramBot', function telegramSuite() {
   let bot;
   let testbot;
   let botPolling;
@@ -45,8 +50,8 @@ describe('Telegram', function telegramSuite() {
 
   before(function beforeAll() {
     this.timeout(timeout);
-    bot = new Telegram(TOKEN);
-    testbot = new Telegram(TOKEN, {
+    bot = new TelegramBot(TOKEN);
+    testbot = new TelegramBot(TOKEN, {
       baseApiUrl: `http://127.0.0.1:${pollingPort}`,
       polling: {
         autoStart: false,
@@ -56,11 +61,11 @@ describe('Telegram', function telegramSuite() {
         port: webHookPort,
       },
     });
-    botPolling = new Telegram(TOKEN, {
+    botPolling = new TelegramBot(TOKEN, {
       baseApiUrl: `http://127.0.0.1:${pollingPort2}`,
       polling: true,
     });
-    botWebHook = new Telegram(TOKEN, {
+    botWebHook = new TelegramBot(TOKEN, {
       webHook: {
         port: webHookPort2,
       },
@@ -133,6 +138,31 @@ describe('Telegram', function telegramSuite() {
           if (resp.statusCode !== 418) throw new Error(`unexpected error: ${resp.body}`);
         });
       }); // Promise.each
+    });
+  });
+
+  describe('WebHook HTTPS', function webHookHTTPSSuite() {
+    const port = portindex++;
+    let httpsbot;
+    afterEach(function afterEach() {
+      return httpsbot.closeWebHook();
+    });
+    it('is enabled, through options.key and options.cert', function test() {
+      httpsbot = new TelegramBot(TOKEN, { webHook: { port, key, cert } });
+      return utils.sendWebHookMessage(port, TOKEN, { https: true });
+    });
+    it('is enabled, through options.pfx');
+    it('is enabled, through options.https', function test() {
+      httpsbot = new TelegramBot(TOKEN, {
+        webHook: {
+          port,
+          https: {
+            key: fs.readFileSync(key),
+            cert: fs.readFileSync(cert),
+          },
+        },
+      });
+      return utils.sendWebHookMessage(port, TOKEN, { https: true });
     });
   });
 
@@ -215,7 +245,6 @@ describe('Telegram', function telegramSuite() {
 
   describe('#setWebHook', function setWebHookSuite() {
     const ip = '216.58.210.174';
-    const cert = `${__dirname}/../examples/crt.pem`;
     before(function before() {
       utils.handleRatelimit(bot, 'setWebHook', this);
     });

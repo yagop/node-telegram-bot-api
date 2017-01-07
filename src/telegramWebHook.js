@@ -24,19 +24,25 @@ class TelegramBotWebHook {
     this.token = token;
     this.options = options;
     this.options.port = options.port || 8443;
+    this.options.https = options.https || {};
     this.callback = callback;
     this._regex = new RegExp(this.token);
     this._webServer = null;
     this._requestListener = this._requestListener.bind(this);
     this._parseBody = this._parseBody.bind(this);
 
-    if (options.key && options.cert) { // HTTPS Server
-      debug('HTTPS WebHook enabled');
-      const opts = {
-        key: fs.readFileSync(options.key),
-        cert: fs.readFileSync(options.cert)
-      };
-      this._webServer = https.createServer(opts, this._requestListener);
+    if (options.key && options.cert) {
+      debug('HTTPS WebHook enabled (by key/cert)');
+      this.options.https.key = fs.readFileSync(options.key);
+      this.options.https.cert = fs.readFileSync(options.cert);
+      this._webServer = https.createServer(this.options.https, this._requestListener);
+    } else if (options.pfx) {
+      debug('HTTPS WebHook enabled (by pfx)');
+      this.options.https.pfx = fs.readFileSync(options.pfx);
+      this._webServer = https.createServer(this.options.https, this._requestListener);
+    } else if (options.https) {
+      debug('HTTPS WebHook enabled by (https)');
+      this._webServer = https.createServer(this.options.https, this._requestListener);
     } else {
       debug('HTTP WebHook enabled');
       this._webServer = http.createServer(this._requestListener);
