@@ -1,12 +1,30 @@
-var TelegramBot = require('../src/telegram');
+/**
+ * This example demonstrates setting up a webook, using a
+ * self-signed certificate.
+ */
 
-var options = {
+
+const TOKEN = 'YOUR_TELEGRAM_BOT_TOKEN';
+const TelegramBot = require('..');
+const options = {
   webHook: {
     port: 443,
-    key: __dirname+'/key.pem',
-    cert: __dirname+'/crt.pem'
+    key: `${__dirname}/key.pem`,  // Path to file with PEM private key
+    cert: `${__dirname}/crt.pem`  // Path to file with PEM certificate
   }
 };
+// This URL must route to the port set above (i.e. 443)
+const url = 'https://<PUBLIC-URL>';
+const bot = new TelegramBot(TOKEN, options);
 
-var bot = new TelegramBot('BOT_TOKEN', options);
-bot.setWebHook('IP:PORT/botBOT_TOKEN', __dirname+'/crt.pem');
+
+// This informs the Telegram servers of the new webhook.
+bot.setWebHook(`${url}/bot${TOKEN}`, {
+  certificate: options.webHook.cert,
+});
+
+
+// Just to ping!
+bot.on('message', function onMessage(msg) {
+  bot.sendMessage(msg.chat.id, "I'm alive!");
+});

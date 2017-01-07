@@ -19,7 +19,7 @@
     "test": "istanbul cover ./node_modules/mocha/bin/_mocha",
     "prepublish:test": "npm run prepublish && npm run test",
     "gen-doc": "jsdoc2md --src src/telegram.js -t README.hbs > README.md",
-    "eslint": "eslint ./src ./test",
+    "eslint": "eslint ./src ./test ./examples",
     "pretest": "npm run eslint && npm run build"
   },
   "author": "Yago Pérez <yagoperezs@gmail.com>",

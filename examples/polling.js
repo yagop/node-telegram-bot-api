@@ -1,55 +1,54 @@
-var TelegramBot = require('../src/telegram');
-var request = require('request');
+/**
+ * This example demonstrates using polling.
+ * It also demonstrates how you would process and send messages.
+ */
 
-var options = {
+
+const TOKEN = 'YOUR_TELEGRAM_BOT_TOKEN';
+const TelegramBot = require('..');
+const request = require('request');
+const options = {
   polling: true
 };
+const bot = new TelegramBot(TOKEN, options);
 
-var token = process.env.TELEGRAM_BOT_TOKEN || 'YOUR_TELEGRAM_BOT_TOKEN';
-
-var bot = new TelegramBot(token, options);
-bot.getMe().then(function (me) {
-  console.log('Hi my name is %s!', me.username);
-});
 
 // Matches /photo
-bot.onText(/\/photo/, function (msg) {
-  var chatId = msg.chat.id;
-  // From file
-  var photo = __dirname+'/../test/bot.gif';
-  bot.sendPhoto(chatId, photo, {caption: "I'm a bot!"});
+bot.onText(/\/photo/, function onPhotoText(msg) {
+  // From file path
+  const photo = `${__dirname}/../test/data/photo.gif`;
+  bot.sendPhoto(msg.chat.id, photo, {
+    caption: "I'm a bot!"
+  });
 });
+
 
 // Matches /audio
-bot.onText(/\/audio/, function (msg) {
-  var chatId = msg.chat.id;
-  var url = 'https://upload.wikimedia.org/wikipedia/commons/c/c8/Example.ogg';
-    // From HTTP request!
-    var audio = request(url);
-    bot.sendAudio(chatId, audio)
-      .then(function (resp) {
-        // Forward the msg
-        var messageId = resp.message_id;
-        bot.forwardMessage(chatId, chatId, messageId);
-      });
+bot.onText(/\/audio/, function onAudioText(msg) {
+  // From HTTP request
+  const url = 'https://upload.wikimedia.org/wikipedia/commons/c/c8/Example.ogg';
+  const audio = request(url);
+  bot.sendAudio(msg.chat.id, audio);
 });
+
 
 // Matches /love
-bot.onText(/\/love/, function (msg) {
-  var chatId = msg.chat.id;
-  var opts = {
-      reply_to_message_id: msg.message_id,
-      reply_markup: JSON.stringify({
-        keyboard: [
-          ['Yes, you are the bot of my life ❤'],
-          ['No, sorry there is another one...']]
-      })
-    };
-    bot.sendMessage(chatId, 'Do you love me?', opts);
+bot.onText(/\/love/, function onLoveText(msg) {
+  const opts = {
+    reply_to_message_id: msg.message_id,
+    reply_markup: JSON.stringify({
+      keyboard: [
+        ['Yes, you are the bot of my life ❤'],
+        ['No, sorry there is another one...']
+      ]
+    })
+  };
+  bot.sendMessage(msg.chat.id, 'Do you love me?', opts);
 });
 
-bot.onText(/\/echo (.+)/, function (msg, match) {
-  var chatId = msg.chat.id;
-  var resp = match[1];
-  bot.sendMessage(chatId, resp);
+
+// Matches /echo [whatever]
+bot.onText(/\/echo (.+)/, function onEchoText(msg, match) {
+  const resp = match[1];
+  bot.sendMessage(msg.chat.id, resp);
 });
