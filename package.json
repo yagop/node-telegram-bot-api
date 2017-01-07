@@ -16,7 +16,7 @@
   "scripts": {
     "gen-doc": "jsdoc2md --files src/telegram.js --template README.hbs > README.md",
     "build": "babel -d ./lib src",
-    "prepublish": "npm run build && npm run gen-doc && contributor",
+    "prepublish": "npm run build && npm run gen-doc",
     "eslint": "eslint ./src ./test ./examples",
     "pretest": "npm run build",
     "test": "npm run eslint && istanbul cover ./node_modules/mocha/bin/_mocha"
