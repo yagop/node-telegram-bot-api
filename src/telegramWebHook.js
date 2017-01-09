@@ -28,6 +28,7 @@ class TelegramBotWebHook {
     this.callback = callback;
     this._regex = new RegExp(this.token);
     this._webServer = null;
+    this._open = false;
     this._requestListener = this._requestListener.bind(this);
     this._parseBody = this._parseBody.bind(this);
 
@@ -54,12 +55,13 @@ class TelegramBotWebHook {
    * @return {Promise}
    */
   open() {
-    if (this._webServer.listening) {
+    if (this.isOpen()) {
       return Promise.resolve();
     }
     return new Promise(resolve => {
       this._webServer.listen(this.options.port, this.options.host, () => {
         debug('WebHook listening on port %s', this.options.port);
+        this._open = true;
         return resolve();
       });
     });
@@ -70,12 +72,13 @@ class TelegramBotWebHook {
    * @return {Promise}
    */
   close() {
-    if (!this._webServer.listening) {
+    if (!this.isOpen()) {
       return Promise.resolve();
     }
     return new Promise((resolve, reject) => {
       this._webServer.close(error => {
         if (error) return reject(error);
+        this._open = false;
         return resolve();
       });
     });
@@ -85,7 +88,12 @@ class TelegramBotWebHook {
    * Return `true` if server is listening. Otherwise, `false`.
    */
   isOpen() {
-    return this._webServer.listening;
+    // NOTE: Since `http.Server.listening` was added in v5.7.0
+    // and we still need to support Node v4,
+    // we are going to fallback to 'this._open'.
+    // The following LOC would suffice for newer versions of Node.js
+    // return this._webServer.listening;
+    return this._open;
   }
 
   // used so that other funcs are not non-optimizable

@@ -54,6 +54,7 @@ describe('module.exports', function moduleExportsSuite() {
   });
 });
 
+
 describe('TelegramBot', function telegramSuite() {
   let bot;
   let testbot;
