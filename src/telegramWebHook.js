@@ -47,10 +47,45 @@ class TelegramBotWebHook {
       debug('HTTP WebHook enabled');
       this._webServer = http.createServer(this._requestListener);
     }
+  }
 
-    this._webServer.listen(this.options.port, this.options.host, () => {
-      debug('WebHook listening on port %s', this.options.port);
+  /**
+   * Open WebHook by listening on the port
+   * @return {Promise}
+   */
+  open() {
+    if (this._webServer.listening) {
+      return Promise.resolve();
+    }
+    return new Promise(resolve => {
+      this._webServer.listen(this.options.port, this.options.host, () => {
+        debug('WebHook listening on port %s', this.options.port);
+        return resolve();
+      });
     });
+  }
+
+  /**
+   * Close the webHook
+   * @return {Promise}
+   */
+  close() {
+    if (!this._webServer.listening) {
+      return Promise.resolve();
+    }
+    return new Promise((resolve, reject) => {
+      this._webServer.close(error => {
+        if (error) return reject(error);
+        return resolve();
+      });
+    });
+  }
+
+  /**
+   * Return `true` if server is listening. Otherwise, `false`.
+   */
+  isOpen() {
+    return this._webServer.listening;
   }
 
   // used so that other funcs are not non-optimizable
@@ -105,20 +140,6 @@ class TelegramBotWebHook {
       res.statusCode = 418; // I'm a teabot!
       res.end();
     }
-  }
-
-  /**
-   * Close the webHook
-   * @return {Promise}
-   */
-  close() {
-    const self = this;
-    return new Promise(function closePromise(resolve, reject) {
-      self._webServer.close(function closeCb(error) {
-        if (error) return reject(error);
-        return resolve();
-      });
-    });
   }
 }
 

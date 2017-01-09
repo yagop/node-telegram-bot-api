@@ -33,7 +33,27 @@ class TelegramBotPolling {
     this._lastRequest = null;
     this._abort = false;
     this._pollingTimeout = null;
-    this._polling();
+  }
+
+  /**
+   * Start polling
+   * @param  {Object} [options]
+   * @param  {Object} [options.restart]
+   * @return {Promise}
+   */
+  start(options = {}) {
+    if (this._lastRequest) {
+      if (!options.restart) {
+        return Promise.resolve();
+      }
+      return this.stop({
+        cancel: true,
+        reason: 'Polling restart',
+      }).then(() => {
+        return this._polling();
+      });
+    }
+    return this._polling();
   }
 
   /**
@@ -41,20 +61,36 @@ class TelegramBotPolling {
    * @param  {Object} [options]
    * @param  {Boolean} [options.cancel] Cancel current request
    * @param  {String} [options.reason] Reason for stopping polling
+   * @return {Promise}
    */
-  stopPolling(options = {}) {
-    this._abort = true;
+  stop(options = {}) {
+    if (!this._lastRequest) {
+      return Promise.resolve();
+    }
+    const lastRequest = this._lastRequest;
+    this._lastRequest = null;
     clearTimeout(this._pollingTimeout);
     if (options.cancel) {
       const reason = options.reason || 'Polling stop';
-      return this._lastRequest.cancel(reason);
+      lastRequest.cancel(reason);
+      return Promise.resolve();
     }
-    // wait until the last request is fulfilled
-    return this._lastRequest;
+    this._abort = true;
+    return lastRequest.finally(() => {
+      this._abort = false;
+    });
+  }
+
+  /**
+   * Return `true` if is polling. Otherwise, `false`.
+   */
+  isPolling() {
+    return !!this._lastRequest;
   }
 
   /**
    * Invokes polling (with recursion!)
+   * @return {Promise} promise of the current request
    * @private
    */
   _polling() {
@@ -81,6 +117,7 @@ class TelegramBotPolling {
           this._pollingTimeout = setTimeout(() => this._polling(), this.options.interval);
         }
       });
+    return this._lastRequest;
   }
 
   /**

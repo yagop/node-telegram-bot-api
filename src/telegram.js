@@ -72,11 +72,13 @@ class TelegramBot extends EventEmitter {
     this.options.baseApiUrl = options.baseApiUrl || 'https://api.telegram.org';
     this._textRegexpCallbacks = [];
     this._onReplyToMessages = [];
+    this._polling = null;
+    this._webHook = null;
 
     if (options.polling) {
       const autoStart = options.polling.autoStart;
       if (typeof autoStart === 'undefined' || autoStart === true) {
-        this.initPolling();
+        this.startPolling();
       }
     }
 
@@ -223,29 +225,41 @@ class TelegramBot extends EventEmitter {
   }
 
   /**
-   * Start polling
+   * Start polling.
+   * @param  {Object} [options]
+   * @param  {Boolean} [options.restart=true] Consecutive calls to this method causes polling to be restarted
+   * @return {Promise}
    */
-  initPolling() {
-    if (this._polling) {
-      this._polling.stopPolling({
-        cancel: true,
-        reason: 'Polling restart',
-      });
+  startPolling(options = {}) {
+    options.restart = typeof options.restart === 'undefined' ? true : options.restart;
+    if (!this._polling) {
+      this._polling = new TelegramBotPolling(this._request.bind(this), this.options.polling, this.processUpdate.bind(this));
     }
-    this._polling = new TelegramBotPolling(this._request.bind(this), this.options.polling, this.processUpdate.bind(this));
+    return this._polling.start(options);
   }
 
   /**
-   * Stops polling after the last polling request resolves
-   * @return {Promise} promise Promise, of last polling request
+   * Alias of `TelegramBot#startPolling()`. This is **deprecated**.
+   * @param  {Object} [options]
+   * @return {Promise}
+   * @deprecated
+   */
+  initPolling() {
+    deprecate('TelegramBot#initPolling() is deprecated');
+    return this.startPolling();
+  }
+
+  /**
+   * Stops polling after the last polling request resolves.
+   * Multiple invocations do nothing if polling is already stopped.
+   * Returning the promise of the last polling request is **deprecated**.
+   * @return {Promise}
    */
   stopPolling() {
     if (!this._polling) {
       return Promise.resolve();
     }
-    const polling = this._polling;
-    delete this._polling;
-    return polling.stopPolling();
+    return this._polling.stop();
   }
 
   /**
@@ -253,30 +267,31 @@ class TelegramBot extends EventEmitter {
    * @return {Boolean}
    */
   isPolling() {
-    return !!this._polling;
+    return this._polling ? this._polling.isPolling() : false;
   }
 
   /**
-   * Open webhook
+   * Open webhook.
+   * Multiple invocations do nothing if webhook is already open.
+   * @return {Promise}
    */
   openWebHook() {
-    if (this._webHook) {
-      return;
+    if (!this._webHook) {
+      this._webHook = new TelegramBotWebHook(this.token, this.options.webHook, this.processUpdate.bind(this));
     }
-    this._webHook = new TelegramBotWebHook(this.token, this.options.webHook, this.processUpdate.bind(this));
+    return this._webHook.open();
   }
 
   /**
-   * Close webhook after closing all current connections
+   * Close webhook after closing all current connections.
+   * Multiple invocations do nothing if webhook is already closed.
    * @return {Promise} promise
    */
   closeWebHook() {
     if (!this._webHook) {
       return Promise.resolve();
     }
-    const webHook = this._webHook;
-    delete this._webHook;
-    return webHook.close();
+    return this._webHook.close();
   }
 
   /**
@@ -285,7 +300,7 @@ class TelegramBot extends EventEmitter {
    * @return {Boolean}
    */
   hasOpenWebHook() {
-    return !!this._webHook;
+    return this._webHook ? this._webHook.isOpen() : false;
   }
 
   /**

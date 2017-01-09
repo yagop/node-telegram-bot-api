@@ -71,10 +71,11 @@ TelegramBot
 
 * [TelegramBot](#TelegramBot)
     * [new TelegramBot(token, [options])](#new_TelegramBot_new)
-    * [.initPolling()](#TelegramBot+initPolling)
+    * [.startPolling([options])](#TelegramBot+startPolling) ⇒ <code>Promise</code>
+    * ~~[.initPolling([options])](#TelegramBot+initPolling) ⇒ <code>Promise</code>~~
     * [.stopPolling()](#TelegramBot+stopPolling) ⇒ <code>Promise</code>
     * [.isPolling()](#TelegramBot+isPolling) ⇒ <code>Boolean</code>
-    * [.openWebHook()](#TelegramBot+openWebHook)
+    * [.openWebHook()](#TelegramBot+openWebHook) ⇒ <code>Promise</code>
     * [.closeWebHook()](#TelegramBot+closeWebHook) ⇒ <code>Promise</code>
     * [.hasOpenWebHook()](#TelegramBot+hasOpenWebHook) ⇒ <code>Boolean</code>
     * [.getMe()](#TelegramBot+getMe) ⇒ <code>Promise</code>
@@ -144,19 +145,39 @@ Emits `message` when a message arrives.
 | [options.request] | <code>Object</code> |  | Options which will be added for all requests to telegram api.  See https://github.com/request/request#requestoptions-callback for more information. |
 | [options.baseApiUrl] | <code>String</code> | <code>https://api.telegram.org</code> | API Base URl; useful for proxying and testing |
 
-<a name="TelegramBot+initPolling"></a>
+<a name="TelegramBot+startPolling"></a>
 
-### telegramBot.initPolling()
-Start polling
+### telegramBot.startPolling([options]) ⇒ <code>Promise</code>
+Start polling.
 
 **Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
+
+| Param | Type | Default | Description |
+| --- | --- | --- | --- |
+| [options] | <code>Object</code> |  |  |
+| [options.restart] | <code>Boolean</code> | <code>true</code> | Consecutive calls to this method causes polling to be restarted |
+
+<a name="TelegramBot+initPolling"></a>
+
+### ~~telegramBot.initPolling([options]) ⇒ <code>Promise</code>~~
+***Deprecated***
+
+Alias of `TelegramBot#startPolling()`. This is **deprecated**.
+
+**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
+
+| Param | Type |
+| --- | --- |
+| [options] | <code>Object</code> | 
+
 <a name="TelegramBot+stopPolling"></a>
 
 ### telegramBot.stopPolling() ⇒ <code>Promise</code>
-Stops polling after the last polling request resolves
+Stops polling after the last polling request resolves.
+Multiple invocations do nothing if polling is already stopped.
+Returning the promise of the last polling request is **deprecated**.
 
 **Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
-**Returns**: <code>Promise</code> - promise Promise, of last polling request  
 <a name="TelegramBot+isPolling"></a>
 
 ### telegramBot.isPolling() ⇒ <code>Boolean</code>
@@ -165,14 +186,16 @@ Return true if polling. Otherwise, false.
 **Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
 <a name="TelegramBot+openWebHook"></a>
 
-### telegramBot.openWebHook()
-Open webhook
+### telegramBot.openWebHook() ⇒ <code>Promise</code>
+Open webhook.
+Multiple invocations do nothing if webhook is already open.
 
 **Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
 <a name="TelegramBot+closeWebHook"></a>
 
 ### telegramBot.closeWebHook() ⇒ <code>Promise</code>
-Close webhook after closing all current connections
+Close webhook after closing all current connections.
+Multiple invocations do nothing if webhook is already closed.
 
 **Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
 **Returns**: <code>Promise</code> - promise  

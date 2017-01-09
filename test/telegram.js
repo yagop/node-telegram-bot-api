@@ -178,10 +178,11 @@ describe('TelegramBot', function telegramSuite() {
     });
   });
 
-  describe('#initPolling', function initPollingSuite() {
+  describe('#startPolling', function initPollingSuite() {
     it('initiates polling', function test() {
-      testbot.initPolling();
-      return utils.isPollingMockServer(pollingPort);
+      return testbot.startPolling().then(() => {
+        return utils.isPollingMockServer(pollingPort);
+      });
     });
   });
 
@@ -213,8 +214,9 @@ describe('TelegramBot', function telegramSuite() {
 
   describe('#openWebHook', function openWebHookSuite() {
     it('opens webhook', function test() {
-      testbot.openWebHook();
-      return utils.hasOpenWebHook(webHookPort);
+      return testbot.openWebHook().then(() => {
+        return utils.hasOpenWebHook(webHookPort);
+      });
     });
   });
 
