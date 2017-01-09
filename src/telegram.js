@@ -179,6 +179,8 @@ class TelegramBot extends EventEmitter {
    * @return {Array} formatted
    * @return {Object} formatted[0] formData
    * @return {String} formatted[1] fileId
+   * @throws Error if Buffer file type is not supported.
+   * @see https://npmjs.com/package/file-type
    * @private
    */
   _formatSendData(type, data) {
@@ -344,9 +346,13 @@ class TelegramBot extends EventEmitter {
     opts.qs.url = url;
 
     if (cert) {
-      const [formData, certificate] = this._formatSendData('certificate', cert);
-      opts.formData = formData;
-      opts.qs.certificate = certificate;
+      try {
+        const sendData = this._formatSendData('certificate', cert);
+        opts.formData = sendData[0];
+        opts.qs.certificate = sendData[1];
+      } catch (ex) {
+        return Promise.reject(ex);
+      }
     }
 
     return this._request('setWebHook', opts)
@@ -553,9 +559,13 @@ class TelegramBot extends EventEmitter {
       qs: options,
     };
     opts.qs.chat_id = chatId;
-    const content = this._formatSendData('photo', photo);
-    opts.formData = content[0];
-    opts.qs.photo = content[1];
+    try {
+      const sendData = this._formatSendData('photo', photo);
+      opts.formData = sendData[0];
+      opts.qs.photo = sendData[1];
+    } catch (ex) {
+      return Promise.reject(ex);
+    }
     return this._request('sendPhoto', opts);
   }
 
@@ -573,9 +583,13 @@ class TelegramBot extends EventEmitter {
       qs: options
     };
     opts.qs.chat_id = chatId;
-    const content = this._formatSendData('audio', audio);
-    opts.formData = content[0];
-    opts.qs.audio = content[1];
+    try {
+      const sendData = this._formatSendData('audio', audio);
+      opts.formData = sendData[0];
+      opts.qs.audio = sendData[1];
+    } catch (ex) {
+      return Promise.reject(ex);
+    }
     return this._request('sendAudio', opts);
   }
 
@@ -594,9 +608,13 @@ class TelegramBot extends EventEmitter {
       qs: options
     };
     opts.qs.chat_id = chatId;
-    const content = this._formatSendData('document', doc);
-    opts.formData = content[0];
-    opts.qs.document = content[1];
+    try {
+      const sendData = this._formatSendData('document', doc);
+      opts.formData = sendData[0];
+      opts.qs.document = sendData[1];
+    } catch (ex) {
+      return Promise.reject(ex);
+    }
     if (opts.formData && Object.keys(fileOpts).length) {
       opts.formData.document.options = fileOpts;
     }
@@ -617,9 +635,13 @@ class TelegramBot extends EventEmitter {
       qs: options
     };
     opts.qs.chat_id = chatId;
-    const content = this._formatSendData('sticker', sticker);
-    opts.formData = content[0];
-    opts.qs.sticker = content[1];
+    try {
+      const sendData = this._formatSendData('sticker', sticker);
+      opts.formData = sendData[0];
+      opts.qs.sticker = sendData[1];
+    } catch (ex) {
+      return Promise.reject(ex);
+    }
     return this._request('sendSticker', opts);
   }
 
@@ -637,9 +659,13 @@ class TelegramBot extends EventEmitter {
       qs: options
     };
     opts.qs.chat_id = chatId;
-    const content = this._formatSendData('video', video);
-    opts.formData = content[0];
-    opts.qs.video = content[1];
+    try {
+      const sendData = this._formatSendData('video', video);
+      opts.formData = sendData[0];
+      opts.qs.video = sendData[1];
+    } catch (ex) {
+      return Promise.reject(ex);
+    }
     return this._request('sendVideo', opts);
   }
 
@@ -657,9 +683,13 @@ class TelegramBot extends EventEmitter {
       qs: options
     };
     opts.qs.chat_id = chatId;
-    const content = this._formatSendData('voice', voice);
-    opts.formData = content[0];
-    opts.qs.voice = content[1];
+    try {
+      const sendData = this._formatSendData('voice', voice);
+      opts.formData = sendData[0];
+      opts.qs.voice = sendData[1];
+    } catch (ex) {
+      return Promise.reject(ex);
+    }
     return this._request('sendVoice', opts);
   }
 
