@@ -7,7 +7,6 @@ coverage/
 README.hbs
 output.md
 output/
-src/
 test/
 examples/
 lib-doc/

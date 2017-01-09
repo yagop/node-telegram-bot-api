@@ -1,4 +1,4 @@
-const TelegramBot = require('../lib/telegram');
+const TelegramBot = require('..');
 const Promise = require('bluebird');
 const request = require('request-promise');
 const assert = require('assert');
@@ -40,6 +40,18 @@ before(function beforeAll() {
     .then(() => {
       return utils.startMockServer(pollingPort2);
     });
+});
+
+
+describe('module.exports', function moduleExportsSuite() {
+  it('is loaded from src/ if NOT on Node.js 0.12', function test() {
+    if (process.versions.node.split('.')[0] === '0') this.skip(); // skip on Node.js v0.12
+    assert.equal(TelegramBot, require('../src/telegram'));
+  });
+  it('is loaded from lib/ if on Node.js 0.12', function test() {
+    if (process.versions.node.split('.')[0] !== '0') this.skip(); // skip on newer versions
+    assert.equal(TelegramBot, require('../lib/telegram'));
+  });
 });
 
 describe('TelegramBot', function telegramSuite() {
