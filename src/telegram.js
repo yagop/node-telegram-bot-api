@@ -41,7 +41,8 @@ class TelegramBot extends EventEmitter {
    * @constructor
    * @param {String} token Bot Token
    * @param {Object} [options]
-   * @param {Boolean|Object} [options.polling=false] Set true to enable polling or set options
+   * @param {Boolean|Object} [options.polling=false] Set true to enable polling or set options.
+   *  If a WebHook has been set, it will be deleted automatically.
    * @param {String|Number} [options.polling.timeout=10] Timeout in seconds for long polling
    * @param {String|Number} [options.polling.interval=300] Interval between requests in miliseconds
    * @param {Boolean} [options.polling.autoStart=true] Start polling immediately

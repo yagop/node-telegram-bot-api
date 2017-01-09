@@ -129,7 +129,7 @@ Emits `message` when a message arrives.
 | --- | --- | --- | --- |
 | token | <code>String</code> |  | Bot Token |
 | [options] | <code>Object</code> |  |  |
-| [options.polling] | <code>Boolean</code> &#124; <code>Object</code> | <code>false</code> | Set true to enable polling or set options |
+| [options.polling] | <code>Boolean</code> &#124; <code>Object</code> | <code>false</code> | Set true to enable polling or set options.  If a WebHook has been set, it will be deleted automatically. |
 | [options.polling.timeout] | <code>String</code> &#124; <code>Number</code> | <code>10</code> | Timeout in seconds for long polling |
 | [options.polling.interval] | <code>String</code> &#124; <code>Number</code> | <code>300</code> | Interval between requests in miliseconds |
 | [options.polling.autoStart] | <code>Boolean</code> | <code>true</code> | Start polling immediately |
