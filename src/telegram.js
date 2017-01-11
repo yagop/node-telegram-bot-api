@@ -237,11 +237,15 @@ class TelegramBot extends EventEmitter {
 
   /**
    * Start polling.
+   * Rejects returned promise if a WebHook is being used by this instance.
    * @param  {Object} [options]
    * @param  {Boolean} [options.restart=true] Consecutive calls to this method causes polling to be restarted
    * @return {Promise}
    */
   startPolling(options = {}) {
+    if (this.hasOpenWebHook()) {
+      return Promise.reject(new Error('Polling and WebHook are mutually exclusive'));
+    }
     options.restart = typeof options.restart === 'undefined' ? true : options.restart;
     if (!this._polling) {
       this._polling = new TelegramBotPolling(this._request.bind(this), this.options.polling, this.processUpdate.bind(this));
@@ -284,9 +288,13 @@ class TelegramBot extends EventEmitter {
   /**
    * Open webhook.
    * Multiple invocations do nothing if webhook is already open.
+   * Rejects returned promise if Polling is being used by this instance.
    * @return {Promise}
    */
   openWebHook() {
+    if (this.isPolling()) {
+      return Promise.reject(new Error('WebHook and Polling are mutually exclusive'));
+    }
     if (!this._webHook) {
       this._webHook = new TelegramBotWebHook(this.token, this.options.webHook, this.processUpdate.bind(this));
     }

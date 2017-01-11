@@ -150,6 +150,7 @@ Emits `message` when a message arrives.
 
 ### telegramBot.startPolling([options]) ⇒ <code>Promise</code>
 Start polling.
+Rejects returned promise if a WebHook is being used by this instance.
 
 **Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
 
@@ -190,6 +191,7 @@ Return true if polling. Otherwise, false.
 ### telegramBot.openWebHook() ⇒ <code>Promise</code>
 Open webhook.
 Multiple invocations do nothing if webhook is already open.
+Rejects returned promise if Polling is being used by this instance.
 
 **Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
 <a name="TelegramBot+closeWebHook"></a>

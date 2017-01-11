@@ -185,6 +185,12 @@ describe('TelegramBot', function telegramSuite() {
         return utils.isPollingMockServer(pollingPort);
       });
     });
+    it('returns error if using webhook', function test() {
+      return botWebHook.startPolling().catch((err) => {
+        // TODO: check for error in a better way
+        assert.ok(err.message.indexOf('mutually exclusive') !== -1);
+      });
+    });
   });
 
   describe('#isPolling', function isPollingSuite() {
@@ -217,6 +223,12 @@ describe('TelegramBot', function telegramSuite() {
     it('opens webhook', function test() {
       return testbot.openWebHook().then(() => {
         return utils.hasOpenWebHook(webHookPort);
+      });
+    });
+    it('returns error if using polling', function test() {
+      return botPolling.openWebHook().catch((err) => {
+        // TODO: check for error in a better way
+        assert.ok(err.message.indexOf('mutually exclusive') !== -1);
       });
     });
   });
