@@ -333,6 +333,7 @@ class TelegramBot extends EventEmitter {
    * delete webHook.
    * @param  {Object} [options] Additional Telegram query options
    * @param  {String|stream.Stream} [options.certificate] PEM certificate key (public).
+   * @return {Promise}
    * @see https://core.telegram.org/bots/api#setwebhook
    */
   setWebHook(url, options = {}) {

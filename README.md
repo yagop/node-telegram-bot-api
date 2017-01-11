@@ -79,7 +79,7 @@ TelegramBot
     * [.closeWebHook()](#TelegramBot+closeWebHook) ⇒ <code>Promise</code>
     * [.hasOpenWebHook()](#TelegramBot+hasOpenWebHook) ⇒ <code>Boolean</code>
     * [.getMe()](#TelegramBot+getMe) ⇒ <code>Promise</code>
-    * [.setWebHook(url, [options])](#TelegramBot+setWebHook)
+    * [.setWebHook(url, [options])](#TelegramBot+setWebHook) ⇒ <code>Promise</code>
     * [.deleteWebHook()](#TelegramBot+deleteWebHook) ⇒ <code>Promise</code>
     * [.getWebHookInfo()](#TelegramBot+getWebHookInfo) ⇒ <code>Promise</code>
     * [.getUpdates([options])](#TelegramBot+getUpdates) ⇒ <code>Promise</code>
@@ -216,7 +216,7 @@ Returns basic information about the bot in form of a `User` object.
 **See**: https://core.telegram.org/bots/api#getme  
 <a name="TelegramBot+setWebHook"></a>
 
-### telegramBot.setWebHook(url, [options])
+### telegramBot.setWebHook(url, [options]) ⇒ <code>Promise</code>
 Specify an url to receive incoming updates via an outgoing webHook.
 This method has an [older, compatible signature][setWebHook-v0.25.0]
 that is being deprecated.
