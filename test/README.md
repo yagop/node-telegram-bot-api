@@ -13,6 +13,10 @@ export TEST_GROUP_ID=<GROUP_ID>
 # Game short name which to use in some of the tests, e.g. TelegramBot#sendGame()
 export TEST_GAME_SHORT_NAME=<GAME_SHORT_NAME>
 
-# Run tests
+# Run ALL tests
 npm run test
+
+# Run individual tests
+npm run eslint              # static-analysis
+npm run mocha               # mocha tests
 ```

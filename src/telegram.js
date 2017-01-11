@@ -64,7 +64,8 @@ class TelegramBot extends EventEmitter {
    *  See https://github.com/request/request#requestoptions-callback for more information.
    * @param {String} [options.baseApiUrl=https://api.telegram.org] API Base URl; useful for proxying and testing
    * @param {Boolean} [options.filepath=true] Allow passing file-paths as arguments when sending files,
-   *  such as photos using `TelegramBot#sendPhoto()`.
+   *  such as photos using `TelegramBot#sendPhoto()`. See [usage information][usage-sending-files-performance]
+   *  for more information on this option and its consequences.
    * @see https://core.telegram.org/bots/api
    */
   constructor(token, options = {}) {
