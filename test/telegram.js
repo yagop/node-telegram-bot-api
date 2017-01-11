@@ -971,5 +971,13 @@ describe('TelegramBot', function telegramSuite() {
         assert.ok(is.array(resp.photo));
       });
     });
+    it('should not accept file-paths if disallowed with constructor option', function test() {
+      const tgbot = new TelegramBot(TOKEN, { filepath: false });
+      const photo = `${__dirname}/data/photo.gif`;
+      return tgbot.sendPhoto(USERID, photo).catch(err => {
+        // TODO: check for error in a better way
+        assert.ok(err.response.body.indexOf('Bad Request') !== -1);
+      });
+    });
   });
 }); // End Telegram

@@ -63,6 +63,8 @@ class TelegramBot extends EventEmitter {
    * @param {Object} [options.request] Options which will be added for all requests to telegram api.
    *  See https://github.com/request/request#requestoptions-callback for more information.
    * @param {String} [options.baseApiUrl=https://api.telegram.org] API Base URl; useful for proxying and testing
+   * @param {Boolean} [options.filepath=true] Allow passing file-paths as arguments when sending files,
+   *  such as photos using `TelegramBot#sendPhoto()`.
    * @see https://core.telegram.org/bots/api
    */
   constructor(token, options = {}) {
@@ -70,6 +72,7 @@ class TelegramBot extends EventEmitter {
     this.token = token;
     this.options = options;
     this.options.baseApiUrl = options.baseApiUrl || 'https://api.telegram.org';
+    this.options.filepath = typeof options.filepath === 'undefined' ? true : options.filepath;
     this._textRegexpCallbacks = [];
     this._onReplyToMessages = [];
     this._polling = null;
@@ -210,6 +213,12 @@ class TelegramBot extends EventEmitter {
           contentType: filetype.mime
         }
       };
+    } else if (!this.options.filepath) {
+      /**
+       * When the constructor option 'filepath' is set to
+       * 'false', we do not support passing file-paths.
+       */
+      fileId = data;
     } else if (fs.existsSync(data)) {
       fileName = path.basename(data);
       formData = {};
