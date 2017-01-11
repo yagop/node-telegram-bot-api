@@ -18,6 +18,7 @@
     "build": "babel -d ./lib src",
     "prepublish": "npm run build && npm run gen-doc",
     "eslint": "eslint ./src ./test ./examples",
+    "mocha": "mocha",
     "pretest": "npm run build",
     "test": "npm run eslint && istanbul cover ./node_modules/mocha/bin/_mocha"
   },
