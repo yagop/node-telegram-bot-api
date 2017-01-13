@@ -71,8 +71,10 @@ class TelegramBot extends EventEmitter {
     super();
     this.token = token;
     this.options = options;
+    this.options.polling = (typeof options.polling === 'undefined') ? false : options.polling;
+    this.options.webHook = (typeof options.webHook === 'undefined') ? false : options.webHook;
     this.options.baseApiUrl = options.baseApiUrl || 'https://api.telegram.org';
-    this.options.filepath = typeof options.filepath === 'undefined' ? true : options.filepath;
+    this.options.filepath = (typeof options.filepath === 'undefined') ? true : options.filepath;
     this._textRegexpCallbacks = [];
     this._onReplyToMessages = [];
     this._polling = null;
