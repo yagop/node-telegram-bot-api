@@ -143,7 +143,7 @@ class TelegramBot extends EventEmitter {
       this._fixReplyMarkup(options.qs);
     }
 
-    options.method = "POST";
+    options.method = 'POST';
     options.url = this._buildURL(_path);
     options.simple = false;
     options.resolveWithFullResponse = true;
