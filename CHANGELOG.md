@@ -5,6 +5,12 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased][Unreleased]
 
+
+
+* * *
+
+## [0.26.0][0.26.0] - 2016-01-20
+
 Added:
 
 1. Add *TelegramBot* constructor options:
@@ -35,8 +41,8 @@ Fixed:
 1. Handle error during formatting `formData`
 1. Fix ES6 syntax
 
-*Credits: Unless explicitly stated otherwise, above work was done by
-@GochoMugo*
+*Credits/Blames: Unless explicitly stated otherwise, above work was
+done by @GochoMugo*
 
 * * *
 
@@ -60,4 +66,5 @@ Fixed:
 
 
 [0.25.0]:https://github.com/yagop/node-telegram-bot-api/releases/tag/v0.25.0
-[Unreleased]:https://github.com/yagop/node-telegram-bot-api/compare/v0.25.0...master
+[0.26.0]:https://github.com/yagop/node-telegram-bot-api/releases/tag/v0.26.0
+[Unreleased]:https://github.com/yagop/node-telegram-bot-api/compare/v0.26.0...master
