@@ -69,22 +69,112 @@
   "homepage": "https://github.com/yagop/node-telegram-bot-api",
   "contributors": [
     {
-      "name": "Sebastian Troć",
-      "email": "sebastian.troc@gucman.pl",
-      "url": "https://github.com/SebastianTroc",
+      "name": "Mohammed Sohail",
+      "email": "sohailsameja@gmail.com",
+      "url": "https://github.com/kamikazechaser",
+      "contributions": 1,
+      "additions": 18,
+      "deletions": 4,
+      "hireable": true
+    },
+    {
+      "name": "Alexander Tarmolov",
+      "email": "tarmolov@gmail.com",
+      "url": "https://github.com/tarmolov",
+      "contributions": 1,
+      "additions": 5,
+      "deletions": 0,
+      "hireable": null
+    },
+    {
+      "name": "Plusb Preco",
+      "email": "plusb21@gmail.com",
+      "url": "https://github.com/preco21",
+      "contributions": 1,
+      "additions": 1,
+      "deletions": 0,
+      "hireable": null
+    },
+    {
+      "name": null,
+      "email": null,
+      "url": "https://github.com/GingerPlusPlus",
+      "contributions": 1,
+      "additions": 6,
+      "deletions": 2,
+      "hireable": null
+    },
+    {
+      "name": "Sergey Bogdanov",
+      "email": "sergey.bogdanov@gmail.com",
+      "url": "https://github.com/desunit",
       "contributions": 1,
       "additions": 1,
       "deletions": 1,
       "hireable": null
     },
     {
-      "name": "Cristian Baldi",
-      "email": "bld.cris.96@gmail.com",
-      "url": "https://github.com/crisbal",
-      "contributions": 2,
-      "additions": 26,
+      "name": "Mikhail Burshteyn",
+      "email": null,
+      "url": "https://github.com/m-burst",
+      "contributions": 1,
+      "additions": 12,
+      "deletions": 5,
+      "hireable": null
+    },
+    {
+      "name": "Ola Flisbäck",
+      "email": null,
+      "url": "https://github.com/oflisback",
+      "contributions": 1,
+      "additions": 3,
+      "deletions": 3,
+      "hireable": true
+    },
+    {
+      "name": "Horus Lugo",
+      "email": "horusgoul@gmail.com",
+      "url": "https://github.com/HorusGoul",
+      "contributions": 1,
+      "additions": 108,
       "deletions": 1,
       "hireable": true
+    },
+    {
+      "name": "Serhii Dmytruk",
+      "email": "dmitruksergey@gmail.com",
+      "url": "https://github.com/serhiidmytruk",
+      "contributions": 1,
+      "additions": 35,
+      "deletions": 1,
+      "hireable": null
+    },
+    {
+      "name": "Conor Fennell",
+      "email": null,
+      "url": "https://github.com/conorfennell",
+      "contributions": 1,
+      "additions": 50,
+      "deletions": 1,
+      "hireable": null
+    },
+    {
+      "name": "Matthew Brandly",
+      "email": "matt@brandly.me",
+      "url": "https://github.com/brandly",
+      "contributions": 1,
+      "additions": 1,
+      "deletions": 1,
+      "hireable": null
+    },
+    {
+      "name": "Anton",
+      "email": null,
+      "url": "https://github.com/Feverqwe",
+      "contributions": 1,
+      "additions": 23,
+      "deletions": 5,
+      "hireable": null
     },
     {
       "name": "Patricio López Juri",
@@ -96,12 +186,12 @@
       "hireable": true
     },
     {
-      "name": "Anton",
-      "email": null,
-      "url": "https://github.com/Feverqwe",
+      "name": "Aleksandr L.",
+      "email": "w.siteee@gmail.com",
+      "url": "https://github.com/w-site",
       "contributions": 1,
-      "additions": 23,
-      "deletions": 5,
+      "additions": 24,
+      "deletions": 0,
       "hireable": null
     },
     {
@@ -114,30 +204,75 @@
       "hireable": true
     },
     {
-      "name": "Matthew Brandly",
-      "email": "matt@brandly.me",
-      "url": "https://github.com/brandly",
+      "name": "Sebastian Troć",
+      "email": "sebastian.troc@gucman.pl",
+      "url": "https://github.com/SebastianTroc",
       "contributions": 1,
       "additions": 1,
       "deletions": 1,
       "hireable": null
     },
     {
-      "name": "Vítor Augusto da Silva Vasconcellos",
-      "email": "vasvas10@gmail.com",
-      "url": "https://github.com/HeavenVolkoff",
+      "name": "Jérémy Gotteland",
+      "email": null,
+      "url": "https://github.com/Tketa",
       "contributions": 2,
-      "additions": 12,
+      "additions": 81,
+      "deletions": 3,
+      "hireable": null
+    },
+    {
+      "name": "Alex Godko",
+      "email": "koloboid@gmail.com",
+      "url": "https://github.com/koloboid",
+      "contributions": 2,
+      "additions": 2,
+      "deletions": 2,
+      "hireable": true
+    },
+    {
+      "name": "Iiro Jäppinen",
+      "email": null,
+      "url": "https://github.com/iiroj",
+      "contributions": 2,
+      "additions": 40,
       "deletions": 0,
       "hireable": null
     },
     {
-      "name": "Rafael Kr",
-      "email": null,
-      "url": "https://github.com/RafaelKr",
-      "contributions": 3,
-      "additions": 3,
-      "deletions": 2,
+      "name": "Dardan Neziri",
+      "email": "dard.ne@gmail.com",
+      "url": "https://github.com/knock-in",
+      "contributions": 2,
+      "additions": 22,
+      "deletions": 16,
+      "hireable": true
+    },
+    {
+      "name": "Jishnu Mohan",
+      "email": "jishnu7@gmail.com",
+      "url": "https://github.com/jishnu7",
+      "contributions": 2,
+      "additions": 84,
+      "deletions": 0,
+      "hireable": true
+    },
+    {
+      "name": "TJ Horner",
+      "email": "me@tjhorner.com",
+      "url": "https://github.com/tjhorner",
+      "contributions": 2,
+      "additions": 223,
+      "deletions": 1,
+      "hireable": null
+    },
+    {
+      "name": null,
+      "email": "plo.cav@gmail.com",
+      "url": "https://github.com/evolun",
+      "contributions": 2,
+      "additions": 7,
+      "deletions": 3,
       "hireable": null
     },
     {
@@ -150,12 +285,30 @@
       "hireable": true
     },
     {
+      "name": "Vítor Augusto da Silva Vasconcellos",
+      "email": "vasvas10@gmail.com",
+      "url": "https://github.com/HeavenVolkoff",
+      "contributions": 2,
+      "additions": 12,
+      "deletions": 0,
+      "hireable": true
+    },
+    {
       "name": "Rey",
       "email": null,
       "url": "https://github.com/reyy",
       "contributions": 2,
       "additions": 34,
       "deletions": 25,
+      "hireable": null
+    },
+    {
+      "name": "Rafael Kr",
+      "email": null,
+      "url": "https://github.com/RafaelKr",
+      "contributions": 3,
+      "additions": 3,
+      "deletions": 2,
       "hireable": null
     },
     {
@@ -168,12 +321,12 @@
       "hireable": null
     },
     {
-      "name": "Ilias Ismanalijev",
-      "email": "hello@illyism.com",
-      "url": "https://github.com/Illyism",
-      "contributions": 7,
-      "additions": 140,
-      "deletions": 10,
+      "name": "Riddler",
+      "email": null,
+      "url": "https://github.com/Waterloo",
+      "contributions": 3,
+      "additions": 64,
+      "deletions": 2,
       "hireable": true
     },
     {
@@ -186,21 +339,48 @@
       "hireable": true
     },
     {
-      "name": "Riddler",
+      "name": "Chris54721",
       "email": null,
-      "url": "https://github.com/Waterloo",
-      "contributions": 3,
-      "additions": 64,
-      "deletions": 2,
+      "url": "https://github.com/chris54721",
+      "contributions": 5,
+      "additions": 22,
+      "deletions": 6,
+      "hireable": null
+    },
+    {
+      "name": "Ilias Ismanalijev",
+      "email": "hello@illyism.com",
+      "url": "https://github.com/Illyism",
+      "contributions": 7,
+      "additions": 140,
+      "deletions": 10,
+      "hireable": true
+    },
+    {
+      "name": "Gocho Mugo",
+      "email": "mugo@forfuture.co.ke",
+      "url": "https://github.com/GochoMugo",
+      "contributions": 56,
+      "additions": 3779,
+      "deletions": 2167,
+      "hireable": true
+    },
+    {
+      "name": "Cristian Baldi",
+      "email": "bld.cris.96@gmail.com",
+      "url": "https://github.com/crisbal",
+      "contributions": 2,
+      "additions": 26,
+      "deletions": 1,
       "hireable": true
     },
     {
       "name": "Yago",
       "email": "yago@yago.me",
       "url": "https://github.com/yagop",
-      "contributions": 169,
-      "additions": 2676,
-      "deletions": 1091,
+      "contributions": 194,
+      "additions": 3014,
+      "deletions": 1173,
       "hireable": true
     }
   ]
