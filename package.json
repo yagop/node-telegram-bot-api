@@ -24,6 +24,9 @@
   },
   "author": "Yago Pérez <yagoperezs@gmail.com>",
   "license": "MIT",
+  "engines": {
+    "node" : ">=0.12"
+  },
   "dependencies": {
     "bl": "^1.1.2",
     "bluebird": "^3.3.4",
