@@ -86,6 +86,7 @@ Some things built using this library, and might interest you:
 
 * [tgfancy](https://github.com/GochoMugo/tgfancy): A Fancy, Higher-Level Wrapper for Telegram Bot API
 * [node-telegram-bot-api-middleware](https://github.com/idchlife/node-telegram-bot-api-middleware): Middleware for node-telegram-bot-api
+* [teleirc](https://github.com/FruitieX/teleirc): A simple Telegram ↔ IRC gateway
 
 
 * * *
