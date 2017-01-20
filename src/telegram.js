@@ -80,7 +80,15 @@ class TelegramBot extends EventEmitter {
     this._onReplyToMessages = [];
     this._polling = null;
     this._webHook = null;
+    this._promisesToWaitFor = [];
 
+    process.nextTick(() => {
+      Promise.all(this._promisesToWaitFor).done(() => this._listen());
+    });
+  }
+
+  _listen() {
+    const options = this.options;
     if (options.polling) {
       const autoStart = options.polling.autoStart;
       if (typeof autoStart === 'undefined' || autoStart === true) {
@@ -94,6 +102,16 @@ class TelegramBot extends EventEmitter {
         this.openWebHook();
       }
     }
+  }
+
+  /**
+   * Wait with fetching updates until promise resolves.
+   * Must be called synchronously after creating instance of TelegramBot.
+   * No effect if already started fetching updates.
+   * @param {Promise} promise
+   */
+  waitFor(promise) {
+    this._promisesToWaitFor.push(promise);
   }
 
   /**

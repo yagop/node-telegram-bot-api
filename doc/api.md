@@ -10,6 +10,7 @@ TelegramBot
 
 * [TelegramBot](#TelegramBot)
     * [new TelegramBot(token, [options])](#new_TelegramBot_new)
+    * [.waitFor(promise)](#TelegramBot+waitFor)
     * [.startPolling([options])](#TelegramBot+startPolling) ⇒ <code>Promise</code>
     * ~~[.initPolling([options])](#TelegramBot+initPolling) ⇒ <code>Promise</code>~~
     * [.stopPolling()](#TelegramBot+stopPolling) ⇒ <code>Promise</code>
@@ -84,6 +85,19 @@ Emits `message` when a message arrives.
 | [options.request] | <code>Object</code> |  | Options which will be added for all requests to telegram api.  See https://github.com/request/request#requestoptions-callback for more information. |
 | [options.baseApiUrl] | <code>String</code> | <code>https://api.telegram.org</code> | API Base URl; useful for proxying and testing |
 | [options.filepath] | <code>Boolean</code> | <code>true</code> | Allow passing file-paths as arguments when sending files,  such as photos using `TelegramBot#sendPhoto()`. See [usage information][usage-sending-files-performance]  for more information on this option and its consequences. |
+
+<a name="TelegramBot+waitFor"></a>
+
+### telegramBot.waitFor(promise)
+Wait with fetching updates until promise resolves.
+Must be called synchronously after creating instance of TelegramBot.
+No effect if already started fetching updates.
+
+**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
+
+| Param | Type |
+| --- | --- |
+| promise | <code>Promise</code> | 
 
 <a name="TelegramBot+startPolling"></a>
 
