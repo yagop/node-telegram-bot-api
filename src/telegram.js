@@ -195,7 +195,9 @@ class TelegramBot extends EventEmitter {
     let fileName;
     let fileId;
     if (data instanceof stream.Stream) {
-      fileName = URL.parse(path.basename(data.path.toString())).pathname;
+      // Will be 'null' if could not be parsed. Default to 'filename'.
+      // For example, 'data.path' === '/?id=123' from 'request("https://example.com/?id=123")'
+      fileName = URL.parse(path.basename(data.path.toString())).pathname || 'filename';
       formData = {};
       formData[type] = {
         value: data,

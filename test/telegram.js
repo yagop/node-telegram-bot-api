@@ -991,5 +991,10 @@ describe('TelegramBot', function telegramSuite() {
         assert.ok(err.response.body.indexOf('Bad Request') !== -1);
       });
     });
+    it('should allow stream.path that can not be parsed', function test() {
+      const stream = fs.createReadStream(`${__dirname}/data/photo.gif`);
+      stream.path = '/?id=123'; // for example, 'http://example.com/?id=666'
+      return bot.sendPhoto(USERID, stream);
+    });
   });
 }); // End Telegram
