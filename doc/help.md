@@ -172,4 +172,9 @@ Sources:
 
 *Not Done. Send PR please!*
 
+Sources:
+
+  * Issue #219: https://github.com/yagop/node-telegram-bot-api/issues/219
+
+
 ---
