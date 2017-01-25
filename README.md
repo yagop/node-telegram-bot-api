@@ -64,13 +64,13 @@ _**Note**: Development is done against the **master** branch. Code for the lates
 resides on the **release** branch._
 
 [usage-release]:https://github.com/yagop/node-telegram-bot-api/tree/release/doc/usage.md
-[examples-release]:https://github.com/yagop/node-telegram-bot-api/tree/release/doc/help.md
-[help-release]:https://github.com/yagop/node-telegram-bot-api/tree/release/examples
+[examples-release]:https://github.com/yagop/node-telegram-bot-api/tree/release/examples
+[help-release]:https://github.com/yagop/node-telegram-bot-api/tree/release/doc/help.md
 [api-release]:https://github.com/yagop/node-telegram-bot-api/tree/release/doc/api.md
 
 [usage-dev]:https://github.com/yagop/node-telegram-bot-api/tree/master/doc/usage.md
-[examples-dev]:https://github.com/yagop/node-telegram-bot-api/tree/master/doc/help.md
-[help-dev]:https://github.com/yagop/node-telegram-bot-api/tree/master/examples
+[examples-dev]:https://github.com/yagop/node-telegram-bot-api/tree/master/examples
+[help-dev]:https://github.com/yagop/node-telegram-bot-api/tree/master/doc/help.md
 [api-dev]:https://github.com/yagop/node-telegram-bot-api/tree/master/doc/api.md
 [contributing]:https://github.com/yagop/node-telegram-bot-api/tree/master/CONTRIBUTING.md
 
