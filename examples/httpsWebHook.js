@@ -26,5 +26,5 @@ bot.setWebHook(`${url}/bot${TOKEN}`, {
 
 // Just to ping!
 bot.on('message', function onMessage(msg) {
-  bot.sendMessage(msg.chat.id, "I'm alive!");
+  bot.sendMessage(msg.chat.id, 'I am alive!');
 });

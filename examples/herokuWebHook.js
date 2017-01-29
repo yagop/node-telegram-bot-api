@@ -6,11 +6,10 @@
 
 const TOKEN = process.env.TELEGRAM_TOKEN || 'YOUR_TELEGRAM_BOT_TOKEN';
 const TelegramBot = require('..');
-
 const options = {
   webHook: {
-    //Port which you should bind to is assigned to $PORT variable
-    //See: https://devcenter.heroku.com/articles/dynos#local-environment-variables
+    // Port to which you should bind is assigned to $PORT variable
+    // See: https://devcenter.heroku.com/articles/dynos#local-environment-variables
     port: process.env.PORT
     // you do NOT need to set up certificates since Heroku provides
     // the SSL certs already (https://<app-name>.herokuapp.com)
@@ -32,5 +31,5 @@ bot.setWebHook(`${url}/bot${TOKEN}`);
 
 // Just to ping!
 bot.on('message', function onMessage(msg) {
-  bot.sendMessage(msg.chat.id, 'Running on Heroku!');
+  bot.sendMessage(msg.chat.id, 'I am alive on Heroku!');
 });
