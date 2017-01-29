@@ -31,6 +31,17 @@ exports = module.exports = {
    */
   isPollingMockServer,
   /**
+   * Send a message to the webhook at the specified port and path.
+   * @param  {Number} port
+   * @param  {String} path
+   * @param  {Object} [options]
+   * @param  {String} [options.method=POST] Method to use
+   * @param  {Object} [options.message] Message to send. Default to a generic text message
+   * @param  {Boolean} [options.https=false] Use https
+   * @return {Promise}
+   */
+  sendWebHookRequest,
+  /**
    * Send a message to the webhook at the specified port.
    * @param  {Number} port
    * @param  {String} token
@@ -134,11 +145,11 @@ function hasOpenWebHook(port, reverse) {
 }
 
 
-function sendWebHookMessage(port, token, options = {}) {
+function sendWebHookRequest(port, path, options = {}) {
   assert.ok(port);
-  assert.ok(token);
+  assert.ok(path);
   const protocol = options.https ? 'https' : 'http';
-  const url = `${protocol}://127.0.0.1:${port}/bot${token}`;
+  const url = `${protocol}://127.0.0.1:${port}${path}`;
   return request({
     url,
     method: options.method || 'POST',
@@ -146,8 +157,16 @@ function sendWebHookMessage(port, token, options = {}) {
       update_id: 1,
       message: options.message || { text: 'test' }
     },
-    json: true,
+    json: options.json || true,
   });
+}
+
+
+function sendWebHookMessage(port, token, options = {}) {
+  assert.ok(port);
+  assert.ok(token);
+  const path = `/bot${token}`;
+  return sendWebHookRequest(port, path, options);
 }
 
 

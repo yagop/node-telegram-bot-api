@@ -13,6 +13,7 @@ class TelegramBotWebHook {
    * @param  {String} token Telegram API token
    * @param  {Boolean|Object} options WebHook options
    * @param  {Number} [options.port=8443] Port to bind to
+   * @param  {String} [options.healthEndpoint=/healthz] An endpoint for health checks that always responds with 200 OK
    * @param  {Function} callback Function for process a new update
    */
   constructor(token, options, callback) {
@@ -27,6 +28,7 @@ class TelegramBotWebHook {
     this.options.https = options.https || {};
     this.callback = callback;
     this._regex = new RegExp(this.token);
+    this._healthRegex = new RegExp(options.healthEndpoint || '/healthz');
     this._webServer = null;
     this._open = false;
     this._requestListener = this._requestListener.bind(this);
@@ -133,19 +135,26 @@ class TelegramBotWebHook {
     debug('WebHook request URL: %s', req.url);
     debug('WebHook request headers: %j', req.headers);
 
-    // If there isn't token on URL
-    if (!this._regex.test(req.url)) {
+    if (this._regex.test(req.url)) {
+      if (req.method === 'POST') {
+        req
+          .pipe(bl(this._parseBody))
+          .on('finish', () => res.end('OK'));
+      } else {
+        // Authorized but not a POST
+        debug('WebHook request isn\'t a POST');
+        res.statusCode = 418; // I'm a teabot!
+        res.end();
+      }
+    } else if (this._healthRegex.test(req.url)) {
+      // If this is a health check
+      debug('WebHook health check passed');
+      res.statusCode = 200;
+      res.end('OK');
+    } else if (!this._regex.test(req.url)) {
+      // If there isn't token on URL
       debug('WebHook request unauthorized');
       res.statusCode = 401;
-      res.end();
-    } else if (req.method === 'POST') {
-      req
-        .pipe(bl(this._parseBody))
-        .on('finish', () => res.end('OK'));
-    } else {
-      // Authorized but not a POST
-      debug('WebHook request isn\'t a POST');
-      res.statusCode = 418; // I'm a teabot!
       res.end();
     }
   }
