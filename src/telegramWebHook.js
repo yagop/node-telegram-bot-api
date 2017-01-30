@@ -136,23 +136,20 @@ class TelegramBotWebHook {
     debug('WebHook request headers: %j', req.headers);
 
     if (this._regex.test(req.url)) {
-      if (req.method === 'POST') {
-        req
-          .pipe(bl(this._parseBody))
-          .on('finish', () => res.end('OK'));
-      } else {
-        // Authorized but not a POST
+      if (req.method !== 'POST') {
         debug('WebHook request isn\'t a POST');
         res.statusCode = 418; // I'm a teabot!
         res.end();
+      } else {
+        req
+          .pipe(bl(this._parseBody))
+          .on('finish', () => res.end('OK'));
       }
     } else if (this._healthRegex.test(req.url)) {
-      // If this is a health check
       debug('WebHook health check passed');
       res.statusCode = 200;
       res.end('OK');
-    } else if (!this._regex.test(req.url)) {
-      // If there isn't token on URL
+    } else {
       debug('WebHook request unauthorized');
       res.statusCode = 401;
       res.end();

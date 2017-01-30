@@ -133,7 +133,7 @@ describe('TelegramBot', function telegramSuite() {
   });
 
   describe('WebHook', function webHookSuite() {
-    it('returns OK for healthz endpoint', function test(done) {
+    it('returns 200 OK for health endpoint', function test(done) {
       utils.sendWebHookRequest(webHookPort2, '/healthz', { json: false }).then(resp => {
         assert.equal(resp, 'OK');
         return done();
