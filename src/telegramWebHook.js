@@ -12,6 +12,7 @@ class TelegramBotWebHook {
    *
    * @param  {String} token Telegram API token
    * @param  {Boolean|Object} options WebHook options
+   * @param  {String} [options.host=0.0.0.0] Host to bind to
    * @param  {Number} [options.port=8443] Port to bind to
    * @param  {String} [options.healthEndpoint=/healthz] An endpoint for health checks that always responds with 200 OK
    * @param  {Function} callback Function for process a new update
@@ -24,11 +25,13 @@ class TelegramBotWebHook {
 
     this.token = token;
     this.options = options;
+    this.options.host = options.host || '0.0.0.0';
     this.options.port = options.port || 8443;
     this.options.https = options.https || {};
+    this.options.healthEndpoint = options.healthEndpoint || '/healthz';
     this.callback = callback;
     this._regex = new RegExp(this.token);
-    this._healthRegex = new RegExp(options.healthEndpoint || '/healthz');
+    this._healthRegex = new RegExp(this.options.healthEndpoint);
     this._webServer = null;
     this._open = false;
     this._requestListener = this._requestListener.bind(this);

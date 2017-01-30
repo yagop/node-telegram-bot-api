@@ -47,6 +47,7 @@ class TelegramBot extends EventEmitter {
    * @param {String|Number} [options.polling.interval=300] Interval between requests in miliseconds
    * @param {Boolean} [options.polling.autoStart=true] Start polling immediately
    * @param {Boolean|Object} [options.webHook=false] Set true to enable WebHook or set options
+   * @param {String} [options.webHook.host=0.0.0.0] Host to bind to
    * @param {Number} [options.webHook.port=8443] Port to bind to
    * @param {String} [options.webHook.key] Path to file with PEM private key for webHook server.
    *  The file is read **synchronously**!
