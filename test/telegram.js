@@ -133,6 +133,12 @@ describe('TelegramBot', function telegramSuite() {
   });
 
   describe('WebHook', function webHookSuite() {
+    it('returns 200 OK for health endpoint', function test(done) {
+      utils.sendWebHookRequest(webHookPort2, '/healthz', { json: false }).then(resp => {
+        assert.equal(resp, 'OK');
+        return done();
+      });
+    });
     it('returns 401 error if token is wrong', function test(done) {
       utils.sendWebHookMessage(webHookPort2, 'wrong-token').catch(resp => {
         assert.equal(resp.statusCode, 401);

@@ -59,6 +59,7 @@ class TelegramBot extends EventEmitter {
    *  Note that `options.webHook.key`, `options.webHook.cert` and `options.webHook.pfx`, if provided, will be
    *  used to override `key`, `cert` and `pfx` in this object, respectively.
    *  See https://nodejs.org/api/https.html#https_https_createserver_options_requestlistener for more information.
+   * @param {String} [options.webHook.healthEndpoint=/healthz] An endpoint for health checks that always responds with 200 OK
    * @param {Boolean} [options.onlyFirstMatch=false] Set to true to stop after first match. Otherwise, all regexps are executed
    * @param {Object} [options.request] Options which will be added for all requests to telegram api.
    *  See https://github.com/request/request#requestoptions-callback for more information.
