@@ -8,6 +8,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 Added:
 
 1. Add health-check endpoint (by @mironov)
+  * `options.webHook.healthEndpoint`
 
 
 * * *
