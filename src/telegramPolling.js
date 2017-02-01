@@ -111,7 +111,7 @@ class TelegramBotPolling {
       })
       .catch(err => {
         debug('polling error: %s', err.message);
-        /**
+        /*
          * We need to mark the already-processed items
          * to avoid fetching them again once the application
          * is restarted, or moves to next polling interval
@@ -129,6 +129,21 @@ class TelegramBotPolling {
         };
         return this.bot.getUpdates(opts).then(() => {
           return this._error(err);
+        }).catch(requestErr => {
+          /*
+           * We have been unable to handle this error.
+           * We have to log this to stderr to ensure devops
+           * understands that they may receive already-processed items
+           * on app restart.
+           */
+          /* eslint-disable no-console */
+          const bugUrl = 'https://github.com/yagop/node-telegram-bot-api/issues/36#issuecomment-268532067';
+          console.error('error: Internal handling of The Offset Infinite Loop failed');
+          console.error(`error: This was due to error '${requestErr}'`);
+          console.error('error: You may receive already-processed updates on app restart');
+          console.error(`error: Please see ${bugUrl} for more information`);
+          /* eslint-enable no-console */
+          throw err;
         });
       })
       .finally(() => {
