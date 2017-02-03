@@ -30,7 +30,6 @@ class TelegramBotWebHook {
     this.options.https = options.https || {};
     this.options.healthEndpoint = options.healthEndpoint || '/healthz';
     this.callback = callback;
-    this._regex = new RegExp(this.token);
     this._healthRegex = new RegExp(this.options.healthEndpoint);
     this._webServer = null;
     this._open = false;
@@ -138,7 +137,7 @@ class TelegramBotWebHook {
     debug('WebHook request URL: %s', req.url);
     debug('WebHook request headers: %j', req.headers);
 
-    if (this._regex.test(req.url)) {
+    if (req.url.indexOf(this.token) !== -1) {
       if (req.method !== 'POST') {
         debug('WebHook request isn\'t a POST');
         res.statusCode = 418; // I'm a teabot!

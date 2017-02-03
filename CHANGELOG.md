@@ -9,6 +9,8 @@ Added:
 
 1. Add health-check endpoint (by @mironov)
   * `options.webHook.healthEndpoint`
+1. Use *String#indexOf()*, instead of *RegExp#test()*, to
+   find token in webhook request (by @AVVS)
 
 
 * * *
