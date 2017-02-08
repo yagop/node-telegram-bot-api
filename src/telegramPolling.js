@@ -146,7 +146,7 @@ class TelegramBotPolling {
 
     return this.request('getUpdates', opts)
       .catch(err => {
-        if (err.response.statusCode === ANOTHER_WEB_HOOK_USED) {
+        if (err.response && err.response.statusCode === ANOTHER_WEB_HOOK_USED) {
           return this._unsetWebHook();
         }
         throw err;
