@@ -104,6 +104,7 @@ class TelegramBotPolling {
           debug('updated offset: %s', this._offset);
           this.callback(update);
         });
+        return null;
       })
       .catch(err => {
         debug('polling error: %s', err.message);
