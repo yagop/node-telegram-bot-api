@@ -44,12 +44,13 @@ before(function beforeAll() {
 
 
 describe('module.exports', function moduleExportsSuite() {
-  it('is loaded from src/ if NOT on Node.js 0.12', function test() {
-    if (process.versions.node.split('.')[0] === '0') this.skip(); // skip on Node.js v0.12
+  const nodeVersion = parseInt(process.versions.node.split('.')[0], 10);
+  it('is loaded from src/ on Node.js v5+', function test() {
+    if (nodeVersion <= 4) this.skip(); // skip on Node.js v4 and below
     assert.equal(TelegramBot, require('../src/telegram'));
   });
-  it('is loaded from lib/ if on Node.js 0.12', function test() {
-    if (process.versions.node.split('.')[0] !== '0') this.skip(); // skip on newer versions
+  it('is loaded from lib/ on Node.js v4 and below', function test() {
+    if (nodeVersion > 4) this.skip(); // skip on newer versions
     assert.equal(TelegramBot, require('../lib/telegram'));
   });
 });
