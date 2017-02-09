@@ -890,6 +890,24 @@ describe('TelegramBot', function telegramSuite() {
 
   describe.skip('#onReplyToMessage', function onReplyToMessageSuite() {});
 
+  describe('#removeReplyListener', function removeReplyListenerSuite() {
+    const chatId = -1234;
+    const messageId = 1;
+    const callback = function noop() {};
+    it('returns the right reply-listener', function test() {
+      const id = bot.onReplyToMessage(chatId, messageId, callback);
+      const replyListener = bot.removeReplyListener(id);
+      assert.equal(id, replyListener.id);
+      assert.equal(chatId, replyListener.chatId);
+      assert.equal(messageId, replyListener.messageId);
+      assert.equal(callback, replyListener.callback);
+    });
+    it('returns `null` if missing', function test() {
+      // NOTE: '0' is never a valid reply listener ID :)
+      assert.equal(null, bot.removeReplyListener(0));
+    });
+  });
+
   describe('#getChat', function getChatSuite() {
     before(function before() {
       utils.handleRatelimit(bot, 'getChat', this);

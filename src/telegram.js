@@ -79,7 +79,8 @@ class TelegramBot extends EventEmitter {
     this.options.baseApiUrl = options.baseApiUrl || 'https://api.telegram.org';
     this.options.filepath = (typeof options.filepath === 'undefined') ? true : options.filepath;
     this._textRegexpCallbacks = [];
-    this._onReplyToMessages = [];
+    this._replyListenerId = 0;
+    this._replyListeners = [];
     this._polling = null;
     this._webHook = null;
 
@@ -483,7 +484,7 @@ class TelegramBot extends EventEmitter {
       }
       if (message.reply_to_message) {
         // Only callbacks waiting for this message
-        this._onReplyToMessages.forEach(reply => {
+        this._replyListeners.forEach(reply => {
           // Message from the same chat
           if (reply.chatId === message.chat.id) {
             // Responding to that message
@@ -1011,14 +1012,35 @@ class TelegramBot extends EventEmitter {
    * @param  {Number|String}   chatId       The chat id where the message cames from.
    * @param  {Number|String}   messageId    The message id to be replied.
    * @param  {Function} callback     Callback will be called with the reply
-   * message.
+   *  message.
+   * @return {Number} id                    The ID of the inserted reply listener.
    */
   onReplyToMessage(chatId, messageId, callback) {
-    this._onReplyToMessages.push({
+    const id = ++this._replyListenerId;
+    this._replyListeners.push({
+      id,
       chatId,
       messageId,
       callback
     });
+    return id;
+  }
+
+  /**
+   * Removes a reply that has been prev. registered for a message response.
+   * @param   {Number} replyListenerId      The ID of the reply listener.
+   * @return  {Object} deletedListener      The removed reply listener if
+   *   found. This object has `id`, `chatId`, `messageId` and `callback`
+   *   properties. If not found, returns `null`.
+   */
+  removeReplyListener(replyListenerId) {
+    const index = this._replyListeners.findIndex((replyListener) => {
+      return replyListener.id === replyListenerId;
+    });
+    if (index === -1) {
+      return null;
+    }
+    return this._replyListeners.splice(index, 1)[0];
   }
 
   /**

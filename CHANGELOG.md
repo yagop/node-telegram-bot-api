@@ -7,6 +7,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 Added:
 
+1. Add methods:
+  * *TelegramBot#removeReplyListener()* (by @githugger)
 1. Add health-check endpoint (by @mironov)
   * `options.webHook.healthEndpoint`
 1. Use *String#indexOf()*, instead of *RegExp#test()*, to

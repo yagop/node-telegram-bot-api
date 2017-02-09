@@ -47,7 +47,8 @@ TelegramBot
     * [.getFileLink(fileId)](#TelegramBot+getFileLink) ⇒ <code>Promise</code>
     * [.downloadFile(fileId, downloadDir)](#TelegramBot+downloadFile) ⇒ <code>Promise</code>
     * [.onText(regexp, callback)](#TelegramBot+onText)
-    * [.onReplyToMessage(chatId, messageId, callback)](#TelegramBot+onReplyToMessage)
+    * [.onReplyToMessage(chatId, messageId, callback)](#TelegramBot+onReplyToMessage) ⇒ <code>Number</code>
+    * [.removeReplyListener(replyListenerId)](#TelegramBot+removeReplyListener) ⇒ <code>Object</code>
     * [.getChat(chatId)](#TelegramBot+getChat) ⇒ <code>Promise</code>
     * [.getChatAdministrators(chatId)](#TelegramBot+getChatAdministrators) ⇒ <code>Promise</code>
     * [.getChatMembersCount(chatId)](#TelegramBot+getChatMembersCount) ⇒ <code>Promise</code>
@@ -594,16 +595,31 @@ Register a RegExp to test against an incomming text message.
 
 <a name="TelegramBot+onReplyToMessage"></a>
 
-### telegramBot.onReplyToMessage(chatId, messageId, callback)
+### telegramBot.onReplyToMessage(chatId, messageId, callback) ⇒ <code>Number</code>
 Register a reply to wait for a message response.
 
 **Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
+**Returns**: <code>Number</code> - id                    The ID of the inserted reply listener.  
 
 | Param | Type | Description |
 | --- | --- | --- |
 | chatId | <code>Number</code> &#124; <code>String</code> | The chat id where the message cames from. |
 | messageId | <code>Number</code> &#124; <code>String</code> | The message id to be replied. |
-| callback | <code>function</code> | Callback will be called with the reply message. |
+| callback | <code>function</code> | Callback will be called with the reply  message. |
+
+<a name="TelegramBot+removeReplyListener"></a>
+
+### telegramBot.removeReplyListener(replyListenerId) ⇒ <code>Object</code>
+Removes a reply that has been prev. registered for a message response.
+
+**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
+**Returns**: <code>Object</code> - deletedListener      The removed reply listener if
+  found. This object has `id`, `chatId`, `messageId` and `callback`
+  properties. If not found, returns `null`.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| replyListenerId | <code>Number</code> | The ID of the reply listener. |
 
 <a name="TelegramBot+getChat"></a>
 
