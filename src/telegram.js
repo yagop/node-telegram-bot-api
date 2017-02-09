@@ -1,6 +1,7 @@
 // shims
 require('array.prototype.findindex').shim(); // for Node.js v0.x
 
+const errors = require('./errors');
 const TelegramBotWebHook = require('./telegramWebHook');
 const TelegramBotPolling = require('./telegramPolling');
 const debug = require('debug')('node-telegram-bot-api');
@@ -30,6 +31,10 @@ Promise.config({
 });
 
 class TelegramBot extends EventEmitter {
+
+  static get errors() {
+    return errors;
+  }
 
   static get messageTypes() {
     return _messageTypes;
@@ -136,7 +141,7 @@ class TelegramBot extends EventEmitter {
    */
   _request(_path, options = {}) {
     if (!this.token) {
-      throw new Error('Telegram Bot Token not provided!');
+      return Promise.reject(new errors.FatalError('Telegram Bot Token not provided!'));
     }
 
     if (this.options.request) {
@@ -158,30 +163,22 @@ class TelegramBot extends EventEmitter {
     debug('HTTP request: %j', options);
     return request(options)
       .then(resp => {
-        if (resp.statusCode !== 200) {
-          const error = new Error(`${resp.statusCode} ${resp.body}`);
-          error.response = resp;
-          throw error;
-        }
-
         let data;
-
         try {
-          data = JSON.parse(resp.body);
+          data = resp.body = JSON.parse(resp.body);
         } catch (err) {
-          const error = new Error(`Error parsing Telegram response: ${resp.body}`);
-          error.response = resp;
-          throw error;
+          throw new errors.ParseError(`Error parsing Telegram response: ${resp.body}`, resp);
         }
 
         if (data.ok) {
           return data.result;
         }
 
-        const error = new Error(`${data.error_code} ${data.description}`);
-        error.response = resp;
-        error.response.body = data;
-        throw error;
+        throw new errors.TelegramError(`${data.error_code} ${data.description}`, resp);
+      }).catch(error => {
+        // TODO: why can't we do `error instanceof errors.BaseError`?
+        if (error.response) throw error;
+        throw new errors.FatalError(error);
       });
   }
 
@@ -215,7 +212,7 @@ class TelegramBot extends EventEmitter {
     } else if (Buffer.isBuffer(data)) {
       const filetype = fileType(data);
       if (!filetype) {
-        throw new Error('Unsupported Buffer file type');
+        throw new errors.FatalError('Unsupported Buffer file type');
       }
       formData = {};
       formData[type] = {
@@ -256,11 +253,11 @@ class TelegramBot extends EventEmitter {
    */
   startPolling(options = {}) {
     if (this.hasOpenWebHook()) {
-      return Promise.reject(new Error('Polling and WebHook are mutually exclusive'));
+      return Promise.reject(new errors.FatalError('Polling and WebHook are mutually exclusive'));
     }
     options.restart = typeof options.restart === 'undefined' ? true : options.restart;
     if (!this._polling) {
-      this._polling = new TelegramBotPolling(this._request.bind(this), this.options.polling, this.processUpdate.bind(this));
+      this._polling = new TelegramBotPolling(this);
     }
     return this._polling.start(options);
   }
@@ -305,10 +302,10 @@ class TelegramBot extends EventEmitter {
    */
   openWebHook() {
     if (this.isPolling()) {
-      return Promise.reject(new Error('WebHook and Polling are mutually exclusive'));
+      return Promise.reject(new errors.FatalError('WebHook and Polling are mutually exclusive'));
     }
     if (!this._webHook) {
-      this._webHook = new TelegramBotWebHook(this.token, this.options.webHook, this.processUpdate.bind(this));
+      this._webHook = new TelegramBotWebHook(this);
     }
     return this._webHook.open();
   }
@@ -385,14 +382,7 @@ class TelegramBot extends EventEmitter {
       }
     }
 
-    return this._request('setWebHook', opts)
-      .then(resp => {
-        if (!resp) {
-          throw new Error(resp);
-        }
-
-        return resp;
-      });
+    return this._request('setWebHook', opts);
   }
 
   /**
