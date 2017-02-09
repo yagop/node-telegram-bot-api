@@ -1,3 +1,4 @@
+const errors = require('./errors');
 const debug = require('debug')('node-telegram-bot-api');
 const deprecate = require('depd')('node-telegram-bot-api');
 const ANOTHER_WEB_HOOK_USED = 409;
@@ -105,13 +106,24 @@ class TelegramBotPolling {
         updates.forEach(update => {
           this.options.params.offset = update.update_id + 1;
           debug('updated offset: %s', this.options.params.offset);
-          this.bot.processUpdate(update);
+          try {
+            this.bot.processUpdate(update);
+          } catch (err) {
+            err._processing = true;
+            throw err;
+          }
         });
         return null;
       })
       .catch(err => {
         debug('polling error: %s', err.message);
+        if (!err._processing) {
+          return this._error(err);
+        }
+        delete err._processing;
         /*
+         * An error occured while processing the items,
+         * i.e. in `this.bot.processUpdate()` above.
          * We need to mark the already-processed items
          * to avoid fetching them again once the application
          * is restarted, or moves to next polling interval
@@ -135,15 +147,17 @@ class TelegramBotPolling {
            * We have to log this to stderr to ensure devops
            * understands that they may receive already-processed items
            * on app restart.
+           * We simply can not rescue this situation, emit "error"
+           * event, with the hope that the application exits.
            */
           /* eslint-disable no-console */
           const bugUrl = 'https://github.com/yagop/node-telegram-bot-api/issues/36#issuecomment-268532067';
           console.error('error: Internal handling of The Offset Infinite Loop failed');
-          console.error(`error: This was due to error '${requestErr}'`);
+          console.error(`error: Due to error '${requestErr}'`);
           console.error('error: You may receive already-processed updates on app restart');
           console.error(`error: Please see ${bugUrl} for more information`);
           /* eslint-enable no-console */
-          throw err;
+          return this.bot.emit('error', new errors.FatalError(err));
         });
       })
       .finally(() => {
