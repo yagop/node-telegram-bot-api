@@ -1,4 +1,5 @@
 const debug = require('debug')('node-telegram-bot-api');
+const deprecate = require('depd')('node-telegram-bot-api');
 const ANOTHER_WEB_HOOK_USED = 409;
 
 
@@ -11,9 +12,15 @@ class TelegramBotPolling {
   constructor(bot) {
     this.bot = bot;
     this.options = (typeof bot.options.polling === 'boolean') ? {} : bot.options.polling;
-    this.options.timeout = (typeof this.options.timeout === 'number') ? this.options.timeout : 10;
     this.options.interval = (typeof this.options.interval === 'number') ? this.options.interval : 300;
-    this._offset = 0;
+    this.options.params = (typeof this.options.params === 'object') ? this.options.params : {};
+    this.options.params.offset = (typeof this.options.params.offset === 'number') ? this.options.params.offset : 0;
+    if (typeof this.options.timeout === 'number') {
+      deprecate('`options.polling.timeout` is deprecated. Use `options.polling.params` instead.');
+      this.options.params.timeout = this.options.timeout;
+    } else {
+      this.options.params.timeout = 10;
+    }
     this._lastUpdate = 0;
     this._lastRequest = null;
     this._abort = false;
@@ -85,8 +92,8 @@ class TelegramBotPolling {
         this._lastUpdate = Date.now();
         debug('polling data %j', updates);
         updates.forEach(update => {
-          this._offset = update.update_id;
-          debug('updated offset: %s', this._offset);
+          this.options.params.offset = update.update_id + 1;
+          debug('updated offset: %s', this.options.params.offset);
           this.bot.processUpdate(update);
         });
         return null;
@@ -125,16 +132,8 @@ class TelegramBotPolling {
    * Retrieve updates
    */
   _getUpdates() {
-    const opts = {
-      qs: {
-        offset: this._offset + 1,
-        limit: this.options.limit,
-        timeout: this.options.timeout
-      },
-    };
-    debug('polling with options: %j', opts);
-
-    return this.bot._request('getUpdates', opts)
+    debug('polling with options: %j', this.options.params);
+    return this.bot._request('getUpdates', this.options.params)
       .catch(err => {
         if (err.response && err.response.statusCode === ANOTHER_WEB_HOOK_USED) {
           return this._unsetWebHook();

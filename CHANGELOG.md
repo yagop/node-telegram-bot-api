@@ -7,6 +7,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 Added:
 
+1. Add constructor options:
+  * `options.polling.params` (by @GochoMugo)
 1. Add methods:
   * *TelegramBot#removeReplyListener()* (by @githugger)
 1. Add proper error handling (by @GochoMugo)

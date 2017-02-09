@@ -71,9 +71,10 @@ Emits `message` when a message arrives.
 | token | <code>String</code> |  | Bot Token |
 | [options] | <code>Object</code> |  |  |
 | [options.polling] | <code>Boolean</code> &#124; <code>Object</code> | <code>false</code> | Set true to enable polling or set options.  If a WebHook has been set, it will be deleted automatically. |
-| [options.polling.timeout] | <code>String</code> &#124; <code>Number</code> | <code>10</code> | Timeout in seconds for long polling |
+| [options.polling.timeout] | <code>String</code> &#124; <code>Number</code> | <code>10</code> | *Deprecated. Use `options.polling.params` instead*.  Timeout in seconds for long polling. |
 | [options.polling.interval] | <code>String</code> &#124; <code>Number</code> | <code>300</code> | Interval between requests in miliseconds |
 | [options.polling.autoStart] | <code>Boolean</code> | <code>true</code> | Start polling immediately |
+| [options.polling.params] | <code>Object</code> |  | Parameters to be used in polling API requests.  See https://core.telegram.org/bots/api#getupdates for more information. |
 | [options.webHook] | <code>Boolean</code> &#124; <code>Object</code> | <code>false</code> | Set true to enable WebHook or set options |
 | [options.webHook.host] | <code>String</code> | <code>0.0.0.0</code> | Host to bind to |
 | [options.webHook.port] | <code>Number</code> | <code>8443</code> | Port to bind to |
