@@ -133,7 +133,7 @@ class TelegramBotPolling {
    */
   _getUpdates() {
     debug('polling with options: %j', this.options.params);
-    return this.bot._request('getUpdates', this.options.params)
+    return this.bot.getUpdates(this.options.params)
       .catch(err => {
         if (err.response && err.response.statusCode === ANOTHER_WEB_HOOK_USED) {
           return this._unsetWebHook();

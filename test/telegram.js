@@ -48,7 +48,7 @@ before(function beforeAll() {
 
 describe('module.exports', function moduleExportsSuite() {
   const nodeVersion = parseInt(process.versions.node.split('.')[0], 10);
-  it('is loaded from src/ on Node.js v5+', function test() {
+  it('is loaded from src/ on Node.js v5+ and above', function test() {
     if (nodeVersion <= 4) this.skip(); // skip on Node.js v4 and below
     assert.equal(TelegramBot, require('../src/telegram'));
   });

@@ -57,6 +57,7 @@ class TelegramBot extends EventEmitter {
    * @param {Boolean} [options.polling.autoStart=true] Start polling immediately
    * @param {Object} [options.polling.params] Parameters to be used in polling API requests.
    *  See https://core.telegram.org/bots/api#getupdates for more information.
+   * @param  {Number} [options.polling.params.timeout=10] Timeout in seconds for long polling.
    * @param {Boolean|Object} [options.webHook=false] Set true to enable WebHook or set options
    * @param {String} [options.webHook.host=0.0.0.0] Host to bind to
    * @param {Number} [options.webHook.port=8443] Port to bind to
