@@ -25,9 +25,10 @@
   "author": "Yago Pérez <yagoperezs@gmail.com>",
   "license": "MIT",
   "engines": {
-    "node" : ">=0.12"
+    "node": ">=0.12"
   },
   "dependencies": {
+    "array.prototype.findindex": "^2.0.0",
     "bl": "^1.1.2",
     "bluebird": "^3.3.4",
     "debug": "^2.2.0",

@@ -1,3 +1,6 @@
+// shims
+require('array.prototype.findindex').shim(); // for Node.js v0.x
+
 const TelegramBotWebHook = require('./telegramWebHook');
 const TelegramBotPolling = require('./telegramPolling');
 const debug = require('debug')('node-telegram-bot-api');
