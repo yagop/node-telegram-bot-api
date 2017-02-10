@@ -5,6 +5,13 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased][Unreleased]
 
+
+
+
+* * *
+
+## [0.27.0][0.27.0] - 2016-02-10
+
 Added:
 
 1. Add constructor options:
@@ -100,4 +107,5 @@ Fixed:
 
 [0.25.0]:https://github.com/yagop/node-telegram-bot-api/releases/tag/v0.25.0
 [0.26.0]:https://github.com/yagop/node-telegram-bot-api/releases/tag/v0.26.0
-[Unreleased]:https://github.com/yagop/node-telegram-bot-api/compare/v0.26.0...master
+[0.27.0]:https://github.com/yagop/node-telegram-bot-api/releases/tag/v0.27.0
+[Unreleased]:https://github.com/yagop/node-telegram-bot-api/compare/v0.27.0...master
