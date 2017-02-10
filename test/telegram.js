@@ -30,6 +30,7 @@ const webHookPort2 = portindex++;
 const badTgServerPort = portindex++;
 const staticUrl = `http://127.0.0.1:${staticPort}`;
 const key = `${__dirname}/../examples/key.pem`;
+const ip = '216.58.210.174'; // Google IP ¯\_(ツ)_/¯
 const cert = `${__dirname}/../examples/crt.pem`;
 let FILE_ID;
 let GAME_CHAT_ID;
@@ -120,6 +121,21 @@ describe('TelegramBot', function telegramSuite() {
   it('does not automatically open webhook if "autoOpen" is false', function test() {
     assert.equal(testbot.hasOpenWebHook(), false);
     return utils.hasOpenWebHook(webHookPort, true);
+  });
+
+  it('correctly deletes the webhook if polling', function test() {
+    const myBot = new TelegramBot(TOKEN, {
+      polling: { autoStart: false, params: { timeout: 0 } },
+    });
+    utils.handleRatelimit(myBot, 'setWebHook', this);
+    myBot.on('polling_error', (error) => {
+      assert.ifError(error);
+    });
+    return myBot.setWebHook(ip).then(() => {
+      return myBot.startPolling();
+    }).then(() => {
+      return myBot.stopPolling();
+    });
   });
 
   describe('Events', function eventsSuite() {
@@ -353,12 +369,10 @@ describe('TelegramBot', function telegramSuite() {
   });
 
   describe('#setWebHook', function setWebHookSuite() {
-    const ip = '216.58.210.174';
     before(function before() {
       utils.handleRatelimit(bot, 'setWebHook', this);
     });
     it('should set a webHook', function test() {
-      // Google IP ¯\_(ツ)_/¯
       return bot
         .setWebHook(ip)
         .then(resp => {

@@ -125,6 +125,7 @@ class TelegramBotPolling {
    * @private
    */
   _unsetWebHook() {
+    debug('unsetting webhook');
     return this.bot._request('setWebHook');
   }
 
@@ -136,7 +137,9 @@ class TelegramBotPolling {
     return this.bot.getUpdates(this.options.params)
       .catch(err => {
         if (err.response && err.response.statusCode === ANOTHER_WEB_HOOK_USED) {
-          return this._unsetWebHook();
+          return this._unsetWebHook().then(() => {
+            return this.bot.getUpdates(this.options.params);
+          });
         }
         throw err;
       });
