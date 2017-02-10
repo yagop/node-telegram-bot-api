@@ -1,3 +1,7 @@
+// shims
+require('array.prototype.findindex').shim(); // for Node.js v0.x
+
+const errors = require('./errors');
 const TelegramBotWebHook = require('./telegramWebHook');
 const TelegramBotPolling = require('./telegramPolling');
 const debug = require('debug')('node-telegram-bot-api');
@@ -28,6 +32,10 @@ Promise.config({
 
 class TelegramBot extends EventEmitter {
 
+  static get errors() {
+    return errors;
+  }
+
   static get messageTypes() {
     return _messageTypes;
   }
@@ -43,10 +51,15 @@ class TelegramBot extends EventEmitter {
    * @param {Object} [options]
    * @param {Boolean|Object} [options.polling=false] Set true to enable polling or set options.
    *  If a WebHook has been set, it will be deleted automatically.
-   * @param {String|Number} [options.polling.timeout=10] Timeout in seconds for long polling
+   * @param {String|Number} [options.polling.timeout=10] *Deprecated. Use `options.polling.params` instead*.
+   *  Timeout in seconds for long polling.
    * @param {String|Number} [options.polling.interval=300] Interval between requests in miliseconds
    * @param {Boolean} [options.polling.autoStart=true] Start polling immediately
+   * @param {Object} [options.polling.params] Parameters to be used in polling API requests.
+   *  See https://core.telegram.org/bots/api#getupdates for more information.
+   * @param  {Number} [options.polling.params.timeout=10] Timeout in seconds for long polling.
    * @param {Boolean|Object} [options.webHook=false] Set true to enable WebHook or set options
+   * @param {String} [options.webHook.host=0.0.0.0] Host to bind to
    * @param {Number} [options.webHook.port=8443] Port to bind to
    * @param {String} [options.webHook.key] Path to file with PEM private key for webHook server.
    *  The file is read **synchronously**!
@@ -59,6 +72,7 @@ class TelegramBot extends EventEmitter {
    *  Note that `options.webHook.key`, `options.webHook.cert` and `options.webHook.pfx`, if provided, will be
    *  used to override `key`, `cert` and `pfx` in this object, respectively.
    *  See https://nodejs.org/api/https.html#https_https_createserver_options_requestlistener for more information.
+   * @param {String} [options.webHook.healthEndpoint=/healthz] An endpoint for health checks that always responds with 200 OK
    * @param {Boolean} [options.onlyFirstMatch=false] Set to true to stop after first match. Otherwise, all regexps are executed
    * @param {Object} [options.request] Options which will be added for all requests to telegram api.
    *  See https://github.com/request/request#requestoptions-callback for more information.
@@ -77,7 +91,8 @@ class TelegramBot extends EventEmitter {
     this.options.baseApiUrl = options.baseApiUrl || 'https://api.telegram.org';
     this.options.filepath = (typeof options.filepath === 'undefined') ? true : options.filepath;
     this._textRegexpCallbacks = [];
-    this._onReplyToMessages = [];
+    this._replyListenerId = 0;
+    this._replyListeners = [];
     this._polling = null;
     this._webHook = null;
 
@@ -130,7 +145,7 @@ class TelegramBot extends EventEmitter {
    */
   _request(_path, options = {}) {
     if (!this.token) {
-      throw new Error('Telegram Bot Token not provided!');
+      return Promise.reject(new errors.FatalError('Telegram Bot Token not provided!'));
     }
 
     if (this.options.request) {
@@ -152,30 +167,22 @@ class TelegramBot extends EventEmitter {
     debug('HTTP request: %j', options);
     return request(options)
       .then(resp => {
-        if (resp.statusCode !== 200) {
-          const error = new Error(`${resp.statusCode} ${resp.body}`);
-          error.response = resp;
-          throw error;
-        }
-
         let data;
-
         try {
-          data = JSON.parse(resp.body);
+          data = resp.body = JSON.parse(resp.body);
         } catch (err) {
-          const error = new Error(`Error parsing Telegram response: ${resp.body}`);
-          error.response = resp;
-          throw error;
+          throw new errors.ParseError(`Error parsing Telegram response: ${resp.body}`, resp);
         }
 
         if (data.ok) {
           return data.result;
         }
 
-        const error = new Error(`${data.error_code} ${data.description}`);
-        error.response = resp;
-        error.response.body = data;
-        throw error;
+        throw new errors.TelegramError(`${data.error_code} ${data.description}`, resp);
+      }).catch(error => {
+        // TODO: why can't we do `error instanceof errors.BaseError`?
+        if (error.response) throw error;
+        throw new errors.FatalError(error);
       });
   }
 
@@ -195,7 +202,9 @@ class TelegramBot extends EventEmitter {
     let fileName;
     let fileId;
     if (data instanceof stream.Stream) {
-      fileName = URL.parse(path.basename(data.path.toString())).pathname;
+      // Will be 'null' if could not be parsed. Default to 'filename'.
+      // For example, 'data.path' === '/?id=123' from 'request("https://example.com/?id=123")'
+      fileName = URL.parse(path.basename(data.path.toString())).pathname || 'filename';
       formData = {};
       formData[type] = {
         value: data,
@@ -207,7 +216,7 @@ class TelegramBot extends EventEmitter {
     } else if (Buffer.isBuffer(data)) {
       const filetype = fileType(data);
       if (!filetype) {
-        throw new Error('Unsupported Buffer file type');
+        throw new errors.FatalError('Unsupported Buffer file type');
       }
       formData = {};
       formData[type] = {
@@ -248,11 +257,11 @@ class TelegramBot extends EventEmitter {
    */
   startPolling(options = {}) {
     if (this.hasOpenWebHook()) {
-      return Promise.reject(new Error('Polling and WebHook are mutually exclusive'));
+      return Promise.reject(new errors.FatalError('Polling and WebHook are mutually exclusive'));
     }
     options.restart = typeof options.restart === 'undefined' ? true : options.restart;
     if (!this._polling) {
-      this._polling = new TelegramBotPolling(this._request.bind(this), this.options.polling, this.processUpdate.bind(this));
+      this._polling = new TelegramBotPolling(this);
     }
     return this._polling.start(options);
   }
@@ -297,10 +306,10 @@ class TelegramBot extends EventEmitter {
    */
   openWebHook() {
     if (this.isPolling()) {
-      return Promise.reject(new Error('WebHook and Polling are mutually exclusive'));
+      return Promise.reject(new errors.FatalError('WebHook and Polling are mutually exclusive'));
     }
     if (!this._webHook) {
-      this._webHook = new TelegramBotWebHook(this.token, this.options.webHook, this.processUpdate.bind(this));
+      this._webHook = new TelegramBotWebHook(this);
     }
     return this._webHook.open();
   }
@@ -377,14 +386,7 @@ class TelegramBot extends EventEmitter {
       }
     }
 
-    return this._request('setWebHook', opts)
-      .then(resp => {
-        if (!resp) {
-          throw new Error(resp);
-        }
-
-        return resp;
-      });
+    return this._request('setWebHook', opts);
   }
 
   /**
@@ -479,7 +481,7 @@ class TelegramBot extends EventEmitter {
       }
       if (message.reply_to_message) {
         // Only callbacks waiting for this message
-        this._onReplyToMessages.forEach(reply => {
+        this._replyListeners.forEach(reply => {
           // Message from the same chat
           if (reply.chatId === message.chat.id) {
             // Responding to that message
@@ -1007,14 +1009,35 @@ class TelegramBot extends EventEmitter {
    * @param  {Number|String}   chatId       The chat id where the message cames from.
    * @param  {Number|String}   messageId    The message id to be replied.
    * @param  {Function} callback     Callback will be called with the reply
-   * message.
+   *  message.
+   * @return {Number} id                    The ID of the inserted reply listener.
    */
   onReplyToMessage(chatId, messageId, callback) {
-    this._onReplyToMessages.push({
+    const id = ++this._replyListenerId;
+    this._replyListeners.push({
+      id,
       chatId,
       messageId,
       callback
     });
+    return id;
+  }
+
+  /**
+   * Removes a reply that has been prev. registered for a message response.
+   * @param   {Number} replyListenerId      The ID of the reply listener.
+   * @return  {Object} deletedListener      The removed reply listener if
+   *   found. This object has `id`, `chatId`, `messageId` and `callback`
+   *   properties. If not found, returns `null`.
+   */
+  removeReplyListener(replyListenerId) {
+    const index = this._replyListeners.findIndex((replyListener) => {
+      return replyListener.id === replyListenerId;
+    });
+    if (index === -1) {
+      return null;
+    }
+    return this._replyListeners.splice(index, 1)[0];
   }
 
   /**

@@ -1,3 +1,4 @@
+const errors = require('./errors');
 const debug = require('debug')('node-telegram-bot-api');
 const https = require('https');
 const http = require('http');
@@ -9,24 +10,17 @@ const Promise = require('bluebird');
 class TelegramBotWebHook {
   /**
    * Sets up a webhook to receive updates
-   *
-   * @param  {String} token Telegram API token
-   * @param  {Boolean|Object} options WebHook options
-   * @param  {Number} [options.port=8443] Port to bind to
-   * @param  {Function} callback Function for process a new update
+   * @param  {TelegramBot} bot
+   * @see https://core.telegram.org/bots/api#getting-updates
    */
-  constructor(token, options, callback) {
-    // define opts
-    if (typeof options === 'boolean') {
-      options = {}; // eslint-disable-line no-param-reassign
-    }
-
-    this.token = token;
-    this.options = options;
-    this.options.port = options.port || 8443;
-    this.options.https = options.https || {};
-    this.callback = callback;
-    this._regex = new RegExp(this.token);
+  constructor(bot) {
+    this.bot = bot;
+    this.options = (typeof bot.options.webHook === 'boolean') ? {} : bot.options.webHook;
+    this.options.host = this.options.host || '0.0.0.0';
+    this.options.port = this.options.port || 8443;
+    this.options.https = this.options.https || {};
+    this.options.healthEndpoint = this.options.healthEndpoint || '/healthz';
+    this._healthRegex = new RegExp(this.options.healthEndpoint);
     this._webServer = null;
     this._open = false;
     this._requestListener = this._requestListener.bind(this);
@@ -96,31 +90,35 @@ class TelegramBotWebHook {
     return this._open;
   }
 
-  // used so that other funcs are not non-optimizable
-  _safeParse(json) {
-    try {
-      return JSON.parse(json);
-    } catch (err) {
-      debug(err);
-      return null;
+  /**
+   * Handle error thrown during processing of webhook request.
+   * @private
+   * @param  {Error} error
+   */
+  _error(error) {
+    if (!this.bot.listeners('webhook_error').length) {
+      return console.error(error); // eslint-disable-line no-console
     }
+    return this.bot.emit('webhook_error', error);
   }
 
   /**
    * Handle request body by passing it to 'callback'
    * @private
    */
-  _parseBody(err, body) {
-    if (err) {
-      return debug(err);
+  _parseBody(error, body) {
+    if (error) {
+      return this._error(new errors.FatalError(error));
     }
 
-    const data = this._safeParse(body);
-    if (data) {
-      return this.callback(data);
+    let data;
+    try {
+      data = JSON.parse(body.toString());
+    } catch (parseError) {
+      return this._error(new errors.ParseError(parseError.message));
     }
 
-    return null;
+    return this.bot.processUpdate(data);
   }
 
   /**
@@ -133,19 +131,23 @@ class TelegramBotWebHook {
     debug('WebHook request URL: %s', req.url);
     debug('WebHook request headers: %j', req.headers);
 
-    // If there isn't token on URL
-    if (!this._regex.test(req.url)) {
+    if (req.url.indexOf(this.bot.token) !== -1) {
+      if (req.method !== 'POST') {
+        debug('WebHook request isn\'t a POST');
+        res.statusCode = 418; // I'm a teabot!
+        res.end();
+      } else {
+        req
+          .pipe(bl(this._parseBody))
+          .on('finish', () => res.end('OK'));
+      }
+    } else if (this._healthRegex.test(req.url)) {
+      debug('WebHook health check passed');
+      res.statusCode = 200;
+      res.end('OK');
+    } else {
       debug('WebHook request unauthorized');
       res.statusCode = 401;
-      res.end();
-    } else if (req.method === 'POST') {
-      req
-        .pipe(bl(this._parseBody))
-        .on('finish', () => res.end('OK'));
-    } else {
-      // Authorized but not a POST
-      debug('WebHook request isn\'t a POST');
-      res.statusCode = 418; // I'm a teabot!
       res.end();
     }
   }

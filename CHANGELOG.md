@@ -7,6 +7,46 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 
 
+
+* * *
+
+## [0.27.0][0.27.0] - 2016-02-10
+
+Added:
+
+1. Add constructor options:
+  * (#243) `options.polling.params` (by @GochoMugo, requested-by @sidelux)
+1. Add methods:
+  * (#74) *TelegramBot#removeReplyListener()* (by @githugger)
+1. (#283) Add proper error handling (by @GochoMugo)
+1. (#272) Add health-check endpoint (by @mironov)
+  * `options.webHook.healthEndpoint`
+1. (#152) Add test for TelegramBot#sendDocument() using 'fileOpts'
+   param (by @evolun)
+1. Document `options.webHook.host` (by @GochoMugo)
+1. (#264) Add Bot API version to README (by @kamikazechaser)
+1. Add examples:
+  - (#271) WebHook on Heroku (by @TheBeastOfCaerbannog)
+  - (#274) WebHook on Zeit Now (by @Ferrari)
+
+Changed:
+
+1. (#147) Use *String#indexOf()*, instead of *RegExp#test()*, to
+   find token in webhook request (by @AVVS)
+
+Fixed:
+
+* Fix bug:
+  - (#275, #280) fix es6 syntax error on Node.js v4.x (by @crazyabdul)
+  - (#276) promise.warning from `request-promise` (by @GochoMugo,
+    reported-by @preco21)
+  - (#281) fix handling error during polling (by @GochoMugo,
+    reported-by @dimawebmaker)
+  - (#284) fix error during deletion of already-set webhook, during
+    polling (by @GochoMugo, reported-by @dcparga)
+1. Fix links in documentation (by @Ni2c2k)
+
+
 * * *
 
 ## [0.26.0][0.26.0] - 2016-01-20
@@ -67,4 +107,5 @@ Fixed:
 
 [0.25.0]:https://github.com/yagop/node-telegram-bot-api/releases/tag/v0.25.0
 [0.26.0]:https://github.com/yagop/node-telegram-bot-api/releases/tag/v0.26.0
-[Unreleased]:https://github.com/yagop/node-telegram-bot-api/compare/v0.26.0...master
+[0.27.0]:https://github.com/yagop/node-telegram-bot-api/releases/tag/v0.27.0
+[Unreleased]:https://github.com/yagop/node-telegram-bot-api/compare/v0.27.0...master

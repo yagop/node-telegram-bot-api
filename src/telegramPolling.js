@@ -1,34 +1,26 @@
 const debug = require('debug')('node-telegram-bot-api');
+const deprecate = require('depd')('node-telegram-bot-api');
 const ANOTHER_WEB_HOOK_USED = 409;
 
 
 class TelegramBotPolling {
   /**
    * Handles polling against the Telegram servers.
-   *
-   * @param  {Function} request Function used to make HTTP requests
-   * @param  {Boolean|Object} options Polling options
-   * @param  {Number} [options.timeout=10] Timeout in seconds for long polling
-   * @param  {Number} [options.interval=300] Interval between requests in milliseconds
-   * @param  {Function} callback Function for processing a new update
-   * @see https://core.telegram.org/bots/api#getupdates
+   * @param  {TelegramBot} bot
+   * @see https://core.telegram.org/bots/api#getting-updates
    */
-  constructor(request, options = {}, callback) {
-    /* eslint-disable no-param-reassign */
-    if (typeof options === 'function') {
-      callback = options;
-      options = {};
-    } else if (typeof options === 'boolean') {
-      options = {};
+  constructor(bot) {
+    this.bot = bot;
+    this.options = (typeof bot.options.polling === 'boolean') ? {} : bot.options.polling;
+    this.options.interval = (typeof this.options.interval === 'number') ? this.options.interval : 300;
+    this.options.params = (typeof this.options.params === 'object') ? this.options.params : {};
+    this.options.params.offset = (typeof this.options.params.offset === 'number') ? this.options.params.offset : 0;
+    if (typeof this.options.timeout === 'number') {
+      deprecate('`options.polling.timeout` is deprecated. Use `options.polling.params` instead.');
+      this.options.params.timeout = this.options.timeout;
+    } else {
+      this.options.params.timeout = 10;
     }
-    /* eslint-enable no-param-reassign */
-
-    this.request = request;
-    this.options = options;
-    this.options.timeout = (typeof options.timeout === 'number') ? options.timeout : 10;
-    this.options.interval = (typeof options.interval === 'number') ? options.interval : 300;
-    this.callback = callback;
-    this._offset = 0;
     this._lastUpdate = 0;
     this._lastRequest = null;
     this._abort = false;
@@ -100,14 +92,20 @@ class TelegramBotPolling {
         this._lastUpdate = Date.now();
         debug('polling data %j', updates);
         updates.forEach(update => {
-          this._offset = update.update_id;
-          debug('updated offset: %s', this._offset);
-          this.callback(update);
+          this.options.params.offset = update.update_id + 1;
+          debug('updated offset: %s', this.options.params.offset);
+          this.bot.processUpdate(update);
         });
+        return null;
       })
       .catch(err => {
         debug('polling error: %s', err.message);
-        throw err;
+        if (this.bot.listeners('polling_error').length) {
+          this.bot.emit('polling_error', err);
+        } else {
+          console.error(err); // eslint-disable-line no-console
+        }
+        return null;
       })
       .finally(() => {
         if (this._abort) {
@@ -127,26 +125,21 @@ class TelegramBotPolling {
    * @private
    */
   _unsetWebHook() {
-    return this.request('setWebHook');
+    debug('unsetting webhook');
+    return this.bot._request('setWebHook');
   }
 
   /**
    * Retrieve updates
    */
   _getUpdates() {
-    const opts = {
-      qs: {
-        offset: this._offset + 1,
-        limit: this.options.limit,
-        timeout: this.options.timeout
-      },
-    };
-    debug('polling with options: %j', opts);
-
-    return this.request('getUpdates', opts)
+    debug('polling with options: %j', this.options.params);
+    return this.bot.getUpdates(this.options.params)
       .catch(err => {
-        if (err.response.statusCode === ANOTHER_WEB_HOOK_USED) {
-          return this._unsetWebHook();
+        if (err.response && err.response.statusCode === ANOTHER_WEB_HOOK_USED) {
+          return this._unsetWebHook().then(() => {
+            return this.bot.getUpdates(this.options.params);
+          });
         }
         throw err;
       });

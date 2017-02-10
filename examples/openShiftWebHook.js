@@ -28,5 +28,5 @@ bot.setWebHook(`${url}/bot${TOKEN}`);
 
 // Just to ping!
 bot.on('message', function onMessage(msg) {
-  bot.sendMessage(msg.chat.id, "I'm alive on OpenShift!");
+  bot.sendMessage(msg.chat.id, 'I am alive on OpenShift!');
 });

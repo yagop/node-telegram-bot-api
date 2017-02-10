@@ -3,6 +3,7 @@
 1. [Events](#events)
 1. [WebHooks](#WebHooks)
 1. [Sending files](#sending-files)
+1. [Error handling](#error-handling)
 
 
 * * *
@@ -29,6 +30,8 @@
 1. `edited_channel_post`: Received a new version of a channel post that is known to the bot and was edited
   1. `edited_channel_post_text`
   1. `edited_channel_post_caption`
+1. `polling_error`: Error occurred during polling. See [polling errors](#polling-errors).
+1. `webhook_error`: Error occurred handling a webhook request. See [webhook errors](#webhook-errors).
 
 **Tip:** Its much better to listen a specific event rather than on
 `message` in order to stay safe from the content.
@@ -143,5 +146,62 @@ Disabling this behavior:
 ```js
 const bot = new TelegramBot(token, {
   filepath: false,
+});
+```
+
+
+<a name="error-handling"></a>
+## Error handling
+
+Every `Error` object we pass back has the properties:
+
+* `code` (String):
+  * value is `EFATAL` if error was fatal e.g. network error
+  * value is `EPARSE` if response body could **not** be parsed
+  * value is `ETELEGRAM` if error was returned from Telegram servers
+* `response` ([http.IncomingMessage](https://nodejs.org/api/http.html#http_class_http_incomingmessage)):
+  * available if `error.code` is **not** `EFATAL`
+* `response.body` (String|Object): Error response from Telegram
+  * type is `String` if `error.code` is `EPARSE`
+  * type is `Object` if `error.code` is `ETELEGRAM`
+
+For example, sending message to a non-existent user:
+
+```js
+bot.sendMessage(nonExistentUserId, 'text').catch(error => {
+  console.log(error.code);  // => 'ETELEGRAM'
+  console.log(error.response.body); // => { ok: false, error_code: 400, description: 'Bad Request: chat not found' }
+});
+```
+
+<a name="polling-errors"></a>
+#### Polling errors
+
+An error may occur during polling. It is up to you to handle it
+as you see fit. You may decide to crash your bot after a maximum number
+of polling errors occurring. **It is all up to you.**
+
+By default, the polling error is just logged to stderr, if you do
+**not** handle this event yourself.
+
+Listen on the `'polling_error'` event. For example,
+
+```js
+bot.on('polling_error', (error) => {
+  console.log(error.code);  // => 'EFATAL'
+});
+```
+
+<a name="webhook-errors"></a>
+#### WebHook errors
+
+Just like with [polling errors](#polling-errors), you decide on how to
+handle it. By default, the error is logged to stderr.
+
+Listen on the `'webhook_error'` event. For example,
+
+```js
+bot.on('webhook_error', (error) => {
+  console.log(error.code);  // => 'EPARSE'
 });
 ```

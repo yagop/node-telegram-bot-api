@@ -27,8 +27,10 @@ const pollingPort = portindex++;
 const webHookPort = portindex++;
 const pollingPort2 = portindex++;
 const webHookPort2 = portindex++;
+const badTgServerPort = portindex++;
 const staticUrl = `http://127.0.0.1:${staticPort}`;
 const key = `${__dirname}/../examples/key.pem`;
+const ip = '216.58.210.174'; // Google IP ¯\_(ツ)_/¯
 const cert = `${__dirname}/../examples/crt.pem`;
 let FILE_ID;
 let GAME_CHAT_ID;
@@ -39,17 +41,20 @@ before(function beforeAll() {
   return utils.startMockServer(pollingPort)
     .then(() => {
       return utils.startMockServer(pollingPort2);
+    }).then(() => {
+      return utils.startMockServer(badTgServerPort, { bad: true });
     });
 });
 
 
 describe('module.exports', function moduleExportsSuite() {
-  it('is loaded from src/ if NOT on Node.js 0.12', function test() {
-    if (process.versions.node.split('.')[0] === '0') this.skip(); // skip on Node.js v0.12
+  const nodeVersion = parseInt(process.versions.node.split('.')[0], 10);
+  it('is loaded from src/ on Node.js v5+ and above', function test() {
+    if (nodeVersion <= 4) this.skip(); // skip on Node.js v4 and below
     assert.equal(TelegramBot, require('../src/telegram'));
   });
-  it('is loaded from lib/ if on Node.js 0.12', function test() {
-    if (process.versions.node.split('.')[0] !== '0') this.skip(); // skip on newer versions
+  it('is loaded from lib/ on Node.js v4 and below', function test() {
+    if (nodeVersion > 4) this.skip(); // skip on newer versions
     assert.equal(TelegramBot, require('../lib/telegram'));
   });
 });
@@ -118,10 +123,33 @@ describe('TelegramBot', function telegramSuite() {
     return utils.hasOpenWebHook(webHookPort, true);
   });
 
+  it('correctly deletes the webhook if polling', function test() {
+    const myBot = new TelegramBot(TOKEN, {
+      polling: { autoStart: false, params: { timeout: 0 } },
+    });
+    utils.handleRatelimit(myBot, 'setWebHook', this);
+    myBot.on('polling_error', (error) => {
+      assert.ifError(error);
+    });
+    return myBot.setWebHook(ip).then(() => {
+      return myBot.startPolling();
+    }).then(() => {
+      return myBot.stopPolling();
+    });
+  });
+
   describe('Events', function eventsSuite() {
     it('(polling) emits "message" on receiving message', function test(done) {
       botPolling.once('message', () => {
         return done();
+      });
+    });
+    it('(polling) emits "polling_error" if error occurs during polling', function test(done) {
+      const myBot = new TelegramBot(12345, { polling: true });
+      myBot.once('polling_error', (error) => {
+        assert.ok(error);
+        assert.equal(error.code, 'ETELEGRAM');
+        return myBot.stopPolling().then(() => { done(); }).catch(done);
       });
     });
     it('(webhook) emits "message" on receiving message', function test(done) {
@@ -130,9 +158,23 @@ describe('TelegramBot', function telegramSuite() {
       });
       utils.sendWebHookMessage(webHookPort2, TOKEN);
     });
+    it('(webhook) emits "webhook_error" if could not parse webhook request body', function test(done) {
+      botWebHook.once('webhook_error', (error) => {
+        assert.ok(error);
+        assert.equal(error.code, 'EPARSE');
+        return done();
+      });
+      utils.sendWebHookMessage(webHookPort2, TOKEN, { update: 'unparseable!', json: false });
+    });
   });
 
   describe('WebHook', function webHookSuite() {
+    it('returns 200 OK for health endpoint', function test(done) {
+      utils.sendWebHookRequest(webHookPort2, '/healthz').then(resp => {
+        assert.equal(resp, 'OK');
+        return done();
+      });
+    });
     it('returns 401 error if token is wrong', function test(done) {
       utils.sendWebHookMessage(webHookPort2, 'wrong-token').catch(resp => {
         assert.equal(resp.statusCode, 401);
@@ -179,6 +221,58 @@ describe('TelegramBot', function telegramSuite() {
     });
   });
 
+  describe('errors', function errorsSuite() {
+    const botParse = new TelegramBot('useless-token', {
+      baseApiUrl: `http://localhost:${badTgServerPort}`,
+    });
+    it('FatalError is thrown if token is missing', function test() {
+      const myBot = new TelegramBot(null);
+      return myBot.sendMessage(USERID, 'text').catch(error => {
+        // FIX: assert.ok(error instanceof TelegramBot.errors.FatalError);
+        assert.equal(error.code, 'EFATAL');
+        assert.ok(error.message.indexOf('not provided') > -1);
+      });
+    });
+    it('FatalError is thrown if file-type of Buffer could not be determined', function test() {
+      let buffer;
+      try {
+        buffer = Buffer.from('12345');
+      } catch (ex) {
+        buffer = new Buffer('12345');
+      }
+      return bot.sendPhoto(USERID, buffer).catch(error => {
+        // FIX: assert.ok(error instanceof TelegramBot.errors.FatalError);
+        assert.equal(error.code, 'EFATAL');
+        assert.ok(error.message.indexOf('Unsupported') > -1);
+      });
+    });
+    it('FatalError is thrown on network error', function test() {
+      const myBot = new TelegramBot('useless-token', {
+        baseApiUrl: 'http://localhost:23', // are we sure this port is not bound to?
+      });
+      return myBot.getMe().catch(error => {
+        // FIX: assert.ok(error instanceof TelegramBot.errors.FatalError);
+        assert.equal(error.code, 'EFATAL');
+      });
+    });
+    it('ParseError is thrown if response body could not be parsed', function test() {
+      botParse.sendMessage(USERID, 'text').catch(error => {
+        // FIX: assert.ok(error instanceof TelegramBot.errors.ParseError);
+        assert.equal(error.code, 'EPARSE');
+        assert.ok(typeof error.response === 'object');
+        assert.ok(typeof error.response.body === 'string');
+      });
+    });
+    it('TelegramError is thrown if error is from Telegram', function test() {
+      return bot.sendMessage('404', 'text').catch(error => {
+        // FIX: assert.ok(error instanceof TelegramBot.errors.TelegramError);
+        assert.equal(error.code, 'ETELEGRAM');
+        assert.ok(typeof error.response === 'object');
+        assert.ok(typeof error.response.body === 'object');
+      });
+    });
+  });
+
   describe('#startPolling', function initPollingSuite() {
     it('initiates polling', function test() {
       return testbot.startPolling().then(() => {
@@ -188,6 +282,8 @@ describe('TelegramBot', function telegramSuite() {
     it('returns error if using webhook', function test() {
       return botWebHook.startPolling().catch((err) => {
         // TODO: check for error in a better way
+        // FIX: assert.ok(err instanceof TelegramBot.errors.FatalError);
+        assert.equal(err.code, 'EFATAL');
         assert.ok(err.message.indexOf('mutually exclusive') !== -1);
       });
     });
@@ -228,6 +324,8 @@ describe('TelegramBot', function telegramSuite() {
     it('returns error if using polling', function test() {
       return botPolling.openWebHook().catch((err) => {
         // TODO: check for error in a better way
+        // FIX: assert.ok(err instanceof TelegramBot.errors.FatalError);
+        assert.equal(err.code, 'EFATAL');
         assert.ok(err.message.indexOf('mutually exclusive') !== -1);
       });
     });
@@ -271,12 +369,10 @@ describe('TelegramBot', function telegramSuite() {
   });
 
   describe('#setWebHook', function setWebHookSuite() {
-    const ip = '216.58.210.174';
     before(function before() {
       utils.handleRatelimit(bot, 'setWebHook', this);
     });
     it('should set a webHook', function test() {
-      // Google IP ¯\_(ツ)_/¯
       return bot
         .setWebHook(ip)
         .then(resp => {
@@ -514,6 +610,13 @@ describe('TelegramBot', function telegramSuite() {
       return bot.sendDocument(USERID, document).then(resp => {
         assert.ok(is.object(resp));
         assert.ok(is.object(resp.document));
+      });
+    });
+    it('should send a document with custom file options', function test() {
+      const document = fs.createReadStream(`${__dirname}/data/photo.gif`);
+      const fileOpts = { filename: 'customfilename.gif' };
+      return bot.sendDocument(USERID, document, {}, fileOpts).then(resp => {
+        assert.equal(resp.document.file_name, fileOpts.filename);
       });
     });
   });
@@ -876,6 +979,24 @@ describe('TelegramBot', function telegramSuite() {
 
   describe.skip('#onReplyToMessage', function onReplyToMessageSuite() {});
 
+  describe('#removeReplyListener', function removeReplyListenerSuite() {
+    const chatId = -1234;
+    const messageId = 1;
+    const callback = function noop() {};
+    it('returns the right reply-listener', function test() {
+      const id = bot.onReplyToMessage(chatId, messageId, callback);
+      const replyListener = bot.removeReplyListener(id);
+      assert.equal(id, replyListener.id);
+      assert.equal(chatId, replyListener.chatId);
+      assert.equal(messageId, replyListener.messageId);
+      assert.equal(callback, replyListener.callback);
+    });
+    it('returns `null` if missing', function test() {
+      // NOTE: '0' is never a valid reply listener ID :)
+      assert.equal(null, bot.removeReplyListener(0));
+    });
+  });
+
   describe('#getChat', function getChatSuite() {
     before(function before() {
       utils.handleRatelimit(bot, 'getChat', this);
@@ -988,8 +1109,13 @@ describe('TelegramBot', function telegramSuite() {
       const photo = `${__dirname}/data/photo.gif`;
       return tgbot.sendPhoto(USERID, photo).catch(err => {
         // TODO: check for error in a better way
-        assert.ok(err.response.body.indexOf('Bad Request') !== -1);
+        assert.ok(err.response.body.description.indexOf('Bad Request') !== -1);
       });
+    });
+    it('should allow stream.path that can not be parsed', function test() {
+      const stream = fs.createReadStream(`${__dirname}/data/photo.gif`);
+      stream.path = '/?id=123'; // for example, 'http://example.com/?id=666'
+      return bot.sendPhoto(USERID, stream);
     });
   });
 }); // End Telegram

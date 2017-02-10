@@ -31,11 +31,24 @@ exports = module.exports = {
    */
   isPollingMockServer,
   /**
+   * Send a message to the webhook at the specified port and path.
+   * @param  {Number} port
+   * @param  {String} path
+   * @param  {Object} [options]
+   * @param  {String} [options.method=POST] Method to use
+   * @param  {Object} [options.update] Update object to send.
+   * @param  {Object} [options.message] Message to send. Default to a generic text message
+   * @param  {Boolean} [options.https=false] Use https
+   * @return {Promise}
+   */
+  sendWebHookRequest,
+  /**
    * Send a message to the webhook at the specified port.
    * @param  {Number} port
    * @param  {String} token
    * @param  {Object} [options]
    * @param  {String} [options.method=POST] Method to use
+   * @param  {Object} [options.update] Update object to send.
    * @param  {Object} [options.message] Message to send. Default to a generic text message
    * @param  {Boolean} [options.https=false] Use https
    * @return {Promise}
@@ -44,6 +57,9 @@ exports = module.exports = {
   /**
    * Start a mock server at the specified port.
    * @param  {Number} port
+   * @param  {Object} [options]
+   * @param  {Boolean} [options.bad=false] Bad Mock Server; responding with
+   *  unparseable messages
    * @return {Promise}
    */
   startMockServer,
@@ -65,10 +81,13 @@ const statics = require('node-static');
 const servers = {};
 
 
-function startMockServer(port) {
+function startMockServer(port, options = {}) {
   assert.ok(port);
   const server = http.Server((req, res) => {
     servers[port].polling = true;
+    if (options.bad) {
+      return res.end('can not be parsed with JSON.parse()');
+    }
     return res.end(JSON.stringify({
       ok: true,
       result: [{
@@ -134,20 +153,28 @@ function hasOpenWebHook(port, reverse) {
 }
 
 
-function sendWebHookMessage(port, token, options = {}) {
+function sendWebHookRequest(port, path, options = {}) {
   assert.ok(port);
-  assert.ok(token);
+  assert.ok(path);
   const protocol = options.https ? 'https' : 'http';
-  const url = `${protocol}://127.0.0.1:${port}/bot${token}`;
+  const url = `${protocol}://127.0.0.1:${port}${path}`;
   return request({
     url,
     method: options.method || 'POST',
-    body: {
+    body: options.update || {
       update_id: 1,
       message: options.message || { text: 'test' }
     },
-    json: true,
+    json: (typeof options.json === 'undefined') ? true : options.json,
   });
+}
+
+
+function sendWebHookMessage(port, token, options = {}) {
+  assert.ok(port);
+  assert.ok(token);
+  const path = `/bot${token}`;
+  return sendWebHookRequest(port, path, options);
 }
 
 

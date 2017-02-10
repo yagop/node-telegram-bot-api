@@ -47,7 +47,8 @@ TelegramBot
     * [.getFileLink(fileId)](#TelegramBot+getFileLink) ⇒ <code>Promise</code>
     * [.downloadFile(fileId, downloadDir)](#TelegramBot+downloadFile) ⇒ <code>Promise</code>
     * [.onText(regexp, callback)](#TelegramBot+onText)
-    * [.onReplyToMessage(chatId, messageId, callback)](#TelegramBot+onReplyToMessage)
+    * [.onReplyToMessage(chatId, messageId, callback)](#TelegramBot+onReplyToMessage) ⇒ <code>Number</code>
+    * [.removeReplyListener(replyListenerId)](#TelegramBot+removeReplyListener) ⇒ <code>Object</code>
     * [.getChat(chatId)](#TelegramBot+getChat) ⇒ <code>Promise</code>
     * [.getChatAdministrators(chatId)](#TelegramBot+getChatAdministrators) ⇒ <code>Promise</code>
     * [.getChatMembersCount(chatId)](#TelegramBot+getChatMembersCount) ⇒ <code>Promise</code>
@@ -70,16 +71,20 @@ Emits `message` when a message arrives.
 | token | <code>String</code> |  | Bot Token |
 | [options] | <code>Object</code> |  |  |
 | [options.polling] | <code>Boolean</code> &#124; <code>Object</code> | <code>false</code> | Set true to enable polling or set options.  If a WebHook has been set, it will be deleted automatically. |
-| [options.polling.timeout] | <code>String</code> &#124; <code>Number</code> | <code>10</code> | Timeout in seconds for long polling |
+| [options.polling.timeout] | <code>String</code> &#124; <code>Number</code> | <code>10</code> | *Deprecated. Use `options.polling.params` instead*.  Timeout in seconds for long polling. |
 | [options.polling.interval] | <code>String</code> &#124; <code>Number</code> | <code>300</code> | Interval between requests in miliseconds |
 | [options.polling.autoStart] | <code>Boolean</code> | <code>true</code> | Start polling immediately |
+| [options.polling.params] | <code>Object</code> |  | Parameters to be used in polling API requests.  See https://core.telegram.org/bots/api#getupdates for more information. |
+| [options.polling.params.timeout] | <code>Number</code> | <code>10</code> | Timeout in seconds for long polling. |
 | [options.webHook] | <code>Boolean</code> &#124; <code>Object</code> | <code>false</code> | Set true to enable WebHook or set options |
+| [options.webHook.host] | <code>String</code> | <code>0.0.0.0</code> | Host to bind to |
 | [options.webHook.port] | <code>Number</code> | <code>8443</code> | Port to bind to |
 | [options.webHook.key] | <code>String</code> |  | Path to file with PEM private key for webHook server.  The file is read **synchronously**! |
 | [options.webHook.cert] | <code>String</code> |  | Path to file with PEM certificate (public) for webHook server.  The file is read **synchronously**! |
 | [options.webHook.pfx] | <code>String</code> |  | Path to file with PFX private key and certificate chain for webHook server.  The file is read **synchronously**! |
 | [options.webHook.autoOpen] | <code>Boolean</code> | <code>true</code> | Open webHook immediately |
 | [options.webHook.https] | <code>Object</code> |  | Options to be passed to `https.createServer()`.  Note that `options.webHook.key`, `options.webHook.cert` and `options.webHook.pfx`, if provided, will be  used to override `key`, `cert` and `pfx` in this object, respectively.  See https://nodejs.org/api/https.html#https_https_createserver_options_requestlistener for more information. |
+| [options.webHook.healthEndpoint] | <code>String</code> | <code>/healthz</code> | An endpoint for health checks that always responds with 200 OK |
 | [options.onlyFirstMatch] | <code>Boolean</code> | <code>false</code> | Set to true to stop after first match. Otherwise, all regexps are executed |
 | [options.request] | <code>Object</code> |  | Options which will be added for all requests to telegram api.  See https://github.com/request/request#requestoptions-callback for more information. |
 | [options.baseApiUrl] | <code>String</code> | <code>https://api.telegram.org</code> | API Base URl; useful for proxying and testing |
@@ -592,16 +597,31 @@ Register a RegExp to test against an incomming text message.
 
 <a name="TelegramBot+onReplyToMessage"></a>
 
-### telegramBot.onReplyToMessage(chatId, messageId, callback)
+### telegramBot.onReplyToMessage(chatId, messageId, callback) ⇒ <code>Number</code>
 Register a reply to wait for a message response.
 
 **Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
+**Returns**: <code>Number</code> - id                    The ID of the inserted reply listener.  
 
 | Param | Type | Description |
 | --- | --- | --- |
 | chatId | <code>Number</code> &#124; <code>String</code> | The chat id where the message cames from. |
 | messageId | <code>Number</code> &#124; <code>String</code> | The message id to be replied. |
-| callback | <code>function</code> | Callback will be called with the reply message. |
+| callback | <code>function</code> | Callback will be called with the reply  message. |
+
+<a name="TelegramBot+removeReplyListener"></a>
+
+### telegramBot.removeReplyListener(replyListenerId) ⇒ <code>Object</code>
+Removes a reply that has been prev. registered for a message response.
+
+**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
+**Returns**: <code>Object</code> - deletedListener      The removed reply listener if
+  found. This object has `id`, `chatId`, `messageId` and `callback`
+  properties. If not found, returns `null`.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| replyListenerId | <code>Number</code> | The ID of the reply listener. |
 
 <a name="TelegramBot+getChat"></a>
 

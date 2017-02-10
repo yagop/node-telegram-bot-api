@@ -1,4 +1,5 @@
-[![Build Status](https://travis-ci.org/yagop/node-telegram-bot-api.svg?branch=master)](https://travis-ci.org/yagop/node-telegram-bot-api)
+ [![Bot API](http://img.shields.io/badge/Bot API-v2.3.1-00aced.svg)](https://core.telegram.org/bots/api)
+ [![Build Status](https://travis-ci.org/yagop/node-telegram-bot-api.svg?branch=master)](https://travis-ci.org/yagop/node-telegram-bot-api)
  [![Build status](https://ci.appveyor.com/api/projects/status/ujko6bsum3g5msjh/branch/master?svg=true)](https://ci.appveyor.com/project/yagop/node-telegram-bot-api/branch/master)
  [![Coverage Status](https://coveralls.io/repos/yagop/node-telegram-bot-api/badge.svg?branch=master)](https://coveralls.io/r/yagop/node-telegram-bot-api?branch=master)
  [![bitHound Score](https://www.bithound.io/github/yagop/node-telegram-bot-api/badges/score.svg)](https://www.bithound.io/github/yagop/node-telegram-bot-api)
@@ -53,24 +54,21 @@ bot.on('message', function (msg) {
 
 ## Documentation
 
-  * Usage ([release][usage-release] / [development][usage-dev])
-  * Examples ([release][examples-release] / [development][examples-dev])
-  * Help Information ([release][help-release] / [development][help-dev])
+  * [Usage][usage]
+  * [Examples][examples]
+  * [Help Information][help]
   * API Reference ([release][api-release] / [development][api-dev])
   * [Contributing to the Project][contributing]
 
 _**Note**: Development is done against the **master** branch. Code for the latest release
 resides on the **release** branch._
 
-[usage-release]:https://github.com/yagop/node-telegram-bot-api/tree/release/doc/usage.md
-[examples-release]:https://github.com/yagop/node-telegram-bot-api/tree/release/doc/help.md
-[help-release]:https://github.com/yagop/node-telegram-bot-api/tree/release/examples
-[api-release]:https://github.com/yagop/node-telegram-bot-api/tree/release/doc/api.md
 
-[usage-dev]:https://github.com/yagop/node-telegram-bot-api/tree/master/doc/usage.md
-[examples-dev]:https://github.com/yagop/node-telegram-bot-api/tree/master/doc/help.md
-[help-dev]:https://github.com/yagop/node-telegram-bot-api/tree/master/examples
+[usage]:https://github.com/yagop/node-telegram-bot-api/tree/master/doc/usage.md
+[examples]:https://github.com/yagop/node-telegram-bot-api/tree/master/examples
+[help]:https://github.com/yagop/node-telegram-bot-api/tree/master/doc/help.md
 [api-dev]:https://github.com/yagop/node-telegram-bot-api/tree/master/doc/api.md
+[api-release]:https://github.com/yagop/node-telegram-bot-api/tree/release/doc/api.md
 [contributing]:https://github.com/yagop/node-telegram-bot-api/tree/master/CONTRIBUTING.md
 
 
@@ -86,6 +84,7 @@ Some things built using this library, and might interest you:
 
 * [tgfancy](https://github.com/GochoMugo/tgfancy): A Fancy, Higher-Level Wrapper for Telegram Bot API
 * [node-telegram-bot-api-middleware](https://github.com/idchlife/node-telegram-bot-api-middleware): Middleware for node-telegram-bot-api
+* [teleirc](https://github.com/FruitieX/teleirc): A simple Telegram ↔ IRC gateway
 
 
 * * *
