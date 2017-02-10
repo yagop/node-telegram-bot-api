@@ -8,14 +8,36 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 Added:
 
 1. Add constructor options:
-  * `options.polling.params` (by @GochoMugo)
+  * (#243) `options.polling.params` (by @GochoMugo, requested-by @sidelux)
 1. Add methods:
-  * *TelegramBot#removeReplyListener()* (by @githugger)
-1. Add proper error handling (by @GochoMugo)
-1. Add health-check endpoint (by @mironov)
+  * (#74) *TelegramBot#removeReplyListener()* (by @githugger)
+1. (#283) Add proper error handling (by @GochoMugo)
+1. (#272) Add health-check endpoint (by @mironov)
   * `options.webHook.healthEndpoint`
-1. Use *String#indexOf()*, instead of *RegExp#test()*, to
+1. (#152) Add test for TelegramBot#sendDocument() using 'fileOpts'
+   param (by @evolun)
+1. Document `options.webHook.host` (by @GochoMugo)
+1. (#264) Add Bot API version to README (by @kamikazechaser)
+1. Add examples:
+  - (#271) WebHook on Heroku (by @TheBeastOfCaerbannog)
+  - (#274) WebHook on Zeit Now (by @Ferrari)
+
+Changed:
+
+1. (#147) Use *String#indexOf()*, instead of *RegExp#test()*, to
    find token in webhook request (by @AVVS)
+
+Fixed:
+
+* Fix bug:
+  - (#275, #280) fix es6 syntax error on Node.js v4.x (by @crazyabdul)
+  - (#276) promise.warning from `request-promise` (by @GochoMugo,
+    reported-by @preco21)
+  - (#281) fix handling error during polling (by @GochoMugo,
+    reported-by @dimawebmaker)
+  - (#284) fix error during deletion of already-set webhook, during
+    polling (by @GochoMugo, reported-by @dcparga)
+1. Fix links in documentation (by @Ni2c2k)
 
 
 * * *
