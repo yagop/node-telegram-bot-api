@@ -168,7 +168,7 @@ Every `Error` object we pass back has the properties:
 For example, sending message to a non-existent user:
 
 ```js
-bot.sendMessage(nonExistentUserId, 'text').catch(error => {
+bot.sendMessage(nonExistentUserId, 'text').catch(function (error) {
   console.log(error.code);  // => 'ETELEGRAM'
   console.log(error.response.body); // => { ok: false, error_code: 400, description: 'Bad Request: chat not found' }
 });
