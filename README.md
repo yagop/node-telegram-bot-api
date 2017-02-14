@@ -94,7 +94,7 @@ Some things built using this library, and might interest you:
 
 **The MIT License (MIT)**
 
-Copyright (c) 2015 Yago
+Copyright (c) 2017 Yago
 
 
 [tg-channel]:https://telegram.me/node_telegram_bot_api
