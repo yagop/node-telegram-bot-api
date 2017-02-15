@@ -9,8 +9,6 @@
 <a name="reply-to-message"></a>
 ### [Failing to receive reply with `ReplyToMessage`](#reply-to-message)
 
-**Failing to receive reply with `ReplyToMessage`**
-
 The user has to **manually reply** to your message, by tapping on the bot's message and select *Reply*.
 
 Sources:
@@ -58,7 +56,7 @@ Sources:
 * Issue [#125](https://github.com/yagop/node-telegram-bot-api/issues/125)
 
 <a name="leave-chat"></a>
-**How do I know when a user leaves a chat?**
+### How do I know when a user leaves a chat?
 
 *Not done. PRs welcome!*
 
