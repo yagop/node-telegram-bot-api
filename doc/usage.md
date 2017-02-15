@@ -108,7 +108,7 @@ bot.sendPhoto(chatId, url);
 ```
 
 <a name="sending-files-performance"></a>
-### Performance Issue:
+### Performance Issue
 
 To support providing file-paths to methods that send files involves
 performing a file operation, i.e. *fs.existsSync()*, that checks for
