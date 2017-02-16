@@ -15,11 +15,10 @@ class TelegramBotPolling {
     this.options.interval = (typeof this.options.interval === 'number') ? this.options.interval : 300;
     this.options.params = (typeof this.options.params === 'object') ? this.options.params : {};
     this.options.params.offset = (typeof this.options.params.offset === 'number') ? this.options.params.offset : 0;
+    this.options.params.timeout = (typeof this.options.params.timeout === 'number') ? this.options.params.timeout : 10;
     if (typeof this.options.timeout === 'number') {
       deprecate('`options.polling.timeout` is deprecated. Use `options.polling.params` instead.');
       this.options.params.timeout = this.options.timeout;
-    } else {
-      this.options.params.timeout = 10;
     }
     this._lastUpdate = 0;
     this._lastRequest = null;
