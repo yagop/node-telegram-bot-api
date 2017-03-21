@@ -1118,4 +1118,37 @@ describe('TelegramBot', function telegramSuite() {
       return bot.sendPhoto(USERID, stream);
     });
   });
+
+  describe('#sendSequence', function sendSequence() {
+    this.timeout(timeout);
+    it('should send array of text messages', function test() {
+      const messages = ['a', 'b', 'c', 'd', 'e'];
+      return bot.sendSequence(bot.sendMessage, USERID, messages).then(resp => {
+        assert.ok(is.array(resp));
+        messages.forEach((message, i) => {
+          assert.ok(is.number(resp[i].message_id));
+          assert.ok(message === resp[i].text);
+        });
+      });
+    });
+    it('should send array of contacts', function test() {
+      const contacts = [
+        ['+1', '1'],
+        ['+2', '2'],
+        ['+3', '3']
+      ];
+      return bot.sendSequence(bot.sendContact, USERID, contacts).then(resp => {
+        assert.ok(is.array(resp));
+        contacts.forEach((contact, i) => {
+          assert.ok(is.object(resp[i].contact));
+          const expectedContact = {
+            phone_number: contact[0],
+            first_name: contact[1]
+          };
+          assert.deepEqual(resp[i].contact, expectedContact);
+        });
+      });
+    });
+  });
 }); // End Telegram
+

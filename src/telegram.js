@@ -1148,6 +1148,36 @@ class TelegramBot extends EventEmitter {
     form.user_id = userId;
     return this._request('getGameHighScores', { form });
   }
+
+  /**
+   * Use this method to send messages with correct sequence
+   * @param  {Function} method   Bot method to send messages, i.e. bot.sendMessage
+   * @param  {Number|String} chatId   Unique identifier for the message recipient
+   * @param  {*} messages  Messages to be sent.
+   *  Two dimentional array should used if API method requires more than one argument
+   * @param  {Object} [options]  Additional Telegram query options
+   * @param  {Object} [fileOpts] Optional file related meta-data (for .sendDocument)
+   * @return {Promise}          resolves to an array of responses
+   */
+  sendSequence(method, chatId, messages, options, fileOpts) {
+    return messages.reduce((chain, message) => {
+      let boundMethod;
+      if (message instanceof Array) {
+        // Only .sendDocument requires fileOpts, no need to pass it here
+        boundMethod = method.bind(this, chatId, ...message, options);
+      } else {
+        boundMethod = method.bind(this, chatId, message, options, fileOpts);
+      }
+
+      return chain.then((responses) => {
+        return boundMethod().then(response => {
+          responses.push(response);
+          return responses;
+        });
+      });
+    }, Promise.resolve([]));
+  }
 }
 
 module.exports = TelegramBot;
+
