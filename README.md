@@ -1,12 +1,12 @@
 # Node.js Telegram Bot API
 
-[![Bot API](http://img.shields.io/badge/Bot API-v2.3.1-00aced.svg)](https://core.telegram.org/bots/api)
+[![Bot API](http://img.shields.io/badge/Bot%20API-v2.3.1-00aced.svg)](https://core.telegram.org/bots/api)
 [![Build Status](https://travis-ci.org/yagop/node-telegram-bot-api.svg?branch=master)](https://travis-ci.org/yagop/node-telegram-bot-api)
 [![Build status](https://ci.appveyor.com/api/projects/status/ujko6bsum3g5msjh/branch/master?svg=true)](https://ci.appveyor.com/project/yagop/node-telegram-bot-api/branch/master)
 [![Coverage Status](https://coveralls.io/repos/yagop/node-telegram-bot-api/badge.svg?branch=master)](https://coveralls.io/r/yagop/node-telegram-bot-api?branch=master)
 [![bitHound Score](https://www.bithound.io/github/yagop/node-telegram-bot-api/badges/score.svg)](https://www.bithound.io/github/yagop/node-telegram-bot-api)
-[![https://telegram.me/node_telegram_bot_api](https://img.shields.io/badge/💬 Telegram-node__telegram__bot__api-blue.svg)](https://telegram.me/node_telegram_bot_api)
-[![https://telegram.me/Yago_Perez](https://img.shields.io/badge/💬 Telegram-Yago__Perez-blue.svg)](https://telegram.me/Yago_Perez)
+[![https://telegram.me/node_telegram_bot_api](https://img.shields.io/badge/💬%20Telegram-node__telegram__bot__api-blue.svg)](https://telegram.me/node_telegram_bot_api)
+[![https://telegram.me/Yago_Perez](https://img.shields.io/badge/💬%20Telegram-Yago__Perez-blue.svg)](https://telegram.me/Yago_Perez)
 
 Node.js module to interact with official [Telegram Bot API](https://core.telegram.org/bots/api). A bot token is needed, to obtain one, talk to [@botfather](https://telegram.me/BotFather) and create a new bot.
 
