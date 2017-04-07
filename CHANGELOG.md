@@ -5,7 +5,18 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased][Unreleased]
 
+Added:
 
+1. (#287) Add Express WebHook example (by @kamikazechaser)
+
+
+Fixed:
+
+1. (#291) Improve docs (by @preco21)
+1. (#298) Fix running on Node v5 (by @jehy)
+1. (#307) Fix badge links in README (by @JaakkoLipsanen)
+1. Fix defaulting value of `options.polling.params.timeout` (by @GochoMugo)
+1. Fix typos in Github issue template (by @GochoMugo, requested-by @GingerPlusPlus)
 
 
 * * *

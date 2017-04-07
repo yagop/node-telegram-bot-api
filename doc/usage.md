@@ -1,13 +1,9 @@
 # Usage
 
-1. [Events](#events)
-1. [WebHooks](#WebHooks)
-1. [Sending files](#sending-files)
-1. [Error handling](#error-handling)
-
-
-* * *
-
+* [Events](#events)
+* [WebHooks](#WebHooks)
+* [Sending files](#sending-files)
+* [Error handling](#error-handling)
 
 <a name="events"></a>
 ## Events
@@ -39,17 +35,6 @@
 **Tip:** Bot must be enabled on [inline mode][inline-mode] for receive some
 messages.
 
-[update]:https://core.telegram.org/bots/api#update
-[message]:https://core.telegram.org/bots/api#message
-[callback-query]:https://core.telegram.org/bots/api#callbackquery
-[inline-query]:https://core.telegram.org/bots/api#inlinequery
-[chosen-inline-result]:https://core.telegram.org/bots/api#choseninlineresult
-[inline-mode]:https://core.telegram.org/bots/api#inline-mode
-
-
-* * *
-
-
 <a name="webhooks"></a>
 ## WebHooks
 
@@ -70,20 +55,14 @@ Once they are generated, the `crt.pem` should be uploaded, when setting up
 your webhook. For example,
 
 ```js
-bot.setWebHook("public-url.com", {
-  certificate: "path/to/crt.pem", // Path to your crt.pem
+bot.setWebHook('public-url.com', {
+  certificate: 'path/to/crt.pem', // Path to your crt.pem
 });
 ```
 
 **Note:** If you encounter an error, like
 `Error: error:0906D06C:PEM routines:PEM_read_bio:no start line`,
 you may want to proceed to [this issue][issue-63] for more information.
-
-[issue-63]:https://github.com/yagop/node-telegram-bot-api/issues/63
-
-
-* * *
-
 
 <a name="sending-files"></a>
 ## Sending files
@@ -93,14 +72,14 @@ may provide a **file-path** and the library will handle reading it for you.
 For example,
 
 ```js
-bot.sendAudio(chatId, "path/to/audio.mp3");
+bot.sendAudio(chatId, 'path/to/audio.mp3');
 ```
 
 You may also pass in a **Readable Stream** from which data will be piped.
 For example,
 
 ```js
-const stream = fs.createReadStream("path/to/audio.mp3");
+const stream = fs.createReadStream('path/to/audio.mp3');
 bot.sendAudio(chatId, stream);
 ```
 
@@ -108,7 +87,7 @@ You may also pass in a **Buffer** containing the contents of your file.
 For example,
 
 ```js
-const buffer = fs.readFileSync("path/to/audio.mp3"); // sync! that's sad! :-( Just making a point!
+const buffer = fs.readFileSync('path/to/audio.mp3'); // sync! that's sad! :-( Just making a point!
 bot.sendAudio(chatId, buffer);
 ```
 
@@ -124,12 +103,12 @@ Some API methods, such as *SendPhoto*, allow passing a **HTTP URL**, that
 the Telegram servers will use to download the file. For example,
 
 ```js
-const url = "https://telegram.org/img/t_logo.png";
+const url = 'https://telegram.org/img/t_logo.png';
 bot.sendPhoto(chatId, url);
 ```
 
 <a name="sending-files-performance"></a>
-### Performance Issue:
+### Performance Issue
 
 To support providing file-paths to methods that send files involves
 performing a file operation, i.e. *fs.existsSync()*, that checks for
@@ -149,7 +128,6 @@ const bot = new TelegramBot(token, {
 });
 ```
 
-
 <a name="error-handling"></a>
 ## Error handling
 
@@ -168,14 +146,14 @@ Every `Error` object we pass back has the properties:
 For example, sending message to a non-existent user:
 
 ```js
-bot.sendMessage(nonExistentUserId, 'text').catch(error => {
+bot.sendMessage(nonExistentUserId, 'text').catch((error) => {
   console.log(error.code);  // => 'ETELEGRAM'
   console.log(error.response.body); // => { ok: false, error_code: 400, description: 'Bad Request: chat not found' }
 });
 ```
 
 <a name="polling-errors"></a>
-#### Polling errors
+## Polling errors
 
 An error may occur during polling. It is up to you to handle it
 as you see fit. You may decide to crash your bot after a maximum number
@@ -193,7 +171,7 @@ bot.on('polling_error', (error) => {
 ```
 
 <a name="webhook-errors"></a>
-#### WebHook errors
+## WebHook errors
 
 Just like with [polling errors](#polling-errors), you decide on how to
 handle it. By default, the error is logged to stderr.
@@ -205,3 +183,11 @@ bot.on('webhook_error', (error) => {
   console.log(error.code);  // => 'EPARSE'
 });
 ```
+
+[update]:https://core.telegram.org/bots/api#update
+[message]:https://core.telegram.org/bots/api#message
+[callback-query]:https://core.telegram.org/bots/api#callbackquery
+[inline-query]:https://core.telegram.org/bots/api#inlinequery
+[chosen-inline-result]:https://core.telegram.org/bots/api#choseninlineresult
+[inline-mode]:https://core.telegram.org/bots/api#inline-mode
+[issue-63]:https://github.com/yagop/node-telegram-bot-api/issues/63

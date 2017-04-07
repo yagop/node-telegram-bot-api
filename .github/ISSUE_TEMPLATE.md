@@ -1,10 +1,10 @@
 <!--
-This template includes two sections:
+This template includes three sections:
 1. Bug reporting
 2. Feature request
 3. Question
 
-Please remove whichever section that does not apply to your issue
+Please remove sections that do not apply to your issue
 -->
 
 

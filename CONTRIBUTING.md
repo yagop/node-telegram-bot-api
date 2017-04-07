@@ -5,16 +5,12 @@
 
 Before proceeding any further, read the following documents:
 
-1. [code of conduct][coc]
-1. [software license][license]
+1. [Code of Conduct][coc]
+1. [License][license]
 
-[coc]:https://github.com/yagop/node-telegram-bot-api/blob/master/CODE_OF_CONDUCT.md
-[license]:https://github.com/yagop/node-telegram-bot-api/blob/master/LICENSE.md
+## General Information
 
-
-### General Information
-
-**Updating API Reference i.e. generating `doc/api.md`:**
+### Updating API Reference i.e. generating `doc/api.md`
 
 Run:
 
@@ -22,19 +18,11 @@ Run:
 $ npm run gen-doc
 ```
 
-
----
-
-
-**Running tests:**
+### Running tests
 
 Please read `test/README.md` for more information.
 
-
----
-
-
-**Transpiling ES6 for older Node.js versions:**
+### Transpiling ES2015 for older Node.js versions
 
 We use babel to transpile the code:
 
@@ -42,8 +30,5 @@ We use babel to transpile the code:
 $ npm run build
 ```
 
-
----
-
-
-> E=mc²
+[coc]:https://github.com/yagop/node-telegram-bot-api/blob/master/CODE_OF_CONDUCT.md
+[license]:https://github.com/yagop/node-telegram-bot-api/blob/master/LICENSE.md
