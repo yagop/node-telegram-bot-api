@@ -138,12 +138,19 @@ class TelegramBot extends EventEmitter {
   }
 
   /**
-   * Fix 'reply_markup' parameter by making it JSON-serialized, as
-   * required by the Telegram Bot API
-   * @param {Function} fn Object; either 'form' or 'qs'
+   * Register a middleware function to be executed for every incoming message.
+   * You can register more than one middleware, but you should be careful because is important the order.
+   * The middleware function has two parameters: the first one is the incoming message and the second one is
+   * the next function, that should be called to continue the execution of the middleware chain.
+   * @param {Function} fn
+   * @return {this}
    */
   use(fn) {
+    if (typeof fn !== 'function') {
+      throw errors.FatalError('fn should be a function');
+    }
     this._middlewares.push(fn);
+    return this;
   }
 
   /**

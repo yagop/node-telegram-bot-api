@@ -12,6 +12,7 @@ TelegramBot
 
 * [TelegramBot](#TelegramBot)
     * [new TelegramBot(token, [options])](#new_TelegramBot_new)
+    * [.use(fn)](#TelegramBot+use) ⇒ <code>this</code>
     * [.startPolling([options])](#TelegramBot+startPolling) ⇒ <code>Promise</code>
     * ~~[.initPolling([options])](#TelegramBot+initPolling) ⇒ <code>Promise</code>~~
     * [.stopPolling()](#TelegramBot+stopPolling) ⇒ <code>Promise</code>
@@ -91,6 +92,20 @@ Emits `message` when a message arrives.
 | [options.request] | <code>Object</code> |  | Options which will be added for all requests to telegram api.  See https://github.com/request/request#requestoptions-callback for more information. |
 | [options.baseApiUrl] | <code>String</code> | <code>https://api.telegram.org</code> | API Base URl; useful for proxying and testing |
 | [options.filepath] | <code>Boolean</code> | <code>true</code> | Allow passing file-paths as arguments when sending files,  such as photos using `TelegramBot#sendPhoto()`. See [usage information][usage-sending-files-performance]  for more information on this option and its consequences. |
+
+<a name="TelegramBot+use"></a>
+
+### telegramBot.use(fn) ⇒ <code>this</code>
+Register a middleware function to be executed for every incoming message.
+You can register more than one middleware, but you should be careful because is important the order.
+The middleware function has two parameters: the first one is the incoming message and the second one is
+the next function, that should be called to continue the execution of the middleware chain.
+
+**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
+
+| Param | Type |
+| --- | --- |
+| fn | <code>function</code> | 
 
 <a name="TelegramBot+startPolling"></a>
 
