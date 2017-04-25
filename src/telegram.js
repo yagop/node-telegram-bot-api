@@ -95,6 +95,7 @@ class TelegramBot extends EventEmitter {
     this._replyListeners = [];
     this._polling = null;
     this._webHook = null;
+    this._middlewares = [];
 
     if (options.polling) {
       const autoStart = options.polling.autoStart;
@@ -134,6 +135,15 @@ class TelegramBot extends EventEmitter {
     if (replyMarkup && typeof replyMarkup !== 'string') {
       obj.reply_markup = JSON.stringify(replyMarkup);
     }
+  }
+
+  /**
+   * Fix 'reply_markup' parameter by making it JSON-serialized, as
+   * required by the Telegram Bot API
+   * @param {Function} fn Object; either 'form' or 'qs'
+   */
+  use(fn) {
+    this._middlewares.push(fn);
   }
 
   /**
@@ -438,6 +448,60 @@ class TelegramBot extends EventEmitter {
     return this._request('getUpdates', { form });
   }
 
+  _executeMessageMiddleware(message, index) {
+    if (this._middlewares.length > index) {
+      if (this._middlewares.length > index + 1) {
+        this._middlewares[index](message, () => {
+          this._executeMessageMiddleware(message, index + 1);
+        });
+      } else {
+        this._middlewares[index](message, () => {
+          this._executeMessage(message);
+        });
+      }
+    } else {
+      this._executeMessage(message);
+    }
+  }
+
+  _executeMessage(message) {
+    this.emit('message', message);
+    const processMessageType = messageType => {
+      if (message[messageType]) {
+        debug('Emitting %s: %j', messageType, message);
+        this.emit(messageType, message);
+      }
+    };
+    TelegramBot.messageTypes.forEach(processMessageType);
+    if (message.text) {
+      debug('Text message');
+      this._textRegexpCallbacks.some(reg => {
+        debug('Matching %s with %s', message.text, reg.regexp);
+        const result = reg.regexp.exec(message.text);
+        if (!result) {
+          return false;
+        }
+        debug('Matches %s', reg.regexp);
+        reg.callback(message, result);
+        // returning truthy value exits .some
+        return this.options.onlyFirstMatch;
+      });
+    }
+    if (message.reply_to_message) {
+      // Only callbacks waiting for this message
+      this._replyListeners.forEach(reply => {
+        // Message from the same chat
+        if (reply.chatId === message.chat.id) {
+          // Responding to that message
+          if (reply.messageId === message.reply_to_message.message_id) {
+            // Resolve the promise
+            reply.callback(message);
+          }
+        }
+      });
+    }
+  }
+
   /**
    * Process an update; emitting the proper events and executing regexp
    * callbacks. This method is useful should you be using a different
@@ -457,41 +521,7 @@ class TelegramBot extends EventEmitter {
 
     if (message) {
       debug('Process Update message %j', message);
-      this.emit('message', message);
-      const processMessageType = messageType => {
-        if (message[messageType]) {
-          debug('Emitting %s: %j', messageType, message);
-          this.emit(messageType, message);
-        }
-      };
-      TelegramBot.messageTypes.forEach(processMessageType);
-      if (message.text) {
-        debug('Text message');
-        this._textRegexpCallbacks.some(reg => {
-          debug('Matching %s with %s', message.text, reg.regexp);
-          const result = reg.regexp.exec(message.text);
-          if (!result) {
-            return false;
-          }
-          debug('Matches %s', reg.regexp);
-          reg.callback(message, result);
-          // returning truthy value exits .some
-          return this.options.onlyFirstMatch;
-        });
-      }
-      if (message.reply_to_message) {
-        // Only callbacks waiting for this message
-        this._replyListeners.forEach(reply => {
-          // Message from the same chat
-          if (reply.chatId === message.chat.id) {
-            // Responding to that message
-            if (reply.messageId === message.reply_to_message.message_id) {
-              // Resolve the promise
-              reply.callback(message);
-            }
-          }
-        });
-      }
+      this._executeMessageMiddleware(message, 0);
     } else if (editedMessage) {
       debug('Process Update edited_message %j', editedMessage);
       this.emit('edited_message', editedMessage);
