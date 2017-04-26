@@ -138,9 +138,9 @@ class TelegramBot extends EventEmitter {
   }
 
   /**
-   * Register a middleware function to be executed for every incoming message.
+   * Register a middleware function to be executed for every update.
    * You can register more than one middleware, but you should be careful because is important the order.
-   * The middleware function has two parameters: the first one is the incoming message and the second one is
+   * The middleware function has two parameters: the first one is the incoming update and the second one is
    * the next function, that should be called to continue the execution of the middleware chain.
    * @param {Function} fn
    * @return {this}
@@ -455,69 +455,23 @@ class TelegramBot extends EventEmitter {
     return this._request('getUpdates', { form });
   }
 
-  _executeMessageMiddleware(message, index) {
+  _executeMiddleware(update, index) {
     if (this._middlewares.length > index) {
       if (this._middlewares.length > index + 1) {
-        this._middlewares[index](message, () => {
-          this._executeMessageMiddleware(message, index + 1);
+        this._middlewares[index](update, () => {
+          this._executeMiddleware(update, index + 1);
         });
       } else {
-        this._middlewares[index](message, () => {
-          this._executeMessage(message);
+        this._middlewares[index](update, () => {
+          this._executeUpdate(update);
         });
       }
     } else {
-      this._executeMessage(message);
+      this._executeUpdate(update);
     }
   }
 
-  _executeMessage(message) {
-    this.emit('message', message);
-    const processMessageType = messageType => {
-      if (message[messageType]) {
-        debug('Emitting %s: %j', messageType, message);
-        this.emit(messageType, message);
-      }
-    };
-    TelegramBot.messageTypes.forEach(processMessageType);
-    if (message.text) {
-      debug('Text message');
-      this._textRegexpCallbacks.some(reg => {
-        debug('Matching %s with %s', message.text, reg.regexp);
-        const result = reg.regexp.exec(message.text);
-        if (!result) {
-          return false;
-        }
-        debug('Matches %s', reg.regexp);
-        reg.callback(message, result);
-        // returning truthy value exits .some
-        return this.options.onlyFirstMatch;
-      });
-    }
-    if (message.reply_to_message) {
-      // Only callbacks waiting for this message
-      this._replyListeners.forEach(reply => {
-        // Message from the same chat
-        if (reply.chatId === message.chat.id) {
-          // Responding to that message
-          if (reply.messageId === message.reply_to_message.message_id) {
-            // Resolve the promise
-            reply.callback(message);
-          }
-        }
-      });
-    }
-  }
-
-  /**
-   * Process an update; emitting the proper events and executing regexp
-   * callbacks. This method is useful should you be using a different
-   * way to fetch updates, other than those provided by TelegramBot.
-   * @param  {Object} update
-   * @see https://core.telegram.org/bots/api#update
-   */
-  processUpdate(update) {
-    debug('Process Update %j', update);
+  _executeUpdate(update) {
     const message = update.message;
     const editedMessage = update.edited_message;
     const channelPost = update.channel_post;
@@ -528,7 +482,41 @@ class TelegramBot extends EventEmitter {
 
     if (message) {
       debug('Process Update message %j', message);
-      this._executeMessageMiddleware(message, 0);
+      this.emit('message', message);
+      const processMessageType = messageType => {
+        if (message[messageType]) {
+          debug('Emitting %s: %j', messageType, message);
+          this.emit(messageType, message);
+        }
+      };
+      TelegramBot.messageTypes.forEach(processMessageType);
+      if (message.text) {
+        debug('Text message');
+        this._textRegexpCallbacks.some(reg => {
+          debug('Matching %s with %s', message.text, reg.regexp);
+          const result = reg.regexp.exec(message.text);
+          if (!result) {
+            return false;
+          }
+          debug('Matches %s', reg.regexp);
+          reg.callback(message, result);
+          // returning truthy value exits .some
+          return this.options.onlyFirstMatch;
+        });
+      }
+      if (message.reply_to_message) {
+        // Only callbacks waiting for this message
+        this._replyListeners.forEach(reply => {
+          // Message from the same chat
+          if (reply.chatId === message.chat.id) {
+            // Responding to that message
+            if (reply.messageId === message.reply_to_message.message_id) {
+              // Resolve the promise
+              reply.callback(message);
+            }
+          }
+        });
+      }
     } else if (editedMessage) {
       debug('Process Update edited_message %j', editedMessage);
       this.emit('edited_message', editedMessage);
@@ -560,6 +548,18 @@ class TelegramBot extends EventEmitter {
       debug('Process Update callback_query %j', callbackQuery);
       this.emit('callback_query', callbackQuery);
     }
+  }
+
+  /**
+   * Process an update; emitting the proper events and executing regexp
+   * callbacks. This method is useful should you be using a different
+   * way to fetch updates, other than those provided by TelegramBot.
+   * @param  {Object} update
+   * @see https://core.telegram.org/bots/api#update
+   */
+  processUpdate(update) {
+    debug('Process Update %j', update);
+    this._executeMiddleware(update, 0);
   }
 
   /**

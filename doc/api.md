@@ -96,9 +96,9 @@ Emits `message` when a message arrives.
 <a name="TelegramBot+use"></a>
 
 ### telegramBot.use(fn) ⇒ <code>this</code>
-Register a middleware function to be executed for every incoming message.
+Register a middleware function to be executed for every update.
 You can register more than one middleware, but you should be careful because is important the order.
-The middleware function has two parameters: the first one is the incoming message and the second one is
+The middleware function has two parameters: the first one is the incoming update and the second one is
 the next function, that should be called to continue the execution of the middleware chain.
 
 **Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
