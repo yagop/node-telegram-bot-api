@@ -837,6 +837,21 @@ describe('TelegramBot', function telegramSuite() {
     });
   });
 
+  describe('#deleteMessage', function deleteMessageSuite() {
+    let messageId;
+    before(function before() {
+      utils.handleRatelimit(bot, 'deleteMessage', this);
+      return bot.sendMessage(USERID, 'To be deleted').then(resp => {
+        messageId = resp.message_id;
+      });
+    });
+    it('should delete message', function test() {
+      return bot.deleteMessage(USERID, messageId).then(resp => {
+        assert.equal(resp, true);
+      });
+    });
+  });
+
   describe('#getUserProfilePhotos', function getUserProfilePhotosSuite() {
     const opts = {
       offset: 0,
