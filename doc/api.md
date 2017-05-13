@@ -49,6 +49,7 @@ TelegramBot
     * [.getFileLink(fileId)](#TelegramBot+getFileLink) ⇒ <code>Promise</code>
     * [.downloadFile(fileId, downloadDir)](#TelegramBot+downloadFile) ⇒ <code>Promise</code>
     * [.onText(regexp, callback)](#TelegramBot+onText)
+    * [.removeTextListener(regexp)](#TelegramBot+removeTextListener) ⇒ <code>Object</code>
     * [.onReplyToMessage(chatId, messageId, callback)](#TelegramBot+onReplyToMessage) ⇒ <code>Number</code>
     * [.removeReplyListener(replyListenerId)](#TelegramBot+removeReplyListener) ⇒ <code>Object</code>
     * [.getChat(chatId)](#TelegramBot+getChat) ⇒ <code>Promise</code>
@@ -596,6 +597,20 @@ Register a RegExp to test against an incomming text message.
 | --- | --- | --- |
 | regexp | <code>RegExp</code> | RegExp to be executed with `exec`. |
 | callback | <code>function</code> | Callback will be called with 2 parameters, the `msg` and the result of executing `regexp.exec` on message text. |
+
+<a name="TelegramBot+removeTextListener"></a>
+
+### telegramBot.removeTextListener(regexp) ⇒ <code>Object</code>
+Remove a listener registered with `onText()`.
+
+**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
+**Returns**: <code>Object</code> - deletedListener The removed reply listener if
+  found. This object has `regexp` and `callback`
+  properties. If not found, returns `null`.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| regexp | <code>RegExp</code> | RegExp used previously in `onText()` |
 
 <a name="TelegramBot+onReplyToMessage"></a>
 

@@ -987,6 +987,28 @@ describe('TelegramBot', function telegramSuite() {
     });
   });
 
+  describe('#removeTextListener', function removeTextListenerSuite() {
+    const regexp = /\/onText/;
+    const regexp2 = /\/onText/;
+    const callback = function noop() {};
+    after(function after() {
+      bot.removeTextListener(regexp);
+      bot.removeTextListener(regexp2);
+    });
+    it('removes the right text-listener', function test() {
+      bot.onText(regexp, callback);
+      bot.onText(regexp2, callback);
+      const textListener = bot.removeTextListener(regexp);
+      assert.equal(regexp, textListener.regexp);
+      assert.equal(callback, textListener.callback);
+      assert.notEqual(regexp2, textListener.regexp);
+      assert.equal(null, bot.removeTextListener(regexp));
+    });
+    it('returns `null` if missing', function test() {
+      assert.equal(null, bot.removeTextListener(/404/));
+    });
+  });
+
   describe.skip('#onReplyToMessage', function onReplyToMessageSuite() {});
 
   describe('#removeReplyListener', function removeReplyListenerSuite() {

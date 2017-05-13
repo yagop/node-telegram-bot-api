@@ -1007,6 +1007,23 @@ class TelegramBot extends EventEmitter {
   }
 
   /**
+   * Remove a listener registered with `onText()`.
+   * @param  {RegExp} regexp RegExp used previously in `onText()`
+   * @return {Object} deletedListener The removed reply listener if
+   *   found. This object has `regexp` and `callback`
+   *   properties. If not found, returns `null`.
+   */
+  removeTextListener(regexp) {
+    const index = this._textRegexpCallbacks.findIndex((textListener) => {
+      return textListener.regexp === regexp;
+    });
+    if (index === -1) {
+      return null;
+    }
+    return this._textRegexpCallbacks.splice(index, 1)[0];
+  }
+
+  /**
    * Register a reply to wait for a message response.
    * @param  {Number|String}   chatId       The chat id where the message cames from.
    * @param  {Number|String}   messageId    The message id to be replied.
