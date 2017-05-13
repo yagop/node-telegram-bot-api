@@ -55,11 +55,14 @@ bot.on('message', (msg) => {
 * [Usage][usage]
 * [Examples][examples]
 * [Help Information][help]
-* API Reference ([release][api-release] / [development][api-dev])
+* API Reference ([release][api-release] / [development][api-dev] / [experimental][api-experimental])
 * [Contributing to the Project][contributing]
+* [Experimental Features][experimental]
 
-_**Note**: Development is done against the **master** branch. Code for the latest release
-resides on the **release** branch._
+_**Note**: Development is done against the **master** branch.
+Code for the latest release resides on the **release** branch
+Experimental features reside on the **experimental** branch._
+
 
 ## Community
 
@@ -84,5 +87,7 @@ Copyright (c) 2017 Yago
 [help]:https://github.com/yagop/node-telegram-bot-api/tree/master/doc/help.md
 [api-dev]:https://github.com/yagop/node-telegram-bot-api/tree/master/doc/api.md
 [api-release]:https://github.com/yagop/node-telegram-bot-api/tree/release/doc/api.md
+[api-experimental]:https://github.com/yagop/node-telegram-bot-api/tree/experimental/doc/api.md
 [contributing]:https://github.com/yagop/node-telegram-bot-api/tree/master/CONTRIBUTING.md
+[experimental]:https://github.com/yagop/node-telegram-bot-api/tree/master/doc/experimental.md
 [tg-channel]:https://telegram.me/node_telegram_bot_api
