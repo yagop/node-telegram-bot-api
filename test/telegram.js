@@ -975,6 +975,16 @@ describe('TelegramBot', function telegramSuite() {
         message: { text: '/onText ECHO ALOHA' },
       });
     });
+    it('should reset the global regex state with each message', function test(done) {
+      const regexp = /\/onText (.+)/g;
+      botWebHook.onText(regexp, () => {
+        assert.equal(regexp.lastIndex, 0);
+        return done();
+      });
+      utils.sendWebHookMessage(webHookPort2, TOKEN, {
+        message: { text: '/onText ECHO ALOHA' },
+      });
+    });
   });
 
   describe.skip('#onReplyToMessage', function onReplyToMessageSuite() {});

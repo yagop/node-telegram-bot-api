@@ -473,6 +473,8 @@ class TelegramBot extends EventEmitter {
           if (!result) {
             return false;
           }
+          // reset index so we start at the beginning of the regex each time
+          reg.regexp.lastIndex = 0;
           debug('Matches %s', reg.regexp);
           reg.callback(message, result);
           // returning truthy value exits .some
