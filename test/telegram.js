@@ -967,8 +967,10 @@ describe('TelegramBot', function telegramSuite() {
 
   describe('#onText', function onTextSuite() {
     it('should call `onText` callback on match', function test(done) {
-      botWebHook.onText(/\/onText (.+)/, (msg, match) => {
+      const regexp = /\/onText (.+)/;
+      botWebHook.onText(regexp, (msg, match) => {
         assert.equal(match[1], 'ECHO ALOHA');
+        assert.ok(botWebHook.removeTextListener(regexp));
         return done();
       });
       utils.sendWebHookMessage(webHookPort2, TOKEN, {
@@ -979,6 +981,7 @@ describe('TelegramBot', function telegramSuite() {
       const regexp = /\/onText (.+)/g;
       botWebHook.onText(regexp, () => {
         assert.equal(regexp.lastIndex, 0);
+        assert.ok(botWebHook.removeTextListener(regexp));
         return done();
       });
       utils.sendWebHookMessage(webHookPort2, TOKEN, {
