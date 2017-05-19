@@ -699,8 +699,8 @@ class TelegramBot extends EventEmitter {
    * Use this method to send rounded square videos of upto 1 minute long.
    * @param  {Number|String} chatId  Unique identifier for the message recipient
    * @param  {String|stream.Stream|Buffer} videoNote A file path or Stream.
-   * @param  {Number} length Video width and height
    * Can also be a `file_id` previously uploaded.
+   * @param  {Number} length Video width and height
    * @param  {Object} [options] Additional Telegram query options
    * @return {Promise}
    * @see https://core.telegram.org/bots/api#sendvideonote
@@ -719,7 +719,7 @@ class TelegramBot extends EventEmitter {
       return Promise.reject(ex);
     }
     return this._request('sendVideoNote', opts);
-  }  
+  }
 
   /**
    * Send voice

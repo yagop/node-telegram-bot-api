@@ -709,6 +709,43 @@ describe('TelegramBot', function telegramSuite() {
     });
   });
 
+  describe('#sendVideoNote', function sendVideoNoteSuite() {
+    let videoId;
+    this.timeout(timeout);
+    before(function before() {
+      utils.handleRatelimit(bot, 'sendVideoNote', this);
+    });
+    it('should send a video from file', function test() {
+      const video = `${__dirname}/data/video.mp4`;
+      return bot.sendVideoNote(USERID, video, 5).then(resp => {
+        assert.ok(is.object(resp));
+        assert.ok(is.object(resp.video_note));
+        videoId = resp.video_note.file_id;
+      });
+    });
+    it('should send a video from id', function test() {
+      // Send the same videonote as before
+      return bot.sendVideo(USERID, videoId, 5).then(resp => {
+        assert.ok(is.object(resp));
+        assert.ok(is.object(resp.video_note));
+      });
+    });
+    it('should send a video from fs.readStream', function test() {
+      const video = fs.createReadStream(`${__dirname}/data/video.mp4`);
+      return bot.sendVideo(USERID, video, 5).then(resp => {
+        assert.ok(is.object(resp));
+        assert.ok(is.object(resp.video_note));
+      });
+    });
+    it('should send a video from a Buffer', function test() {
+      const video = fs.readFileSync(`${__dirname}/data/video.mp4`);
+      return bot.sendVideo(USERID, video, 5).then(resp => {
+        assert.ok(is.object(resp));
+        assert.ok(is.object(resp.video_note));
+      });
+    });
+  });
+
   describe('#sendVoice', function sendVoiceSuite() {
     let voiceId;
     this.timeout(timeout);
