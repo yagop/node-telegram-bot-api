@@ -1255,6 +1255,22 @@ class TelegramBot extends EventEmitter {
     form.prices = JSON.stringify(prices);
     return this._request('sendInvoice', { form });
   }
+
+  /**
+   * Answer shipping query..
+   * Use this method to reply to shipping queries.
+   *
+   * @param  {String} shippingQueryId  Unique identifier for the query to be answered
+   * @param  {Boolean} ok Specify if delivery of the product is possible
+   * @param  {Object} [options] Additional Telegram query options
+   * @return {Promise}
+   * @see https://core.telegram.org/bots/api#answershippingquery
+   */
+  answerShippingQuery(shippingQueryId, ok, form = {}) {
+    form.shipping_query_id = shippingQueryId;
+    form.ok = ok;
+    return this._request('answerShippingQuery', { form });
+  }
 }
 
 module.exports = TelegramBot;
