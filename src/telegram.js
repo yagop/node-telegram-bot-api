@@ -455,8 +455,8 @@ class TelegramBot extends EventEmitter {
     const inlineQuery = update.inline_query;
     const chosenInlineResult = update.chosen_inline_result;
     const callbackQuery = update.callback_query;
-    const shippingQuery = update.callback.shipping_query;
-    const preCheckoutQuery = update.callback.pre_checkout_query;
+    const shippingQuery = update.shipping_query;
+    const preCheckoutQuery = update.pre_checkout_query;
 
     if (message) {
       debug('Process Update message %j', message);
