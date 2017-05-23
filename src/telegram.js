@@ -700,17 +700,15 @@ class TelegramBot extends EventEmitter {
    * @param  {Number|String} chatId  Unique identifier for the message recipient
    * @param  {String|stream.Stream|Buffer} videoNote A file path or Stream.
    * Can also be a `file_id` previously uploaded.
-   * @param  {Number} length Video width and height
    * @param  {Object} [options] Additional Telegram query options
    * @return {Promise}
    * @see https://core.telegram.org/bots/api#sendvideonote
    */
-  sendVideoNote(chatId, videoNote, length, options = {}) {
+  sendVideoNote(chatId, videoNote, options = {}) {
     const opts = {
       qs: options
     };
     opts.qs.chat_id = chatId;
-    opts.qs.length = length;
     try {
       const sendData = this._formatSendData('video_note', videoNote);
       opts.formData = sendData[0];
