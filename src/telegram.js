@@ -1227,6 +1227,34 @@ class TelegramBot extends EventEmitter {
     form.message_id = messageId;
     return this._request('deleteMessage', { form });
   }
+
+  /**
+   * Send invoice.
+   * Use this method to send an invoice.
+   *
+   * @param  {Number|String} chatId  Unique identifier for the message recipient
+   * @param  {String} title Product name
+   * @param  {String} description product description
+   * @param  {String} payload Bot defined invoice payload
+   * @param  {String} providerToken Payments provider token
+   * @param  {String} startParameter Deep-linking parameter
+   * @param  {String} currency Three-letter ISO 4217 currency code
+   * @param  {Array} prices Breakdown of prices
+   * @param  {Object} [options] Additional Telegram query options
+   * @return {Promise}
+   * @see https://core.telegram.org/bots/api#sendinvoice
+   */
+  sendInvoice(chatId, title, description, payload, providerToken, startParameter, currency, prices, form = {}) {
+    form.chat_id = chatId;
+    form.title = title;
+    form.description = description;
+    form.payload = payload;
+    form.provider_token = providerToken;
+    form.start_parameter = startParameter;
+    form.currency = currency;
+    form.prices = JSON.stringify(prices);
+    return this._request('sendInvoice', { form });
+  }
 }
 
 module.exports = TelegramBot;
