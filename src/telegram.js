@@ -1271,6 +1271,22 @@ class TelegramBot extends EventEmitter {
     form.ok = ok;
     return this._request('answerShippingQuery', { form });
   }
+
+  /**
+   * Answer pre-checkout query.
+   * Use this method to confirm shipping of a product.
+   *
+   * @param  {String} preCheckoutQueryId  Unique identifier for the query to be answered
+   * @param  {Boolean} ok Specify if every order details are ok
+   * @param  {Object} [options] Additional Telegram query options
+   * @return {Promise}
+   * @see https://core.telegram.org/bots/api#answerprecheckoutquery
+   */
+  answerPreCheckoutQuery(preCheckoutQueryId, ok, form = {}) {
+    form.pre_checkout_query_id = preCheckoutQueryId;
+    form.ok = ok;
+    return this._request('answerPreCheckoutQuery', { form });
+  }
 }
 
 module.exports = TelegramBot;
