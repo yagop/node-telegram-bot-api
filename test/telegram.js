@@ -16,11 +16,15 @@ if (!TOKEN) {
   throw new Error('Bot token not provided');
 }
 
+const PROVIDER_TOKEN = process.env.TEST_PROVIDER_TOKEN;
+if(!PROVIDER_TOKEN) {
+  throw new Error('Provider token not supplied');
+}
+
 // Telegram service if not User Id
 const USERID = process.env.TEST_USER_ID || 777000;
 const GROUPID = process.env.TEST_GROUP_ID || -1001075450562;
 const GAME_SHORT_NAME = process.env.TEST_GAME_SHORT_NAME || 'medusalab_test';
-const PROVIDER_TOKEN = process.env.TEST_PROVIDER_TOKEN;
 const timeout = 60 * 1000;
 let portindex = 8091;
 const staticPort = portindex++;
