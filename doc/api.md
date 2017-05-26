@@ -61,6 +61,7 @@ TelegramBot
     * [.sendGame(chatId, gameShortName, [options])](#TelegramBot+sendGame) ⇒ <code>Promise</code>
     * [.setGameScore(userId, score, [options])](#TelegramBot+setGameScore) ⇒ <code>Promise</code>
     * [.getGameHighScores(userId, [options])](#TelegramBot+getGameHighScores) ⇒ <code>Promise</code>
+    * [.deleteMessage(chatId, messageId, [options])](#TelegramBot+deleteMessage) ⇒ <code>Promise</code>
 
 <a name="new_TelegramBot_new"></a>
 
@@ -758,6 +759,20 @@ Use this method to get data for high score table.
 | Param | Type | Description |
 | --- | --- | --- |
 | userId | <code>String</code> | Unique identifier of the target user |
+| [options] | <code>Object</code> | Additional Telegram query options |
+
+<a name="TelegramBot+deleteMessage"></a>
+
+### telegramBot.deleteMessage(chatId, messageId, [options]) ⇒ <code>Promise</code>
+Use this method to delete a message.
+
+**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
+**See**: https://core.telegram.org/bots/api#deletemessage  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| chatId | <code>String</code> | Unique identifier of the target chat |
+| messageId | <code>String</code> | Unique identifier of the target message |
 | [options] | <code>Object</code> | Additional Telegram query options |
 
 * * *

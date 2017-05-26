@@ -1192,6 +1192,20 @@ class TelegramBot extends EventEmitter {
     form.user_id = userId;
     return this._request('getGameHighScores', { form });
   }
+
+  /**
+   * Use this method to delete a message.
+   * @param  {String} chatId  Unique identifier of the target chat
+   * @param  {String} messageId  Unique identifier of the target message
+   * @param  {Object} [options] Additional Telegram query options
+   * @return {Promise}
+   * @see https://core.telegram.org/bots/api#deletemessage
+   */
+  deleteMessage(chatId, messageId, form = {}) {
+    form.chat_id = chatId;
+    form.message_id = messageId;
+    return this._request('deleteMessage', { form });
+  }
 }
 
 module.exports = TelegramBot;
