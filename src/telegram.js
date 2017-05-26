@@ -702,6 +702,7 @@ class TelegramBot extends EventEmitter {
    * Can also be a `file_id` previously uploaded.
    * @param  {Object} [options] Additional Telegram query options
    * @return {Promise}
+   * @info The length parameter is actually optional. However, the API (at time of writing) requires you to always provide it until it is fixed.
    * @see https://core.telegram.org/bots/api#sendvideonote
    */
   sendVideoNote(chatId, videoNote, options = {}) {
