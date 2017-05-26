@@ -344,9 +344,9 @@ Use this method to send video files, Telegram clients support mp4 videos (other 
 ### telegramBot.sendVideoNote(chatId, videoNote, [options]) ⇒ <code>Promise</code>
 Use this method to send rounded square videos of upto 1 minute long.
 
-**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>
+**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
+**Info**: The length parameter is actually optional. However, the API (at time of writing) requires you to always provide it until it is fixed.  
 **See**: https://core.telegram.org/bots/api#sendvideonote  
-**Info**: The length parameter is actually optional. However, the API (at time of writing) requires you to always provide it until it is fixed.
 
 | Param | Type | Description |
 | --- | --- | --- |
