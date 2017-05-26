@@ -15,7 +15,8 @@
      events will **ALSO** be emitted: `text`, `audio`, `document`, `photo`,
      `sticker`, `video`, `voice`, `contact`, `location`,
      `new_chat_participant`, `left_chat_participant`, `new_chat_title`,
-     `new_chat_photo`, `delete_chat_photo`, `group_chat_created`
+     `new_chat_photo`, `delete_chat_photo`, `group_chat_created`,
+     `successful_payment`, `invoice`
 1. `callback_query`: Received a new incoming [Callback Query][callback-query]
 1. `inline_query`: Received a new incoming [Inline Query][inline-query]
 1. `chosen_inline_result`: Received result of an inline query i.e. [ChosenInlineResult][chosen-inline-result]
@@ -26,6 +27,8 @@
 1. `edited_channel_post`: Received a new version of a channel post that is known to the bot and was edited
   1. `edited_channel_post_text`
   1. `edited_channel_post_caption`
+1. `shipping_query`: Received a new incoming shipping query
+1. `pre_checkout_query`: Received a new  incoming pre-checkout query
 1. `polling_error`: Error occurred during polling. See [polling errors](#polling-errors).
 1. `webhook_error`: Error occurred handling a webhook request. See [webhook errors](#webhook-errors).
 
