@@ -18,7 +18,7 @@
      `new_chat_photo`, `delete_chat_photo`, `group_chat_created`,
      `game`, `pinned_message`, `migrate_from_chat_id`, `migrate_to_chat_id`,
      `channel_chat_created`, `supergroup_chat_created`,
-     `successful_payment`, `invoice`
+     `successful_payment`, `invoice`, `video_note`
   1. `new_chat_participant`, `left_chat_participant` are **deprecated**
 1. `callback_query`: Received a new incoming [Callback Query][callback-query]
 1. `inline_query`: Received a new incoming [Inline Query][inline-query]
