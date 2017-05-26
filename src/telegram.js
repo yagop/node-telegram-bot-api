@@ -22,7 +22,7 @@ const deprecate = require('depd')('node-telegram-bot-api');
 const _messageTypes = [
   'text', 'audio', 'document', 'photo', 'sticker', 'video', 'voice', 'contact',
   'location', 'new_chat_participant', 'left_chat_participant', 'new_chat_title',
-  'new_chat_photo', 'delete_chat_photo', 'group_chat_created'
+  'new_chat_photo', 'delete_chat_photo', 'group_chat_created', 'successful_payment', 'invoice'
 ];
 
 // enable cancellation
@@ -454,6 +454,8 @@ class TelegramBot extends EventEmitter {
     const inlineQuery = update.inline_query;
     const chosenInlineResult = update.chosen_inline_result;
     const callbackQuery = update.callback_query;
+    const shippingQuery = update.shipping_query;
+    const preCheckoutQuery = update.pre_checkout_query;
 
     if (message) {
       debug('Process Update message %j', message);
@@ -524,6 +526,12 @@ class TelegramBot extends EventEmitter {
     } else if (callbackQuery) {
       debug('Process Update callback_query %j', callbackQuery);
       this.emit('callback_query', callbackQuery);
+    } else if (shippingQuery) {
+      debug('Process Update shipping_query %j', shippingQuery);
+      this.emit('shipping_query', shippingQuery);
+    } else if (preCheckoutQuery) {
+      debug('Process Update pre_checkout_query %j', preCheckoutQuery);
+      this.emit('pre_checkout_query', preCheckoutQuery);
     }
   }
 
