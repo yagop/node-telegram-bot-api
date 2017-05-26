@@ -14,9 +14,12 @@
   1. Depending on the properties of the [Message][message], one of these
      events will **ALSO** be emitted: `text`, `audio`, `document`, `photo`,
      `sticker`, `video`, `voice`, `contact`, `location`,
-     `new_chat_participant`, `left_chat_participant`, `new_chat_title`,
+     `new_chat_members`, `left_chat_member`, `new_chat_title`,
      `new_chat_photo`, `delete_chat_photo`, `group_chat_created`,
+     `game`, `pinned_message`, `migrate_from_chat_id`, `migrate_to_chat_id`,
+     `channel_chat_created`, `supergroup_chat_created`,
      `successful_payment`, `invoice`
+  1. `new_chat_participant`, `left_chat_participant` are **deprecated**
 1. `callback_query`: Received a new incoming [Callback Query][callback-query]
 1. `inline_query`: Received a new incoming [Inline Query][inline-query]
 1. `chosen_inline_result`: Received result of an inline query i.e. [ChosenInlineResult][chosen-inline-result]

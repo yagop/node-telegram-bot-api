@@ -21,8 +21,13 @@ const deprecate = require('depd')('node-telegram-bot-api');
 
 const _messageTypes = [
   'text', 'audio', 'document', 'photo', 'sticker', 'video', 'voice', 'contact',
-  'location', 'new_chat_participant', 'left_chat_participant', 'new_chat_title',
-  'new_chat_photo', 'delete_chat_photo', 'group_chat_created', 'successful_payment', 'invoice'
+  'location', 'new_chat_members', 'left_chat_member', 'new_chat_title',
+  'new_chat_photo', 'delete_chat_photo', 'group_chat_created', 'game', 'pinned_message',
+  'migrate_from_chat_id', 'migrate_to_chat_id', 'channel_chat_created', 'supergroup_chat_created',
+  'successful_payment', 'invoice'
+];
+const _deprecatedMessageTypes = [
+  'new_chat_participant', 'left_chat_participant'
 ];
 
 // enable cancellation
@@ -38,6 +43,14 @@ class TelegramBot extends EventEmitter {
 
   static get messageTypes() {
     return _messageTypes;
+  }
+
+  on(event, listener) {
+    if (_deprecatedMessageTypes.indexOf(event) !== -1) {
+      const url = 'https://github.com/yagop/node-telegram-bot-api/blob/master/doc/usage.md#events';
+      deprecate(`Events ${_deprecatedMessageTypes.join(',')} are deprecated. See the updated list of events: ${url}`);
+    }
+    super.on(event, listener);
   }
 
   /**
