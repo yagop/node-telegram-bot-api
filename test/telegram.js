@@ -16,6 +16,11 @@ if (!TOKEN) {
   throw new Error('Bot token not provided');
 }
 
+const PROVIDER_TOKEN = process.env.TEST_PROVIDER_TOKEN;
+if (!PROVIDER_TOKEN) {
+  throw new Error('Provider token not supplied');
+}
+
 // Telegram service if not User Id
 const USERID = process.env.TEST_USER_ID || 777000;
 const GROUPID = process.env.TEST_GROUP_ID || -1001075450562;
@@ -1206,4 +1211,28 @@ describe('TelegramBot', function telegramSuite() {
       return bot.sendPhoto(USERID, stream);
     });
   });
+
+  describe('#sendInvoice', function sendInvoiceSuite() {
+    before(function before() {
+      utils.handleRatelimit(bot, 'sendInvoice', this);
+    });
+    it('should send an invoice', function test() {
+      const title = 'Demo product';
+      const description = 'our test product';
+      const payload = 'sku-p001';
+      const providerToken = PROVIDER_TOKEN;
+      const startParameter = 'pay';
+      const currency = 'KES';
+      const prices = [{ label: 'product', amount: 11000 }, { label: 'tax', amount: 11000 }];
+      return bot.sendInvoice(USERID, title, description, payload, providerToken, startParameter, currency, prices).then(resp => {
+        assert.ok(is.object(resp));
+        assert.ok(is.object(resp.invoice));
+        assert.ok(is.number(resp.invoice.total_amount));
+      });
+    });
+  });
+
+  describe.skip('#answerShippingQuery', function answerShippingQuerySuite() {});
+
+  describe.skip('#answerPreCheckoutQuery', function answerPreCheckoutQuerySuite() {});
 }); // End Telegram

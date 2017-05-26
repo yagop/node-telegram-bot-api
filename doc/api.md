@@ -62,6 +62,9 @@ TelegramBot
     * [.setGameScore(userId, score, [options])](#TelegramBot+setGameScore) ⇒ <code>Promise</code>
     * [.getGameHighScores(userId, [options])](#TelegramBot+getGameHighScores) ⇒ <code>Promise</code>
     * [.deleteMessage(chatId, messageId, [options])](#TelegramBot+deleteMessage) ⇒ <code>Promise</code>
+    * [.sendInvoice(chatId, title, description, payload, providerToken, startParameter, currency, prices, [options])](#TelegramBot+sendInvoice) ⇒ <code>Promise</code>
+    * [.answerShippingQuery(shippingQueryId, ok, [options])](#TelegramBot+answerShippingQuery) ⇒ <code>Promise</code>
+    * [.answerPreCheckoutQuery(preCheckoutQueryId, ok, [options])](#TelegramBot+answerPreCheckoutQuery) ⇒ <code>Promise</code>
 
 <a name="new_TelegramBot_new"></a>
 
@@ -773,6 +776,57 @@ Use this method to delete a message.
 | --- | --- | --- |
 | chatId | <code>String</code> | Unique identifier of the target chat |
 | messageId | <code>String</code> | Unique identifier of the target message |
+| [options] | <code>Object</code> | Additional Telegram query options |
+
+<a name="TelegramBot+sendInvoice"></a>
+
+### telegramBot.sendInvoice(chatId, title, description, payload, providerToken, startParameter, currency, prices, [options]) ⇒ <code>Promise</code>
+Send invoice.
+Use this method to send an invoice.
+
+**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
+**See**: https://core.telegram.org/bots/api#sendinvoice  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| chatId | <code>Number</code> &#124; <code>String</code> | Unique identifier for the message recipient |
+| title | <code>String</code> | Product name |
+| description | <code>String</code> | product description |
+| payload | <code>String</code> | Bot defined invoice payload |
+| providerToken | <code>String</code> | Payments provider token |
+| startParameter | <code>String</code> | Deep-linking parameter |
+| currency | <code>String</code> | Three-letter ISO 4217 currency code |
+| prices | <code>Array</code> | Breakdown of prices |
+| [options] | <code>Object</code> | Additional Telegram query options |
+
+<a name="TelegramBot+answerShippingQuery"></a>
+
+### telegramBot.answerShippingQuery(shippingQueryId, ok, [options]) ⇒ <code>Promise</code>
+Answer shipping query..
+Use this method to reply to shipping queries.
+
+**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
+**See**: https://core.telegram.org/bots/api#answershippingquery  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| shippingQueryId | <code>String</code> | Unique identifier for the query to be answered |
+| ok | <code>Boolean</code> | Specify if delivery of the product is possible |
+| [options] | <code>Object</code> | Additional Telegram query options |
+
+<a name="TelegramBot+answerPreCheckoutQuery"></a>
+
+### telegramBot.answerPreCheckoutQuery(preCheckoutQueryId, ok, [options]) ⇒ <code>Promise</code>
+Answer pre-checkout query.
+Use this method to confirm shipping of a product.
+
+**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
+**See**: https://core.telegram.org/bots/api#answerprecheckoutquery  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| preCheckoutQueryId | <code>String</code> | Unique identifier for the query to be answered |
+| ok | <code>Boolean</code> | Specify if every order details are ok |
 | [options] | <code>Object</code> | Additional Telegram query options |
 
 * * *

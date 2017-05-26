@@ -13,6 +13,9 @@ export TEST_GROUP_ID=<GROUP_ID>
 # Game short name which to use in some of the tests, e.g. TelegramBot#sendGame()
 export TEST_GAME_SHORT_NAME=<GAME_SHORT_NAME>
 
+# Payment provider token to be used
+export TEST_PROVIDER_TOKEN=<YOUR_PROVIDER_TOKEN>
+
 # Run ALL tests
 npm run test
 
