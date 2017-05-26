@@ -61,6 +61,7 @@ TelegramBot
     * [.sendGame(chatId, gameShortName, [options])](#TelegramBot+sendGame) ⇒ <code>Promise</code>
     * [.setGameScore(userId, score, [options])](#TelegramBot+setGameScore) ⇒ <code>Promise</code>
     * [.getGameHighScores(userId, [options])](#TelegramBot+getGameHighScores) ⇒ <code>Promise</code>
+    * [.sendSequence(method, chatId, messages, [options], [fileOpts])](#TelegramBot+sendSequence) ⇒ <code>Promise</code>
 
 <a name="new_TelegramBot_new"></a>
 
@@ -759,6 +760,22 @@ Use this method to get data for high score table.
 | --- | --- | --- |
 | userId | <code>String</code> | Unique identifier of the target user |
 | [options] | <code>Object</code> | Additional Telegram query options |
+
+<a name="TelegramBot+sendSequence"></a>
+
+### telegramBot.sendSequence(method, chatId, messages, [options], [fileOpts]) ⇒ <code>Promise</code>
+Use this method to send messages with correct sequence
+
+**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
+**Returns**: <code>Promise</code> - resolves to an array of responses  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| method | <code>function</code> | Bot method to send messages, i.e. bot.sendMessage |
+| chatId | <code>Number</code> &#124; <code>String</code> | Unique identifier for the message recipient |
+| messages | <code>\*</code> | Messages to be sent.  Two dimentional array should used if API method requires more than one argument |
+| [options] | <code>Object</code> | Additional Telegram query options |
+| [fileOpts] | <code>Object</code> | Optional file related meta-data (for .sendDocument) |
 
 * * *
 
