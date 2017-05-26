@@ -75,6 +75,7 @@ Some things built using this library, and might interest you:
 * [node-telegram-bot-api-middleware](https://github.com/idchlife/node-telegram-bot-api-middleware): Middleware for node-telegram-bot-api
 * [teleirc](https://github.com/FruitieX/teleirc): A simple Telegram ↔ IRC gateway
 * [bot-brother](https://github.com/SerjoPepper/bot-brother): Node.js library to help you easily create telegram bots
+* [redbot](https://github.com/guidone/node-red-contrib-chatbot): A Node-RED plugin to create telegram bots visually
 
 ## License
 
