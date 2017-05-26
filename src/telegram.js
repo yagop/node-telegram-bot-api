@@ -20,10 +20,9 @@ const pump = require('pump');
 const deprecate = require('depd')('node-telegram-bot-api');
 
 const _messageTypes = [
-  'audio', 'channel_chat_created', 'contact', 'delete_chat_photo', 'document', 'game', 'group_chat_created',
-  'invoice', 'left_chat_member', 'location', 'migrate_from_chat_id', 'migrate_to_chat_id', 'new_chat_members',
-  'new_chat_photo', 'new_chat_title', 'photo', 'pinned_message', 'sticker', 'successful_payment', 'supergroup_chat_created',
-  'text', 'video', 'video_note', 'voice'
+  'text', 'audio', 'document', 'photo', 'sticker', 'video', 'voice', 'contact',
+  'location', 'new_chat_participant', 'left_chat_participant', 'new_chat_title',
+  'new_chat_photo', 'delete_chat_photo', 'group_chat_created', 'successful_payment', 'invoice'
 ];
 
 // enable cancellation
