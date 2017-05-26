@@ -17,7 +17,7 @@ if (!TOKEN) {
 }
 
 const PROVIDER_TOKEN = process.env.TEST_PROVIDER_TOKEN;
-if(!PROVIDER_TOKEN) {
+if (!PROVIDER_TOKEN) {
   throw new Error('Provider token not supplied');
 }
 
@@ -1223,7 +1223,7 @@ describe('TelegramBot', function telegramSuite() {
       const providerToken = PROVIDER_TOKEN;
       const startParameter = 'pay';
       const currency = 'KES';
-      const prices = [{ label: 'product', price: 1000 }, { label: 'tax', price: 200 }];
+      const prices = [{ label: 'product', amount: 11000 }, { label: 'tax', amount: 11000 }];
       return bot.sendInvoice(USERID, title, description, payload, providerToken, startParameter, currency, prices).then(resp => {
         assert.ok(is.object(resp));
         assert.ok(is.object(resp.invoice));
