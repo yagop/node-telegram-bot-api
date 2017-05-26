@@ -26,6 +26,9 @@ const _messageTypes = [
   'migrate_from_chat_id', 'migrate_to_chat_id', 'channel_chat_created', 'supergroup_chat_created',
   'successful_payment', 'invoice'
 ];
+const _deprecatedMessageTypes = [
+  'new_chat_participant', 'left_chat_participant'
+];
 
 // enable cancellation
 Promise.config({
@@ -40,6 +43,14 @@ class TelegramBot extends EventEmitter {
 
   static get messageTypes() {
     return _messageTypes;
+  }
+
+  on(event, listener) {
+    if (_deprecatedMessageTypes.indexOf(event) !== -1) {
+      const url = 'https://github.com/yagop/node-telegram-bot-api/blob/master/doc/usage.md#events';
+      deprecate(`Events ${_deprecatedMessageTypes.join(',')} are deprecated. See the updated list of events: ${url}`);
+    }
+    super.on(event, listener);
   }
 
   /**
