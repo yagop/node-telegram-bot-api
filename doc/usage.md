@@ -1,7 +1,7 @@
 # Usage
 
 * [Events](#events)
-* [WebHooks](#WebHooks)
+* [WebHooks](#webhooks)
 * [Sending files](#sending-files)
 * [Error handling](#error-handling)
 
