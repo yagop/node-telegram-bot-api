@@ -54,6 +54,7 @@ bot.on('message', (msg) => {
 
 * [Usage][usage]
 * [Examples][examples]
+* [Tutorials](tutorials)
 * [Help Information][help]
 * API Reference ([release][api-release] / [development][api-dev] / [experimental][api-experimental])
 * [Contributing to the Project][contributing]
