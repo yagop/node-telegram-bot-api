@@ -2,6 +2,7 @@
  * This example demonstrates setting up a webook, and receiving
  * updates in your express app
  */
+/* eslint-disable no-console */
 
 const TOKEN = process.env.TELEGRAM_TOKEN || 'YOUR_TELEGRAM_BOT_TOKEN';
 const url = 'https://<PUBLIC-URL>';
