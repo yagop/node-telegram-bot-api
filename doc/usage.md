@@ -113,6 +113,20 @@ const url = 'https://telegram.org/img/t_logo.png';
 bot.sendPhoto(chatId, url);
 ```
 
+If you wish to specify your own [MIME type](http://en.wikipedia.org/wiki/Internet_media_type),
+you may pass in an object, like so:
+
+```js
+const data = {
+  // MUST provide your file's data under the 'data' property.
+  // May be String|stream.Stream|Buffer (used as above).
+  data: getDataSomehow(),
+  // Explicitly specify the MIME type.
+  mime: 'audio/mpeg'
+};
+bot.sendAudio(chatId, data);
+```
+
 <a name="sending-files-performance"></a>
 ### Performance Issue
 

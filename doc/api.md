@@ -185,13 +185,17 @@ This method has an [older, compatible signature][setWebHook-v0.25.0]
 that is being deprecated.
 
 **Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
-**See**: https://core.telegram.org/bots/api#setwebhook  
+**See**
+
+- https://core.telegram.org/bots/api#setwebhook
+- https://github.com/yagop/node-telegram-bot-api/blob/master/doc/usage.md#sending-files
+
 
 | Param | Type | Description |
 | --- | --- | --- |
 | url | <code>String</code> | URL where Telegram will make HTTP Post. Leave empty to delete webHook. |
 | [options] | <code>Object</code> | Additional Telegram query options |
-| [options.certificate] | <code>String</code> &#124; <code>stream.Stream</code> | PEM certificate key (public). |
+| [options.certificate] | <code>String</code> &#124; <code>stream.Stream</code> &#124; <code>Buffer</code> &#124; <code>Object</code> | PEM certificate key (public). |
 
 <a name="TelegramBot+deleteWebHook"></a>
 
@@ -292,7 +296,7 @@ Send photo
 | Param | Type | Description |
 | --- | --- | --- |
 | chatId | <code>Number</code> &#124; <code>String</code> | Unique identifier for the message recipient |
-| photo | <code>String</code> &#124; <code>stream.Stream</code> &#124; <code>Buffer</code> | A file path or a Stream. Can also be a `file_id` previously uploaded |
+| photo | <code>String</code> &#124; <code>stream.Stream</code> &#124; <code>Buffer</code> &#124; <code>Object</code> | A file path or a Stream. Can also be a `file_id` previously uploaded |
 | [options] | <code>Object</code> | Additional Telegram query options |
 
 <a name="TelegramBot+sendAudio"></a>
@@ -301,12 +305,16 @@ Send photo
 Send audio
 
 **Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
-**See**: https://core.telegram.org/bots/api#sendaudio  
+**See**
+
+- https://core.telegram.org/bots/api#sendaudio
+- https://github.com/yagop/node-telegram-bot-api/blob/master/doc/usage.md#sending-files
+
 
 | Param | Type | Description |
 | --- | --- | --- |
 | chatId | <code>Number</code> &#124; <code>String</code> | Unique identifier for the message recipient |
-| audio | <code>String</code> &#124; <code>stream.Stream</code> &#124; <code>Buffer</code> | A file path, Stream or Buffer. Can also be a `file_id` previously uploaded. |
+| audio | <code>String</code> &#124; <code>stream.Stream</code> &#124; <code>Buffer</code> &#124; <code>Object</code> | A file path, Stream or Buffer. Can also be a `file_id` previously uploaded. |
 | [options] | <code>Object</code> | Additional Telegram query options |
 
 <a name="TelegramBot+sendDocument"></a>
@@ -315,12 +323,16 @@ Send audio
 Send Document
 
 **Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
-**See**: https://core.telegram.org/bots/api#sendDocument  
+**See**
+
+- https://core.telegram.org/bots/api#sendDocument
+- https://github.com/yagop/node-telegram-bot-api/blob/master/doc/usage.md#sending-files
+
 
 | Param | Type | Description |
 | --- | --- | --- |
 | chatId | <code>Number</code> &#124; <code>String</code> | Unique identifier for the message recipient |
-| doc | <code>String</code> &#124; <code>stream.Stream</code> &#124; <code>Buffer</code> | A file path, Stream or Buffer. Can also be a `file_id` previously uploaded. |
+| doc | <code>String</code> &#124; <code>stream.Stream</code> &#124; <code>Buffer</code> &#124; <code>Object</code> | A file path, Stream or Buffer. Can also be a `file_id` previously uploaded. |
 | [options] | <code>Object</code> | Additional Telegram query options |
 | [fileOpts] | <code>Object</code> | Optional file related meta-data |
 
@@ -330,12 +342,16 @@ Send Document
 Send .webp stickers.
 
 **Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
-**See**: https://core.telegram.org/bots/api#sendsticker  
+**See**
+
+- https://core.telegram.org/bots/api#sendsticker
+- https://github.com/yagop/node-telegram-bot-api/blob/master/doc/usage.md#sending-files
+
 
 | Param | Type | Description |
 | --- | --- | --- |
 | chatId | <code>Number</code> &#124; <code>String</code> | Unique identifier for the message recipient |
-| sticker | <code>String</code> &#124; <code>stream.Stream</code> &#124; <code>Buffer</code> | A file path, Stream or Buffer. Can also be a `file_id` previously uploaded. Stickers are WebP format files. |
+| sticker | <code>String</code> &#124; <code>stream.Stream</code> &#124; <code>Buffer</code> &#124; <code>Object</code> | A file path, Stream or Buffer. Can also be a `file_id` previously uploaded. Stickers are WebP format files. |
 | [options] | <code>Object</code> | Additional Telegram query options |
 
 <a name="TelegramBot+sendVideo"></a>
@@ -344,12 +360,16 @@ Send .webp stickers.
 Use this method to send video files, Telegram clients support mp4 videos (other formats may be sent as Document).
 
 **Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
-**See**: https://core.telegram.org/bots/api#sendvideo  
+**See**
+
+- https://core.telegram.org/bots/api#sendvideo
+- https://github.com/yagop/node-telegram-bot-api/blob/master/doc/usage.md#sending-files
+
 
 | Param | Type | Description |
 | --- | --- | --- |
 | chatId | <code>Number</code> &#124; <code>String</code> | Unique identifier for the message recipient |
-| video | <code>String</code> &#124; <code>stream.Stream</code> &#124; <code>Buffer</code> | A file path or Stream. Can also be a `file_id` previously uploaded. |
+| video | <code>String</code> &#124; <code>stream.Stream</code> &#124; <code>Buffer</code> &#124; <code>Object</code> | A file path or Stream. Can also be a `file_id` previously uploaded. |
 | [options] | <code>Object</code> | Additional Telegram query options |
 
 <a name="TelegramBot+sendVideoNote"></a>
@@ -359,12 +379,16 @@ Use this method to send rounded square videos of upto 1 minute long.
 
 **Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
 **Info**: The length parameter is actually optional. However, the API (at time of writing) requires you to always provide it until it is fixed.  
-**See**: https://core.telegram.org/bots/api#sendvideonote  
+**See**
+
+- https://core.telegram.org/bots/api#sendvideonote
+- https://github.com/yagop/node-telegram-bot-api/blob/master/doc/usage.md#sending-files
+
 
 | Param | Type | Description |
 | --- | --- | --- |
 | chatId | <code>Number</code> &#124; <code>String</code> | Unique identifier for the message recipient |
-| videoNote | <code>String</code> &#124; <code>stream.Stream</code> &#124; <code>Buffer</code> | A file path or Stream. Can also be a `file_id` previously uploaded. |
+| videoNote | <code>String</code> &#124; <code>stream.Stream</code> &#124; <code>Buffer</code> &#124; <code>Object</code> | A file path or Stream. Can also be a `file_id` previously uploaded. |
 | [options] | <code>Object</code> | Additional Telegram query options |
 
 <a name="TelegramBot+sendVoice"></a>
@@ -373,12 +397,16 @@ Use this method to send rounded square videos of upto 1 minute long.
 Send voice
 
 **Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
-**See**: https://core.telegram.org/bots/api#sendvoice  
+**See**
+
+- https://core.telegram.org/bots/api#sendvoice
+- https://github.com/yagop/node-telegram-bot-api/blob/master/doc/usage.md#sending-files
+
 
 | Param | Type | Description |
 | --- | --- | --- |
 | chatId | <code>Number</code> &#124; <code>String</code> | Unique identifier for the message recipient |
-| voice | <code>String</code> &#124; <code>stream.Stream</code> &#124; <code>Buffer</code> | A file path, Stream or Buffer. Can also be a `file_id` previously uploaded. |
+| voice | <code>String</code> &#124; <code>stream.Stream</code> &#124; <code>Buffer</code> &#124; <code>Object</code> | A file path, Stream or Buffer. Can also be a `file_id` previously uploaded. |
 | [options] | <code>Object</code> | Additional Telegram query options |
 
 <a name="TelegramBot+sendChatAction"></a>
