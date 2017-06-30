@@ -886,7 +886,6 @@ class TelegramBot extends EventEmitter {
    * Returns exported invite link as String on success.
    *
    * @param {Number|String} chatId Unique identifier for the target chat or username of the target supergroup
-   * @param {Object} [options] Additional Telegram query options
    * @returns {Promise}
    * @see https://core.telegram.org/bots/api#exportchatinvitelink
    */
@@ -901,9 +900,7 @@ class TelegramBot extends EventEmitter {
    * Returns True on success.
    *
    * @param  {Number|String} chatId  Unique identifier for the message recipient
-   * @param  {String|stream.Stream|Buffer} photo A file path or a Stream. Can
-   * also be a `file_id` previously uploaded
-   * @param  {Object} [options] Additional Telegram query options
+   * @param  {stream.Stream|Buffer} photo A file path or a Stream.
    * @return {Promise}
    * @see https://core.telegram.org/bots/api#setchatphoto
    */
@@ -923,9 +920,11 @@ class TelegramBot extends EventEmitter {
   }
 
   /**
+   * Use this method to delete a chat photo. Photos can't be changed for private chats.
+   * The bot must be an administrator in the chat for this to work and must have the appropriate admin rights.
+   * Returns True on success.
    *
    * @param {Number|String} chatId  Unique identifier for the message recipient
-   * @param {Object} [options] Additional Telegram query options
    * @returns {Promise}
    * @see https://core.telegram.org/bots/api#deletechatphoto
    */
@@ -944,7 +943,6 @@ class TelegramBot extends EventEmitter {
    *
    * @param {Number|String} chatId  Unique identifier for the message recipient
    * @param {String} title New chat title, 1-255 characters
-   * @param {Object} [options] Additional Telegram query options
    * @returns {Promise}
    * @see https://core.telegram.org/bots/api#setchattitle
    */
@@ -961,7 +959,6 @@ class TelegramBot extends EventEmitter {
    *
    * @param {Number|String} chatId  Unique identifier for the message recipient
    * @param {String} description New chat title, 1-255 characters
-   * @param {Object} [options] Additional Telegram query options
    * @returns {Promise}
    * @see https://core.telegram.org/bots/api#setchatdescription
    */
@@ -978,7 +975,6 @@ class TelegramBot extends EventEmitter {
    *
    * @param {Number|String} chatId  Unique identifier for the message recipient
    * @param {String} messageId Identifier of a message to pin
-   * @param {Object} [options] Additional Telegram query options
    * @returns {Promise}
    * @see https://core.telegram.org/bots/api#pinchatmessage
    */
@@ -994,7 +990,6 @@ class TelegramBot extends EventEmitter {
    * Returns True on success.
    *
    * @param {Number|String} chatId  Unique identifier for the message recipient
-   * @param {Object} [options] Additional Telegram query options
    * @returns {Promise}
    * @see https://core.telegram.org/bots/api#unpinchatmessage
    */
