@@ -1050,7 +1050,7 @@ class TelegramBot extends EventEmitter {
       .then(fileURI => {
         const fileName = fileURI.slice(fileURI.lastIndexOf('/') + 1);
         // TODO: Ensure fileName doesn't contains slashes
-        const filePath = `${downloadDir}/${fileName}`;
+        const filePath = path.join(downloadDir, fileName);
 
         // properly handles errors and closes all streams
         return Promise
