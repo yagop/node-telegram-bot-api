@@ -38,6 +38,15 @@ TelegramBot
     * [.sendChatAction(chatId, action)](#TelegramBot+sendChatAction) ⇒ <code>Promise</code>
     * [.kickChatMember(chatId, userId)](#TelegramBot+kickChatMember) ⇒ <code>Promise</code>
     * [.unbanChatMember(chatId, userId)](#TelegramBot+unbanChatMember) ⇒ <code>Promise</code>
+    * [.restrictChatMember(chatId, userId, [options])](#TelegramBot+restrictChatMember) ⇒ <code>Promise</code>
+    * [.promoteChatMember(chatId, userId, [options])](#TelegramBot+promoteChatMember) ⇒ <code>Promise</code>
+    * [.exportChatInviteLink(chatId)](#TelegramBot+exportChatInviteLink) ⇒ <code>Promise</code>
+    * [.setChatPhoto(chatId, photo)](#TelegramBot+setChatPhoto) ⇒ <code>Promise</code>
+    * [.deleteChatPhoto(chatId)](#TelegramBot+deleteChatPhoto) ⇒ <code>Promise</code>
+    * [.setChatTitle(chatId, title)](#TelegramBot+setChatTitle) ⇒ <code>Promise</code>
+    * [.setChatDescription(chatId, description)](#TelegramBot+setChatDescription) ⇒ <code>Promise</code>
+    * [.pinChatMessage(chatId, messageId)](#TelegramBot+pinChatMessage) ⇒ <code>Promise</code>
+    * [.unpinChatMessage(chatId)](#TelegramBot+unpinChatMessage) ⇒ <code>Promise</code>
     * [.answerCallbackQuery(callbackQueryId, text, showAlert, [options])](#TelegramBot+answerCallbackQuery) ⇒ <code>Promise</code>
     * [.editMessageText(text, [options])](#TelegramBot+editMessageText) ⇒ <code>Promise</code>
     * [.editMessageCaption(caption, [options])](#TelegramBot+editMessageCaption) ⇒ <code>Promise</code>
@@ -421,6 +430,142 @@ the group for this to work. Returns True on success.
 | --- | --- | --- |
 | chatId | <code>Number</code> &#124; <code>String</code> | Unique identifier for the target group or username of the target supergroup |
 | userId | <code>String</code> | Unique identifier of the target user |
+
+<a name="TelegramBot+restrictChatMember"></a>
+
+### telegramBot.restrictChatMember(chatId, userId, [options]) ⇒ <code>Promise</code>
+Use this method to restrict a user in a supergroup.
+The bot must be an administrator in the supergroup for this to work
+and must have the appropriate admin rights. Pass True for all boolean parameters
+to lift restrictions from a user. Returns True on success.
+
+**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
+**See**: https://core.telegram.org/bots/api#restrictchatmember  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| chatId | <code>Number</code> &#124; <code>String</code> | Unique identifier for the target chat or username of the target supergroup |
+| userId | <code>String</code> | Unique identifier of the target user |
+| [options] | <code>Object</code> | Additional Telegram query options |
+
+<a name="TelegramBot+promoteChatMember"></a>
+
+### telegramBot.promoteChatMember(chatId, userId, [options]) ⇒ <code>Promise</code>
+Use this method to promote or demote a user in a supergroup or a channel.
+The bot must be an administrator in the chat for this to work
+and must have the appropriate admin rights. Pass False for all boolean parameters to demote a user.
+Returns True on success.
+
+**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
+**See**: https://core.telegram.org/bots/api#promotechatmember  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| chatId | <code>Number</code> &#124; <code>String</code> | Unique identifier for the target chat or username of the target supergroup |
+| userId | <code>String</code> |  |
+| [options] | <code>Object</code> | Additional Telegram query options |
+
+<a name="TelegramBot+exportChatInviteLink"></a>
+
+### telegramBot.exportChatInviteLink(chatId) ⇒ <code>Promise</code>
+Use this method to export an invite link to a supergroup or a channel.
+The bot must be an administrator in the chat for this to work and must have the appropriate admin rights.
+Returns exported invite link as String on success.
+
+**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
+**See**: https://core.telegram.org/bots/api#exportchatinvitelink  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| chatId | <code>Number</code> &#124; <code>String</code> | Unique identifier for the target chat or username of the target supergroup |
+
+<a name="TelegramBot+setChatPhoto"></a>
+
+### telegramBot.setChatPhoto(chatId, photo) ⇒ <code>Promise</code>
+Use this method to set a new profile photo for the chat. Photos can't be changed for private chats.
+The bot must be an administrator in the chat for this to work and must have the appropriate admin rights.
+Returns True on success.
+
+**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
+**See**: https://core.telegram.org/bots/api#setchatphoto  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| chatId | <code>Number</code> &#124; <code>String</code> | Unique identifier for the message recipient |
+| photo | <code>stream.Stream</code> &#124; <code>Buffer</code> | A file path or a Stream. |
+
+<a name="TelegramBot+deleteChatPhoto"></a>
+
+### telegramBot.deleteChatPhoto(chatId) ⇒ <code>Promise</code>
+Use this method to delete a chat photo. Photos can't be changed for private chats.
+The bot must be an administrator in the chat for this to work and must have the appropriate admin rights.
+Returns True on success.
+
+**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
+**See**: https://core.telegram.org/bots/api#deletechatphoto  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| chatId | <code>Number</code> &#124; <code>String</code> | Unique identifier for the message recipient |
+
+<a name="TelegramBot+setChatTitle"></a>
+
+### telegramBot.setChatTitle(chatId, title) ⇒ <code>Promise</code>
+Use this method to change the title of a chat. Titles can't be changed for private chats.
+The bot must be an administrator in the chat for this to work and must have the appropriate admin rights.
+Returns True on success.
+
+**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
+**See**: https://core.telegram.org/bots/api#setchattitle  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| chatId | <code>Number</code> &#124; <code>String</code> | Unique identifier for the message recipient |
+| title | <code>String</code> | New chat title, 1-255 characters |
+
+<a name="TelegramBot+setChatDescription"></a>
+
+### telegramBot.setChatDescription(chatId, description) ⇒ <code>Promise</code>
+Use this method to change the description of a supergroup or a channel.
+The bot must be an administrator in the chat for this to work and must have the appropriate admin rights.
+Returns True on success.
+
+**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
+**See**: https://core.telegram.org/bots/api#setchatdescription  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| chatId | <code>Number</code> &#124; <code>String</code> | Unique identifier for the message recipient |
+| description | <code>String</code> | New chat title, 1-255 characters |
+
+<a name="TelegramBot+pinChatMessage"></a>
+
+### telegramBot.pinChatMessage(chatId, messageId) ⇒ <code>Promise</code>
+Use this method to pin a message in a supergroup.
+The bot must be an administrator in the chat for this to work and must have the appropriate admin rights.
+Returns True on success.
+
+**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
+**See**: https://core.telegram.org/bots/api#pinchatmessage  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| chatId | <code>Number</code> &#124; <code>String</code> | Unique identifier for the message recipient |
+| messageId | <code>String</code> | Identifier of a message to pin |
+
+<a name="TelegramBot+unpinChatMessage"></a>
+
+### telegramBot.unpinChatMessage(chatId) ⇒ <code>Promise</code>
+Use this method to unpin a message in a supergroup chat.
+The bot must be an administrator in the chat for this to work and must have the appropriate admin rights.
+Returns True on success.
+
+**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
+**See**: https://core.telegram.org/bots/api#unpinchatmessage  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| chatId | <code>Number</code> &#124; <code>String</code> | Unique identifier for the message recipient |
 
 <a name="TelegramBot+answerCallbackQuery"></a>
 
