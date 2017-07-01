@@ -850,10 +850,10 @@ class TelegramBot extends EventEmitter {
    * and must have the appropriate admin rights. Pass True for all boolean parameters
    * to lift restrictions from a user. Returns True on success.
    *
-   * @param {Number|String} chatId Unique identifier for the target chat or username of the target supergroup
-   * @param {String} userId
-   * @param {Object} [options] Additional Telegram query options
-   * @returns {Promise}
+   * @param  {Number|String} chatId Unique identifier for the target chat or username of the target supergroup
+   * @param  {String} userId Unique identifier of the target user
+   * @param  {Object} [options] Additional Telegram query options
+   * @return {Promise}
    * @see https://core.telegram.org/bots/api#restrictchatmember
    */
   restrictChatMember(chatId, userId, form = {}) {
@@ -868,10 +868,10 @@ class TelegramBot extends EventEmitter {
    * and must have the appropriate admin rights. Pass False for all boolean parameters to demote a user.
    * Returns True on success.
    *
-   * @param {Number|String} chatId Unique identifier for the target chat or username of the target supergroup
-   * @param {String} userId
-   * @param {Object} [options] Additional Telegram query options
-   * @returns {Promise}
+   * @param  {Number|String} chatId Unique identifier for the target chat or username of the target supergroup
+   * @param  {String} userId
+   * @param  {Object} [options] Additional Telegram query options
+   * @return {Promise}
    * @see https://core.telegram.org/bots/api#promotechatmember
    */
   promoteChatMember(chatId, userId, form = {}) {
@@ -885,8 +885,8 @@ class TelegramBot extends EventEmitter {
    * The bot must be an administrator in the chat for this to work and must have the appropriate admin rights.
    * Returns exported invite link as String on success.
    *
-   * @param {Number|String} chatId Unique identifier for the target chat or username of the target supergroup
-   * @returns {Promise}
+   * @param  {Number|String} chatId Unique identifier for the target chat or username of the target supergroup
+   * @return {Promise}
    * @see https://core.telegram.org/bots/api#exportchatinvitelink
    */
   exportChatInviteLink(chatId, form = {}) {
@@ -924,8 +924,8 @@ class TelegramBot extends EventEmitter {
    * The bot must be an administrator in the chat for this to work and must have the appropriate admin rights.
    * Returns True on success.
    *
-   * @param {Number|String} chatId  Unique identifier for the message recipient
-   * @returns {Promise}
+   * @param  {Number|String} chatId  Unique identifier for the message recipient
+   * @return {Promise}
    * @see https://core.telegram.org/bots/api#deletechatphoto
    */
   deleteChatPhoto(chatId, form = {}) {
@@ -938,12 +938,9 @@ class TelegramBot extends EventEmitter {
    * The bot must be an administrator in the chat for this to work and must have the appropriate admin rights.
    * Returns True on success.
    *
-   * Note: In regular groups (non-supergroups), this method will only work if the ‘All Members Are Admins’
-   * setting is off in the target group.
-   *
-   * @param {Number|String} chatId  Unique identifier for the message recipient
-   * @param {String} title New chat title, 1-255 characters
-   * @returns {Promise}
+   * @param  {Number|String} chatId  Unique identifier for the message recipient
+   * @param  {String} title New chat title, 1-255 characters
+   * @return {Promise}
    * @see https://core.telegram.org/bots/api#setchattitle
    */
   setChatTitle(chatId, title, form = {}) {
@@ -957,9 +954,9 @@ class TelegramBot extends EventEmitter {
    * The bot must be an administrator in the chat for this to work and must have the appropriate admin rights.
    * Returns True on success.
    *
-   * @param {Number|String} chatId  Unique identifier for the message recipient
-   * @param {String} description New chat title, 1-255 characters
-   * @returns {Promise}
+   * @param  {Number|String} chatId  Unique identifier for the message recipient
+   * @param  {String} description New chat title, 1-255 characters
+   * @return {Promise}
    * @see https://core.telegram.org/bots/api#setchatdescription
    */
   setChatDescription(chatId, description, form = {}) {
@@ -973,9 +970,9 @@ class TelegramBot extends EventEmitter {
    * The bot must be an administrator in the chat for this to work and must have the appropriate admin rights.
    * Returns True on success.
    *
-   * @param {Number|String} chatId  Unique identifier for the message recipient
-   * @param {String} messageId Identifier of a message to pin
-   * @returns {Promise}
+   * @param  {Number|String} chatId  Unique identifier for the message recipient
+   * @param  {String} messageId Identifier of a message to pin
+   * @return {Promise}
    * @see https://core.telegram.org/bots/api#pinchatmessage
    */
   pinChatMessage(chatId, messageId, form = {}) {
@@ -989,8 +986,8 @@ class TelegramBot extends EventEmitter {
    * The bot must be an administrator in the chat for this to work and must have the appropriate admin rights.
    * Returns True on success.
    *
-   * @param {Number|String} chatId  Unique identifier for the message recipient
-   * @returns {Promise}
+   * @param  {Number|String} chatId  Unique identifier for the message recipient
+   * @return {Promise}
    * @see https://core.telegram.org/bots/api#unpinchatmessage
    */
   unpinChatMessage(chatId, form = {}) {
