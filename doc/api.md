@@ -38,7 +38,7 @@ TelegramBot
     * [.sendChatAction(chatId, action)](#TelegramBot+sendChatAction) ⇒ <code>Promise</code>
     * [.kickChatMember(chatId, userId)](#TelegramBot+kickChatMember) ⇒ <code>Promise</code>
     * [.unbanChatMember(chatId, userId)](#TelegramBot+unbanChatMember) ⇒ <code>Promise</code>
-    * [.answerCallbackQuery(callbackQueryId, text, showAlert, [options])](#TelegramBot+answerCallbackQuery) ⇒ <code>Promise</code>
+    * [.answerCallbackQuery(callbackQueryId, text, [options])](#TelegramBot+answerCallbackQuery) ⇒ <code>Promise</code>
     * [.editMessageText(text, [options])](#TelegramBot+editMessageText) ⇒ <code>Promise</code>
     * [.editMessageCaption(caption, [options])](#TelegramBot+editMessageCaption) ⇒ <code>Promise</code>
     * [.editMessageReplyMarkup(replyMarkup, [options])](#TelegramBot+editMessageReplyMarkup) ⇒ <code>Promise</code>
@@ -69,9 +69,7 @@ TelegramBot
 <a name="new_TelegramBot_new"></a>
 
 ### new TelegramBot(token, [options])
-Both request method to obtain messages are implemented. To use standard polling, set `polling: true`
-on `options`. Notice that [webHook](https://core.telegram.org/bots/api#setwebhook) will need a SSL certificate.
-Emits `message` when a message arrives.
+Both request method to obtain messages are implemented. To use standard polling, set `polling: true`on `options`. Notice that [webHook](https://core.telegram.org/bots/api#setwebhook) will need a SSL certificate.Emits `message` when a message arrives.
 
 
 | Param | Type | Default | Description |
@@ -101,8 +99,7 @@ Emits `message` when a message arrives.
 <a name="TelegramBot+startPolling"></a>
 
 ### telegramBot.startPolling([options]) ⇒ <code>Promise</code>
-Start polling.
-Rejects returned promise if a WebHook is being used by this instance.
+Start polling.Rejects returned promise if a WebHook is being used by this instance.
 
 **Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
 
@@ -127,9 +124,7 @@ Alias of `TelegramBot#startPolling()`. This is **deprecated**.
 <a name="TelegramBot+stopPolling"></a>
 
 ### telegramBot.stopPolling() ⇒ <code>Promise</code>
-Stops polling after the last polling request resolves.
-Multiple invocations do nothing if polling is already stopped.
-Returning the promise of the last polling request is **deprecated**.
+Stops polling after the last polling request resolves.Multiple invocations do nothing if polling is already stopped.Returning the promise of the last polling request is **deprecated**.
 
 **Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
 <a name="TelegramBot+isPolling"></a>
@@ -141,24 +136,20 @@ Return true if polling. Otherwise, false.
 <a name="TelegramBot+openWebHook"></a>
 
 ### telegramBot.openWebHook() ⇒ <code>Promise</code>
-Open webhook.
-Multiple invocations do nothing if webhook is already open.
-Rejects returned promise if Polling is being used by this instance.
+Open webhook.Multiple invocations do nothing if webhook is already open.Rejects returned promise if Polling is being used by this instance.
 
 **Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
 <a name="TelegramBot+closeWebHook"></a>
 
 ### telegramBot.closeWebHook() ⇒ <code>Promise</code>
-Close webhook after closing all current connections.
-Multiple invocations do nothing if webhook is already closed.
+Close webhook after closing all current connections.Multiple invocations do nothing if webhook is already closed.
 
 **Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
 **Returns**: <code>Promise</code> - promise  
 <a name="TelegramBot+hasOpenWebHook"></a>
 
 ### telegramBot.hasOpenWebHook() ⇒ <code>Boolean</code>
-Return true if using webhook and it is open i.e. accepts connections.
-Otherwise, false.
+Return true if using webhook and it is open i.e. accepts connections.Otherwise, false.
 
 **Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
 <a name="TelegramBot+getMe"></a>
@@ -171,9 +162,7 @@ Returns basic information about the bot in form of a `User` object.
 <a name="TelegramBot+setWebHook"></a>
 
 ### telegramBot.setWebHook(url, [options]) ⇒ <code>Promise</code>
-Specify an url to receive incoming updates via an outgoing webHook.
-This method has an [older, compatible signature][setWebHook-v0.25.0]
-that is being deprecated.
+Specify an url to receive incoming updates via an outgoing webHook.This method has an [older, compatible signature][setWebHook-v0.25.0]that is being deprecated.
 
 **Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
 **See**: https://core.telegram.org/bots/api#setwebhook  
@@ -187,27 +176,21 @@ that is being deprecated.
 <a name="TelegramBot+deleteWebHook"></a>
 
 ### telegramBot.deleteWebHook() ⇒ <code>Promise</code>
-Use this method to remove webhook integration if you decide to
-switch back to getUpdates. Returns True on success.
+Use this method to remove webhook integration if you decide toswitch back to getUpdates. Returns True on success.
 
 **Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
 **See**: https://core.telegram.org/bots/api#deletewebhook  
 <a name="TelegramBot+getWebHookInfo"></a>
 
 ### telegramBot.getWebHookInfo() ⇒ <code>Promise</code>
-Use this method to get current webhook status.
-On success, returns a [WebhookInfo](https://core.telegram.org/bots/api#webhookinfo) object.
-If the bot is using getUpdates, will return an object with the
-url field empty.
+Use this method to get current webhook status.On success, returns a [WebhookInfo](https://core.telegram.org/bots/api#webhookinfo) object.If the bot is using getUpdates, will return an object with theurl field empty.
 
 **Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
 **See**: https://core.telegram.org/bots/api#getwebhookinfo  
 <a name="TelegramBot+getUpdates"></a>
 
 ### telegramBot.getUpdates([options]) ⇒ <code>Promise</code>
-Use this method to receive incoming updates using long polling.
-This method has an [older, compatible signature][getUpdates-v0.25.0]
-that is being deprecated.
+Use this method to receive incoming updates using long polling.This method has an [older, compatible signature][getUpdates-v0.25.0]that is being deprecated.
 
 **Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
 **See**: https://core.telegram.org/bots/api#getupdates  
@@ -219,9 +202,7 @@ that is being deprecated.
 <a name="TelegramBot+processUpdate"></a>
 
 ### telegramBot.processUpdate(update)
-Process an update; emitting the proper events and executing regexp
-callbacks. This method is useful should you be using a different
-way to fetch updates, other than those provided by TelegramBot.
+Process an update; emitting the proper events and executing regexpcallbacks. This method is useful should you be using a differentway to fetch updates, other than those provided by TelegramBot.
 
 **Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
 **See**: https://core.telegram.org/bots/api#update  
@@ -375,11 +356,7 @@ Send voice
 <a name="TelegramBot+sendChatAction"></a>
 
 ### telegramBot.sendChatAction(chatId, action) ⇒ <code>Promise</code>
-Send chat action.
-`typing` for text messages,
-`upload_photo` for photos, `record_video` or `upload_video` for videos,
-`record_audio` or `upload_audio` for audio files, `upload_document` for general files,
-`find_location` for location data.
+Send chat action.`typing` for text messages,`upload_photo` for photos, `record_video` or `upload_video` for videos,`record_audio` or `upload_audio` for audio files, `upload_document` for general files,`find_location` for location data.
 
 **Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
 **See**: https://core.telegram.org/bots/api#sendchataction  
@@ -392,11 +369,7 @@ Send chat action.
 <a name="TelegramBot+kickChatMember"></a>
 
 ### telegramBot.kickChatMember(chatId, userId) ⇒ <code>Promise</code>
-Use this method to kick a user from a group or a supergroup.
-In the case of supergroups, the user will not be able to return
-to the group on their own using invite links, etc., unless unbanned
-first. The bot must be an administrator in the group for this to work.
-Returns True on success.
+Use this method to kick a user from a group or a supergroup.In the case of supergroups, the user will not be able to returnto the group on their own using invite links, etc., unless unbannedfirst. The bot must be an administrator in the group for this to work.Returns True on success.
 
 **Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
 **See**: https://core.telegram.org/bots/api#kickchatmember  
@@ -409,10 +382,7 @@ Returns True on success.
 <a name="TelegramBot+unbanChatMember"></a>
 
 ### telegramBot.unbanChatMember(chatId, userId) ⇒ <code>Promise</code>
-Use this method to unban a previously kicked user in a supergroup.
-The user will not return to the group automatically, but will be
-able to join via link, etc. The bot must be an administrator in
-the group for this to work. Returns True on success.
+Use this method to unban a previously kicked user in a supergroup.The user will not return to the group automatically, but will beable to join via link, etc. The bot must be an administrator inthe group for this to work. Returns True on success.
 
 **Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
 **See**: https://core.telegram.org/bots/api#unbanchatmember  
@@ -424,11 +394,8 @@ the group for this to work. Returns True on success.
 
 <a name="TelegramBot+answerCallbackQuery"></a>
 
-### telegramBot.answerCallbackQuery(callbackQueryId, text, showAlert, [options]) ⇒ <code>Promise</code>
-Use this method to send answers to callback queries sent from
-inline keyboards. The answer will be displayed to the user as
-a notification at the top of the chat screen or as an alert.
-On success, True is returned.
+### telegramBot.answerCallbackQuery(callbackQueryId, text, [options]) ⇒ <code>Promise</code>
+Use this method to send answers to callback queries sent frominline keyboards. The answer will be displayed to the user asa notification at the top of the chat screen or as an alert.On success, True is returned.
 
 **Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
 **See**: https://core.telegram.org/bots/api#answercallbackquery  
@@ -437,18 +404,12 @@ On success, True is returned.
 | --- | --- | --- |
 | callbackQueryId | <code>Number</code> &#124; <code>String</code> | Unique identifier for the query to be answered |
 | text | <code>String</code> | Text of the notification. If not specified, nothing will be shown to the user |
-| showAlert | <code>Boolean</code> | Whether to show an alert or a notification at the top of the screen |
 | [options] | <code>Object</code> | Additional Telegram query options |
 
 <a name="TelegramBot+editMessageText"></a>
 
 ### telegramBot.editMessageText(text, [options]) ⇒ <code>Promise</code>
-Use this method to edit text messages sent by the bot or via
-the bot (for inline bots). On success, the edited Message is
-returned.
-
-Note that you must provide one of chat_id, message_id, or
-inline_message_id in your request.
+Use this method to edit text messages sent by the bot or viathe bot (for inline bots). On success, the edited Message isreturned.Note that you must provide one of chat_id, message_id, orinline_message_id in your request.
 
 **Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
 **See**: https://core.telegram.org/bots/api#editmessagetext  
@@ -461,12 +422,7 @@ inline_message_id in your request.
 <a name="TelegramBot+editMessageCaption"></a>
 
 ### telegramBot.editMessageCaption(caption, [options]) ⇒ <code>Promise</code>
-Use this method to edit captions of messages sent by the
-bot or via the bot (for inline bots). On success, the
-edited Message is returned.
-
-Note that you must provide one of chat_id, message_id, or
-inline_message_id in your request.
+Use this method to edit captions of messages sent by thebot or via the bot (for inline bots). On success, theedited Message is returned.Note that you must provide one of chat_id, message_id, orinline_message_id in your request.
 
 **Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
 **See**: https://core.telegram.org/bots/api#editmessagecaption  
@@ -479,12 +435,7 @@ inline_message_id in your request.
 <a name="TelegramBot+editMessageReplyMarkup"></a>
 
 ### telegramBot.editMessageReplyMarkup(replyMarkup, [options]) ⇒ <code>Promise</code>
-Use this method to edit only the reply markup of messages
-sent by the bot or via the bot (for inline bots).
-On success, the edited Message is returned.
-
-Note that you must provide one of chat_id, message_id, or
-inline_message_id in your request.
+Use this method to edit only the reply markup of messagessent by the bot or via the bot (for inline bots).On success, the edited Message is returned.Note that you must provide one of chat_id, message_id, orinline_message_id in your request.
 
 **Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
 **See**: https://core.telegram.org/bots/api#editmessagetext  
@@ -497,10 +448,7 @@ inline_message_id in your request.
 <a name="TelegramBot+getUserProfilePhotos"></a>
 
 ### telegramBot.getUserProfilePhotos(userId, [options]) ⇒ <code>Promise</code>
-Use this method to get a list of profile pictures for a user.
-Returns a [UserProfilePhotos](https://core.telegram.org/bots/api#userprofilephotos) object.
-This method has an [older, compatible signature][getUserProfilePhotos-v0.25.0]
-that is being deprecated.
+Use this method to get a list of profile pictures for a user.Returns a [UserProfilePhotos](https://core.telegram.org/bots/api#userprofilephotos) object.This method has an [older, compatible signature][getUserProfilePhotos-v0.25.0]that is being deprecated.
 
 **Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
 **See**: https://core.telegram.org/bots/api#getuserprofilephotos  
@@ -513,8 +461,7 @@ that is being deprecated.
 <a name="TelegramBot+sendLocation"></a>
 
 ### telegramBot.sendLocation(chatId, latitude, longitude, [options]) ⇒ <code>Promise</code>
-Send location.
-Use this method to send point on the map.
+Send location.Use this method to send point on the map.
 
 **Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
 **See**: https://core.telegram.org/bots/api#sendlocation  
@@ -529,8 +476,7 @@ Use this method to send point on the map.
 <a name="TelegramBot+sendVenue"></a>
 
 ### telegramBot.sendVenue(chatId, latitude, longitude, title, address, [options]) ⇒ <code>Promise</code>
-Send venue.
-Use this method to send information about a venue.
+Send venue.Use this method to send information about a venue.
 
 **Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
 **See**: https://core.telegram.org/bots/api#sendvenue  
@@ -547,8 +493,7 @@ Use this method to send information about a venue.
 <a name="TelegramBot+sendContact"></a>
 
 ### telegramBot.sendContact(chatId, phoneNumber, firstName, [options]) ⇒ <code>Promise</code>
-Send contact.
-Use this method to send phone contacts.
+Send contact.Use this method to send phone contacts.
 
 **Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
 **See**: https://core.telegram.org/bots/api#sendcontact  
@@ -563,9 +508,7 @@ Use this method to send phone contacts.
 <a name="TelegramBot+getFile"></a>
 
 ### telegramBot.getFile(fileId) ⇒ <code>Promise</code>
-Get file.
-Use this method to get basic info about a file and prepare it for downloading.
-Attention: link will be valid for 1 hour.
+Get file.Use this method to get basic info about a file and prepare it for downloading.Attention: link will be valid for 1 hour.
 
 **Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
 **See**: https://core.telegram.org/bots/api#getfile  
@@ -577,12 +520,7 @@ Attention: link will be valid for 1 hour.
 <a name="TelegramBot+getFileLink"></a>
 
 ### telegramBot.getFileLink(fileId) ⇒ <code>Promise</code>
-Get link for file.
-Use this method to get link for file for subsequent use.
-Attention: link will be valid for 1 hour.
-
-This method is a sugar extension of the (getFile)[#getfilefileid] method,
-which returns just path to file on remote server (you will have to manually build full uri after that).
+Get link for file.Use this method to get link for file for subsequent use.Attention: link will be valid for 1 hour.This method is a sugar extension of the (getFile)[#getfilefileid] method,which returns just path to file on remote server (you will have to manually build full uri after that).
 
 **Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
 **Returns**: <code>Promise</code> - promise Promise which will have *fileURI* in resolve callback  
@@ -595,8 +533,7 @@ which returns just path to file on remote server (you will have to manually buil
 <a name="TelegramBot+downloadFile"></a>
 
 ### telegramBot.downloadFile(fileId, downloadDir) ⇒ <code>Promise</code>
-Downloads file in the specified folder.
-This is just a sugar for (getFile)[#getfilefiled] method
+Downloads file in the specified folder.This is just a sugar for (getFile)[#getfilefiled] method
 
 **Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
 **Returns**: <code>Promise</code> - promise Promise, which will have *filePath* of downloaded file in resolve callback  
@@ -624,9 +561,7 @@ Register a RegExp to test against an incomming text message.
 Remove a listener registered with `onText()`.
 
 **Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
-**Returns**: <code>Object</code> - deletedListener The removed reply listener if
-  found. This object has `regexp` and `callback`
-  properties. If not found, returns `null`.  
+**Returns**: <code>Object</code> - deletedListener The removed reply listener if  found. This object has `regexp` and `callback`  properties. If not found, returns `null`.  
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -652,9 +587,7 @@ Register a reply to wait for a message response.
 Removes a reply that has been prev. registered for a message response.
 
 **Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
-**Returns**: <code>Object</code> - deletedListener      The removed reply listener if
-  found. This object has `id`, `chatId`, `messageId` and `callback`
-  properties. If not found, returns `null`.  
+**Returns**: <code>Object</code> - deletedListener      The removed reply listener if  found. This object has `id`, `chatId`, `messageId` and `callback`  properties. If not found, returns `null`.  
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -663,9 +596,7 @@ Removes a reply that has been prev. registered for a message response.
 <a name="TelegramBot+getChat"></a>
 
 ### telegramBot.getChat(chatId) ⇒ <code>Promise</code>
-Use this method to get up to date information about the chat
-(current name of the user for one-on-one conversations, current
-username of a user, group or channel, etc.).
+Use this method to get up to date information about the chat(current name of the user for one-on-one conversations, currentusername of a user, group or channel, etc.).
 
 **Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
 **See**: https://core.telegram.org/bots/api#getchat  
@@ -781,8 +712,7 @@ Use this method to delete a message.
 <a name="TelegramBot+sendInvoice"></a>
 
 ### telegramBot.sendInvoice(chatId, title, description, payload, providerToken, startParameter, currency, prices, [options]) ⇒ <code>Promise</code>
-Send invoice.
-Use this method to send an invoice.
+Send invoice.Use this method to send an invoice.
 
 **Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
 **See**: https://core.telegram.org/bots/api#sendinvoice  
@@ -802,8 +732,7 @@ Use this method to send an invoice.
 <a name="TelegramBot+answerShippingQuery"></a>
 
 ### telegramBot.answerShippingQuery(shippingQueryId, ok, [options]) ⇒ <code>Promise</code>
-Answer shipping query..
-Use this method to reply to shipping queries.
+Answer shipping query..Use this method to reply to shipping queries.
 
 **Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
 **See**: https://core.telegram.org/bots/api#answershippingquery  
@@ -817,8 +746,7 @@ Use this method to reply to shipping queries.
 <a name="TelegramBot+answerPreCheckoutQuery"></a>
 
 ### telegramBot.answerPreCheckoutQuery(preCheckoutQueryId, ok, [options]) ⇒ <code>Promise</code>
-Answer pre-checkout query.
-Use this method to confirm shipping of a product.
+Answer pre-checkout query.Use this method to confirm shipping of a product.
 
 **Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
 **See**: https://core.telegram.org/bots/api#answerprecheckoutquery  
