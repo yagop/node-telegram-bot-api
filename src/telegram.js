@@ -1001,17 +1001,27 @@ class TelegramBot extends EventEmitter {
    * a notification at the top of the chat screen or as an alert.
    * On success, True is returned.
    *
-   * @param  {Number|String} callbackQueryId  Unique identifier for the query to be answered
-   * @param  {String} text  Text of the notification. If not specified, nothing will be shown to the user
-   * @param  {Boolean} showAlert  Whether to show an alert or a notification at the top of the screen
+   * This method has an [older, compatible signature][answerCallbackQuery-v0.27.1]
+   * that is being deprecated.
+   *
    * @param  {Object} [options] Additional Telegram query options
    * @return {Promise}
    * @see https://core.telegram.org/bots/api#answercallbackquery
    */
-  answerCallbackQuery(callbackQueryId, text, showAlert, form = {}) {
-    form.callback_query_id = callbackQueryId;
-    form.text = text;
-    form.show_alert = showAlert;
+  answerCallbackQuery(form = {}) {
+    /* The older method signature was answerCallbackQuery(callbackQueryId, text, showAlert).
+     * We need to ensure backwards-compatibility while maintaining
+     * consistency of the method signatures throughout the library */
+    if (typeof form !== 'object') {
+      /* eslint-disable no-param-reassign, prefer-rest-params */
+      deprecate('The method signature answerCallbackQuery(callbackQueryId, text, showAlert) has been deprecated since v0.27.1');
+      form = {
+        callback_query_id: arguments[0],
+        text: arguments[1],
+        show_alert: arguments[2],
+      };
+      /* eslint-enable no-param-reassign, prefer-rest-params */
+    }
     return this._request('answerCallbackQuery', { form });
   }
 
