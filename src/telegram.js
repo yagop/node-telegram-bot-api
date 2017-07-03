@@ -852,7 +852,6 @@ class TelegramBot extends EventEmitter {
    *
    * @param  {Number|String} callbackQueryId  Unique identifier for the query to be answered
    * @param  {String} text  Text of the notification. If not specified, nothing will be shown to the user
-   * @param  {Boolean} showAlert  Whether to show an alert or a notification at the top of the screen
    * @param  {Object} [options] Additional Telegram query options
    * @return {Promise}
    * @see https://core.telegram.org/bots/api#answercallbackquery
@@ -860,7 +859,6 @@ class TelegramBot extends EventEmitter {
   answerCallbackQuery(callbackQueryId, text, showAlert, form = {}) {
     form.callback_query_id = callbackQueryId;
     form.text = text;
-    form.show_alert = showAlert;
     return this._request('answerCallbackQuery', { form });
   }
 
