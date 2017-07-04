@@ -842,19 +842,19 @@ describe('TelegramBot', function telegramSuite() {
     });
     it('should set a chat photo from fs.readStream', function test() {
       const photo = fs.createReadStream(`${__dirname}/data/chat_photo.png`);
-      return bot.sendPhoto(GROUPID, photo).then(resp => {
+      return bot.setChatPhoto(GROUPID, photo).then(resp => {
         assert.equal(resp, true);
       });
     });
     it('should set a chat photo from request Stream', function test() {
       const photo = request(`${staticUrl}/chat_photo.png`);
-      return bot.sendPhoto(GROUPID, photo).then(resp => {
+      return bot.setChatPhoto(GROUPID, photo).then(resp => {
         assert.equal(resp, true);
       });
     });
     it('should set a chat photo from a Buffer', function test() {
       const photo = fs.readFileSync(`${__dirname}/data/chat_photo.png`);
-      return bot.sendPhoto(GROUPID, photo).then(resp => {
+      return bot.setChatPhoto(GROUPID, photo).then(resp => {
         assert.equal(resp, true);
       });
     });
