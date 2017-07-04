@@ -38,7 +38,7 @@ TelegramBot
     * [.sendChatAction(chatId, action)](#TelegramBot+sendChatAction) ⇒ <code>Promise</code>
     * [.kickChatMember(chatId, userId)](#TelegramBot+kickChatMember) ⇒ <code>Promise</code>
     * [.unbanChatMember(chatId, userId)](#TelegramBot+unbanChatMember) ⇒ <code>Promise</code>
-    * [.answerCallbackQuery(callbackQueryId, text, showAlert, [options])](#TelegramBot+answerCallbackQuery) ⇒ <code>Promise</code>
+    * [.answerCallbackQuery([options])](#TelegramBot+answerCallbackQuery) ⇒ <code>Promise</code>
     * [.editMessageText(text, [options])](#TelegramBot+editMessageText) ⇒ <code>Promise</code>
     * [.editMessageCaption(caption, [options])](#TelegramBot+editMessageCaption) ⇒ <code>Promise</code>
     * [.editMessageReplyMarkup(replyMarkup, [options])](#TelegramBot+editMessageReplyMarkup) ⇒ <code>Promise</code>
@@ -424,20 +424,20 @@ the group for this to work. Returns True on success.
 
 <a name="TelegramBot+answerCallbackQuery"></a>
 
-### telegramBot.answerCallbackQuery(callbackQueryId, text, showAlert, [options]) ⇒ <code>Promise</code>
+### telegramBot.answerCallbackQuery([options]) ⇒ <code>Promise</code>
 Use this method to send answers to callback queries sent from
 inline keyboards. The answer will be displayed to the user as
 a notification at the top of the chat screen or as an alert.
 On success, True is returned.
+
+This method has an [older, compatible signature][answerCallbackQuery-v0.27.1]
+that is being deprecated.
 
 **Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
 **See**: https://core.telegram.org/bots/api#answercallbackquery  
 
 | Param | Type | Description |
 | --- | --- | --- |
-| callbackQueryId | <code>Number</code> &#124; <code>String</code> | Unique identifier for the query to be answered |
-| text | <code>String</code> | Text of the notification. If not specified, nothing will be shown to the user |
-| showAlert | <code>Boolean</code> | Whether to show an alert or a notification at the top of the screen |
 | [options] | <code>Object</code> | Additional Telegram query options |
 
 <a name="TelegramBot+editMessageText"></a>
