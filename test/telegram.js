@@ -876,7 +876,7 @@ describe('TelegramBot', function telegramSuite() {
       utils.handleRatelimit(bot, 'setChatTitle', this);
     });
     it('should set the chat title', function test() {
-      return bot.setChatTitle(GROUPID, 'node-telegram-bot-api test group').then(resp => {
+      return bot.setChatTitle(GROUPID, 'ntba test group').then(resp => {
         assert.equal(resp, true);
       });
     });
@@ -887,7 +887,7 @@ describe('TelegramBot', function telegramSuite() {
       utils.handleRatelimit(bot, 'setChatDescription', this);
     });
     it('should set the chat description', function test() {
-      return bot.setChatDescription(GROUPID, 'ntba test group').then(resp => {
+      return bot.setChatDescription(GROUPID, 'node-telegram-bot-api test group').then(resp => {
         assert.equal(resp, true);
       });
     });
