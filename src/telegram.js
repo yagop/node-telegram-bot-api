@@ -850,7 +850,7 @@ class TelegramBot extends EventEmitter {
    * a notification at the top of the chat screen or as an alert.
    * On success, True is returned.
    *
-   * This method has an [older, compatible signature][answerCallbackQuery-v0.25.1]
+   * This method has an [older, compatible signature][answerCallbackQuery-v0.27.1]
    * that is being deprecated.
    *
    * @param  {Object} [options] Additional Telegram query options
@@ -863,7 +863,7 @@ class TelegramBot extends EventEmitter {
      * consistency of the method signatures throughout the library */
     if (typeof form !== 'object') {
       /* eslint-disable no-param-reassign, prefer-rest-params */
-      deprecate('The method signature answerCallbackQuery(callbackQueryId, text, showAlert) has been deprecated since v0.25.1');
+      deprecate('The method signature answerCallbackQuery(callbackQueryId, text, showAlert) has been deprecated since v0.27.1');
       form = {
         callback_query_id: arguments[0],
         text: arguments[1],
