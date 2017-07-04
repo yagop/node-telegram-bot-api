@@ -430,7 +430,7 @@ inline keyboards. The answer will be displayed to the user as
 a notification at the top of the chat screen or as an alert.
 On success, True is returned.
 
-This method has an [older, compatible signature][answerCallbackQuery-v0.25.1]
+This method has an [older, compatible signature][answerCallbackQuery-v0.27.1]
 that is being deprecated.
 
 **Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
