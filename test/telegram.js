@@ -887,7 +887,9 @@ describe('TelegramBot', function telegramSuite() {
       utils.handleRatelimit(bot, 'setChatDescription', this);
     });
     it('should set the chat description', function test() {
-      return bot.setChatDescription(GROUPID, 'node-telegram-bot-api test group').then(resp => {
+      const random = Math.floor(Math.random() * 1000);
+      const description = `node-telegram-bot-api test group (random: ${random})`;
+      return bot.setChatDescription(GROUPID, description).then(resp => {
         assert.equal(resp, true);
       });
     });
