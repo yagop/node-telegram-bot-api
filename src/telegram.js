@@ -845,6 +845,157 @@ class TelegramBot extends EventEmitter {
   }
 
   /**
+   * Use this method to restrict a user in a supergroup.
+   * The bot must be an administrator in the supergroup for this to work
+   * and must have the appropriate admin rights. Pass True for all boolean parameters
+   * to lift restrictions from a user. Returns True on success.
+   *
+   * @param  {Number|String} chatId Unique identifier for the target chat or username of the target supergroup
+   * @param  {String} userId Unique identifier of the target user
+   * @param  {Object} [options] Additional Telegram query options
+   * @return {Promise}
+   * @see https://core.telegram.org/bots/api#restrictchatmember
+   */
+  restrictChatMember(chatId, userId, form = {}) {
+    form.chat_id = chatId;
+    form.user_id = userId;
+    return this._request('restrictChatMember', { form });
+  }
+
+  /**
+   * Use this method to promote or demote a user in a supergroup or a channel.
+   * The bot must be an administrator in the chat for this to work
+   * and must have the appropriate admin rights. Pass False for all boolean parameters to demote a user.
+   * Returns True on success.
+   *
+   * @param  {Number|String} chatId Unique identifier for the target chat or username of the target supergroup
+   * @param  {String} userId
+   * @param  {Object} [options] Additional Telegram query options
+   * @return {Promise}
+   * @see https://core.telegram.org/bots/api#promotechatmember
+   */
+  promoteChatMember(chatId, userId, form = {}) {
+    form.chat_id = chatId;
+    form.user_id = userId;
+    return this._request('promoteChatMember', { form });
+  }
+
+  /**
+   * Use this method to export an invite link to a supergroup or a channel.
+   * The bot must be an administrator in the chat for this to work and must have the appropriate admin rights.
+   * Returns exported invite link as String on success.
+   *
+   * @param  {Number|String} chatId Unique identifier for the target chat or username of the target supergroup
+   * @return {Promise}
+   * @see https://core.telegram.org/bots/api#exportchatinvitelink
+   */
+  exportChatInviteLink(chatId, form = {}) {
+    form.chat_id = chatId;
+    return this._request('exportChatInviteLink', { form });
+  }
+
+  /**
+   * Use this method to set a new profile photo for the chat. Photos can't be changed for private chats.
+   * The bot must be an administrator in the chat for this to work and must have the appropriate admin rights.
+   * Returns True on success.
+   *
+   * @param  {Number|String} chatId  Unique identifier for the message recipient
+   * @param  {stream.Stream|Buffer} photo A file path or a Stream.
+   * @return {Promise}
+   * @see https://core.telegram.org/bots/api#setchatphoto
+   */
+  setChatPhoto(chatId, photo, options = {}) {
+    const opts = {
+      qs: options,
+    };
+    opts.qs.chat_id = chatId;
+    try {
+      const sendData = this._formatSendData('photo', photo);
+      opts.formData = sendData[0];
+      opts.qs.photo = sendData[1];
+    } catch (ex) {
+      return Promise.reject(ex);
+    }
+    return this._request('setChatPhoto', opts);
+  }
+
+  /**
+   * Use this method to delete a chat photo. Photos can't be changed for private chats.
+   * The bot must be an administrator in the chat for this to work and must have the appropriate admin rights.
+   * Returns True on success.
+   *
+   * @param  {Number|String} chatId  Unique identifier for the message recipient
+   * @return {Promise}
+   * @see https://core.telegram.org/bots/api#deletechatphoto
+   */
+  deleteChatPhoto(chatId, form = {}) {
+    form.chat_id = chatId;
+    return this._request('deleteChatPhoto', { form });
+  }
+
+  /**
+   * Use this method to change the title of a chat. Titles can't be changed for private chats.
+   * The bot must be an administrator in the chat for this to work and must have the appropriate admin rights.
+   * Returns True on success.
+   *
+   * @param  {Number|String} chatId  Unique identifier for the message recipient
+   * @param  {String} title New chat title, 1-255 characters
+   * @return {Promise}
+   * @see https://core.telegram.org/bots/api#setchattitle
+   */
+  setChatTitle(chatId, title, form = {}) {
+    form.chat_id = chatId;
+    form.title = title;
+    return this._request('setChatTitle', { form })
+  }
+
+  /**
+   * Use this method to change the description of a supergroup or a channel.
+   * The bot must be an administrator in the chat for this to work and must have the appropriate admin rights.
+   * Returns True on success.
+   *
+   * @param  {Number|String} chatId  Unique identifier for the message recipient
+   * @param  {String} description New chat title, 1-255 characters
+   * @return {Promise}
+   * @see https://core.telegram.org/bots/api#setchatdescription
+   */
+  setChatDescription(chatId, description, form = {}) {
+    form.chat_id = chatId;
+    form.description = description;
+    return this._request('setChatDescription', { form })
+  }
+
+  /**
+   * Use this method to pin a message in a supergroup.
+   * The bot must be an administrator in the chat for this to work and must have the appropriate admin rights.
+   * Returns True on success.
+   *
+   * @param  {Number|String} chatId  Unique identifier for the message recipient
+   * @param  {String} messageId Identifier of a message to pin
+   * @return {Promise}
+   * @see https://core.telegram.org/bots/api#pinchatmessage
+   */
+  pinChatMessage(chatId, messageId, form = {}) {
+    form.chat_id = chatId;
+    form.message_id = messageId;
+    return this._request('pinChatMessage', { form });
+  }
+
+  /**
+   * Use this method to unpin a message in a supergroup chat.
+   * The bot must be an administrator in the chat for this to work and must have the appropriate admin rights.
+   * Returns True on success.
+   *
+   * @param  {Number|String} chatId  Unique identifier for the message recipient
+   * @return {Promise}
+   * @see https://core.telegram.org/bots/api#unpinchatmessage
+   */
+  unpinChatMessage(chatId, form = {}) {
+    form.chat_id = chatId;
+    return this._request('unpinChatMessage', { form });
+  }
+
+  /**
    * Use this method to send answers to callback queries sent from
    * inline keyboards. The answer will be displayed to the user as
    * a notification at the top of the chat screen or as an alert.
