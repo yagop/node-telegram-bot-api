@@ -13,7 +13,7 @@ const isCI = require('is-ci');
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 
 const TOKEN = process.env.TEST_TELEGRAM_TOKEN;
-if (!TOKEN)
+if (!TOKEN) {
   throw new Error('Bot token not provided');
 }
 
