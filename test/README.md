@@ -23,3 +23,4 @@ npm run test
 npm run eslint              # static-analysis
 npm run mocha               # mocha tests
 ```
+Note: The bot must be an administrator in the chat for this to work and must have the appropriate admin rights.
