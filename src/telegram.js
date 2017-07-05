@@ -946,7 +946,7 @@ class TelegramBot extends EventEmitter {
   setChatTitle(chatId, title, form = {}) {
     form.chat_id = chatId;
     form.title = title;
-    return this._request('setChatTitle', { form })
+    return this._request('setChatTitle', { form });
   }
 
   /**
@@ -962,7 +962,7 @@ class TelegramBot extends EventEmitter {
   setChatDescription(chatId, description, form = {}) {
     form.chat_id = chatId;
     form.description = description;
-    return this._request('setChatDescription', { form })
+    return this._request('setChatDescription', { form });
   }
 
   /**
