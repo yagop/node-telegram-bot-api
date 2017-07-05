@@ -7,17 +7,18 @@ const os = require('os');
 const path = require('path');
 const is = require('is');
 const utils = require('./utils');
+const isCI = require('is-ci');
 
 // Allows self-signed certificates to be used in our tests
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 
 const TOKEN = process.env.TEST_TELEGRAM_TOKEN;
-if (!TOKEN) {
+if (!TOKEN)
   throw new Error('Bot token not provided');
 }
 
 const PROVIDER_TOKEN = process.env.TEST_PROVIDER_TOKEN;
-if (!PROVIDER_TOKEN) {
+if (!PROVIDER_TOKEN && !isCI) { // If is not running in Travis / Appveyor
   throw new Error('Provider token not supplied');
 }
 
@@ -1324,7 +1325,9 @@ describe('TelegramBot', function telegramSuite() {
       utils.handleRatelimit(bot, 'sendInvoice', this);
     });
     it('should send an invoice', function test() {
-      this.skip(); // Skip test for now
+      if (isCI) {
+        this.skip(); // Skip test for now
+      }
       const title = 'Demo product';
       const description = 'our test product';
       const payload = 'sku-p001';
