@@ -47,7 +47,7 @@ TelegramBot
     * [.setChatDescription(chatId, description)](#TelegramBot+setChatDescription) ⇒ <code>Promise</code>
     * [.pinChatMessage(chatId, messageId)](#TelegramBot+pinChatMessage) ⇒ <code>Promise</code>
     * [.unpinChatMessage(chatId)](#TelegramBot+unpinChatMessage) ⇒ <code>Promise</code>
-    * [.answerCallbackQuery(callbackQueryId, text, showAlert, [options])](#TelegramBot+answerCallbackQuery) ⇒ <code>Promise</code>
+    * [.answerCallbackQuery([options])](#TelegramBot+answerCallbackQuery) ⇒ <code>Promise</code>
     * [.editMessageText(text, [options])](#TelegramBot+editMessageText) ⇒ <code>Promise</code>
     * [.editMessageCaption(caption, [options])](#TelegramBot+editMessageCaption) ⇒ <code>Promise</code>
     * [.editMessageReplyMarkup(replyMarkup, [options])](#TelegramBot+editMessageReplyMarkup) ⇒ <code>Promise</code>
@@ -569,20 +569,20 @@ Returns True on success.
 
 <a name="TelegramBot+answerCallbackQuery"></a>
 
-### telegramBot.answerCallbackQuery(callbackQueryId, text, showAlert, [options]) ⇒ <code>Promise</code>
+### telegramBot.answerCallbackQuery([options]) ⇒ <code>Promise</code>
 Use this method to send answers to callback queries sent from
 inline keyboards. The answer will be displayed to the user as
 a notification at the top of the chat screen or as an alert.
 On success, True is returned.
+
+This method has an [older, compatible signature][answerCallbackQuery-v0.27.1]
+that is being deprecated.
 
 **Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
 **See**: https://core.telegram.org/bots/api#answercallbackquery  
 
 | Param | Type | Description |
 | --- | --- | --- |
-| callbackQueryId | <code>Number</code> &#124; <code>String</code> | Unique identifier for the query to be answered |
-| text | <code>String</code> | Text of the notification. If not specified, nothing will be shown to the user |
-| showAlert | <code>Boolean</code> | Whether to show an alert or a notification at the top of the screen |
 | [options] | <code>Object</code> | Additional Telegram query options |
 
 <a name="TelegramBot+editMessageText"></a>
@@ -981,3 +981,4 @@ Use this method to confirm shipping of a product.
 [setWebHook-v0.25.0]:https://github.com/yagop/node-telegram-bot-api/tree/4e5a493cadfaad5589a8d79e55d9e0d103000ce4#telegrambotsetwebhookurl-cert
 [getUpdates-v0.25.0]:https://github.com/yagop/node-telegram-bot-api/tree/4e5a493cadfaad5589a8d79e55d9e0d103000ce4#TelegramBot+getUpdates
 [getUserProfilePhotos-v0.25.0]:https://github.com/yagop/node-telegram-bot-api/tree/4e5a493cadfaad5589a8d79e55d9e0d103000ce4#TelegramBot+getUserProfilePhotos
+[answerCallbackQuery-v0.27.1]:https://github.com/yagop/node-telegram-bot-api/blob/v0.27.1/doc/api.md#TelegramBot+answerCallbackQuery
