@@ -18,6 +18,8 @@ const URL = require('url');
 const fs = require('fs');
 const pump = require('pump');
 const deprecate = require('depd')('node-telegram-bot-api');
+const wildcard = require('wildcard');
+
 
 const _messageTypes = [
   'audio',
@@ -558,6 +560,11 @@ class TelegramBot extends EventEmitter {
     } else if (callbackQuery) {
       debug('Process Update callback_query %j', callbackQuery);
       this.emit('callback_query', callbackQuery);
+      for (var key in this._callbackListeners) {
+          if (wildcard(key, callbackQuery.data)) {
+              this._callbackListeners[key](callbackQuery);
+          }
+      }
     } else if (shippingQuery) {
       debug('Process Update shipping_query %j', shippingQuery);
       this.emit('shipping_query', shippingQuery);
@@ -1284,7 +1291,28 @@ class TelegramBot extends EventEmitter {
     }
     return this._replyListeners.splice(index, 1)[0];
   }
-
+  
+  /*
+   * Triggers the callback whenever a callbackQuery.data matches the wildcard
+   * @param {String} wildcard     The wildcard to match against
+   * @param {Function} callback
+   * @returns {undefined}
+   */
+  addCallbackListener(wildcard, callback) {
+    if (typeof callback === 'function') {
+      this._callbackListeners[wildcard] = callback;
+    }
+  }
+  
+  /*
+   * Remove a previos set up CallbackListener
+   * @param {type} wildcard     The wildcard of the listener
+   * @returns {undefined}
+   */
+  removeCallbackListener(wildcard) {
+      delete this._callbackListeners[wildcard];
+  }
+  
   /**
    * Use this method to get up to date information about the chat
    * (current name of the user for one-on-one conversations, current
