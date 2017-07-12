@@ -229,7 +229,7 @@ class TelegramBot extends EventEmitter {
    * @see https://npmjs.com/package/file-type
    * @private
    */
-  _formatSendData(type, data) {
+  _formatSendData(type, data, fileOpts = {}) {
     let formData;
     let fileName;
     let fileId;
@@ -276,6 +276,9 @@ class TelegramBot extends EventEmitter {
       };
     } else {
       fileId = data;
+    }
+    if (formData && Object.keys(fileOpts).length) {
+      Object.assign(formData[type].options, fileOpts);
     }
     return [formData, fileId];
   }
@@ -617,16 +620,18 @@ class TelegramBot extends EventEmitter {
    * @param  {String|stream.Stream|Buffer} photo A file path or a Stream. Can
    * also be a `file_id` previously uploaded
    * @param  {Object} [options] Additional Telegram query options
+   * @param  {Object} [fileOpts] Optional file related meta-data
    * @return {Promise}
    * @see https://core.telegram.org/bots/api#sendphoto
+   * @see https://github.com/yagop/node-telegram-bot-api/blob/master/doc/usage.md#sending-files
    */
-  sendPhoto(chatId, photo, options = {}) {
+  sendPhoto(chatId, photo, options = {}, fileOpts = {}) {
     const opts = {
       qs: options,
     };
     opts.qs.chat_id = chatId;
     try {
-      const sendData = this._formatSendData('photo', photo);
+      const sendData = this._formatSendData('photo', photo, fileOpts);
       opts.formData = sendData[0];
       opts.qs.photo = sendData[1];
     } catch (ex) {
@@ -641,16 +646,18 @@ class TelegramBot extends EventEmitter {
    * @param  {String|stream.Stream|Buffer} audio A file path, Stream or Buffer.
    * Can also be a `file_id` previously uploaded.
    * @param  {Object} [options] Additional Telegram query options
+   * @param  {Object} [fileOpts] Optional file related meta-data
    * @return {Promise}
    * @see https://core.telegram.org/bots/api#sendaudio
+   * @see https://github.com/yagop/node-telegram-bot-api/blob/master/doc/usage.md#sending-files
    */
-  sendAudio(chatId, audio, options = {}) {
+  sendAudio(chatId, audio, options = {}, fileOpts = {}) {
     const opts = {
       qs: options
     };
     opts.qs.chat_id = chatId;
     try {
-      const sendData = this._formatSendData('audio', audio);
+      const sendData = this._formatSendData('audio', audio, fileOpts);
       opts.formData = sendData[0];
       opts.qs.audio = sendData[1];
     } catch (ex) {
@@ -668,6 +675,7 @@ class TelegramBot extends EventEmitter {
    * @param  {Object} [fileOpts] Optional file related meta-data
    * @return {Promise}
    * @see https://core.telegram.org/bots/api#sendDocument
+   * @see https://github.com/yagop/node-telegram-bot-api/blob/master/doc/usage.md#sending-files
    */
   sendDocument(chatId, doc, options = {}, fileOpts = {}) {
     const opts = {
@@ -675,14 +683,11 @@ class TelegramBot extends EventEmitter {
     };
     opts.qs.chat_id = chatId;
     try {
-      const sendData = this._formatSendData('document', doc);
+      const sendData = this._formatSendData('document', doc, fileOpts);
       opts.formData = sendData[0];
       opts.qs.document = sendData[1];
     } catch (ex) {
       return Promise.reject(ex);
-    }
-    if (opts.formData && Object.keys(fileOpts).length) {
-      opts.formData.document.options = fileOpts;
     }
     return this._request('sendDocument', opts);
   }
@@ -717,16 +722,18 @@ class TelegramBot extends EventEmitter {
    * @param  {String|stream.Stream|Buffer} video A file path or Stream.
    * Can also be a `file_id` previously uploaded.
    * @param  {Object} [options] Additional Telegram query options
+   * @param  {Object} [fileOpts] Optional file related meta-data
    * @return {Promise}
    * @see https://core.telegram.org/bots/api#sendvideo
+   * @see https://github.com/yagop/node-telegram-bot-api/blob/master/doc/usage.md#sending-files
    */
-  sendVideo(chatId, video, options = {}) {
+  sendVideo(chatId, video, options = {}, fileOpts = {}) {
     const opts = {
       qs: options
     };
     opts.qs.chat_id = chatId;
     try {
-      const sendData = this._formatSendData('video', video);
+      const sendData = this._formatSendData('video', video, fileOpts);
       opts.formData = sendData[0];
       opts.qs.video = sendData[1];
     } catch (ex) {
@@ -741,17 +748,19 @@ class TelegramBot extends EventEmitter {
    * @param  {String|stream.Stream|Buffer} videoNote A file path or Stream.
    * Can also be a `file_id` previously uploaded.
    * @param  {Object} [options] Additional Telegram query options
+   * @param  {Object} [fileOpts] Optional file related meta-data
    * @return {Promise}
    * @info The length parameter is actually optional. However, the API (at time of writing) requires you to always provide it until it is fixed.
    * @see https://core.telegram.org/bots/api#sendvideonote
+   * @see https://github.com/yagop/node-telegram-bot-api/blob/master/doc/usage.md#sending-files
    */
-  sendVideoNote(chatId, videoNote, options = {}) {
+  sendVideoNote(chatId, videoNote, options = {}, fileOpts = {}) {
     const opts = {
       qs: options
     };
     opts.qs.chat_id = chatId;
     try {
-      const sendData = this._formatSendData('video_note', videoNote);
+      const sendData = this._formatSendData('video_note', videoNote, fileOpts);
       opts.formData = sendData[0];
       opts.qs.video_note = sendData[1];
     } catch (ex) {
@@ -766,16 +775,18 @@ class TelegramBot extends EventEmitter {
    * @param  {String|stream.Stream|Buffer} voice A file path, Stream or Buffer.
    * Can also be a `file_id` previously uploaded.
    * @param  {Object} [options] Additional Telegram query options
+   * @param  {Object} [fileOpts] Optional file related meta-data
    * @return {Promise}
    * @see https://core.telegram.org/bots/api#sendvoice
+   * @see https://github.com/yagop/node-telegram-bot-api/blob/master/doc/usage.md#sending-files
    */
-  sendVoice(chatId, voice, options = {}) {
+  sendVoice(chatId, voice, options = {}, fileOpts = {}) {
     const opts = {
       qs: options
     };
     opts.qs.chat_id = chatId;
     try {
-      const sendData = this._formatSendData('voice', voice);
+      const sendData = this._formatSendData('voice', voice, fileOpts);
       opts.formData = sendData[0];
       opts.qs.voice = sendData[1];
     } catch (ex) {
