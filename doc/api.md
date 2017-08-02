@@ -74,6 +74,7 @@ TelegramBot
     * [.sendInvoice(chatId, title, description, payload, providerToken, startParameter, currency, prices, [options])](#TelegramBot+sendInvoice) ⇒ <code>Promise</code>
     * [.answerShippingQuery(shippingQueryId, ok, [options])](#TelegramBot+answerShippingQuery) ⇒ <code>Promise</code>
     * [.answerPreCheckoutQuery(preCheckoutQueryId, ok, [options])](#TelegramBot+answerPreCheckoutQuery) ⇒ <code>Promise</code>
+    * [.getStickerSet(name, [options])](#TelegramBot+getStickerSet) ⇒ <code>Promise</code>
 
 <a name="new_TelegramBot_new"></a>
 
@@ -972,6 +973,19 @@ Use this method to confirm shipping of a product.
 | --- | --- | --- |
 | preCheckoutQueryId | <code>String</code> | Unique identifier for the query to be answered |
 | ok | <code>Boolean</code> | Specify if every order details are ok |
+| [options] | <code>Object</code> | Additional Telegram query options |
+
+<a name="TelegramBot+getStickerSet"></a>
+
+### telegramBot.getStickerSet(name, [options]) ⇒ <code>Promise</code>
+Use this method to get the sticker set given the name of the set.
+Returns a [StickerSet](https://core.telegram.org/bots/api#stickerset) object.
+
+**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| name | <code>String</code> | Name of the sticker set |
 | [options] | <code>Object</code> | Additional Telegram query options |
 
 * * *
