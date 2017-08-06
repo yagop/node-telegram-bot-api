@@ -715,7 +715,7 @@ describe('TelegramBot', function telegramSuite() {
     });
   });
 
-  describe('#sendVideoNote', function sendVideoNoteSuite() {
+  describe.skip('#sendVideoNote', function sendVideoNoteSuite() {
     let videoNoteId;
     this.timeout(timeout);
     before(function before() {
