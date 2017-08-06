@@ -7,7 +7,21 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 Added:
 
+1. (#361) Support Bot API v3.1 (by @Lord-Protector, @kamikazechaser)
+1. (#332) Support Bot API v3.0 (by @kamikazechaser, @GochoMugo)
+1. Add *TelegramBot#removeTextListener()* (by @GochoMugo)
+1. (#342) Add game example (by @MCSH)
 1. (#315) List 'bot-brother' project in community section in README (by @saeedhei)
+
+Changed:
+
+1. (#367) Update *TelegramBot#answerCallbackQuery()* signature (by @mnb3000)
+
+Fixed:
+
+1. (#325) Fix global regexp state reset (by @Sirius-A)
+1. (#363) Fix download file path on windows (by @kucherenkovova)
+1. (#346) Fix anchor webhook link in docs (by @Coac)
 
 
 * * *
