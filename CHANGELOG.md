@@ -150,4 +150,5 @@ Fixed:
 [0.26.0]:https://github.com/yagop/node-telegram-bot-api/releases/tag/v0.26.0
 [0.27.0]:https://github.com/yagop/node-telegram-bot-api/releases/tag/v0.27.0
 [0.27.1]:https://github.com/yagop/node-telegram-bot-api/releases/tag/v0.27.1
+[0.28.0]:https://github.com/yagop/node-telegram-bot-api/releases/tag/v0.28.0
 [Unreleased]:https://github.com/yagop/node-telegram-bot-api/compare/v0.27.1...master
