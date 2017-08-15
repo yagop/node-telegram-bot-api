@@ -5,6 +5,13 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased][Unreleased]
 
+
+
+
+* * *
+
+## [0.28.0][0.28.0] - 2017-08-06
+
 Added:
 
 1. (#361) Support Bot API v3.1 (by @Lord-Protector, @kamikazechaser)
