@@ -109,6 +109,15 @@ describe('TelegramBot', function telegramSuite() {
     });
   });
 
+  it('allows providing custom Promise library', function test() {
+    TelegramBot.Promise = global.Promise;
+    const promise = bot.stopPolling();
+    assert.ok(promise instanceof global.Promise);
+    assert.ok(!(promise instanceof Promise));
+    // revert
+    TelegramBot.Promise = Promise;
+  });
+
   it('automatically starts polling', function test() {
     assert.equal(botPolling.isPolling(), true);
     return utils.isPollingMockServer(pollingPort2);

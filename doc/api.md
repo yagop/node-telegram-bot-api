@@ -12,68 +12,71 @@ TelegramBot
 
 * [TelegramBot](#TelegramBot)
     * [new TelegramBot(token, [options])](#new_TelegramBot_new)
-    * [.startPolling([options])](#TelegramBot+startPolling) ⇒ <code>Promise</code>
-    * ~~[.initPolling([options])](#TelegramBot+initPolling) ⇒ <code>Promise</code>~~
-    * [.stopPolling()](#TelegramBot+stopPolling) ⇒ <code>Promise</code>
-    * [.isPolling()](#TelegramBot+isPolling) ⇒ <code>Boolean</code>
-    * [.openWebHook()](#TelegramBot+openWebHook) ⇒ <code>Promise</code>
-    * [.closeWebHook()](#TelegramBot+closeWebHook) ⇒ <code>Promise</code>
-    * [.hasOpenWebHook()](#TelegramBot+hasOpenWebHook) ⇒ <code>Boolean</code>
-    * [.getMe()](#TelegramBot+getMe) ⇒ <code>Promise</code>
-    * [.setWebHook(url, [options])](#TelegramBot+setWebHook) ⇒ <code>Promise</code>
-    * [.deleteWebHook()](#TelegramBot+deleteWebHook) ⇒ <code>Promise</code>
-    * [.getWebHookInfo()](#TelegramBot+getWebHookInfo) ⇒ <code>Promise</code>
-    * [.getUpdates([options])](#TelegramBot+getUpdates) ⇒ <code>Promise</code>
-    * [.processUpdate(update)](#TelegramBot+processUpdate)
-    * [.sendMessage(chatId, text, [options])](#TelegramBot+sendMessage) ⇒ <code>Promise</code>
-    * [.answerInlineQuery(inlineQueryId, results, [options])](#TelegramBot+answerInlineQuery) ⇒ <code>Promise</code>
-    * [.forwardMessage(chatId, fromChatId, messageId, [options])](#TelegramBot+forwardMessage) ⇒ <code>Promise</code>
-    * [.sendPhoto(chatId, photo, [options])](#TelegramBot+sendPhoto) ⇒ <code>Promise</code>
-    * [.sendAudio(chatId, audio, [options])](#TelegramBot+sendAudio) ⇒ <code>Promise</code>
-    * [.sendDocument(chatId, doc, [options], [fileOpts])](#TelegramBot+sendDocument) ⇒ <code>Promise</code>
-    * [.sendSticker(chatId, sticker, [options])](#TelegramBot+sendSticker) ⇒ <code>Promise</code>
-    * [.sendVideo(chatId, video, [options])](#TelegramBot+sendVideo) ⇒ <code>Promise</code>
-    * [.sendVideoNote(chatId, videoNote, [options])](#TelegramBot+sendVideoNote) ⇒ <code>Promise</code>
-    * [.sendVoice(chatId, voice, [options])](#TelegramBot+sendVoice) ⇒ <code>Promise</code>
-    * [.sendChatAction(chatId, action)](#TelegramBot+sendChatAction) ⇒ <code>Promise</code>
-    * [.kickChatMember(chatId, userId)](#TelegramBot+kickChatMember) ⇒ <code>Promise</code>
-    * [.unbanChatMember(chatId, userId)](#TelegramBot+unbanChatMember) ⇒ <code>Promise</code>
-    * [.restrictChatMember(chatId, userId, [options])](#TelegramBot+restrictChatMember) ⇒ <code>Promise</code>
-    * [.promoteChatMember(chatId, userId, [options])](#TelegramBot+promoteChatMember) ⇒ <code>Promise</code>
-    * [.exportChatInviteLink(chatId)](#TelegramBot+exportChatInviteLink) ⇒ <code>Promise</code>
-    * [.setChatPhoto(chatId, photo)](#TelegramBot+setChatPhoto) ⇒ <code>Promise</code>
-    * [.deleteChatPhoto(chatId)](#TelegramBot+deleteChatPhoto) ⇒ <code>Promise</code>
-    * [.setChatTitle(chatId, title)](#TelegramBot+setChatTitle) ⇒ <code>Promise</code>
-    * [.setChatDescription(chatId, description)](#TelegramBot+setChatDescription) ⇒ <code>Promise</code>
-    * [.pinChatMessage(chatId, messageId)](#TelegramBot+pinChatMessage) ⇒ <code>Promise</code>
-    * [.unpinChatMessage(chatId)](#TelegramBot+unpinChatMessage) ⇒ <code>Promise</code>
-    * [.answerCallbackQuery([options])](#TelegramBot+answerCallbackQuery) ⇒ <code>Promise</code>
-    * [.editMessageText(text, [options])](#TelegramBot+editMessageText) ⇒ <code>Promise</code>
-    * [.editMessageCaption(caption, [options])](#TelegramBot+editMessageCaption) ⇒ <code>Promise</code>
-    * [.editMessageReplyMarkup(replyMarkup, [options])](#TelegramBot+editMessageReplyMarkup) ⇒ <code>Promise</code>
-    * [.getUserProfilePhotos(userId, [options])](#TelegramBot+getUserProfilePhotos) ⇒ <code>Promise</code>
-    * [.sendLocation(chatId, latitude, longitude, [options])](#TelegramBot+sendLocation) ⇒ <code>Promise</code>
-    * [.sendVenue(chatId, latitude, longitude, title, address, [options])](#TelegramBot+sendVenue) ⇒ <code>Promise</code>
-    * [.sendContact(chatId, phoneNumber, firstName, [options])](#TelegramBot+sendContact) ⇒ <code>Promise</code>
-    * [.getFile(fileId)](#TelegramBot+getFile) ⇒ <code>Promise</code>
-    * [.getFileLink(fileId)](#TelegramBot+getFileLink) ⇒ <code>Promise</code>
-    * [.downloadFile(fileId, downloadDir)](#TelegramBot+downloadFile) ⇒ <code>Promise</code>
-    * [.onText(regexp, callback)](#TelegramBot+onText)
-    * [.removeTextListener(regexp)](#TelegramBot+removeTextListener) ⇒ <code>Object</code>
-    * [.onReplyToMessage(chatId, messageId, callback)](#TelegramBot+onReplyToMessage) ⇒ <code>Number</code>
-    * [.removeReplyListener(replyListenerId)](#TelegramBot+removeReplyListener) ⇒ <code>Object</code>
-    * [.getChat(chatId)](#TelegramBot+getChat) ⇒ <code>Promise</code>
-    * [.getChatAdministrators(chatId)](#TelegramBot+getChatAdministrators) ⇒ <code>Promise</code>
-    * [.getChatMembersCount(chatId)](#TelegramBot+getChatMembersCount) ⇒ <code>Promise</code>
-    * [.getChatMember(chatId, userId)](#TelegramBot+getChatMember) ⇒ <code>Promise</code>
-    * [.leaveChat(chatId)](#TelegramBot+leaveChat) ⇒ <code>Promise</code>
-    * [.sendGame(chatId, gameShortName, [options])](#TelegramBot+sendGame) ⇒ <code>Promise</code>
-    * [.setGameScore(userId, score, [options])](#TelegramBot+setGameScore) ⇒ <code>Promise</code>
-    * [.getGameHighScores(userId, [options])](#TelegramBot+getGameHighScores) ⇒ <code>Promise</code>
-    * [.deleteMessage(chatId, messageId, [options])](#TelegramBot+deleteMessage) ⇒ <code>Promise</code>
-    * [.sendInvoice(chatId, title, description, payload, providerToken, startParameter, currency, prices, [options])](#TelegramBot+sendInvoice) ⇒ <code>Promise</code>
-    * [.answerShippingQuery(shippingQueryId, ok, [options])](#TelegramBot+answerShippingQuery) ⇒ <code>Promise</code>
-    * [.answerPreCheckoutQuery(preCheckoutQueryId, ok, [options])](#TelegramBot+answerPreCheckoutQuery) ⇒ <code>Promise</code>
+    * _instance_
+        * [.startPolling([options])](#TelegramBot+startPolling) ⇒ <code>Promise</code>
+        * ~~[.initPolling([options])](#TelegramBot+initPolling) ⇒ <code>Promise</code>~~
+        * [.stopPolling()](#TelegramBot+stopPolling) ⇒ <code>Promise</code>
+        * [.isPolling()](#TelegramBot+isPolling) ⇒ <code>Boolean</code>
+        * [.openWebHook()](#TelegramBot+openWebHook) ⇒ <code>Promise</code>
+        * [.closeWebHook()](#TelegramBot+closeWebHook) ⇒ <code>Promise</code>
+        * [.hasOpenWebHook()](#TelegramBot+hasOpenWebHook) ⇒ <code>Boolean</code>
+        * [.getMe()](#TelegramBot+getMe) ⇒ <code>Promise</code>
+        * [.setWebHook(url, [options])](#TelegramBot+setWebHook) ⇒ <code>Promise</code>
+        * [.deleteWebHook()](#TelegramBot+deleteWebHook) ⇒ <code>Promise</code>
+        * [.getWebHookInfo()](#TelegramBot+getWebHookInfo) ⇒ <code>Promise</code>
+        * [.getUpdates([options])](#TelegramBot+getUpdates) ⇒ <code>Promise</code>
+        * [.processUpdate(update)](#TelegramBot+processUpdate)
+        * [.sendMessage(chatId, text, [options])](#TelegramBot+sendMessage) ⇒ <code>Promise</code>
+        * [.answerInlineQuery(inlineQueryId, results, [options])](#TelegramBot+answerInlineQuery) ⇒ <code>Promise</code>
+        * [.forwardMessage(chatId, fromChatId, messageId, [options])](#TelegramBot+forwardMessage) ⇒ <code>Promise</code>
+        * [.sendPhoto(chatId, photo, [options])](#TelegramBot+sendPhoto) ⇒ <code>Promise</code>
+        * [.sendAudio(chatId, audio, [options])](#TelegramBot+sendAudio) ⇒ <code>Promise</code>
+        * [.sendDocument(chatId, doc, [options], [fileOpts])](#TelegramBot+sendDocument) ⇒ <code>Promise</code>
+        * [.sendSticker(chatId, sticker, [options])](#TelegramBot+sendSticker) ⇒ <code>Promise</code>
+        * [.sendVideo(chatId, video, [options])](#TelegramBot+sendVideo) ⇒ <code>Promise</code>
+        * [.sendVideoNote(chatId, videoNote, [options])](#TelegramBot+sendVideoNote) ⇒ <code>Promise</code>
+        * [.sendVoice(chatId, voice, [options])](#TelegramBot+sendVoice) ⇒ <code>Promise</code>
+        * [.sendChatAction(chatId, action)](#TelegramBot+sendChatAction) ⇒ <code>Promise</code>
+        * [.kickChatMember(chatId, userId)](#TelegramBot+kickChatMember) ⇒ <code>Promise</code>
+        * [.unbanChatMember(chatId, userId)](#TelegramBot+unbanChatMember) ⇒ <code>Promise</code>
+        * [.restrictChatMember(chatId, userId, [options])](#TelegramBot+restrictChatMember) ⇒ <code>Promise</code>
+        * [.promoteChatMember(chatId, userId, [options])](#TelegramBot+promoteChatMember) ⇒ <code>Promise</code>
+        * [.exportChatInviteLink(chatId)](#TelegramBot+exportChatInviteLink) ⇒ <code>Promise</code>
+        * [.setChatPhoto(chatId, photo)](#TelegramBot+setChatPhoto) ⇒ <code>Promise</code>
+        * [.deleteChatPhoto(chatId)](#TelegramBot+deleteChatPhoto) ⇒ <code>Promise</code>
+        * [.setChatTitle(chatId, title)](#TelegramBot+setChatTitle) ⇒ <code>Promise</code>
+        * [.setChatDescription(chatId, description)](#TelegramBot+setChatDescription) ⇒ <code>Promise</code>
+        * [.pinChatMessage(chatId, messageId)](#TelegramBot+pinChatMessage) ⇒ <code>Promise</code>
+        * [.unpinChatMessage(chatId)](#TelegramBot+unpinChatMessage) ⇒ <code>Promise</code>
+        * [.answerCallbackQuery([options])](#TelegramBot+answerCallbackQuery) ⇒ <code>Promise</code>
+        * [.editMessageText(text, [options])](#TelegramBot+editMessageText) ⇒ <code>Promise</code>
+        * [.editMessageCaption(caption, [options])](#TelegramBot+editMessageCaption) ⇒ <code>Promise</code>
+        * [.editMessageReplyMarkup(replyMarkup, [options])](#TelegramBot+editMessageReplyMarkup) ⇒ <code>Promise</code>
+        * [.getUserProfilePhotos(userId, [options])](#TelegramBot+getUserProfilePhotos) ⇒ <code>Promise</code>
+        * [.sendLocation(chatId, latitude, longitude, [options])](#TelegramBot+sendLocation) ⇒ <code>Promise</code>
+        * [.sendVenue(chatId, latitude, longitude, title, address, [options])](#TelegramBot+sendVenue) ⇒ <code>Promise</code>
+        * [.sendContact(chatId, phoneNumber, firstName, [options])](#TelegramBot+sendContact) ⇒ <code>Promise</code>
+        * [.getFile(fileId)](#TelegramBot+getFile) ⇒ <code>Promise</code>
+        * [.getFileLink(fileId)](#TelegramBot+getFileLink) ⇒ <code>Promise</code>
+        * [.downloadFile(fileId, downloadDir)](#TelegramBot+downloadFile) ⇒ <code>Promise</code>
+        * [.onText(regexp, callback)](#TelegramBot+onText)
+        * [.removeTextListener(regexp)](#TelegramBot+removeTextListener) ⇒ <code>Object</code>
+        * [.onReplyToMessage(chatId, messageId, callback)](#TelegramBot+onReplyToMessage) ⇒ <code>Number</code>
+        * [.removeReplyListener(replyListenerId)](#TelegramBot+removeReplyListener) ⇒ <code>Object</code>
+        * [.getChat(chatId)](#TelegramBot+getChat) ⇒ <code>Promise</code>
+        * [.getChatAdministrators(chatId)](#TelegramBot+getChatAdministrators) ⇒ <code>Promise</code>
+        * [.getChatMembersCount(chatId)](#TelegramBot+getChatMembersCount) ⇒ <code>Promise</code>
+        * [.getChatMember(chatId, userId)](#TelegramBot+getChatMember) ⇒ <code>Promise</code>
+        * [.leaveChat(chatId)](#TelegramBot+leaveChat) ⇒ <code>Promise</code>
+        * [.sendGame(chatId, gameShortName, [options])](#TelegramBot+sendGame) ⇒ <code>Promise</code>
+        * [.setGameScore(userId, score, [options])](#TelegramBot+setGameScore) ⇒ <code>Promise</code>
+        * [.getGameHighScores(userId, [options])](#TelegramBot+getGameHighScores) ⇒ <code>Promise</code>
+        * [.deleteMessage(chatId, messageId, [options])](#TelegramBot+deleteMessage) ⇒ <code>Promise</code>
+        * [.sendInvoice(chatId, title, description, payload, providerToken, startParameter, currency, prices, [options])](#TelegramBot+sendInvoice) ⇒ <code>Promise</code>
+        * [.answerShippingQuery(shippingQueryId, ok, [options])](#TelegramBot+answerShippingQuery) ⇒ <code>Promise</code>
+        * [.answerPreCheckoutQuery(preCheckoutQueryId, ok, [options])](#TelegramBot+answerPreCheckoutQuery) ⇒ <code>Promise</code>
+    * _static_
+        * [.Promise](#TelegramBot.Promise)
 
 <a name="new_TelegramBot_new"></a>
 
@@ -974,6 +977,23 @@ Use this method to confirm shipping of a product.
 | ok | <code>Boolean</code> | Specify if every order details are ok |
 | [options] | <code>Object</code> | Additional Telegram query options |
 
+<a name="TelegramBot.Promise"></a>
+
+### TelegramBot.Promise
+Change Promise library used internally, for all existing and new
+instances.
+
+**Kind**: static property of <code>[TelegramBot](#TelegramBot)</code>  
+
+| Param | Type |
+| --- | --- |
+| customPromise | <code>function</code> | 
+
+**Example**  
+```js
+const TelegramBot = require('node-telegram-bot-api');
+TelegramBot.Promise = myPromise;
+```
 * * *
 
 
