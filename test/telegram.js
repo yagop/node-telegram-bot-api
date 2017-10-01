@@ -26,7 +26,7 @@ if (!PROVIDER_TOKEN && !isCI) { // If is not running in Travis / Appveyor
 const USERID = process.env.TEST_USER_ID || 777000;
 const GROUPID = process.env.TEST_GROUP_ID || -1001075450562;
 const GAME_SHORT_NAME = process.env.TEST_GAME_SHORT_NAME || 'medusalab_test';
-const STICKER_SET_NAME = process.env.STICKER_SET || 'pusheen';
+const STICKER_SET_NAME = process.env.TEST_STICKER_SET_NAME || 'pusheen';
 const timeout = 60 * 1000;
 let portindex = 8091;
 const staticPort = portindex++;

@@ -1501,12 +1501,12 @@ class TelegramBot extends EventEmitter {
   }
 
   /**
-   * Use this method to get the sticker set given the name of the set.
-   * Returns a [StickerSet](https://core.telegram.org/bots/api#stickerset) object.
+   * Use this method to get a sticker set. On success, a [StickerSet](https://core.telegram.org/bots/api#stickerset) object is returned.
    *
-   * @param {String} name Name of the sticker set
-   * @param {Object} [options] Additional Telegram query options
-   * @returns {Promise}
+   * @param  {String} name Name of the sticker set
+   * @param  {Object} [options] Additional Telegram query options
+   * @return {Promise}
+   * @see https://core.telegram.org/bots/api#getstickerset
    */
   getStickerSet(name, form = {}) {
     form.name = name;
