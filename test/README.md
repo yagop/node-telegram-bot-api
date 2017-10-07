@@ -10,8 +10,13 @@ export TEST_USER_ID=<USER_ID>
 # Group Id which to use in some of the tests, e.g. for TelegramBot#getChat()
 export TEST_GROUP_ID=<GROUP_ID>
 
-# Game short name which to use in some of the tests, e.g. TelegramBot#sendGame()
+# Game short name to use in some tests, e.g. TelegramBot#sendGame()
+# Defaults to "medusalab_test".
 export TEST_GAME_SHORT_NAME=<GAME_SHORT_NAME>
+
+# Sticker set name to use in some tests, e.g. TelegramBot#getStickerSet()
+# Defaults to "pusheen".
+export TEST_STICKER_SET_NAME=<STICKER_SET_NAME>
 
 # Payment provider token to be used
 export TEST_PROVIDER_TOKEN=<YOUR_PROVIDER_TOKEN>
