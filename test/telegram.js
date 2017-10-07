@@ -1371,4 +1371,18 @@ describe('TelegramBot', function telegramSuite() {
       });
     });
   });
+
+  describe('#uploadStickerFile', function sendPhotoSuite() {
+    before(function before() {
+      utils.handleRatelimit(bot, 'uploadStickerFile', this);
+    });
+    it('should upload a sticker from file', function test() {
+      const sticker = `${__dirname}/data/sticker.png`;
+      return bot.uploadStickerFile(USERID, sticker).then(resp => {
+        assert.ok(is.object(resp));
+        assert.ok(is.string(resp.file_id));
+      });
+    });
+    // Other tests (eg. Buffer, URL) are skipped, because they rely on the same features as sendPhoto.
+  });
 }); // End Telegram

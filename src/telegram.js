@@ -1512,6 +1512,32 @@ class TelegramBot extends EventEmitter {
     form.name = name;
     return this._request('getStickerSet', { form });
   }
+
+  /**
+   * Use this method to upload a .png file with a sticker for later use in *createNewStickerSet* and *addStickerToSet* methods (can be used multiple
+   * times). Returns the uploaded [File](https://core.telegram.org/bots/api#file) on success.
+   *
+   * @param  {Number} userId User identifier of sticker file owner
+   * @param  {String|stream.Stream|Buffer} pngSticker A file path or a Stream. Can also be a `file_id` previously uploaded. **Png** image with the
+   *  sticker, must be up to 512 kilobytes in size, dimensions must not exceed 512px, and either width or height must be exactly 512px.
+   * @param  {Object} [options] Additional Telegram query options
+   * @return {Promise}
+   * @see https://core.telegram.org/bots/api#uploadstickerfile
+   */
+  uploadStickerFile(userId, pngSticker, options = {}) {
+    const opts = {
+      qs: options,
+    };
+    opts.qs.user_id = userId;
+    try {
+      const sendData = this._formatSendData('png_sticker', pngSticker);
+      opts.formData = sendData[0];
+      opts.qs.png_sticker = sendData[1];
+    } catch (ex) {
+      return Promise.reject(ex);
+    }
+    return this._request('uploadStickerFile', opts);
+  }
 }
 
 module.exports = TelegramBot;

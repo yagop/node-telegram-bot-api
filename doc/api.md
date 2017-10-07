@@ -76,6 +76,7 @@ TelegramBot
         * [.answerShippingQuery(shippingQueryId, ok, [options])](#TelegramBot+answerShippingQuery) ⇒ <code>Promise</code>
         * [.answerPreCheckoutQuery(preCheckoutQueryId, ok, [options])](#TelegramBot+answerPreCheckoutQuery) ⇒ <code>Promise</code>
         * [.getStickerSet(name, [options])](#TelegramBot+getStickerSet) ⇒ <code>Promise</code>
+        * [.uploadStickerFile(userId, pngSticker, [options])](#TelegramBot+uploadStickerFile) ⇒ <code>Promise</code>
     * _static_
         * [.Promise](#TelegramBot.Promise)
 
@@ -989,6 +990,21 @@ Use this method to get a sticker set. On success, a [StickerSet](https://core.te
 | Param | Type | Description |
 | --- | --- | --- |
 | name | <code>String</code> | Name of the sticker set |
+| [options] | <code>Object</code> | Additional Telegram query options |
+
+<a name="TelegramBot+uploadStickerFile"></a>
+
+### telegramBot.uploadStickerFile(userId, pngSticker, [options]) ⇒ <code>Promise</code>
+Use this method to upload a .png file with a sticker for later use in *createNewStickerSet* and *addStickerToSet* methods (can be used multiple
+times). Returns the uploaded [File](https://core.telegram.org/bots/api#file) on success.
+
+**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
+**See**: https://core.telegram.org/bots/api#uploadstickerfile  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| userId | <code>Number</code> | User identifier of sticker file owner |
+| pngSticker | <code>String</code> &#124; <code>stream.Stream</code> &#124; <code>Buffer</code> | A file path or a Stream. Can also be a `file_id` previously uploaded. **Png** image with the  sticker, must be up to 512 kilobytes in size, dimensions must not exceed 512px, and either width or height must be exactly 512px. |
 | [options] | <code>Object</code> | Additional Telegram query options |
 
 <a name="TelegramBot.Promise"></a>

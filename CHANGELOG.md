@@ -7,7 +7,9 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 Added:
 
-1. (#429) Add *TelegramBot#getStickerSet* (by @CapacitorSet, @LibertyLocked)
+1. Add methods:
+  * (#429) Add *TelegramBot#getStickerSet* (by @CapacitorSet, @LibertyLocked)
+  * (#430) Add *TelegramBot#uploadStickerFile* (by @CapacitorSet)
 
 
 * * *
