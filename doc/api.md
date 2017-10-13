@@ -54,6 +54,8 @@ TelegramBot
         * [.editMessageReplyMarkup(replyMarkup, [options])](#TelegramBot+editMessageReplyMarkup) ⇒ <code>Promise</code>
         * [.getUserProfilePhotos(userId, [options])](#TelegramBot+getUserProfilePhotos) ⇒ <code>Promise</code>
         * [.sendLocation(chatId, latitude, longitude, [options])](#TelegramBot+sendLocation) ⇒ <code>Promise</code>
+        * [.editMessageLiveLocation(latitude, longitude, [options])](#TelegramBot+editMessageLiveLocation) ⇒ <code>Promise</code>
+        * [.stopMessageLiveLocation([options])](#TelegramBot+stopMessageLiveLocation) ⇒ <code>Promise</code>
         * [.sendVenue(chatId, latitude, longitude, title, address, [options])](#TelegramBot+sendVenue) ⇒ <code>Promise</code>
         * [.sendContact(chatId, phoneNumber, firstName, [options])](#TelegramBot+sendContact) ⇒ <code>Promise</code>
         * [.getFile(fileId)](#TelegramBot+getFile) ⇒ <code>Promise</code>
@@ -92,13 +94,13 @@ Emits `message` when a message arrives.
 | --- | --- | --- | --- |
 | token | <code>String</code> |  | Bot Token |
 | [options] | <code>Object</code> |  |  |
-| [options.polling] | <code>Boolean</code> &#124; <code>Object</code> | <code>false</code> | Set true to enable polling or set options.  If a WebHook has been set, it will be deleted automatically. |
-| [options.polling.timeout] | <code>String</code> &#124; <code>Number</code> | <code>10</code> | *Deprecated. Use `options.polling.params` instead*.  Timeout in seconds for long polling. |
-| [options.polling.interval] | <code>String</code> &#124; <code>Number</code> | <code>300</code> | Interval between requests in miliseconds |
+| [options.polling] | <code>Boolean</code> \| <code>Object</code> | <code>false</code> | Set true to enable polling or set options.  If a WebHook has been set, it will be deleted automatically. |
+| [options.polling.timeout] | <code>String</code> \| <code>Number</code> | <code>10</code> | *Deprecated. Use `options.polling.params` instead*.  Timeout in seconds for long polling. |
+| [options.polling.interval] | <code>String</code> \| <code>Number</code> | <code>300</code> | Interval between requests in miliseconds |
 | [options.polling.autoStart] | <code>Boolean</code> | <code>true</code> | Start polling immediately |
 | [options.polling.params] | <code>Object</code> |  | Parameters to be used in polling API requests.  See https://core.telegram.org/bots/api#getupdates for more information. |
 | [options.polling.params.timeout] | <code>Number</code> | <code>10</code> | Timeout in seconds for long polling. |
-| [options.webHook] | <code>Boolean</code> &#124; <code>Object</code> | <code>false</code> | Set true to enable WebHook or set options |
+| [options.webHook] | <code>Boolean</code> \| <code>Object</code> | <code>false</code> | Set true to enable WebHook or set options |
 | [options.webHook.host] | <code>String</code> | <code>0.0.0.0</code> | Host to bind to |
 | [options.webHook.port] | <code>Number</code> | <code>8443</code> | Port to bind to |
 | [options.webHook.key] | <code>String</code> |  | Path to file with PEM private key for webHook server.  The file is read **synchronously**! |
@@ -118,7 +120,7 @@ Emits `message` when a message arrives.
 Start polling.
 Rejects returned promise if a WebHook is being used by this instance.
 
-**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
 
 | Param | Type | Default | Description |
 | --- | --- | --- | --- |
@@ -132,7 +134,7 @@ Rejects returned promise if a WebHook is being used by this instance.
 
 Alias of `TelegramBot#startPolling()`. This is **deprecated**.
 
-**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
 
 | Param | Type |
 | --- | --- |
@@ -145,13 +147,13 @@ Stops polling after the last polling request resolves.
 Multiple invocations do nothing if polling is already stopped.
 Returning the promise of the last polling request is **deprecated**.
 
-**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
 <a name="TelegramBot+isPolling"></a>
 
 ### telegramBot.isPolling() ⇒ <code>Boolean</code>
 Return true if polling. Otherwise, false.
 
-**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
 <a name="TelegramBot+openWebHook"></a>
 
 ### telegramBot.openWebHook() ⇒ <code>Promise</code>
@@ -159,14 +161,14 @@ Open webhook.
 Multiple invocations do nothing if webhook is already open.
 Rejects returned promise if Polling is being used by this instance.
 
-**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
 <a name="TelegramBot+closeWebHook"></a>
 
 ### telegramBot.closeWebHook() ⇒ <code>Promise</code>
 Close webhook after closing all current connections.
 Multiple invocations do nothing if webhook is already closed.
 
-**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
 **Returns**: <code>Promise</code> - promise  
 <a name="TelegramBot+hasOpenWebHook"></a>
 
@@ -174,13 +176,13 @@ Multiple invocations do nothing if webhook is already closed.
 Return true if using webhook and it is open i.e. accepts connections.
 Otherwise, false.
 
-**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
 <a name="TelegramBot+getMe"></a>
 
 ### telegramBot.getMe() ⇒ <code>Promise</code>
 Returns basic information about the bot in form of a `User` object.
 
-**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
 **See**: https://core.telegram.org/bots/api#getme  
 <a name="TelegramBot+setWebHook"></a>
 
@@ -189,14 +191,14 @@ Specify an url to receive incoming updates via an outgoing webHook.
 This method has an [older, compatible signature][setWebHook-v0.25.0]
 that is being deprecated.
 
-**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
 **See**: https://core.telegram.org/bots/api#setwebhook  
 
 | Param | Type | Description |
 | --- | --- | --- |
 | url | <code>String</code> | URL where Telegram will make HTTP Post. Leave empty to delete webHook. |
 | [options] | <code>Object</code> | Additional Telegram query options |
-| [options.certificate] | <code>String</code> &#124; <code>stream.Stream</code> | PEM certificate key (public). |
+| [options.certificate] | <code>String</code> \| <code>stream.Stream</code> | PEM certificate key (public). |
 
 <a name="TelegramBot+deleteWebHook"></a>
 
@@ -204,7 +206,7 @@ that is being deprecated.
 Use this method to remove webhook integration if you decide to
 switch back to getUpdates. Returns True on success.
 
-**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
 **See**: https://core.telegram.org/bots/api#deletewebhook  
 <a name="TelegramBot+getWebHookInfo"></a>
 
@@ -214,7 +216,7 @@ On success, returns a [WebhookInfo](https://core.telegram.org/bots/api#webhookin
 If the bot is using getUpdates, will return an object with the
 url field empty.
 
-**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
 **See**: https://core.telegram.org/bots/api#getwebhookinfo  
 <a name="TelegramBot+getUpdates"></a>
 
@@ -223,7 +225,7 @@ Use this method to receive incoming updates using long polling.
 This method has an [older, compatible signature][getUpdates-v0.25.0]
 that is being deprecated.
 
-**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
 **See**: https://core.telegram.org/bots/api#getupdates  
 
 | Param | Type | Description |
@@ -237,7 +239,7 @@ Process an update; emitting the proper events and executing regexp
 callbacks. This method is useful should you be using a different
 way to fetch updates, other than those provided by TelegramBot.
 
-**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
 **See**: https://core.telegram.org/bots/api#update  
 
 | Param | Type |
@@ -249,12 +251,12 @@ way to fetch updates, other than those provided by TelegramBot.
 ### telegramBot.sendMessage(chatId, text, [options]) ⇒ <code>Promise</code>
 Send text message.
 
-**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
 **See**: https://core.telegram.org/bots/api#sendmessage  
 
 | Param | Type | Description |
 | --- | --- | --- |
-| chatId | <code>Number</code> &#124; <code>String</code> | Unique identifier for the message recipient |
+| chatId | <code>Number</code> \| <code>String</code> | Unique identifier for the message recipient |
 | text | <code>String</code> | Text of the message to be sent |
 | [options] | <code>Object</code> | Additional Telegram query options |
 
@@ -263,7 +265,7 @@ Send text message.
 ### telegramBot.answerInlineQuery(inlineQueryId, results, [options]) ⇒ <code>Promise</code>
 Send answers to an inline query.
 
-**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
 **See**: https://core.telegram.org/bots/api#answerinlinequery  
 
 | Param | Type | Description |
@@ -277,13 +279,13 @@ Send answers to an inline query.
 ### telegramBot.forwardMessage(chatId, fromChatId, messageId, [options]) ⇒ <code>Promise</code>
 Forward messages of any kind.
 
-**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
 
 | Param | Type | Description |
 | --- | --- | --- |
-| chatId | <code>Number</code> &#124; <code>String</code> | Unique identifier for the message recipient |
-| fromChatId | <code>Number</code> &#124; <code>String</code> | Unique identifier for the chat where the original message was sent |
-| messageId | <code>Number</code> &#124; <code>String</code> | Unique message identifier |
+| chatId | <code>Number</code> \| <code>String</code> | Unique identifier for the message recipient |
+| fromChatId | <code>Number</code> \| <code>String</code> | Unique identifier for the chat where the original message was sent |
+| messageId | <code>Number</code> \| <code>String</code> | Unique message identifier |
 | [options] | <code>Object</code> | Additional Telegram query options |
 
 <a name="TelegramBot+sendPhoto"></a>
@@ -291,13 +293,13 @@ Forward messages of any kind.
 ### telegramBot.sendPhoto(chatId, photo, [options]) ⇒ <code>Promise</code>
 Send photo
 
-**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
 **See**: https://core.telegram.org/bots/api#sendphoto  
 
 | Param | Type | Description |
 | --- | --- | --- |
-| chatId | <code>Number</code> &#124; <code>String</code> | Unique identifier for the message recipient |
-| photo | <code>String</code> &#124; <code>stream.Stream</code> &#124; <code>Buffer</code> | A file path or a Stream. Can also be a `file_id` previously uploaded |
+| chatId | <code>Number</code> \| <code>String</code> | Unique identifier for the message recipient |
+| photo | <code>String</code> \| <code>stream.Stream</code> \| <code>Buffer</code> | A file path or a Stream. Can also be a `file_id` previously uploaded |
 | [options] | <code>Object</code> | Additional Telegram query options |
 
 <a name="TelegramBot+sendAudio"></a>
@@ -305,13 +307,13 @@ Send photo
 ### telegramBot.sendAudio(chatId, audio, [options]) ⇒ <code>Promise</code>
 Send audio
 
-**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
 **See**: https://core.telegram.org/bots/api#sendaudio  
 
 | Param | Type | Description |
 | --- | --- | --- |
-| chatId | <code>Number</code> &#124; <code>String</code> | Unique identifier for the message recipient |
-| audio | <code>String</code> &#124; <code>stream.Stream</code> &#124; <code>Buffer</code> | A file path, Stream or Buffer. Can also be a `file_id` previously uploaded. |
+| chatId | <code>Number</code> \| <code>String</code> | Unique identifier for the message recipient |
+| audio | <code>String</code> \| <code>stream.Stream</code> \| <code>Buffer</code> | A file path, Stream or Buffer. Can also be a `file_id` previously uploaded. |
 | [options] | <code>Object</code> | Additional Telegram query options |
 
 <a name="TelegramBot+sendDocument"></a>
@@ -319,13 +321,13 @@ Send audio
 ### telegramBot.sendDocument(chatId, doc, [options], [fileOpts]) ⇒ <code>Promise</code>
 Send Document
 
-**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
 **See**: https://core.telegram.org/bots/api#sendDocument  
 
 | Param | Type | Description |
 | --- | --- | --- |
-| chatId | <code>Number</code> &#124; <code>String</code> | Unique identifier for the message recipient |
-| doc | <code>String</code> &#124; <code>stream.Stream</code> &#124; <code>Buffer</code> | A file path, Stream or Buffer. Can also be a `file_id` previously uploaded. |
+| chatId | <code>Number</code> \| <code>String</code> | Unique identifier for the message recipient |
+| doc | <code>String</code> \| <code>stream.Stream</code> \| <code>Buffer</code> | A file path, Stream or Buffer. Can also be a `file_id` previously uploaded. |
 | [options] | <code>Object</code> | Additional Telegram query options |
 | [fileOpts] | <code>Object</code> | Optional file related meta-data |
 
@@ -334,13 +336,13 @@ Send Document
 ### telegramBot.sendSticker(chatId, sticker, [options]) ⇒ <code>Promise</code>
 Send .webp stickers.
 
-**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
 **See**: https://core.telegram.org/bots/api#sendsticker  
 
 | Param | Type | Description |
 | --- | --- | --- |
-| chatId | <code>Number</code> &#124; <code>String</code> | Unique identifier for the message recipient |
-| sticker | <code>String</code> &#124; <code>stream.Stream</code> &#124; <code>Buffer</code> | A file path, Stream or Buffer. Can also be a `file_id` previously uploaded. Stickers are WebP format files. |
+| chatId | <code>Number</code> \| <code>String</code> | Unique identifier for the message recipient |
+| sticker | <code>String</code> \| <code>stream.Stream</code> \| <code>Buffer</code> | A file path, Stream or Buffer. Can also be a `file_id` previously uploaded. Stickers are WebP format files. |
 | [options] | <code>Object</code> | Additional Telegram query options |
 
 <a name="TelegramBot+sendVideo"></a>
@@ -348,13 +350,13 @@ Send .webp stickers.
 ### telegramBot.sendVideo(chatId, video, [options]) ⇒ <code>Promise</code>
 Use this method to send video files, Telegram clients support mp4 videos (other formats may be sent as Document).
 
-**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
 **See**: https://core.telegram.org/bots/api#sendvideo  
 
 | Param | Type | Description |
 | --- | --- | --- |
-| chatId | <code>Number</code> &#124; <code>String</code> | Unique identifier for the message recipient |
-| video | <code>String</code> &#124; <code>stream.Stream</code> &#124; <code>Buffer</code> | A file path or Stream. Can also be a `file_id` previously uploaded. |
+| chatId | <code>Number</code> \| <code>String</code> | Unique identifier for the message recipient |
+| video | <code>String</code> \| <code>stream.Stream</code> \| <code>Buffer</code> | A file path or Stream. Can also be a `file_id` previously uploaded. |
 | [options] | <code>Object</code> | Additional Telegram query options |
 
 <a name="TelegramBot+sendVideoNote"></a>
@@ -362,14 +364,14 @@ Use this method to send video files, Telegram clients support mp4 videos (other 
 ### telegramBot.sendVideoNote(chatId, videoNote, [options]) ⇒ <code>Promise</code>
 Use this method to send rounded square videos of upto 1 minute long.
 
-**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
 **Info**: The length parameter is actually optional. However, the API (at time of writing) requires you to always provide it until it is fixed.  
 **See**: https://core.telegram.org/bots/api#sendvideonote  
 
 | Param | Type | Description |
 | --- | --- | --- |
-| chatId | <code>Number</code> &#124; <code>String</code> | Unique identifier for the message recipient |
-| videoNote | <code>String</code> &#124; <code>stream.Stream</code> &#124; <code>Buffer</code> | A file path or Stream. Can also be a `file_id` previously uploaded. |
+| chatId | <code>Number</code> \| <code>String</code> | Unique identifier for the message recipient |
+| videoNote | <code>String</code> \| <code>stream.Stream</code> \| <code>Buffer</code> | A file path or Stream. Can also be a `file_id` previously uploaded. |
 | [options] | <code>Object</code> | Additional Telegram query options |
 
 <a name="TelegramBot+sendVoice"></a>
@@ -377,13 +379,13 @@ Use this method to send rounded square videos of upto 1 minute long.
 ### telegramBot.sendVoice(chatId, voice, [options]) ⇒ <code>Promise</code>
 Send voice
 
-**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
 **See**: https://core.telegram.org/bots/api#sendvoice  
 
 | Param | Type | Description |
 | --- | --- | --- |
-| chatId | <code>Number</code> &#124; <code>String</code> | Unique identifier for the message recipient |
-| voice | <code>String</code> &#124; <code>stream.Stream</code> &#124; <code>Buffer</code> | A file path, Stream or Buffer. Can also be a `file_id` previously uploaded. |
+| chatId | <code>Number</code> \| <code>String</code> | Unique identifier for the message recipient |
+| voice | <code>String</code> \| <code>stream.Stream</code> \| <code>Buffer</code> | A file path, Stream or Buffer. Can also be a `file_id` previously uploaded. |
 | [options] | <code>Object</code> | Additional Telegram query options |
 
 <a name="TelegramBot+sendChatAction"></a>
@@ -395,12 +397,12 @@ Send chat action.
 `record_audio` or `upload_audio` for audio files, `upload_document` for general files,
 `find_location` for location data.
 
-**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
 **See**: https://core.telegram.org/bots/api#sendchataction  
 
 | Param | Type | Description |
 | --- | --- | --- |
-| chatId | <code>Number</code> &#124; <code>String</code> | Unique identifier for the message recipient |
+| chatId | <code>Number</code> \| <code>String</code> | Unique identifier for the message recipient |
 | action | <code>String</code> | Type of action to broadcast. |
 
 <a name="TelegramBot+kickChatMember"></a>
@@ -412,12 +414,12 @@ to the group on their own using invite links, etc., unless unbanned
 first. The bot must be an administrator in the group for this to work.
 Returns True on success.
 
-**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
 **See**: https://core.telegram.org/bots/api#kickchatmember  
 
 | Param | Type | Description |
 | --- | --- | --- |
-| chatId | <code>Number</code> &#124; <code>String</code> | Unique identifier for the target group or username of the target supergroup |
+| chatId | <code>Number</code> \| <code>String</code> | Unique identifier for the target group or username of the target supergroup |
 | userId | <code>String</code> | Unique identifier of the target user |
 
 <a name="TelegramBot+unbanChatMember"></a>
@@ -428,12 +430,12 @@ The user will not return to the group automatically, but will be
 able to join via link, etc. The bot must be an administrator in
 the group for this to work. Returns True on success.
 
-**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
 **See**: https://core.telegram.org/bots/api#unbanchatmember  
 
 | Param | Type | Description |
 | --- | --- | --- |
-| chatId | <code>Number</code> &#124; <code>String</code> | Unique identifier for the target group or username of the target supergroup |
+| chatId | <code>Number</code> \| <code>String</code> | Unique identifier for the target group or username of the target supergroup |
 | userId | <code>String</code> | Unique identifier of the target user |
 
 <a name="TelegramBot+restrictChatMember"></a>
@@ -444,12 +446,12 @@ The bot must be an administrator in the supergroup for this to work
 and must have the appropriate admin rights. Pass True for all boolean parameters
 to lift restrictions from a user. Returns True on success.
 
-**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
 **See**: https://core.telegram.org/bots/api#restrictchatmember  
 
 | Param | Type | Description |
 | --- | --- | --- |
-| chatId | <code>Number</code> &#124; <code>String</code> | Unique identifier for the target chat or username of the target supergroup |
+| chatId | <code>Number</code> \| <code>String</code> | Unique identifier for the target chat or username of the target supergroup |
 | userId | <code>String</code> | Unique identifier of the target user |
 | [options] | <code>Object</code> | Additional Telegram query options |
 
@@ -461,12 +463,12 @@ The bot must be an administrator in the chat for this to work
 and must have the appropriate admin rights. Pass False for all boolean parameters to demote a user.
 Returns True on success.
 
-**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
 **See**: https://core.telegram.org/bots/api#promotechatmember  
 
 | Param | Type | Description |
 | --- | --- | --- |
-| chatId | <code>Number</code> &#124; <code>String</code> | Unique identifier for the target chat or username of the target supergroup |
+| chatId | <code>Number</code> \| <code>String</code> | Unique identifier for the target chat or username of the target supergroup |
 | userId | <code>String</code> |  |
 | [options] | <code>Object</code> | Additional Telegram query options |
 
@@ -477,12 +479,12 @@ Use this method to export an invite link to a supergroup or a channel.
 The bot must be an administrator in the chat for this to work and must have the appropriate admin rights.
 Returns exported invite link as String on success.
 
-**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
 **See**: https://core.telegram.org/bots/api#exportchatinvitelink  
 
 | Param | Type | Description |
 | --- | --- | --- |
-| chatId | <code>Number</code> &#124; <code>String</code> | Unique identifier for the target chat or username of the target supergroup |
+| chatId | <code>Number</code> \| <code>String</code> | Unique identifier for the target chat or username of the target supergroup |
 
 <a name="TelegramBot+setChatPhoto"></a>
 
@@ -491,13 +493,13 @@ Use this method to set a new profile photo for the chat. Photos can't be changed
 The bot must be an administrator in the chat for this to work and must have the appropriate admin rights.
 Returns True on success.
 
-**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
 **See**: https://core.telegram.org/bots/api#setchatphoto  
 
 | Param | Type | Description |
 | --- | --- | --- |
-| chatId | <code>Number</code> &#124; <code>String</code> | Unique identifier for the message recipient |
-| photo | <code>stream.Stream</code> &#124; <code>Buffer</code> | A file path or a Stream. |
+| chatId | <code>Number</code> \| <code>String</code> | Unique identifier for the message recipient |
+| photo | <code>stream.Stream</code> \| <code>Buffer</code> | A file path or a Stream. |
 
 <a name="TelegramBot+deleteChatPhoto"></a>
 
@@ -506,12 +508,12 @@ Use this method to delete a chat photo. Photos can't be changed for private chat
 The bot must be an administrator in the chat for this to work and must have the appropriate admin rights.
 Returns True on success.
 
-**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
 **See**: https://core.telegram.org/bots/api#deletechatphoto  
 
 | Param | Type | Description |
 | --- | --- | --- |
-| chatId | <code>Number</code> &#124; <code>String</code> | Unique identifier for the message recipient |
+| chatId | <code>Number</code> \| <code>String</code> | Unique identifier for the message recipient |
 
 <a name="TelegramBot+setChatTitle"></a>
 
@@ -520,12 +522,12 @@ Use this method to change the title of a chat. Titles can't be changed for priva
 The bot must be an administrator in the chat for this to work and must have the appropriate admin rights.
 Returns True on success.
 
-**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
 **See**: https://core.telegram.org/bots/api#setchattitle  
 
 | Param | Type | Description |
 | --- | --- | --- |
-| chatId | <code>Number</code> &#124; <code>String</code> | Unique identifier for the message recipient |
+| chatId | <code>Number</code> \| <code>String</code> | Unique identifier for the message recipient |
 | title | <code>String</code> | New chat title, 1-255 characters |
 
 <a name="TelegramBot+setChatDescription"></a>
@@ -535,12 +537,12 @@ Use this method to change the description of a supergroup or a channel.
 The bot must be an administrator in the chat for this to work and must have the appropriate admin rights.
 Returns True on success.
 
-**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
 **See**: https://core.telegram.org/bots/api#setchatdescription  
 
 | Param | Type | Description |
 | --- | --- | --- |
-| chatId | <code>Number</code> &#124; <code>String</code> | Unique identifier for the message recipient |
+| chatId | <code>Number</code> \| <code>String</code> | Unique identifier for the message recipient |
 | description | <code>String</code> | New chat title, 1-255 characters |
 
 <a name="TelegramBot+pinChatMessage"></a>
@@ -550,12 +552,12 @@ Use this method to pin a message in a supergroup.
 The bot must be an administrator in the chat for this to work and must have the appropriate admin rights.
 Returns True on success.
 
-**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
 **See**: https://core.telegram.org/bots/api#pinchatmessage  
 
 | Param | Type | Description |
 | --- | --- | --- |
-| chatId | <code>Number</code> &#124; <code>String</code> | Unique identifier for the message recipient |
+| chatId | <code>Number</code> \| <code>String</code> | Unique identifier for the message recipient |
 | messageId | <code>String</code> | Identifier of a message to pin |
 
 <a name="TelegramBot+unpinChatMessage"></a>
@@ -565,12 +567,12 @@ Use this method to unpin a message in a supergroup chat.
 The bot must be an administrator in the chat for this to work and must have the appropriate admin rights.
 Returns True on success.
 
-**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
 **See**: https://core.telegram.org/bots/api#unpinchatmessage  
 
 | Param | Type | Description |
 | --- | --- | --- |
-| chatId | <code>Number</code> &#124; <code>String</code> | Unique identifier for the message recipient |
+| chatId | <code>Number</code> \| <code>String</code> | Unique identifier for the message recipient |
 
 <a name="TelegramBot+answerCallbackQuery"></a>
 
@@ -583,7 +585,7 @@ On success, True is returned.
 This method has an [older, compatible signature][answerCallbackQuery-v0.27.1]
 that is being deprecated.
 
-**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
 **See**: https://core.telegram.org/bots/api#answercallbackquery  
 
 | Param | Type | Description |
@@ -600,7 +602,7 @@ returned.
 Note that you must provide one of chat_id, message_id, or
 inline_message_id in your request.
 
-**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
 **See**: https://core.telegram.org/bots/api#editmessagetext  
 
 | Param | Type | Description |
@@ -618,7 +620,7 @@ edited Message is returned.
 Note that you must provide one of chat_id, message_id, or
 inline_message_id in your request.
 
-**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
 **See**: https://core.telegram.org/bots/api#editmessagecaption  
 
 | Param | Type | Description |
@@ -636,7 +638,7 @@ On success, the edited Message is returned.
 Note that you must provide one of chat_id, message_id, or
 inline_message_id in your request.
 
-**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
 **See**: https://core.telegram.org/bots/api#editmessagetext  
 
 | Param | Type | Description |
@@ -652,12 +654,12 @@ Returns a [UserProfilePhotos](https://core.telegram.org/bots/api#userprofilephot
 This method has an [older, compatible signature][getUserProfilePhotos-v0.25.0]
 that is being deprecated.
 
-**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
 **See**: https://core.telegram.org/bots/api#getuserprofilephotos  
 
 | Param | Type | Description |
 | --- | --- | --- |
-| userId | <code>Number</code> &#124; <code>String</code> | Unique identifier of the target user |
+| userId | <code>Number</code> \| <code>String</code> | Unique identifier of the target user |
 | [options] | <code>Object</code> | Additional Telegram query options |
 
 <a name="TelegramBot+sendLocation"></a>
@@ -666,14 +668,44 @@ that is being deprecated.
 Send location.
 Use this method to send point on the map.
 
-**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
 **See**: https://core.telegram.org/bots/api#sendlocation  
 
 | Param | Type | Description |
 | --- | --- | --- |
-| chatId | <code>Number</code> &#124; <code>String</code> | Unique identifier for the message recipient |
+| chatId | <code>Number</code> \| <code>String</code> | Unique identifier for the message recipient |
 | latitude | <code>Float</code> | Latitude of location |
 | longitude | <code>Float</code> | Longitude of location |
+| [options] | <code>Object</code> | Additional Telegram query options |
+
+<a name="TelegramBot+editMessageLiveLocation"></a>
+
+### telegramBot.editMessageLiveLocation(latitude, longitude, [options]) ⇒ <code>Promise</code>
+Edit live location.
+Use this method to edit live location messages.
+
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
+**Info**: You must pass in either a chat_id, message_id or an inline_message_id in your addidtional options.  
+**See**: https://core.telegram.org/bots/api#editmessagelivelocation  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| latitude | <code>Float</code> | Latitude of location |
+| longitude | <code>Float</code> | Longitude of location |
+| [options] | <code>Object</code> | Additional Telegram query options |
+
+<a name="TelegramBot+stopMessageLiveLocation"></a>
+
+### telegramBot.stopMessageLiveLocation([options]) ⇒ <code>Promise</code>
+Stop live location.
+Use this method to stop updating live location messages.
+
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
+**Info**: You must pass in either a chat_id, message_id or an inline_message_id in your addidtional options.  
+**See**: https://core.telegram.org/bots/api#stopmessagelivelocation  
+
+| Param | Type | Description |
+| --- | --- | --- |
 | [options] | <code>Object</code> | Additional Telegram query options |
 
 <a name="TelegramBot+sendVenue"></a>
@@ -682,12 +714,12 @@ Use this method to send point on the map.
 Send venue.
 Use this method to send information about a venue.
 
-**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
 **See**: https://core.telegram.org/bots/api#sendvenue  
 
 | Param | Type | Description |
 | --- | --- | --- |
-| chatId | <code>Number</code> &#124; <code>String</code> | Unique identifier for the message recipient |
+| chatId | <code>Number</code> \| <code>String</code> | Unique identifier for the message recipient |
 | latitude | <code>Float</code> | Latitude of location |
 | longitude | <code>Float</code> | Longitude of location |
 | title | <code>String</code> | Name of the venue |
@@ -700,12 +732,12 @@ Use this method to send information about a venue.
 Send contact.
 Use this method to send phone contacts.
 
-**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
 **See**: https://core.telegram.org/bots/api#sendcontact  
 
 | Param | Type | Description |
 | --- | --- | --- |
-| chatId | <code>Number</code> &#124; <code>String</code> | Unique identifier for the message recipient |
+| chatId | <code>Number</code> \| <code>String</code> | Unique identifier for the message recipient |
 | phoneNumber | <code>String</code> | Contact's phone number |
 | firstName | <code>String</code> | Contact's first name |
 | [options] | <code>Object</code> | Additional Telegram query options |
@@ -717,7 +749,7 @@ Get file.
 Use this method to get basic info about a file and prepare it for downloading.
 Attention: link will be valid for 1 hour.
 
-**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
 **See**: https://core.telegram.org/bots/api#getfile  
 
 | Param | Type | Description |
@@ -734,7 +766,7 @@ Attention: link will be valid for 1 hour.
 This method is a sugar extension of the (getFile)[#getfilefileid] method,
 which returns just path to file on remote server (you will have to manually build full uri after that).
 
-**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
 **Returns**: <code>Promise</code> - promise Promise which will have *fileURI* in resolve callback  
 **See**: https://core.telegram.org/bots/api#getfile  
 
@@ -748,7 +780,7 @@ which returns just path to file on remote server (you will have to manually buil
 Downloads file in the specified folder.
 This is just a sugar for (getFile)[#getfilefiled] method
 
-**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
 **Returns**: <code>Promise</code> - promise Promise, which will have *filePath* of downloaded file in resolve callback  
 
 | Param | Type | Description |
@@ -761,7 +793,7 @@ This is just a sugar for (getFile)[#getfilefiled] method
 ### telegramBot.onText(regexp, callback)
 Register a RegExp to test against an incomming text message.
 
-**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -773,7 +805,7 @@ Register a RegExp to test against an incomming text message.
 ### telegramBot.removeTextListener(regexp) ⇒ <code>Object</code>
 Remove a listener registered with `onText()`.
 
-**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
 **Returns**: <code>Object</code> - deletedListener The removed reply listener if
   found. This object has `regexp` and `callback`
   properties. If not found, returns `null`.  
@@ -787,13 +819,13 @@ Remove a listener registered with `onText()`.
 ### telegramBot.onReplyToMessage(chatId, messageId, callback) ⇒ <code>Number</code>
 Register a reply to wait for a message response.
 
-**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
 **Returns**: <code>Number</code> - id                    The ID of the inserted reply listener.  
 
 | Param | Type | Description |
 | --- | --- | --- |
-| chatId | <code>Number</code> &#124; <code>String</code> | The chat id where the message cames from. |
-| messageId | <code>Number</code> &#124; <code>String</code> | The message id to be replied. |
+| chatId | <code>Number</code> \| <code>String</code> | The chat id where the message cames from. |
+| messageId | <code>Number</code> \| <code>String</code> | The message id to be replied. |
 | callback | <code>function</code> | Callback will be called with the reply  message. |
 
 <a name="TelegramBot+removeReplyListener"></a>
@@ -801,7 +833,7 @@ Register a reply to wait for a message response.
 ### telegramBot.removeReplyListener(replyListenerId) ⇒ <code>Object</code>
 Removes a reply that has been prev. registered for a message response.
 
-**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
 **Returns**: <code>Object</code> - deletedListener      The removed reply listener if
   found. This object has `id`, `chatId`, `messageId` and `callback`
   properties. If not found, returns `null`.  
@@ -817,48 +849,48 @@ Use this method to get up to date information about the chat
 (current name of the user for one-on-one conversations, current
 username of a user, group or channel, etc.).
 
-**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
 **See**: https://core.telegram.org/bots/api#getchat  
 
 | Param | Type | Description |
 | --- | --- | --- |
-| chatId | <code>Number</code> &#124; <code>String</code> | Unique identifier for the target chat or username of the target supergroup or channel |
+| chatId | <code>Number</code> \| <code>String</code> | Unique identifier for the target chat or username of the target supergroup or channel |
 
 <a name="TelegramBot+getChatAdministrators"></a>
 
 ### telegramBot.getChatAdministrators(chatId) ⇒ <code>Promise</code>
 Returns the administrators in a chat in form of an Array of `ChatMember` objects.
 
-**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
 **See**: https://core.telegram.org/bots/api#getchatadministrators  
 
 | Param | Type | Description |
 | --- | --- | --- |
-| chatId | <code>Number</code> &#124; <code>String</code> | Unique identifier for the target group or username of the target supergroup |
+| chatId | <code>Number</code> \| <code>String</code> | Unique identifier for the target group or username of the target supergroup |
 
 <a name="TelegramBot+getChatMembersCount"></a>
 
 ### telegramBot.getChatMembersCount(chatId) ⇒ <code>Promise</code>
 Use this method to get the number of members in a chat.
 
-**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
 **See**: https://core.telegram.org/bots/api#getchatmemberscount  
 
 | Param | Type | Description |
 | --- | --- | --- |
-| chatId | <code>Number</code> &#124; <code>String</code> | Unique identifier for the target group or username of the target supergroup |
+| chatId | <code>Number</code> \| <code>String</code> | Unique identifier for the target group or username of the target supergroup |
 
 <a name="TelegramBot+getChatMember"></a>
 
 ### telegramBot.getChatMember(chatId, userId) ⇒ <code>Promise</code>
 Use this method to get information about a member of a chat.
 
-**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
 **See**: https://core.telegram.org/bots/api#getchatmember  
 
 | Param | Type | Description |
 | --- | --- | --- |
-| chatId | <code>Number</code> &#124; <code>String</code> | Unique identifier for the target group or username of the target supergroup |
+| chatId | <code>Number</code> \| <code>String</code> | Unique identifier for the target group or username of the target supergroup |
 | userId | <code>String</code> | Unique identifier of the target user |
 
 <a name="TelegramBot+leaveChat"></a>
@@ -866,24 +898,24 @@ Use this method to get information about a member of a chat.
 ### telegramBot.leaveChat(chatId) ⇒ <code>Promise</code>
 Leave a group, supergroup or channel.
 
-**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
 **See**: https://core.telegram.org/bots/api#leavechat  
 
 | Param | Type | Description |
 | --- | --- | --- |
-| chatId | <code>Number</code> &#124; <code>String</code> | Unique identifier for the target group or username of the target supergroup (in the format @supergroupusername) |
+| chatId | <code>Number</code> \| <code>String</code> | Unique identifier for the target group or username of the target supergroup (in the format @supergroupusername) |
 
 <a name="TelegramBot+sendGame"></a>
 
 ### telegramBot.sendGame(chatId, gameShortName, [options]) ⇒ <code>Promise</code>
 Use this method to send a game.
 
-**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
 **See**: https://core.telegram.org/bots/api#sendgame  
 
 | Param | Type | Description |
 | --- | --- | --- |
-| chatId | <code>Number</code> &#124; <code>String</code> | Unique identifier for the message recipient |
+| chatId | <code>Number</code> \| <code>String</code> | Unique identifier for the message recipient |
 | gameShortName | <code>String</code> | name of the game to be sent. |
 | [options] | <code>Object</code> | Additional Telegram query options |
 
@@ -892,7 +924,7 @@ Use this method to send a game.
 ### telegramBot.setGameScore(userId, score, [options]) ⇒ <code>Promise</code>
 Use this method to set the score of the specified user in a game.
 
-**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
 **See**: https://core.telegram.org/bots/api#setgamescore  
 
 | Param | Type | Description |
@@ -906,7 +938,7 @@ Use this method to set the score of the specified user in a game.
 ### telegramBot.getGameHighScores(userId, [options]) ⇒ <code>Promise</code>
 Use this method to get data for high score table.
 
-**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
 **See**: https://core.telegram.org/bots/api#getgamehighscores  
 
 | Param | Type | Description |
@@ -919,7 +951,7 @@ Use this method to get data for high score table.
 ### telegramBot.deleteMessage(chatId, messageId, [options]) ⇒ <code>Promise</code>
 Use this method to delete a message.
 
-**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
 **See**: https://core.telegram.org/bots/api#deletemessage  
 
 | Param | Type | Description |
@@ -934,12 +966,12 @@ Use this method to delete a message.
 Send invoice.
 Use this method to send an invoice.
 
-**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
 **See**: https://core.telegram.org/bots/api#sendinvoice  
 
 | Param | Type | Description |
 | --- | --- | --- |
-| chatId | <code>Number</code> &#124; <code>String</code> | Unique identifier for the message recipient |
+| chatId | <code>Number</code> \| <code>String</code> | Unique identifier for the message recipient |
 | title | <code>String</code> | Product name |
 | description | <code>String</code> | product description |
 | payload | <code>String</code> | Bot defined invoice payload |
@@ -955,7 +987,7 @@ Use this method to send an invoice.
 Answer shipping query..
 Use this method to reply to shipping queries.
 
-**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
 **See**: https://core.telegram.org/bots/api#answershippingquery  
 
 | Param | Type | Description |
@@ -970,7 +1002,7 @@ Use this method to reply to shipping queries.
 Answer pre-checkout query.
 Use this method to confirm shipping of a product.
 
-**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
 **See**: https://core.telegram.org/bots/api#answerprecheckoutquery  
 
 | Param | Type | Description |
@@ -984,7 +1016,7 @@ Use this method to confirm shipping of a product.
 ### telegramBot.getStickerSet(name, [options]) ⇒ <code>Promise</code>
 Use this method to get a sticker set. On success, a [StickerSet](https://core.telegram.org/bots/api#stickerset) object is returned.
 
-**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
 **See**: https://core.telegram.org/bots/api#getstickerset  
 
 | Param | Type | Description |
@@ -998,13 +1030,13 @@ Use this method to get a sticker set. On success, a [StickerSet](https://core.te
 Use this method to upload a .png file with a sticker for later use in *createNewStickerSet* and *addStickerToSet* methods (can be used multiple
 times). Returns the uploaded [File](https://core.telegram.org/bots/api#file) on success.
 
-**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
 **See**: https://core.telegram.org/bots/api#uploadstickerfile  
 
 | Param | Type | Description |
 | --- | --- | --- |
 | userId | <code>Number</code> | User identifier of sticker file owner |
-| pngSticker | <code>String</code> &#124; <code>stream.Stream</code> &#124; <code>Buffer</code> | A file path or a Stream. Can also be a `file_id` previously uploaded. **Png** image with the  sticker, must be up to 512 kilobytes in size, dimensions must not exceed 512px, and either width or height must be exactly 512px. |
+| pngSticker | <code>String</code> \| <code>stream.Stream</code> \| <code>Buffer</code> | A file path or a Stream. Can also be a `file_id` previously uploaded. **Png** image with the  sticker, must be up to 512 kilobytes in size, dimensions must not exceed 512px, and either width or height must be exactly 512px. |
 | [options] | <code>Object</code> | Additional Telegram query options |
 
 <a name="TelegramBot.Promise"></a>
@@ -1013,7 +1045,7 @@ times). Returns the uploaded [File](https://core.telegram.org/bots/api#file) on 
 Change Promise library used internally, for all existing and new
 instances.
 
-**Kind**: static property of <code>[TelegramBot](#TelegramBot)</code>  
+**Kind**: static property of [<code>TelegramBot</code>](#TelegramBot)  
 
 | Param | Type |
 | --- | --- |
