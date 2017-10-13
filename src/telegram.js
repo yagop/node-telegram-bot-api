@@ -1387,6 +1387,34 @@ class TelegramBot extends EventEmitter {
   }
 
   /**
+   * Use this method to set a new group sticker set for a supergroup.
+   * @param  {Number|String} chatId Unique identifier for the target group or username of the target supergroup (in the format @supergroupusername)
+   * @param  {String} stickerSetName Name of the sticker set to be set as the group sticker set
+   * @return {Promise}
+   * @see https://core.telegram.org/bots/api#setchatstickerset
+   */
+  setChatStickerSet(chatId, stickerSetName) {
+    const form = {
+      chat_id: chatId,
+      sticker_set_name: stickerSetName
+    };
+    return this._request('setChatStickerSet', { form });
+  }
+
+  /**
+   * Use this method to delete a group sticker set from a supergroup.
+   * @param  {Number|String} chatId Unique identifier for the target group or username of the target supergroup (in the format @supergroupusername)
+   * @return {Promise}
+   * @see https://core.telegram.org/bots/api#deletechatstickerset
+   */
+  deleteChatStickerSet(chatId) {
+    const form = {
+      chat_id: chatId
+    };
+    return this._request('deleteChatStickerSet', { form });
+  }
+
+  /**
    * Use this method to send a game.
    * @param  {Number|String} chatId Unique identifier for the message recipient
    * @param  {String} gameShortName name of the game to be sent.
