@@ -1184,7 +1184,7 @@ class TelegramBot extends EventEmitter {
    * @see https://core.telegram.org/bots/api#stopmessagelivelocation
    */
   stopMessageLiveLocation(form = {}) {
-    return this._request('editMessageLiveLocation', { form });
+    return this._request('stopMessageLiveLocation', { form });
   }  
 
   /**
