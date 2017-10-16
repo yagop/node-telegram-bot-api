@@ -77,6 +77,10 @@ TelegramBot
         * [.answerPreCheckoutQuery(preCheckoutQueryId, ok, [options])](#TelegramBot+answerPreCheckoutQuery) ⇒ <code>Promise</code>
         * [.getStickerSet(name, [options])](#TelegramBot+getStickerSet) ⇒ <code>Promise</code>
         * [.uploadStickerFile(userId, pngSticker, [options])](#TelegramBot+uploadStickerFile) ⇒ <code>Promise</code>
+        * [.createNewStickerSet(userId, name, title, pngSticker, emojis, [options])](#TelegramBot+createNewStickerSet) ⇒ <code>Promise</code>
+        * [.addStickerToSet(userId, name, pngSticker, emojis, [options])](#TelegramBot+addStickerToSet) ⇒ <code>Promise</code>
+        * [.setStickerPositionInSet(sticker, position)](#TelegramBot+setStickerPositionInSet) ⇒ <code>Promise</code>
+        * [.deleteStickerFromSet(sticker)](#TelegramBot+deleteStickerFromSet) ⇒ <code>Promise</code>
     * _static_
         * [.Promise](#TelegramBot.Promise)
 
@@ -1006,6 +1010,85 @@ times). Returns the uploaded [File](https://core.telegram.org/bots/api#file) on 
 | userId | <code>Number</code> | User identifier of sticker file owner |
 | pngSticker | <code>String</code> &#124; <code>stream.Stream</code> &#124; <code>Buffer</code> | A file path or a Stream. Can also be a `file_id` previously uploaded. **Png** image with the  sticker, must be up to 512 kilobytes in size, dimensions must not exceed 512px, and either width or height must be exactly 512px. |
 | [options] | <code>Object</code> | Additional Telegram query options |
+
+<a name="TelegramBot+createNewStickerSet"></a>
+
+### telegramBot.createNewStickerSet(userId, name, title, pngSticker, emojis, [options]) ⇒ <code>Promise</code>
+Use this method to create new sticker set owned by a user.
+The bot will be able to edit the created sticker set.
+Returns True on success.
+
+**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
+**See**: https://core.telegram.org/bots/api#createnewstickerset  
+**Todo**
+
+- [ ] Add tests for this method!
+
+
+| Param | Type | Description |
+| --- | --- | --- |
+| userId | <code>Number</code> | User identifier of created sticker set owner |
+| name | <code>String</code> | Short name of sticker set, to be used in `t.me/addstickers/` URLs (e.g., *animals*) |
+| title | <code>String</code> | Sticker set title, 1-64 characters |
+| pngSticker | <code>String</code> &#124; <code>stream.Stream</code> &#124; <code>Buffer</code> | Png image with the sticker, must be up to 512 kilobytes in size,  dimensions must not exceed 512px, and either width or height must be exactly 512px. |
+| emojis | <code>String</code> | One or more emoji corresponding to the sticker |
+| [options] | <code>Object</code> | Additional Telegram query options |
+
+<a name="TelegramBot+addStickerToSet"></a>
+
+### telegramBot.addStickerToSet(userId, name, pngSticker, emojis, [options]) ⇒ <code>Promise</code>
+Use this method to add a new sticker to a set created by the bot.
+Returns True on success.
+
+**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
+**See**: https://core.telegram.org/bots/api#addstickertoset  
+**Todo**
+
+- [ ] Add tests for this method!
+
+
+| Param | Type | Description |
+| --- | --- | --- |
+| userId | <code>Number</code> | User identifier of sticker set owner |
+| name | <code>String</code> | Sticker set name |
+| pngSticker | <code>String</code> &#124; <code>stream.Stream</code> &#124; <code>Buffer</code> | Png image with the sticker, must be up to 512 kilobytes in size,  dimensions must not exceed 512px, and either width or height must be exactly 512px |
+| emojis | <code>String</code> | One or more emoji corresponding to the sticker |
+| [options] | <code>Object</code> | Additional Telegram query options |
+
+<a name="TelegramBot+setStickerPositionInSet"></a>
+
+### telegramBot.setStickerPositionInSet(sticker, position) ⇒ <code>Promise</code>
+Use this method to move a sticker in a set created by the bot to a specific position.
+Returns True on success.
+
+**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
+**See**: https://core.telegram.org/bots/api#setstickerpositioninset  
+**Todo**
+
+- [ ] Add tests for this method!
+
+
+| Param | Type | Description |
+| --- | --- | --- |
+| sticker | <code>String</code> | File identifier of the sticker |
+| position | <code>Number</code> | New sticker position in the set, zero-based |
+
+<a name="TelegramBot+deleteStickerFromSet"></a>
+
+### telegramBot.deleteStickerFromSet(sticker) ⇒ <code>Promise</code>
+Use this method to delete a sticker from a set created by the bot.
+Returns True on success.
+
+**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
+**See**: https://core.telegram.org/bots/api#deletestickerfromset  
+**Todo**
+
+- [ ] Add tests for this method!
+
+
+| Param | Type | Description |
+| --- | --- | --- |
+| sticker | <code>String</code> | File identifier of the sticker |
 
 <a name="TelegramBot.Promise"></a>
 

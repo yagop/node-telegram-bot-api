@@ -1538,6 +1538,105 @@ class TelegramBot extends EventEmitter {
     }
     return this._request('uploadStickerFile', opts);
   }
+
+  /**
+   * Use this method to create new sticker set owned by a user.
+   * The bot will be able to edit the created sticker set.
+   * Returns True on success.
+   *
+   * @param  {Number} userId User identifier of created sticker set owner
+   * @param  {String} name Short name of sticker set, to be used in `t.me/addstickers/` URLs (e.g., *animals*)
+   * @param  {String} title Sticker set title, 1-64 characters
+   * @param  {String|stream.Stream|Buffer} pngSticker Png image with the sticker, must be up to 512 kilobytes in size,
+   *  dimensions must not exceed 512px, and either width or height must be exactly 512px.
+   * @param  {String} emojis One or more emoji corresponding to the sticker
+   * @param  {Object} [options] Additional Telegram query options
+   * @return {Promise}
+   * @see https://core.telegram.org/bots/api#createnewstickerset
+   * @todo Add tests for this method!
+   */
+  createNewStickerSet(userId, name, title, pngSticker, emojis, options = {}) {
+    const opts = {
+      qs: options,
+    };
+    opts.qs.user_id = userId;
+    opts.qs.name = name;
+    opts.qs.title = title;
+    opts.qs.emojis = emojis;
+    try {
+      const sendData = this._formatSendData('png_sticker', pngSticker);
+      opts.formData = sendData[0];
+      opts.qs.png_sticker = sendData[1];
+    } catch (ex) {
+      return Promise.reject(ex);
+    }
+    return this._request('createNewStickerSet', opts);
+  }
+
+  /**
+   * Use this method to add a new sticker to a set created by the bot.
+   * Returns True on success.
+   *
+   * @param  {Number} userId User identifier of sticker set owner
+   * @param  {String} name Sticker set name
+   * @param  {String|stream.Stream|Buffer} pngSticker Png image with the sticker, must be up to 512 kilobytes in size,
+   *  dimensions must not exceed 512px, and either width or height must be exactly 512px
+   * @param  {String} emojis One or more emoji corresponding to the sticker
+   * @param  {Object} [options] Additional Telegram query options
+   * @return {Promise}
+   * @see https://core.telegram.org/bots/api#addstickertoset
+   * @todo Add tests for this method!
+   */
+  addStickerToSet(userId, name, pngSticker, emojis, options = {}) {
+    const opts = {
+      qs: options,
+    };
+    opts.qs.user_id = userId;
+    opts.qs.name = name;
+    opts.qs.emojis = emojis;
+    try {
+      const sendData = this._formatSendData('png_sticker', pngSticker);
+      opts.formData = sendData[0];
+      opts.qs.png_sticker = sendData[1];
+    } catch (ex) {
+      return Promise.reject(ex);
+    }
+    return this._request('addStickerToSet', opts);
+  }
+
+  /**
+   * Use this method to move a sticker in a set created by the bot to a specific position.
+   * Returns True on success.
+   *
+   * @param  {String} sticker File identifier of the sticker
+   * @param  {Number} position New sticker position in the set, zero-based
+   * @return {Promise}
+   * @see https://core.telegram.org/bots/api#setstickerpositioninset
+   * @todo Add tests for this method!
+   */
+  setStickerPositionInSet(sticker, position) {
+    const form = {
+      sticker,
+      position,
+    };
+    return this._request('setStickerPositionInSet', { form });
+  }
+
+  /**
+   * Use this method to delete a sticker from a set created by the bot.
+   * Returns True on success.
+   *
+   * @param  {String} sticker File identifier of the sticker
+   * @return {Promise}
+   * @see https://core.telegram.org/bots/api#deletestickerfromset
+   * @todo Add tests for this method!
+   */
+  deleteStickerFromSet(sticker) {
+    const form = {
+      sticker,
+    };
+    return this._request('deleteStickerFromSet', { form });
+  }
 }
 
 module.exports = TelegramBot;
