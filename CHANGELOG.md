@@ -7,10 +7,14 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 Added:
 
-1. Add methods:
+1. Add Bot API v3.2 methods:
   * (#429) *TelegramBot#getStickerSet* (by @CapacitorSet, @LibertyLocked)
   * (#430) *TelegramBot#uploadStickerFile* (by @CapacitorSet)
   * *TelegramBot#createNewStickerSet*, *TelegramBot#addStickerToSet*, *TelegramBot#setStickerPositionInSet*, *TelegramBot#deleteStickerFromSet* (by @GochoMugo)
+
+Deprecated:
+
+1. Auto-enabling Promise cancellation (#319) (by @GochoMugo)
 
 
 * * *
