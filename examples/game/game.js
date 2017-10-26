@@ -39,7 +39,7 @@ bot.onText(/\/start/, function onPhotoText(msg) {
 
 // Handle callback queries
 bot.on('callback_query', function onCallbackQuery(callbackQuery) {
-  bot.answerCallbackQuery(callbackQuery.id, url, true, { url });
+  bot.answerCallbackQuery({url: url, callback_query_id: callbackQuery.id});
 });
 
 // Render the HTML game
