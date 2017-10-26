@@ -5,9 +5,47 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased][Unreleased]
 
+
+
+
+* * *
+
+## [0.29.0][0.29.0] - 2017-10-22
+
 Added:
 
+1. Add Bot API v3.2 methods:
+  * (#429) *TelegramBot#getStickerSet* (by @CapacitorSet, @LibertyLocked)
+  * (#430) *TelegramBot#uploadStickerFile* (by @CapacitorSet)
+  * *TelegramBot#createNewStickerSet*, *TelegramBot#addStickerToSet*, *TelegramBot#setStickerPositionInSet*, *TelegramBot#deleteStickerFromSet* (by @GochoMugo)
+1. Supports API v3.3
+
+Deprecated:
+
+1. Auto-enabling Promise cancellation (#319) (by @GochoMugo)
+
+
+* * *
+
+## [0.28.0][0.28.0] - 2017-08-06
+
+Added:
+
+1. (#361) Support Bot API v3.1 (by @Lord-Protector, @kamikazechaser)
+1. (#332) Support Bot API v3.0 (by @kamikazechaser, @GochoMugo)
+1. Add *TelegramBot#removeTextListener()* (by @GochoMugo)
+1. (#342) Add game example (by @MCSH)
 1. (#315) List 'bot-brother' project in community section in README (by @saeedhei)
+
+Changed:
+
+1. (#367) Update *TelegramBot#answerCallbackQuery()* signature (by @mnb3000)
+
+Fixed:
+
+1. (#325) Fix global regexp state reset (by @Sirius-A)
+1. (#363) Fix download file path on windows (by @kucherenkovova)
+1. (#346) Fix anchor webhook link in docs (by @Coac)
 
 
 * * *
@@ -129,4 +167,6 @@ Fixed:
 [0.26.0]:https://github.com/yagop/node-telegram-bot-api/releases/tag/v0.26.0
 [0.27.0]:https://github.com/yagop/node-telegram-bot-api/releases/tag/v0.27.0
 [0.27.1]:https://github.com/yagop/node-telegram-bot-api/releases/tag/v0.27.1
-[Unreleased]:https://github.com/yagop/node-telegram-bot-api/compare/v0.27.1...master
+[0.28.0]:https://github.com/yagop/node-telegram-bot-api/releases/tag/v0.28.0
+[0.29.0]:https://github.com/yagop/node-telegram-bot-api/releases/tag/v0.29.0
+[Unreleased]:https://github.com/yagop/node-telegram-bot-api/compare/v0.29.0...master

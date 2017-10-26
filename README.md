@@ -1,6 +1,6 @@
 # Node.js Telegram Bot API
 
-[![Bot API](http://img.shields.io/badge/Bot%20API-v3.0.0-00aced.svg)](https://core.telegram.org/bots/api)
+[![Bot API](https://img.shields.io/badge/Bot%20API-v.3.3.0-00aced.svg)](https://core.telegram.org/bots/api)
 [![Build Status](https://travis-ci.org/yagop/node-telegram-bot-api.svg?branch=master)](https://travis-ci.org/yagop/node-telegram-bot-api)
 [![Build status](https://ci.appveyor.com/api/projects/status/ujko6bsum3g5msjh/branch/master?svg=true)](https://ci.appveyor.com/project/yagop/node-telegram-bot-api/branch/master)
 [![Coverage Status](https://coveralls.io/repos/yagop/node-telegram-bot-api/badge.svg?branch=master)](https://coveralls.io/r/yagop/node-telegram-bot-api?branch=master)
@@ -54,6 +54,7 @@ bot.on('message', (msg) => {
 
 * [Usage][usage]
 * [Examples][examples]
+* [Tutorials][tutorials]
 * [Help Information][help]
 * API Reference ([release][api-release] / [development][api-dev] / [experimental][api-experimental])
 * [Contributing to the Project][contributing]
@@ -86,6 +87,7 @@ Copyright (c) 2017 Yago
 [usage]:https://github.com/yagop/node-telegram-bot-api/tree/master/doc/usage.md
 [examples]:https://github.com/yagop/node-telegram-bot-api/tree/master/examples
 [help]:https://github.com/yagop/node-telegram-bot-api/tree/master/doc/help.md
+[tutorials]:https://github.com/yagop/node-telegram-bot-api/tree/master/doc/tutorials.md
 [api-dev]:https://github.com/yagop/node-telegram-bot-api/tree/master/doc/api.md
 [api-release]:https://github.com/yagop/node-telegram-bot-api/tree/release/doc/api.md
 [api-experimental]:https://github.com/yagop/node-telegram-bot-api/tree/experimental/doc/api.md

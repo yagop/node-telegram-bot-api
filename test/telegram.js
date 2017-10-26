@@ -7,6 +7,7 @@ const os = require('os');
 const path = require('path');
 const is = require('is');
 const utils = require('./utils');
+const isCI = require('is-ci');
 
 // Allows self-signed certificates to be used in our tests
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
@@ -17,7 +18,7 @@ if (!TOKEN) {
 }
 
 const PROVIDER_TOKEN = process.env.TEST_PROVIDER_TOKEN;
-if (!PROVIDER_TOKEN) {
+if (!PROVIDER_TOKEN && !isCI) { // If is not running in Travis / Appveyor
   throw new Error('Provider token not supplied');
 }
 
@@ -25,6 +26,7 @@ if (!PROVIDER_TOKEN) {
 const USERID = process.env.TEST_USER_ID || 777000;
 const GROUPID = process.env.TEST_GROUP_ID || -1001075450562;
 const GAME_SHORT_NAME = process.env.TEST_GAME_SHORT_NAME || 'medusalab_test';
+const STICKER_SET_NAME = process.env.TEST_STICKER_SET_NAME || 'pusheen';
 const timeout = 60 * 1000;
 let portindex = 8091;
 const staticPort = portindex++;
@@ -106,6 +108,15 @@ describe('TelegramBot', function telegramSuite() {
     }).then(resp => {
       GAME_MSG_ID = resp.message_id;
     });
+  });
+
+  it('allows providing custom Promise library', function test() {
+    TelegramBot.Promise = global.Promise;
+    const promise = bot.stopPolling();
+    assert.ok(promise instanceof global.Promise);
+    assert.ok(!(promise instanceof Promise));
+    // revert
+    TelegramBot.Promise = Promise;
   });
 
   it('automatically starts polling', function test() {
@@ -714,7 +725,7 @@ describe('TelegramBot', function telegramSuite() {
     });
   });
 
-  describe('#sendVideoNote', function sendVideoNoteSuite() {
+  describe.skip('#sendVideoNote', function sendVideoNoteSuite() {
     let videoNoteId;
     this.timeout(timeout);
     before(function before() {
@@ -812,7 +823,114 @@ describe('TelegramBot', function telegramSuite() {
 
   describe.skip('#unbanChatMember', function unbanChatMemberSuite() {});
 
+  describe.skip('#restrictChatMember', function restrictChatMemberSuite() {});
+
+  describe.skip('#promoteChatMember', function promoteChatMemberSuite() {});
+
   describe.skip('#answerCallbackQuery', function answerCallbackQuerySuite() {});
+
+  describe('#exportChatInviteLink', function exportChatInviteLinkSuite() {
+    before(function before() {
+      utils.handleRatelimit(bot, 'exportChatInviteLink', this);
+    });
+    it('should export the group invite link', function test() {
+      return bot.exportChatInviteLink(GROUPID).then(resp => {
+        assert(resp.match(/^https:\/\/t\.me\/joinchat\/.+$/i), 'is a telegram invite link');
+      });
+    });
+  });
+
+  describe('#setChatPhoto', function setChatPhotoSuite() {
+    this.timeout(timeout);
+    before(function before() {
+      utils.handleRatelimit(bot, 'setChatPhoto', this);
+    });
+    it('should set a chat photo from file', function test() {
+      const photo = `${__dirname}/data/chat_photo.png`;
+      return bot.setChatPhoto(GROUPID, photo).then(resp => {
+        assert.equal(resp, true);
+      });
+    });
+    it('should set a chat photo from fs.readStream', function test() {
+      const photo = fs.createReadStream(`${__dirname}/data/chat_photo.png`);
+      return bot.setChatPhoto(GROUPID, photo).then(resp => {
+        assert.equal(resp, true);
+      });
+    });
+    it('should set a chat photo from request Stream', function test() {
+      const photo = request(`${staticUrl}/chat_photo.png`);
+      return bot.setChatPhoto(GROUPID, photo).then(resp => {
+        assert.equal(resp, true);
+      });
+    });
+    it('should set a chat photo from a Buffer', function test() {
+      const photo = fs.readFileSync(`${__dirname}/data/chat_photo.png`);
+      return bot.setChatPhoto(GROUPID, photo).then(resp => {
+        assert.equal(resp, true);
+      });
+    });
+  });
+
+  describe('#deleteChatPhoto', function deleteChatPhotoSuite() {
+    before(function before() {
+      utils.handleRatelimit(bot, 'deleteChatPhoto', this);
+    });
+    it('should delete the chat photo', function test() {
+      return bot.deleteChatPhoto(GROUPID).then(resp => {
+        assert.equal(resp, true);
+      });
+    });
+  });
+
+  describe('#setChatTitle', function setChatTitleSuite() {
+    before(function before() {
+      utils.handleRatelimit(bot, 'setChatTitle', this);
+    });
+    it('should set the chat title', function test() {
+      return bot.setChatTitle(GROUPID, 'ntba test group').then(resp => {
+        assert.equal(resp, true);
+      });
+    });
+  });
+
+  describe('#setChatDescription', function setChatDescriptionSuite() {
+    before(function before() {
+      utils.handleRatelimit(bot, 'setChatDescription', this);
+    });
+    it('should set the chat description', function test() {
+      const random = Math.floor(Math.random() * 1000);
+      const description = `node-telegram-bot-api test group (random: ${random})`;
+      return bot.setChatDescription(GROUPID, description).then(resp => {
+        assert.equal(resp, true);
+      });
+    });
+  });
+
+  describe('#pinChatMessage', function pinChatMessageSuite() {
+    let messageId;
+    before(function before() {
+      utils.handleRatelimit(bot, 'pinChatMessage', this);
+      return bot.sendMessage(GROUPID, 'To be pinned').then(resp => {
+        messageId = resp.message_id;
+      });
+    });
+    it('should pin chat message', function test() {
+      return bot.pinChatMessage(GROUPID, messageId).then(resp => {
+        assert.equal(resp, true);
+      });
+    });
+  });
+
+  describe('#unpinChatMessage', function unpinChatMessageSuite() {
+    before(function before() {
+      utils.handleRatelimit(bot, 'unpinChatMessage', this);
+    });
+    it('should unpin chat message', function test() {
+      return bot.unpinChatMessage(GROUPID).then(resp => {
+        assert.equal(resp, true);
+      });
+    });
+  });
 
   describe('#editMessageText', function editMessageTextSuite() {
     before(function before() {
@@ -1217,6 +1335,9 @@ describe('TelegramBot', function telegramSuite() {
       utils.handleRatelimit(bot, 'sendInvoice', this);
     });
     it('should send an invoice', function test() {
+      if (isCI) {
+        this.skip(); // Skip test for now
+      }
       const title = 'Demo product';
       const description = 'our test product';
       const payload = 'sku-p001';
@@ -1235,4 +1356,33 @@ describe('TelegramBot', function telegramSuite() {
   describe.skip('#answerShippingQuery', function answerShippingQuerySuite() {});
 
   describe.skip('#answerPreCheckoutQuery', function answerPreCheckoutQuerySuite() {});
+
+  describe('#getStickerSet', function getStickerSetSuite() {
+    before(function before() {
+      utils.handleRatelimit(bot, 'getStickerSet', this);
+    });
+    it('should get the sticker set given the name of the set', function test() {
+      return bot.getStickerSet(STICKER_SET_NAME).then(resp => {
+        assert.ok(is.object(resp));
+        assert.equal(resp.name.toLowerCase(), STICKER_SET_NAME);
+        assert.ok(is.string(resp.title));
+        assert.ok(is.boolean(resp.contains_masks));
+        assert.ok(is.array(resp.stickers));
+      });
+    });
+  });
+
+  describe('#uploadStickerFile', function sendPhotoSuite() {
+    before(function before() {
+      utils.handleRatelimit(bot, 'uploadStickerFile', this);
+    });
+    it('should upload a sticker from file', function test() {
+      const sticker = `${__dirname}/data/sticker.png`;
+      return bot.uploadStickerFile(USERID, sticker).then(resp => {
+        assert.ok(is.object(resp));
+        assert.ok(is.string(resp.file_id));
+      });
+    });
+    // Other tests (eg. Buffer, URL) are skipped, because they rely on the same features as sendPhoto.
+  });
 }); // End Telegram

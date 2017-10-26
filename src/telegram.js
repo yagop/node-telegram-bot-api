@@ -7,7 +7,6 @@ const TelegramBotPolling = require('./telegramPolling');
 const debug = require('debug')('node-telegram-bot-api');
 const EventEmitter = require('eventemitter3');
 const fileType = require('file-type');
-const Promise = require('bluebird');
 const request = require('request-promise');
 const streamedRequest = require('request');
 const qs = require('querystring');
@@ -18,6 +17,7 @@ const URL = require('url');
 const fs = require('fs');
 const pump = require('pump');
 const deprecate = require('depd')('node-telegram-bot-api');
+let Promise = require('bluebird');
 
 const _messageTypes = [
   'audio',
@@ -49,10 +49,29 @@ const _deprecatedMessageTypes = [
   'new_chat_participant', 'left_chat_participant'
 ];
 
-// enable cancellation
-Promise.config({
-  cancellation: true,
-});
+
+if (!process.env.NTBA_FIX_319) {
+  // Enable Promise cancellation.
+  try {
+    const msg =
+      'Automatic enabling of cancellation of promises is deprecated.\n' +
+      'In the future, you will have to enable it yourself.\n' +
+      'See https://github.com/yagop/node-telegram-bot-api/issues/319.';
+    deprecate(msg);
+    Promise.config({
+      cancellation: true,
+    });
+  } catch (ex) {
+    /* eslint-disable no-console */
+    const msg =
+      'error: Enabling Promise cancellation failed.\n' +
+      '       Temporary fix is to load/require this library as early as possible before using any Promises.';
+    console.error(msg);
+    throw ex;
+    /* eslint-enable no-console */
+  }
+}
+
 
 class TelegramBot extends EventEmitter {
 
@@ -62,6 +81,19 @@ class TelegramBot extends EventEmitter {
 
   static get messageTypes() {
     return _messageTypes;
+  }
+
+  /**
+   * Change Promise library used internally, for all existing and new
+   * instances.
+   * @param  {Function} customPromise
+   *
+   * @example
+   * const TelegramBot = require('node-telegram-bot-api');
+   * TelegramBot.Promise = myPromise;
+   */
+  static set Promise(customPromise) {
+    Promise = customPromise;
   }
 
   on(event, listener) {
@@ -845,22 +877,183 @@ class TelegramBot extends EventEmitter {
   }
 
   /**
+   * Use this method to restrict a user in a supergroup.
+   * The bot must be an administrator in the supergroup for this to work
+   * and must have the appropriate admin rights. Pass True for all boolean parameters
+   * to lift restrictions from a user. Returns True on success.
+   *
+   * @param  {Number|String} chatId Unique identifier for the target chat or username of the target supergroup
+   * @param  {String} userId Unique identifier of the target user
+   * @param  {Object} [options] Additional Telegram query options
+   * @return {Promise}
+   * @see https://core.telegram.org/bots/api#restrictchatmember
+   */
+  restrictChatMember(chatId, userId, form = {}) {
+    form.chat_id = chatId;
+    form.user_id = userId;
+    return this._request('restrictChatMember', { form });
+  }
+
+  /**
+   * Use this method to promote or demote a user in a supergroup or a channel.
+   * The bot must be an administrator in the chat for this to work
+   * and must have the appropriate admin rights. Pass False for all boolean parameters to demote a user.
+   * Returns True on success.
+   *
+   * @param  {Number|String} chatId Unique identifier for the target chat or username of the target supergroup
+   * @param  {String} userId
+   * @param  {Object} [options] Additional Telegram query options
+   * @return {Promise}
+   * @see https://core.telegram.org/bots/api#promotechatmember
+   */
+  promoteChatMember(chatId, userId, form = {}) {
+    form.chat_id = chatId;
+    form.user_id = userId;
+    return this._request('promoteChatMember', { form });
+  }
+
+  /**
+   * Use this method to export an invite link to a supergroup or a channel.
+   * The bot must be an administrator in the chat for this to work and must have the appropriate admin rights.
+   * Returns exported invite link as String on success.
+   *
+   * @param  {Number|String} chatId Unique identifier for the target chat or username of the target supergroup
+   * @return {Promise}
+   * @see https://core.telegram.org/bots/api#exportchatinvitelink
+   */
+  exportChatInviteLink(chatId, form = {}) {
+    form.chat_id = chatId;
+    return this._request('exportChatInviteLink', { form });
+  }
+
+  /**
+   * Use this method to set a new profile photo for the chat. Photos can't be changed for private chats.
+   * The bot must be an administrator in the chat for this to work and must have the appropriate admin rights.
+   * Returns True on success.
+   *
+   * @param  {Number|String} chatId  Unique identifier for the message recipient
+   * @param  {stream.Stream|Buffer} photo A file path or a Stream.
+   * @return {Promise}
+   * @see https://core.telegram.org/bots/api#setchatphoto
+   */
+  setChatPhoto(chatId, photo, options = {}) {
+    const opts = {
+      qs: options,
+    };
+    opts.qs.chat_id = chatId;
+    try {
+      const sendData = this._formatSendData('photo', photo);
+      opts.formData = sendData[0];
+      opts.qs.photo = sendData[1];
+    } catch (ex) {
+      return Promise.reject(ex);
+    }
+    return this._request('setChatPhoto', opts);
+  }
+
+  /**
+   * Use this method to delete a chat photo. Photos can't be changed for private chats.
+   * The bot must be an administrator in the chat for this to work and must have the appropriate admin rights.
+   * Returns True on success.
+   *
+   * @param  {Number|String} chatId  Unique identifier for the message recipient
+   * @return {Promise}
+   * @see https://core.telegram.org/bots/api#deletechatphoto
+   */
+  deleteChatPhoto(chatId, form = {}) {
+    form.chat_id = chatId;
+    return this._request('deleteChatPhoto', { form });
+  }
+
+  /**
+   * Use this method to change the title of a chat. Titles can't be changed for private chats.
+   * The bot must be an administrator in the chat for this to work and must have the appropriate admin rights.
+   * Returns True on success.
+   *
+   * @param  {Number|String} chatId  Unique identifier for the message recipient
+   * @param  {String} title New chat title, 1-255 characters
+   * @return {Promise}
+   * @see https://core.telegram.org/bots/api#setchattitle
+   */
+  setChatTitle(chatId, title, form = {}) {
+    form.chat_id = chatId;
+    form.title = title;
+    return this._request('setChatTitle', { form });
+  }
+
+  /**
+   * Use this method to change the description of a supergroup or a channel.
+   * The bot must be an administrator in the chat for this to work and must have the appropriate admin rights.
+   * Returns True on success.
+   *
+   * @param  {Number|String} chatId  Unique identifier for the message recipient
+   * @param  {String} description New chat title, 1-255 characters
+   * @return {Promise}
+   * @see https://core.telegram.org/bots/api#setchatdescription
+   */
+  setChatDescription(chatId, description, form = {}) {
+    form.chat_id = chatId;
+    form.description = description;
+    return this._request('setChatDescription', { form });
+  }
+
+  /**
+   * Use this method to pin a message in a supergroup.
+   * The bot must be an administrator in the chat for this to work and must have the appropriate admin rights.
+   * Returns True on success.
+   *
+   * @param  {Number|String} chatId  Unique identifier for the message recipient
+   * @param  {String} messageId Identifier of a message to pin
+   * @return {Promise}
+   * @see https://core.telegram.org/bots/api#pinchatmessage
+   */
+  pinChatMessage(chatId, messageId, form = {}) {
+    form.chat_id = chatId;
+    form.message_id = messageId;
+    return this._request('pinChatMessage', { form });
+  }
+
+  /**
+   * Use this method to unpin a message in a supergroup chat.
+   * The bot must be an administrator in the chat for this to work and must have the appropriate admin rights.
+   * Returns True on success.
+   *
+   * @param  {Number|String} chatId  Unique identifier for the message recipient
+   * @return {Promise}
+   * @see https://core.telegram.org/bots/api#unpinchatmessage
+   */
+  unpinChatMessage(chatId, form = {}) {
+    form.chat_id = chatId;
+    return this._request('unpinChatMessage', { form });
+  }
+
+  /**
    * Use this method to send answers to callback queries sent from
    * inline keyboards. The answer will be displayed to the user as
    * a notification at the top of the chat screen or as an alert.
    * On success, True is returned.
    *
-   * @param  {Number|String} callbackQueryId  Unique identifier for the query to be answered
-   * @param  {String} text  Text of the notification. If not specified, nothing will be shown to the user
-   * @param  {Boolean} showAlert  Whether to show an alert or a notification at the top of the screen
+   * This method has an [older, compatible signature][answerCallbackQuery-v0.27.1]
+   * that is being deprecated.
+   *
    * @param  {Object} [options] Additional Telegram query options
    * @return {Promise}
    * @see https://core.telegram.org/bots/api#answercallbackquery
    */
-  answerCallbackQuery(callbackQueryId, text, showAlert, form = {}) {
-    form.callback_query_id = callbackQueryId;
-    form.text = text;
-    form.show_alert = showAlert;
+  answerCallbackQuery(form = {}) {
+    /* The older method signature was answerCallbackQuery(callbackQueryId, text, showAlert).
+     * We need to ensure backwards-compatibility while maintaining
+     * consistency of the method signatures throughout the library */
+    if (typeof form !== 'object') {
+      /* eslint-disable no-param-reassign, prefer-rest-params */
+      deprecate('The method signature answerCallbackQuery(callbackQueryId, text, showAlert) has been deprecated since v0.27.1');
+      form = {
+        callback_query_id: arguments[0],
+        text: arguments[1],
+        show_alert: arguments[2],
+      };
+      /* eslint-enable no-param-reassign, prefer-rest-params */
+    }
     return this._request('answerCallbackQuery', { form });
   }
 
@@ -1050,7 +1243,7 @@ class TelegramBot extends EventEmitter {
       .then(fileURI => {
         const fileName = fileURI.slice(fileURI.lastIndexOf('/') + 1);
         // TODO: Ensure fileName doesn't contains slashes
-        const filePath = `${downloadDir}/${fileName}`;
+        const filePath = path.join(downloadDir, fileName);
 
         // properly handles errors and closes all streams
         return Promise
@@ -1305,6 +1498,144 @@ class TelegramBot extends EventEmitter {
     form.pre_checkout_query_id = preCheckoutQueryId;
     form.ok = ok;
     return this._request('answerPreCheckoutQuery', { form });
+  }
+
+  /**
+   * Use this method to get a sticker set. On success, a [StickerSet](https://core.telegram.org/bots/api#stickerset) object is returned.
+   *
+   * @param  {String} name Name of the sticker set
+   * @param  {Object} [options] Additional Telegram query options
+   * @return {Promise}
+   * @see https://core.telegram.org/bots/api#getstickerset
+   */
+  getStickerSet(name, form = {}) {
+    form.name = name;
+    return this._request('getStickerSet', { form });
+  }
+
+  /**
+   * Use this method to upload a .png file with a sticker for later use in *createNewStickerSet* and *addStickerToSet* methods (can be used multiple
+   * times). Returns the uploaded [File](https://core.telegram.org/bots/api#file) on success.
+   *
+   * @param  {Number} userId User identifier of sticker file owner
+   * @param  {String|stream.Stream|Buffer} pngSticker A file path or a Stream. Can also be a `file_id` previously uploaded. **Png** image with the
+   *  sticker, must be up to 512 kilobytes in size, dimensions must not exceed 512px, and either width or height must be exactly 512px.
+   * @param  {Object} [options] Additional Telegram query options
+   * @return {Promise}
+   * @see https://core.telegram.org/bots/api#uploadstickerfile
+   */
+  uploadStickerFile(userId, pngSticker, options = {}) {
+    const opts = {
+      qs: options,
+    };
+    opts.qs.user_id = userId;
+    try {
+      const sendData = this._formatSendData('png_sticker', pngSticker);
+      opts.formData = sendData[0];
+      opts.qs.png_sticker = sendData[1];
+    } catch (ex) {
+      return Promise.reject(ex);
+    }
+    return this._request('uploadStickerFile', opts);
+  }
+
+  /**
+   * Use this method to create new sticker set owned by a user.
+   * The bot will be able to edit the created sticker set.
+   * Returns True on success.
+   *
+   * @param  {Number} userId User identifier of created sticker set owner
+   * @param  {String} name Short name of sticker set, to be used in `t.me/addstickers/` URLs (e.g., *animals*)
+   * @param  {String} title Sticker set title, 1-64 characters
+   * @param  {String|stream.Stream|Buffer} pngSticker Png image with the sticker, must be up to 512 kilobytes in size,
+   *  dimensions must not exceed 512px, and either width or height must be exactly 512px.
+   * @param  {String} emojis One or more emoji corresponding to the sticker
+   * @param  {Object} [options] Additional Telegram query options
+   * @return {Promise}
+   * @see https://core.telegram.org/bots/api#createnewstickerset
+   * @todo Add tests for this method!
+   */
+  createNewStickerSet(userId, name, title, pngSticker, emojis, options = {}) {
+    const opts = {
+      qs: options,
+    };
+    opts.qs.user_id = userId;
+    opts.qs.name = name;
+    opts.qs.title = title;
+    opts.qs.emojis = emojis;
+    try {
+      const sendData = this._formatSendData('png_sticker', pngSticker);
+      opts.formData = sendData[0];
+      opts.qs.png_sticker = sendData[1];
+    } catch (ex) {
+      return Promise.reject(ex);
+    }
+    return this._request('createNewStickerSet', opts);
+  }
+
+  /**
+   * Use this method to add a new sticker to a set created by the bot.
+   * Returns True on success.
+   *
+   * @param  {Number} userId User identifier of sticker set owner
+   * @param  {String} name Sticker set name
+   * @param  {String|stream.Stream|Buffer} pngSticker Png image with the sticker, must be up to 512 kilobytes in size,
+   *  dimensions must not exceed 512px, and either width or height must be exactly 512px
+   * @param  {String} emojis One or more emoji corresponding to the sticker
+   * @param  {Object} [options] Additional Telegram query options
+   * @return {Promise}
+   * @see https://core.telegram.org/bots/api#addstickertoset
+   * @todo Add tests for this method!
+   */
+  addStickerToSet(userId, name, pngSticker, emojis, options = {}) {
+    const opts = {
+      qs: options,
+    };
+    opts.qs.user_id = userId;
+    opts.qs.name = name;
+    opts.qs.emojis = emojis;
+    try {
+      const sendData = this._formatSendData('png_sticker', pngSticker);
+      opts.formData = sendData[0];
+      opts.qs.png_sticker = sendData[1];
+    } catch (ex) {
+      return Promise.reject(ex);
+    }
+    return this._request('addStickerToSet', opts);
+  }
+
+  /**
+   * Use this method to move a sticker in a set created by the bot to a specific position.
+   * Returns True on success.
+   *
+   * @param  {String} sticker File identifier of the sticker
+   * @param  {Number} position New sticker position in the set, zero-based
+   * @return {Promise}
+   * @see https://core.telegram.org/bots/api#setstickerpositioninset
+   * @todo Add tests for this method!
+   */
+  setStickerPositionInSet(sticker, position) {
+    const form = {
+      sticker,
+      position,
+    };
+    return this._request('setStickerPositionInSet', { form });
+  }
+
+  /**
+   * Use this method to delete a sticker from a set created by the bot.
+   * Returns True on success.
+   *
+   * @param  {String} sticker File identifier of the sticker
+   * @return {Promise}
+   * @see https://core.telegram.org/bots/api#deletestickerfromset
+   * @todo Add tests for this method!
+   */
+  deleteStickerFromSet(sticker) {
+    const form = {
+      sticker,
+    };
+    return this._request('deleteStickerFromSet', { form });
   }
 }
 
