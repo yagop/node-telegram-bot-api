@@ -13,6 +13,7 @@ TelegramBot
 * [TelegramBot](#TelegramBot)
     * [new TelegramBot(token, [options])](#new_TelegramBot_new)
     * _instance_
+        * [.on(event, listener)](#TelegramBot+on)
         * [.startPolling([options])](#TelegramBot+startPolling) ⇒ <code>Promise</code>
         * ~~[.initPolling([options])](#TelegramBot+initPolling) ⇒ <code>Promise</code>~~
         * [.stopPolling()](#TelegramBot+stopPolling) ⇒ <code>Promise</code>
@@ -115,6 +116,24 @@ Emits `message` when a message arrives.
 | [options.request] | <code>Object</code> |  | Options which will be added for all requests to telegram api.  See https://github.com/request/request#requestoptions-callback for more information. |
 | [options.baseApiUrl] | <code>String</code> | <code>https://api.telegram.org</code> | API Base URl; useful for proxying and testing |
 | [options.filepath] | <code>Boolean</code> | <code>true</code> | Allow passing file-paths as arguments when sending files,  such as photos using `TelegramBot#sendPhoto()`. See [usage information][usage-sending-files-performance]  for more information on this option and its consequences. |
+
+<a name="TelegramBot+on"></a>
+
+### telegramBot.on(event, listener)
+Add listener for the specified [event](https://github.com/yagop/node-telegram-bot-api/blob/master/doc/usage.md#events).
+This is the usual `emitter.on()` method.
+
+**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
+**See**
+
+- [Available events](https://github.com/yagop/node-telegram-bot-api/blob/master/doc/usage.md#events)
+- https://nodejs.org/api/events.html#events_emitter_on_eventname_listener
+
+
+| Param | Type |
+| --- | --- |
+| event | <code>String</code> | 
+| listener | <code>function</code> | 
 
 <a name="TelegramBot+startPolling"></a>
 

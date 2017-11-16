@@ -96,6 +96,14 @@ class TelegramBot extends EventEmitter {
     Promise = customPromise;
   }
 
+  /**
+   * Add listener for the specified [event](https://github.com/yagop/node-telegram-bot-api/blob/master/doc/usage.md#events).
+   * This is the usual `emitter.on()` method.
+   * @param  {String} event
+   * @param  {Function} listener
+   * @see {@link https://github.com/yagop/node-telegram-bot-api/blob/master/doc/usage.md#events|Available events}
+   * @see https://nodejs.org/api/events.html#events_emitter_on_eventname_listener
+   */
   on(event, listener) {
     if (_deprecatedMessageTypes.indexOf(event) !== -1) {
       const url = 'https://github.com/yagop/node-telegram-bot-api/blob/master/doc/usage.md#events';
