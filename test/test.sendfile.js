@@ -4,13 +4,13 @@ const path = require('path');
 const TelegramBot = require('..');
 
 const paths = {
-  audio: path.join(__dirname, "data/audio.mp3"),
+  audio: path.join(__dirname, 'data/audio.mp3'),
 };
 
 
 // TODO:Enable all other tests
 describe.only('sending files', function sendfileSuite() {
-  const bot = new TelegramBot("token");
+  const bot = new TelegramBot('token ');
 
   before(function beforeSuite() {
     process.env.NTBA_FIX_350 = 1;
@@ -26,7 +26,6 @@ describe.only('sending files', function sendfileSuite() {
     const buffer = fs.readFileSync(paths.audio);
     const nonDetectableBuffer = fs.readFileSync(__filename);
     const filepath = paths.audio;
-    const fileId = 'fileId';
     const files = [stream, nonPathStream, buffer, nonDetectableBuffer, filepath];
 
     delete nonPathStream.path;
@@ -42,7 +41,8 @@ describe.only('sending files', function sendfileSuite() {
 
       it('(2) Stream#path', function test() {
         if (!stream.path) {
-          return this.skip('Stream#path unsupported');
+          this.skip('Stream#path unsupported');
+          return;
         }
         const [{ [type]: data }] = bot._formatSendData(type, stream);
         assert.equal(data.options.filename, path.basename(paths.audio));
@@ -72,7 +72,8 @@ describe.only('sending files', function sendfileSuite() {
 
       it('(2) Stream#path', function test() {
         if (!stream.path) {
-          return this.skip('Stream#path unsupported');
+          this.skip('Stream#path unsupported');
+          return;
         }
         const [{ [type]: data }] = bot._formatSendData(type, stream);
         assert.equal(data.options.contentType, 'audio/mpeg');
@@ -104,6 +105,5 @@ describe.only('sending files', function sendfileSuite() {
         });
       });
     });
-
   });
 });

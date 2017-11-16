@@ -24,6 +24,13 @@ Changed:
 1. Update *TelegramBot#answerCallbackQuery()* signature (by @GochoMugo)
 1. Improve default error logging of `polling_error` and `webhook_error`
 
+Deprecated:
+
+1. Sending files: *(See [usage guide][usage-sending-file])* (by @hufan-akari, @GochoMugo)
+  * Error will **not** be thrown if `Buffer` is used and file-type could **not** be detected.
+  * Filename will **not** be set to `data.${ext}` if `Buffer` is used
+  * Content type will **not** default to `null` or `undefined`
+
 Fixed:
 
 1. Fix game example (by @MCSH)
@@ -183,6 +190,8 @@ Fixed:
 1. Fix request performance issue (by @preco21)
 1. Fix typos (by oflisback)
 
+
+[usage-sending-files]:https://github.com/yagop/node-telegram-bot-api/blob/master/doc/usage.md#sending-files-options
 
 [0.25.0]:https://github.com/yagop/node-telegram-bot-api/releases/tag/v0.25.0
 [0.26.0]:https://github.com/yagop/node-telegram-bot-api/releases/tag/v0.26.0

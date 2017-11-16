@@ -284,9 +284,9 @@ class TelegramBot extends EventEmitter {
    * Format data to be uploaded; handles file paths, streams and buffers
    * @param  {String} type
    * @param  {String|stream.Stream|Buffer} data
-   * @param  {Object} fileOpts File options
-   * @param  {String} [fileOpts.filename] File name
-   * @param  {String} [fileOpts.contentType] Content type (i.e. MIME)
+   * @param  {Object} fileOptions File options
+   * @param  {String} [fileOptions.filename] File name
+   * @param  {String} [fileOptions.contentType] Content type (i.e. MIME)
    * @return {Array} formatted
    * @return {Object} formatted[0] formData
    * @return {String} formatted[1] fileId
@@ -294,17 +294,19 @@ class TelegramBot extends EventEmitter {
    * @see https://npmjs.com/package/file-type
    * @private
    */
-  _formatSendData(type, data, fileOpts = {}) {
+  _formatSendData(type, data, fileOptions = {}) {
     let filedata = data;
-    let filename = fileOpts.filename;
-    let contentType = fileOpts.contentType;
+    let filename = fileOptions.filename;
+    let contentType = fileOptions.contentType;
 
     if (data instanceof stream.Stream) {
       if (!filename && data.path) {
         // Will be 'null' if could not be parsed.
         // For example, 'data.path' === '/?id=123' from 'request("https://example.com/?id=123")'
         const url = URL.parse(path.basename(data.path.toString()));
-        filename = qs.unescape(url.pathname);
+        if (url.pathname) {
+          filename = qs.unescape(url.pathname);
+        }
       }
     } else if (Buffer.isBuffer(data)) {
       if (!filename && !process.env.NTBA_FIX_350) {
@@ -701,18 +703,18 @@ class TelegramBot extends EventEmitter {
    * @param  {String|stream.Stream|Buffer} photo A file path or a Stream. Can
    * also be a `file_id` previously uploaded
    * @param  {Object} [options] Additional Telegram query options
-   * @param  {Object} [fileOpts] Optional file related meta-data
+   * @param  {Object} [fileOptions] Optional file related meta-data
    * @return {Promise}
    * @see https://core.telegram.org/bots/api#sendphoto
    * @see https://github.com/yagop/node-telegram-bot-api/blob/master/doc/usage.md#sending-files
    */
-  sendPhoto(chatId, photo, options = {}, fileOpts = {}) {
+  sendPhoto(chatId, photo, options = {}, fileOptions = {}) {
     const opts = {
       qs: options,
     };
     opts.qs.chat_id = chatId;
     try {
-      const sendData = this._formatSendData('photo', photo, fileOpts);
+      const sendData = this._formatSendData('photo', photo, fileOptions);
       opts.formData = sendData[0];
       opts.qs.photo = sendData[1];
     } catch (ex) {
@@ -727,18 +729,18 @@ class TelegramBot extends EventEmitter {
    * @param  {String|stream.Stream|Buffer} audio A file path, Stream or Buffer.
    * Can also be a `file_id` previously uploaded.
    * @param  {Object} [options] Additional Telegram query options
-   * @param  {Object} [fileOpts] Optional file related meta-data
+   * @param  {Object} [fileOptions] Optional file related meta-data
    * @return {Promise}
    * @see https://core.telegram.org/bots/api#sendaudio
    * @see https://github.com/yagop/node-telegram-bot-api/blob/master/doc/usage.md#sending-files
    */
-  sendAudio(chatId, audio, options = {}, fileOpts = {}) {
+  sendAudio(chatId, audio, options = {}, fileOptions = {}) {
     const opts = {
       qs: options
     };
     opts.qs.chat_id = chatId;
     try {
-      const sendData = this._formatSendData('audio', audio, fileOpts);
+      const sendData = this._formatSendData('audio', audio, fileOptions);
       opts.formData = sendData[0];
       opts.qs.audio = sendData[1];
     } catch (ex) {
@@ -753,18 +755,18 @@ class TelegramBot extends EventEmitter {
    * @param  {String|stream.Stream|Buffer} doc A file path, Stream or Buffer.
    * Can also be a `file_id` previously uploaded.
    * @param  {Object} [options] Additional Telegram query options
-   * @param  {Object} [fileOpts] Optional file related meta-data
+   * @param  {Object} [fileOptions] Optional file related meta-data
    * @return {Promise}
    * @see https://core.telegram.org/bots/api#sendDocument
    * @see https://github.com/yagop/node-telegram-bot-api/blob/master/doc/usage.md#sending-files
    */
-  sendDocument(chatId, doc, options = {}, fileOpts = {}) {
+  sendDocument(chatId, doc, options = {}, fileOptions = {}) {
     const opts = {
       qs: options
     };
     opts.qs.chat_id = chatId;
     try {
-      const sendData = this._formatSendData('document', doc, fileOpts);
+      const sendData = this._formatSendData('document', doc, fileOptions);
       opts.formData = sendData[0];
       opts.qs.document = sendData[1];
     } catch (ex) {
@@ -803,18 +805,18 @@ class TelegramBot extends EventEmitter {
    * @param  {String|stream.Stream|Buffer} video A file path or Stream.
    * Can also be a `file_id` previously uploaded.
    * @param  {Object} [options] Additional Telegram query options
-   * @param  {Object} [fileOpts] Optional file related meta-data
+   * @param  {Object} [fileOptions] Optional file related meta-data
    * @return {Promise}
    * @see https://core.telegram.org/bots/api#sendvideo
    * @see https://github.com/yagop/node-telegram-bot-api/blob/master/doc/usage.md#sending-files
    */
-  sendVideo(chatId, video, options = {}, fileOpts = {}) {
+  sendVideo(chatId, video, options = {}, fileOptions = {}) {
     const opts = {
       qs: options
     };
     opts.qs.chat_id = chatId;
     try {
-      const sendData = this._formatSendData('video', video, fileOpts);
+      const sendData = this._formatSendData('video', video, fileOptions);
       opts.formData = sendData[0];
       opts.qs.video = sendData[1];
     } catch (ex) {
@@ -829,19 +831,19 @@ class TelegramBot extends EventEmitter {
    * @param  {String|stream.Stream|Buffer} videoNote A file path or Stream.
    * Can also be a `file_id` previously uploaded.
    * @param  {Object} [options] Additional Telegram query options
-   * @param  {Object} [fileOpts] Optional file related meta-data
+   * @param  {Object} [fileOptions] Optional file related meta-data
    * @return {Promise}
    * @info The length parameter is actually optional. However, the API (at time of writing) requires you to always provide it until it is fixed.
    * @see https://core.telegram.org/bots/api#sendvideonote
    * @see https://github.com/yagop/node-telegram-bot-api/blob/master/doc/usage.md#sending-files
    */
-  sendVideoNote(chatId, videoNote, options = {}, fileOpts = {}) {
+  sendVideoNote(chatId, videoNote, options = {}, fileOptions = {}) {
     const opts = {
       qs: options
     };
     opts.qs.chat_id = chatId;
     try {
-      const sendData = this._formatSendData('video_note', videoNote, fileOpts);
+      const sendData = this._formatSendData('video_note', videoNote, fileOptions);
       opts.formData = sendData[0];
       opts.qs.video_note = sendData[1];
     } catch (ex) {
@@ -856,18 +858,18 @@ class TelegramBot extends EventEmitter {
    * @param  {String|stream.Stream|Buffer} voice A file path, Stream or Buffer.
    * Can also be a `file_id` previously uploaded.
    * @param  {Object} [options] Additional Telegram query options
-   * @param  {Object} [fileOpts] Optional file related meta-data
+   * @param  {Object} [fileOptions] Optional file related meta-data
    * @return {Promise}
    * @see https://core.telegram.org/bots/api#sendvoice
    * @see https://github.com/yagop/node-telegram-bot-api/blob/master/doc/usage.md#sending-files
    */
-  sendVoice(chatId, voice, options = {}, fileOpts = {}) {
+  sendVoice(chatId, voice, options = {}, fileOptions = {}) {
     const opts = {
       qs: options
     };
     opts.qs.chat_id = chatId;
     try {
-      const sendData = this._formatSendData('voice', voice, fileOpts);
+      const sendData = this._formatSendData('voice', voice, fileOptions);
       opts.formData = sendData[0];
       opts.qs.voice = sendData[1];
     } catch (ex) {
