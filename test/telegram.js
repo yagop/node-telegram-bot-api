@@ -630,13 +630,6 @@ describe('TelegramBot', function telegramSuite() {
         assert.ok(is.object(resp.document));
       });
     });
-    it('should send a document with custom file options', function test() {
-      const document = fs.createReadStream(`${__dirname}/data/photo.gif`);
-      const fileOpts = { filename: 'customfilename.gif' };
-      return bot.sendDocument(USERID, document, {}, fileOpts).then(resp => {
-        assert.equal(resp.document.file_name, fileOpts.filename);
-      });
-    });
   });
 
   describe('#sendSticker', function sendStickerSuite() {
