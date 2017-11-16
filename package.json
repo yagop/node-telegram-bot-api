@@ -25,7 +25,7 @@
   "author": "Yago Pérez <yagoperezs@gmail.com>",
   "license": "MIT",
   "engines": {
-    "node": ">=0.12"
+    "node": ">=6"
   },
   "dependencies": {
     "array.prototype.findindex": "^2.0.0",

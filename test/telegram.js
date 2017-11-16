@@ -55,14 +55,8 @@ before(function beforeAll() {
 
 
 describe('module.exports', function moduleExportsSuite() {
-  const nodeVersion = parseInt(process.versions.node.split('.')[0], 10);
-  it('is loaded from src/ on Node.js v6+ and above', function test() {
-    if (nodeVersion <= 5) this.skip(); // skip on Node.js v5 and below
+  it('is loaded from src', function test() {
     assert.equal(TelegramBot, require('../src/telegram'));
-  });
-  it('is loaded from lib/ on Node.js v5 and below', function test() {
-    if (nodeVersion > 5) this.skip(); // skip on newer versions
-    assert.equal(TelegramBot, require('../lib/telegram'));
   });
 });
 

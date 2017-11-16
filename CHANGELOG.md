@@ -9,6 +9,9 @@ Added:
 
 * Add support for Node.js v9
 
+Removed:
+
+* Drop support for Node.js v0.12, v4, v5
 
 
 * * *
