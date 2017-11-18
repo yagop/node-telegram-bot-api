@@ -10,6 +10,7 @@ Added:
 1. Add `metadata` argument in `message` event (and
    friends e.g. `text`, `audio`, etc.) (#409) (by @jlsjonas, @GochoMugo)
 1. Add support for Node.js v9 (by @GochoMugo)
+1. Document *TelegramBot.errors*, *TelegramBot.messageTypes* (by @GochoMugo)
 
 Changed:
 

@@ -74,11 +74,18 @@ if (!process.env.NTBA_FIX_319) {
 
 
 class TelegramBot extends EventEmitter {
-
+  /**
+   * The different errors the library uses.
+   * @type {Object}
+   */
   static get errors() {
     return errors;
   }
 
+  /**
+   * The types of message updates the library handles.
+   * @type {String[]}
+   */
   static get messageTypes() {
     return _messageTypes;
   }
