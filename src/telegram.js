@@ -20,6 +20,7 @@ const deprecate = require('depd')('node-telegram-bot-api');
 let Promise = require('bluebird');
 
 const _messageTypes = [
+  'text',
   'audio',
   'channel_chat_created',
   'contact',
@@ -40,7 +41,6 @@ const _messageTypes = [
   'sticker',
   'successful_payment',
   'supergroup_chat_created',
-  'text',
   'video',
   'video_note',
   'voice',
