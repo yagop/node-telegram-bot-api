@@ -49,7 +49,7 @@ TelegramBot
         * [.setChatDescription(chatId, description)](#TelegramBot+setChatDescription) ⇒ <code>Promise</code>
         * [.pinChatMessage(chatId, messageId)](#TelegramBot+pinChatMessage) ⇒ <code>Promise</code>
         * [.unpinChatMessage(chatId)](#TelegramBot+unpinChatMessage) ⇒ <code>Promise</code>
-        * [.answerCallbackQuery([options])](#TelegramBot+answerCallbackQuery) ⇒ <code>Promise</code>
+        * [.answerCallbackQuery(callbackQueryId, [options])](#TelegramBot+answerCallbackQuery) ⇒ <code>Promise</code>
         * [.editMessageText(text, [options])](#TelegramBot+editMessageText) ⇒ <code>Promise</code>
         * [.editMessageCaption(caption, [options])](#TelegramBot+editMessageCaption) ⇒ <code>Promise</code>
         * [.editMessageReplyMarkup(replyMarkup, [options])](#TelegramBot+editMessageReplyMarkup) ⇒ <code>Promise</code>
@@ -597,20 +597,21 @@ Returns True on success.
 
 <a name="TelegramBot+answerCallbackQuery"></a>
 
-### telegramBot.answerCallbackQuery([options]) ⇒ <code>Promise</code>
+### telegramBot.answerCallbackQuery(callbackQueryId, [options]) ⇒ <code>Promise</code>
 Use this method to send answers to callback queries sent from
 inline keyboards. The answer will be displayed to the user as
 a notification at the top of the chat screen or as an alert.
 On success, True is returned.
 
-This method has an [older, compatible signature][answerCallbackQuery-v0.27.1]
-that is being deprecated.
+This method has **older, compatible signatures ([1][answerCallbackQuery-v0.27.1])([2][answerCallbackQuery-v0.29.0])**
+that are being deprecated.
 
 **Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
 **See**: https://core.telegram.org/bots/api#answercallbackquery  
 
 | Param | Type | Description |
 | --- | --- | --- |
+| callbackQueryId | <code>String</code> | Unique identifier for the query to be answered |
 | [options] | <code>Object</code> | Additional Telegram query options |
 
 <a name="TelegramBot+editMessageText"></a>
@@ -1134,3 +1135,4 @@ TelegramBot.Promise = myPromise;
 [getUpdates-v0.25.0]:https://github.com/yagop/node-telegram-bot-api/tree/4e5a493cadfaad5589a8d79e55d9e0d103000ce4#TelegramBot+getUpdates
 [getUserProfilePhotos-v0.25.0]:https://github.com/yagop/node-telegram-bot-api/tree/4e5a493cadfaad5589a8d79e55d9e0d103000ce4#TelegramBot+getUserProfilePhotos
 [answerCallbackQuery-v0.27.1]:https://github.com/yagop/node-telegram-bot-api/blob/v0.27.1/doc/api.md#TelegramBot+answerCallbackQuery
+[answerCallbackQuery-v0.29.0]:https://github.com/yagop/node-telegram-bot-api/blob/v0.29.0/doc/api.md#TelegramBot+answerCallbackQuery

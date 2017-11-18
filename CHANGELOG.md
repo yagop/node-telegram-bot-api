@@ -9,6 +9,9 @@ Added:
 
 * Add support for Node.js v9
 
+Changed:
+
+1. Update *TelegramBot#answerCallbackQuery()* signature (by @GochoMugo)
 
 
 * * *

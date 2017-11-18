@@ -1041,15 +1041,16 @@ class TelegramBot extends EventEmitter {
    * a notification at the top of the chat screen or as an alert.
    * On success, True is returned.
    *
-   * This method has an [older, compatible signature][answerCallbackQuery-v0.27.1]
-   * that is being deprecated.
+   * This method has **older, compatible signatures ([1][answerCallbackQuery-v0.27.1])([2][answerCallbackQuery-v0.29.0])**
+   * that are being deprecated.
    *
+   * @param  {String} callbackQueryId Unique identifier for the query to be answered
    * @param  {Object} [options] Additional Telegram query options
    * @return {Promise}
    * @see https://core.telegram.org/bots/api#answercallbackquery
    */
-  answerCallbackQuery(form = {}) {
-    /* The older method signature was answerCallbackQuery(callbackQueryId, text, showAlert).
+  answerCallbackQuery(callbackQueryId, form = {}) {
+    /* The older method signature (in/before v0.27.1) was answerCallbackQuery(callbackQueryId, text, showAlert).
      * We need to ensure backwards-compatibility while maintaining
      * consistency of the method signatures throughout the library */
     if (typeof form !== 'object') {
@@ -1061,6 +1062,17 @@ class TelegramBot extends EventEmitter {
         show_alert: arguments[2],
       };
       /* eslint-enable no-param-reassign, prefer-rest-params */
+    }
+    /* The older method signature (in/before v0.29.0) was answerCallbackQuery([options]).
+     * We need to ensure backwards-compatibility while maintaining
+     * consistency of the method signatures throughout the library. */
+    if (typeof callbackQueryId === 'object') {
+      /* eslint-disable no-param-reassign, prefer-rest-params */
+      deprecate('The method signature answerCallbackQuery([options]) has been deprecated since v0.29.0');
+      form = callbackQueryId;
+      /* eslint-enable no-param-reassign, prefer-rest-params */
+    } else {
+      form.callback_query_id = callbackQueryId;
     }
     return this._request('answerCallbackQuery', { form });
   }
