@@ -8,7 +8,7 @@
 [![https://telegram.me/node_telegram_bot_api](https://img.shields.io/badge/💬%20Telegram-node__telegram__bot__api-blue.svg)](https://telegram.me/node_telegram_bot_api)
 [![https://telegram.me/Yago_Perez](https://img.shields.io/badge/💬%20Telegram-Yago__Perez-blue.svg)](https://telegram.me/Yago_Perez)
 
-Node.js module to interact with official [Telegram Bot API](https://core.telegram.org/bots/api). A bot token is needed, to obtain one, talk to [@botfather](https://telegram.me/BotFather) and create a new bot.
+Node.js module to interact with official [Telegram Bot API](https://core.telegram.org/bots/api). A bot token is **required** and can be obtained by talking to [@botfather](https://telegram.me/BotFather).
 
 ## Install
 
@@ -70,9 +70,9 @@ Experimental features reside on the **experimental** branch._
 We have a [Telegram channel][tg-channel] where we post updates on
 the Project. Head over and subscribe!
 
-Some things built using this library, and might interest you:
+Some things built using this library that might interest you:
 
-* [tgfancy](https://github.com/GochoMugo/tgfancy): A Fancy, Higher-Level Wrapper for Telegram Bot API
+* [tgfancy](https://github.com/GochoMugo/tgfancy): A fancy, higher-level wrapper for Telegram Bot API
 * [node-telegram-bot-api-middleware](https://github.com/idchlife/node-telegram-bot-api-middleware): Middleware for node-telegram-bot-api
 * [teleirc](https://github.com/FruitieX/teleirc): A simple Telegram ↔ IRC gateway
 * [bot-brother](https://github.com/SerjoPepper/bot-brother): Node.js library to help you easily create telegram bots
@@ -82,7 +82,7 @@ Some things built using this library, and might interest you:
 
 **The MIT License (MIT)**
 
-Copyright (c) 2017 Yago
+Copyright © 2017 Yago
 
 [usage]:https://github.com/yagop/node-telegram-bot-api/tree/master/doc/usage.md
 [examples]:https://github.com/yagop/node-telegram-bot-api/tree/master/examples
