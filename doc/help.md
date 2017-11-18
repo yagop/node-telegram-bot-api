@@ -67,7 +67,9 @@ Sources:
 <a name="error-meanings"></a>
 ### What does this error mean?
 
-*Not done. PRs welcome!*
+* [502 Bad Gateway](https://github.com/yagop/node-telegram-bot-api/issues/377)
+
+*Not complete. PRs welcome!*
 
 Sources:
 
