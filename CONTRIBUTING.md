@@ -24,12 +24,14 @@ Before proceeding any further, read the following documents:
 Run:
 
 ```bash
-$ npm run gen-doc
+$ npm run doc
 ```
+
 
 ### Running tests
 
 Please read `test/README.md` for more information.
+
 
 ### Transpiling ES2015 for older Node.js versions
 

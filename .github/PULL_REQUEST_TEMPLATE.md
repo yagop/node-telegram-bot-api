@@ -5,7 +5,7 @@ For example, if your PR passes all tests, you would mark the option as so:
 Note the 'x' in between the square brackets '[]'
 -->
 - [ ] All tests pass
-- [ ] I have run `npm run gen-doc`
+- [ ] I have run `npm run doc`
 
 ### Description
 
