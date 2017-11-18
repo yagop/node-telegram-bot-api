@@ -8,17 +8,19 @@
 <a name="events"></a>
 ## Events
 
-*TelegramBot* is an event-emitter that emits the following events:
+*TelegramBot* is an [EventEmitter](https://nodejs.org/api/events.html#events_class_eventemitter)
+that emits the following events:
 
 1. `message`: Received a new incoming [Message][message] of any kind
   1. Depending on the properties of the [Message][message], one of these
-     events will **ALSO** be emitted: `text`, `audio`, `document`, `photo`,
+     events may **ALSO** be emitted: `text`, `audio`, `document`, `photo`,
      `sticker`, `video`, `voice`, `contact`, `location`,
      `new_chat_members`, `left_chat_member`, `new_chat_title`,
      `new_chat_photo`, `delete_chat_photo`, `group_chat_created`,
      `game`, `pinned_message`, `migrate_from_chat_id`, `migrate_to_chat_id`,
      `channel_chat_created`, `supergroup_chat_created`,
      `successful_payment`, `invoice`, `video_note`
+  1. **Arguments**: `message` ([Message][message]), `metadata` (`{ type?:string }`)
   1. `new_chat_participant`, `left_chat_participant` are **deprecated**
 1. `callback_query`: Received a new incoming [Callback Query][callback-query]
 1. `inline_query`: Received a new incoming [Inline Query][inline-query]

@@ -7,7 +7,9 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 Added:
 
-* Add support for Node.js v9
+1. Add `metadata` argument in `message` event (and
+   friends e.g. `text`, `audio`, etc.) (#409) (by @jlsjonas, @GochoMugo)
+1. Add support for Node.js v9 (by @GochoMugo)
 
 Changed:
 
