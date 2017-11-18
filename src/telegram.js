@@ -250,7 +250,7 @@ class TelegramBot extends EventEmitter {
         try {
           data = resp.body = JSON.parse(resp.body);
         } catch (err) {
-          throw new errors.ParseError(`Error parsing Telegram response: ${resp.body}`, resp);
+          throw new errors.ParseError(`Error parsing response: ${resp.body}`, resp);
         }
 
         if (data.ok) {
