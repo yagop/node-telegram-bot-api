@@ -531,11 +531,13 @@ class TelegramBot extends EventEmitter {
 
     if (message) {
       debug('Process Update message %j', message);
-      this.emit('message', message);
       const processMessageType = messageType => {
         if (message[messageType]) {
           debug('Emitting %s: %j', messageType, message);
           this.emit(messageType, message);
+          this.emit('message', { ...message, type: messageType });
+        } else {
+          this.emit('message', message);
         }
       };
       TelegramBot.messageTypes.forEach(processMessageType);
