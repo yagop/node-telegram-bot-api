@@ -8,7 +8,7 @@
 [![https://telegram.me/node_telegram_bot_api](https://img.shields.io/badge/💬%20Telegram-node__telegram__bot__api-blue.svg)](https://telegram.me/node_telegram_bot_api)
 [![https://telegram.me/Yago_Perez](https://img.shields.io/badge/💬%20Telegram-Yago__Perez-blue.svg)](https://telegram.me/Yago_Perez)
 
-Node.js module to interact with official [Telegram Bot API](https://core.telegram.org/bots/api). A bot token, which is needed to create a new bot, can be obtained by talking to [@botfather](https://telegram.me/BotFather).
+Node.js module to interact with official [Telegram Bot API](https://core.telegram.org/bots/api). A bot token is **required** and can be obtained by talking to [@botfather](https://telegram.me/BotFather).
 
 ## Install
 
