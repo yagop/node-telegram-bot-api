@@ -10,6 +10,12 @@ exports.BaseError = class BaseError extends Error {
     super(`${code}: ${message}`);
     this.code = code;
   }
+  toJSON() {
+    return {
+      code: this.code,
+      message: this.message,
+    };
+  }
 };
 
 

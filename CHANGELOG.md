@@ -11,11 +11,15 @@ Added:
    friends e.g. `text`, `audio`, etc.) (#409) (by @jlsjonas, @GochoMugo)
 1. Add support for Node.js v9 (by @GochoMugo)
 1. Document *TelegramBot.errors*, *TelegramBot.messageTypes* (by @GochoMugo)
-1. Fix game example (by @MCSH)
 
 Changed:
 
 1. Update *TelegramBot#answerCallbackQuery()* signature (by @GochoMugo)
+1. Improve default error logging of `polling_error` and `webhook_error`
+
+Fixed:
+
+1. Fix game example (by @MCSH)
 
 
 * * *

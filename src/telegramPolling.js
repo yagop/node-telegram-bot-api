@@ -102,7 +102,7 @@ class TelegramBotPolling {
         if (this.bot.listeners('polling_error').length) {
           this.bot.emit('polling_error', err);
         } else {
-          console.error(err); // eslint-disable-line no-console
+          console.error('error: [polling_error] %j', err); // eslint-disable-line no-console
         }
         return null;
       })
