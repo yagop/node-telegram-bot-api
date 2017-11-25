@@ -1509,6 +1509,7 @@ class TelegramBot extends EventEmitter {
   answerShippingQuery(shippingQueryId, ok, form = {}) {
     form.shipping_query_id = shippingQueryId;
     form.ok = ok;
+    form.shipping_options = JSON.stringify(form.shipping_options)
     return this._request('answerShippingQuery', { form });
   }
 
