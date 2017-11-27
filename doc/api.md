@@ -71,6 +71,8 @@ TelegramBot
         * [.getChatMembersCount(chatId)](#TelegramBot+getChatMembersCount) ⇒ <code>Promise</code>
         * [.getChatMember(chatId, userId)](#TelegramBot+getChatMember) ⇒ <code>Promise</code>
         * [.leaveChat(chatId)](#TelegramBot+leaveChat) ⇒ <code>Promise</code>
+        * [.setChatStickerSet(chatId, stickerSetName)](#TelegramBot+setChatStickerSet) ⇒ <code>Promise</code>
+        * [.deleteChatStickerSet(chatId)](#TelegramBot+deleteChatStickerSet) ⇒ <code>Promise</code>
         * [.sendGame(chatId, gameShortName, [options])](#TelegramBot+sendGame) ⇒ <code>Promise</code>
         * [.setGameScore(userId, score, [options])](#TelegramBot+setGameScore) ⇒ <code>Promise</code>
         * [.getGameHighScores(userId, [options])](#TelegramBot+getGameHighScores) ⇒ <code>Promise</code>
@@ -930,6 +932,31 @@ Leave a group, supergroup or channel.
 
 **Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
 **See**: https://core.telegram.org/bots/api#leavechat  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| chatId | <code>Number</code> &#124; <code>String</code> | Unique identifier for the target group or username of the target supergroup (in the format @supergroupusername) |
+
+<a name="TelegramBot+setChatStickerSet"></a>
+
+### telegramBot.setChatStickerSet(chatId, stickerSetName) ⇒ <code>Promise</code>
+Use this method to set a new group sticker set for a supergroup.
+
+**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
+**See**: https://core.telegram.org/bots/api#setchatstickerset  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| chatId | <code>Number</code> &#124; <code>String</code> | Unique identifier for the target group or username of the target supergroup (in the format @supergroupusername) |
+| stickerSetName | <code>String</code> | Name of the sticker set to be set as the group sticker set |
+
+<a name="TelegramBot+deleteChatStickerSet"></a>
+
+### telegramBot.deleteChatStickerSet(chatId) ⇒ <code>Promise</code>
+Use this method to delete a group sticker set from a supergroup.
+
+**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
+**See**: https://core.telegram.org/bots/api#deletechatstickerset  
 
 | Param | Type | Description |
 | --- | --- | --- |
