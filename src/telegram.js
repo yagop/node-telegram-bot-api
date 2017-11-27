@@ -73,6 +73,21 @@ if (!process.env.NTBA_FIX_319) {
 }
 
 
+/**
+ * JSON-serialize data. If the provided data is already a String,
+ * return it as is.
+ * @private
+ * @param  {*} data
+ * @return {String}
+ */
+function stringify(data) {
+  if (typeof data === 'string') {
+    return data;
+  }
+  return JSON.stringify(data);
+}
+
+
 class TelegramBot extends EventEmitter {
   /**
    * The different errors the library uses.
@@ -211,7 +226,7 @@ class TelegramBot extends EventEmitter {
   _fixReplyMarkup(obj) {
     const replyMarkup = obj.reply_markup;
     if (replyMarkup && typeof replyMarkup !== 'string') {
-      obj.reply_markup = JSON.stringify(replyMarkup);
+      obj.reply_markup = stringify(replyMarkup);
     }
   }
 
@@ -641,7 +656,7 @@ class TelegramBot extends EventEmitter {
    */
   answerInlineQuery(inlineQueryId, results, form = {}) {
     form.inline_query_id = inlineQueryId;
-    form.results = JSON.stringify(results);
+    form.results = stringify(results);
     return this._request('answerInlineQuery', { form });
   }
 
@@ -1556,8 +1571,8 @@ class TelegramBot extends EventEmitter {
     form.provider_token = providerToken;
     form.start_parameter = startParameter;
     form.currency = currency;
-    form.prices = JSON.stringify(prices);
-    form.provider_data = JSON.stringify(form.provider_data);
+    form.prices = stringify(prices);
+    form.provider_data = stringify(form.provider_data);
     return this._request('sendInvoice', { form });
   }
 
@@ -1574,7 +1589,7 @@ class TelegramBot extends EventEmitter {
   answerShippingQuery(shippingQueryId, ok, form = {}) {
     form.shipping_query_id = shippingQueryId;
     form.ok = ok;
-    form.shipping_options = JSON.stringify(form.shipping_options);
+    form.shipping_options = stringify(form.shipping_options);
     return this._request('answerShippingQuery', { form });
   }
 
@@ -1657,7 +1672,7 @@ class TelegramBot extends EventEmitter {
     opts.qs.name = name;
     opts.qs.title = title;
     opts.qs.emojis = emojis;
-    opts.qs.mask_position = JSON.stringify(options.mask_position);
+    opts.qs.mask_position = stringify(options.mask_position);
     try {
       const sendData = this._formatSendData('png_sticker', pngSticker);
       opts.formData = sendData[0];
@@ -1689,7 +1704,7 @@ class TelegramBot extends EventEmitter {
     opts.qs.user_id = userId;
     opts.qs.name = name;
     opts.qs.emojis = emojis;
-    opts.qs.mask_position = JSON.stringify(options.mask_position);
+    opts.qs.mask_position = stringify(options.mask_position);
     try {
       const sendData = this._formatSendData('png_sticker', pngSticker);
       opts.formData = sendData[0];
