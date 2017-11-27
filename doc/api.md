@@ -443,7 +443,7 @@ Returns True on success.
 | Param | Type | Description |
 | --- | --- | --- |
 | chatId | <code>Number</code> &#124; <code>String</code> | Unique identifier for the target group or username of the target supergroup |
-| userId | <code>String</code> | Unique identifier of the target user |
+| userId | <code>Number</code> | Unique identifier of the target user |
 
 <a name="TelegramBot+unbanChatMember"></a>
 
@@ -459,7 +459,7 @@ the group for this to work. Returns True on success.
 | Param | Type | Description |
 | --- | --- | --- |
 | chatId | <code>Number</code> &#124; <code>String</code> | Unique identifier for the target group or username of the target supergroup |
-| userId | <code>String</code> | Unique identifier of the target user |
+| userId | <code>Number</code> | Unique identifier of the target user |
 
 <a name="TelegramBot+restrictChatMember"></a>
 
@@ -475,7 +475,7 @@ to lift restrictions from a user. Returns True on success.
 | Param | Type | Description |
 | --- | --- | --- |
 | chatId | <code>Number</code> &#124; <code>String</code> | Unique identifier for the target chat or username of the target supergroup |
-| userId | <code>String</code> | Unique identifier of the target user |
+| userId | <code>Number</code> | Unique identifier of the target user |
 | [options] | <code>Object</code> | Additional Telegram query options |
 
 <a name="TelegramBot+promoteChatMember"></a>
@@ -492,7 +492,7 @@ Returns True on success.
 | Param | Type | Description |
 | --- | --- | --- |
 | chatId | <code>Number</code> &#124; <code>String</code> | Unique identifier for the target chat or username of the target supergroup |
-| userId | <code>String</code> |  |
+| userId | <code>Number</code> |  |
 | [options] | <code>Object</code> | Additional Telegram query options |
 
 <a name="TelegramBot+exportChatInviteLink"></a>
@@ -683,7 +683,7 @@ that is being deprecated.
 
 | Param | Type | Description |
 | --- | --- | --- |
-| userId | <code>Number</code> &#124; <code>String</code> | Unique identifier of the target user |
+| userId | <code>Number</code> | Unique identifier of the target user |
 | [options] | <code>Object</code> | Additional Telegram query options |
 
 <a name="TelegramBot+sendLocation"></a>
@@ -885,7 +885,7 @@ Use this method to get information about a member of a chat.
 | Param | Type | Description |
 | --- | --- | --- |
 | chatId | <code>Number</code> &#124; <code>String</code> | Unique identifier for the target group or username of the target supergroup |
-| userId | <code>String</code> | Unique identifier of the target user |
+| userId | <code>Number</code> | Unique identifier of the target user |
 
 <a name="TelegramBot+leaveChat"></a>
 
@@ -923,7 +923,7 @@ Use this method to set the score of the specified user in a game.
 
 | Param | Type | Description |
 | --- | --- | --- |
-| userId | <code>String</code> | Unique identifier of the target user |
+| userId | <code>Number</code> | Unique identifier of the target user |
 | score | <code>Number</code> | New score value. |
 | [options] | <code>Object</code> | Additional Telegram query options |
 
@@ -937,7 +937,7 @@ Use this method to get data for high score table.
 
 | Param | Type | Description |
 | --- | --- | --- |
-| userId | <code>String</code> | Unique identifier of the target user |
+| userId | <code>Number</code> | Unique identifier of the target user |
 | [options] | <code>Object</code> | Additional Telegram query options |
 
 <a name="TelegramBot+deleteMessage"></a>
@@ -950,7 +950,7 @@ Use this method to delete a message.
 
 | Param | Type | Description |
 | --- | --- | --- |
-| chatId | <code>String</code> | Unique identifier of the target chat |
+| chatId | <code>Number</code> &#124; <code>String</code> | Unique identifier of the target chat |
 | messageId | <code>String</code> | Unique identifier of the target message |
 | [options] | <code>Object</code> | Additional Telegram query options |
 

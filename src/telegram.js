@@ -861,7 +861,7 @@ class TelegramBot extends EventEmitter {
    * Returns True on success.
    *
    * @param  {Number|String} chatId  Unique identifier for the target group or username of the target supergroup
-   * @param  {String} userId  Unique identifier of the target user
+   * @param  {Number} userId  Unique identifier of the target user
    * @return {Promise}
    * @see https://core.telegram.org/bots/api#kickchatmember
    */
@@ -880,7 +880,7 @@ class TelegramBot extends EventEmitter {
    * the group for this to work. Returns True on success.
    *
    * @param  {Number|String} chatId  Unique identifier for the target group or username of the target supergroup
-   * @param  {String} userId  Unique identifier of the target user
+   * @param  {Number} userId  Unique identifier of the target user
    * @return {Promise}
    * @see https://core.telegram.org/bots/api#unbanchatmember
    */
@@ -899,7 +899,7 @@ class TelegramBot extends EventEmitter {
    * to lift restrictions from a user. Returns True on success.
    *
    * @param  {Number|String} chatId Unique identifier for the target chat or username of the target supergroup
-   * @param  {String} userId Unique identifier of the target user
+   * @param  {Number} userId Unique identifier of the target user
    * @param  {Object} [options] Additional Telegram query options
    * @return {Promise}
    * @see https://core.telegram.org/bots/api#restrictchatmember
@@ -917,7 +917,7 @@ class TelegramBot extends EventEmitter {
    * Returns True on success.
    *
    * @param  {Number|String} chatId Unique identifier for the target chat or username of the target supergroup
-   * @param  {String} userId
+   * @param  {Number} userId
    * @param  {Object} [options] Additional Telegram query options
    * @return {Promise}
    * @see https://core.telegram.org/bots/api#promotechatmember
@@ -1145,7 +1145,7 @@ class TelegramBot extends EventEmitter {
    * This method has an [older, compatible signature][getUserProfilePhotos-v0.25.0]
    * that is being deprecated.
    *
-   * @param  {Number|String} userId  Unique identifier of the target user
+   * @param  {Number} userId  Unique identifier of the target user
    * @param  {Object} [options] Additional Telegram query options
    * @return {Promise}
    * @see https://core.telegram.org/bots/api#getuserprofilephotos
@@ -1389,7 +1389,7 @@ class TelegramBot extends EventEmitter {
   /**
    * Use this method to get information about a member of a chat.
    * @param  {Number|String} chatId  Unique identifier for the target group or username of the target supergroup
-   * @param  {String} userId  Unique identifier of the target user
+   * @param  {Number} userId  Unique identifier of the target user
    * @return {Promise}
    * @see https://core.telegram.org/bots/api#getchatmember
    */
@@ -1430,7 +1430,7 @@ class TelegramBot extends EventEmitter {
 
   /**
    * Use this method to set the score of the specified user in a game.
-   * @param  {String} userId  Unique identifier of the target user
+   * @param  {Number} userId  Unique identifier of the target user
    * @param  {Number} score New score value.
    * @param  {Object} [options] Additional Telegram query options
    * @return {Promise}
@@ -1444,7 +1444,7 @@ class TelegramBot extends EventEmitter {
 
   /**
    * Use this method to get data for high score table.
-   * @param  {String} userId  Unique identifier of the target user
+   * @param  {Number} userId  Unique identifier of the target user
    * @param  {Object} [options] Additional Telegram query options
    * @return {Promise}
    * @see https://core.telegram.org/bots/api#getgamehighscores
@@ -1456,7 +1456,7 @@ class TelegramBot extends EventEmitter {
 
   /**
    * Use this method to delete a message.
-   * @param  {String} chatId  Unique identifier of the target chat
+   * @param  {Number|String} chatId  Unique identifier of the target chat
    * @param  {String} messageId  Unique identifier of the target message
    * @param  {Object} [options] Additional Telegram query options
    * @return {Promise}
