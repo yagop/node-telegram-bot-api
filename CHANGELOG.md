@@ -10,6 +10,8 @@ Added:
 1. Add Bot API v3.4 methods:
   * (#439) *TelegramBot#editMessageLiveLocation*, *TelegramBot#stopMessageLiveLocation* (by @kamikazechaser)
   * (#440) *TelegramBot#setChatStickerSet*, *TelegramBot#deleteChatStickerSet* (by @kamikazechaser)
+1. Support Bot API v3.5:
+  * Support `provider_data` parameter in *TelegramBot#sendInvoice* (by @GochoMugo)
 1. Add `metadata` argument in `message` event (and
    friends e.g. `text`, `audio`, etc.) (#409) (by @jlsjonas, @GochoMugo)
 1. Add forward-compatibility i.e. support future additional Telegram options (by @GochoMugo)

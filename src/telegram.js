@@ -1557,6 +1557,7 @@ class TelegramBot extends EventEmitter {
     form.start_parameter = startParameter;
     form.currency = currency;
     form.prices = JSON.stringify(prices);
+    form.provider_data = JSON.stringify(form.provider_data);
     return this._request('sendInvoice', { form });
   }
 
