@@ -1186,14 +1186,16 @@ class TelegramBot extends EventEmitter {
   }
 
   /**
-   * Edit live location.
-   * Use this method to edit live location messages.
+   * Use this method to edit live location messages sent by
+   * the bot or via the bot (for inline bots).
+   *
+   * Note that you must provide one of chat_id, message_id, or
+   * inline_message_id in your request.
    *
    * @param  {Float} latitude Latitude of location
    * @param  {Float} longitude Longitude of location
-   * @param  {Object} [options] Additional Telegram query options
+   * @param  {Object} [options] Additional Telegram query options (provide either one of chat_id, message_id, or inline_message_id here)
    * @return {Promise}
-   * @info You must pass in either a chat_id, message_id or an inline_message_id in your addidtional options.
    * @see https://core.telegram.org/bots/api#editmessagelivelocation
    */
   editMessageLiveLocation(latitude, longitude, form = {}) {
@@ -1201,19 +1203,21 @@ class TelegramBot extends EventEmitter {
     form.longitude = longitude;
     return this._request('editMessageLiveLocation', { form });
   }
-  
+
   /**
-   * Stop live location.
-   * Use this method to stop updating live location messages.
+   * Use this method to stop updating a live location message sent by
+   * the bot or via the bot (for inline bots) before live_period expires.
    *
-   * @param  {Object} [options] Additional Telegram query options
+   * Note that you must provide one of chat_id, message_id, or
+   * inline_message_id in your request.
+   *
+   * @param  {Object} [options] Additional Telegram query options (provide either one of chat_id, message_id, or inline_message_id here)
    * @return {Promise}
-   * @info You must pass in either a chat_id, message_id or an inline_message_id in your addidtional options.
    * @see https://core.telegram.org/bots/api#stopmessagelivelocation
    */
   stopMessageLiveLocation(form = {}) {
     return this._request('stopMessageLiveLocation', { form });
-  }  
+  }
 
   /**
    * Send venue.
