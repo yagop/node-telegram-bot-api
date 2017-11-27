@@ -7,6 +7,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 Added:
 
+1. Add Bot API v3.4 methods:
+  * (#439) *TelegramBot#editMessageLiveLocation*, *TelegramBot#stopMessageLiveLocation* (by @kamikazechaser)
 1. Add `metadata` argument in `message` event (and
    friends e.g. `text`, `audio`, etc.) (#409) (by @jlsjonas, @GochoMugo)
 1. Add support for Node.js v9 (by @GochoMugo)
