@@ -39,6 +39,8 @@ const staticUrl = `http://127.0.0.1:${staticPort}`;
 const key = `${__dirname}/../examples/key.pem`;
 const ip = '216.58.210.174'; // Google IP ¯\_(ツ)_/¯
 const cert = `${__dirname}/../examples/crt.pem`;
+const lat = 47.5351072;
+const long = -52.7508537;
 let FILE_ID;
 let GAME_CHAT_ID;
 let GAME_MSG_ID;
@@ -1042,9 +1044,47 @@ describe('TelegramBot', function telegramSuite() {
       utils.handleRatelimit(bot, 'sendLocation', this);
     });
     it('should send a location', function test() {
-      const lat = 47.5351072;
-      const long = -52.7508537;
       return bot.sendLocation(USERID, lat, long).then(resp => {
+        assert.ok(is.object(resp));
+        assert.ok(is.object(resp.location));
+        assert.ok(is.number(resp.location.latitude));
+        assert.ok(is.number(resp.location.longitude));
+      });
+    });
+  });
+
+  describe('#editMessageLiveLocation', function editMessageLiveLocationSuite() {
+    let message;
+    before(function before() {
+      utils.handleRatelimit(bot, 'editMessageLiveLocation', this);
+      const opts = { live_period: 86400 };
+      return bot.sendLocation(USERID, lat, long, opts).then(resp => { message = resp; });
+    });
+    it('edits live location', function test() {
+      const opts = { chat_id: USERID, message_id: message.message_id };
+      return bot.editMessageLiveLocation(lat + 1, long + 1, opts).then(resp => {
+        assert.ok(is.object(resp));
+        assert.ok(is.object(resp.location));
+        assert.ok(is.number(resp.location.latitude));
+        assert.ok(is.number(resp.location.longitude));
+      });
+    });
+  });
+
+  describe('#stopMessageLiveLocation', function editMessageLiveLocationSuite() {
+    let message;
+    before(function before() {
+      utils.handleRatelimit(bot, 'stopMessageLiveLocation', this);
+      return bot.sendLocation(USERID, lat, long, { live_period: 86400 })
+        .then((resp) => {
+          message = resp;
+          const opts = { chat_id: USERID, message_id: message.message_id };
+          return bot.editMessageLiveLocation(lat + 1, long + 1, opts);
+        });
+    });
+    it('stops location updates', function test() {
+      const opts = { chat_id: USERID, message_id: message.message_id };
+      return bot.stopMessageLiveLocation(opts).then(resp => {
         assert.ok(is.object(resp));
         assert.ok(is.object(resp.location));
         assert.ok(is.number(resp.location.latitude));
@@ -1058,8 +1098,6 @@ describe('TelegramBot', function telegramSuite() {
       utils.handleRatelimit(bot, 'sendVenue', this);
     });
     it('should send a venue', function test() {
-      const lat = 47.5351072;
-      const long = -52.7508537;
       const title = 'The Village Shopping Centre';
       const address = '430 Topsail Rd,St. John\'s, NL A1E 4N1, Canada';
       return bot.sendVenue(USERID, lat, long, title, address).then(resp => {
