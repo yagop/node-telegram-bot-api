@@ -55,6 +55,8 @@ TelegramBot
         * [.editMessageReplyMarkup(replyMarkup, [options])](#TelegramBot+editMessageReplyMarkup) ⇒ <code>Promise</code>
         * [.getUserProfilePhotos(userId, [options])](#TelegramBot+getUserProfilePhotos) ⇒ <code>Promise</code>
         * [.sendLocation(chatId, latitude, longitude, [options])](#TelegramBot+sendLocation) ⇒ <code>Promise</code>
+        * [.editMessageLiveLocation(latitude, longitude, [options])](#TelegramBot+editMessageLiveLocation) ⇒ <code>Promise</code>
+        * [.stopMessageLiveLocation([options])](#TelegramBot+stopMessageLiveLocation) ⇒ <code>Promise</code>
         * [.sendVenue(chatId, latitude, longitude, title, address, [options])](#TelegramBot+sendVenue) ⇒ <code>Promise</code>
         * [.sendContact(chatId, phoneNumber, firstName, [options])](#TelegramBot+sendContact) ⇒ <code>Promise</code>
         * [.getFile(fileId)](#TelegramBot+getFile) ⇒ <code>Promise</code>
@@ -700,6 +702,36 @@ Use this method to send point on the map.
 | chatId | <code>Number</code> &#124; <code>String</code> | Unique identifier for the message recipient |
 | latitude | <code>Float</code> | Latitude of location |
 | longitude | <code>Float</code> | Longitude of location |
+| [options] | <code>Object</code> | Additional Telegram query options |
+
+<a name="TelegramBot+editMessageLiveLocation"></a>
+
+### telegramBot.editMessageLiveLocation(latitude, longitude, [options]) ⇒ <code>Promise</code>
+Edit live location.
+Use this method to edit live location messages.
+
+**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
+**Info**: You must pass in either a chat_id, message_id or an inline_message_id in your addidtional options.  
+**See**: https://core.telegram.org/bots/api#editmessagelivelocation  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| latitude | <code>Float</code> | Latitude of location |
+| longitude | <code>Float</code> | Longitude of location |
+| [options] | <code>Object</code> | Additional Telegram query options |
+
+<a name="TelegramBot+stopMessageLiveLocation"></a>
+
+### telegramBot.stopMessageLiveLocation([options]) ⇒ <code>Promise</code>
+Stop live location.
+Use this method to stop updating live location messages.
+
+**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
+**Info**: You must pass in either a chat_id, message_id or an inline_message_id in your addidtional options.  
+**See**: https://core.telegram.org/bots/api#stopmessagelivelocation  
+
+| Param | Type | Description |
+| --- | --- | --- |
 | [options] | <code>Object</code> | Additional Telegram query options |
 
 <a name="TelegramBot+sendVenue"></a>

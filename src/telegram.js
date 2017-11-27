@@ -1186,6 +1186,36 @@ class TelegramBot extends EventEmitter {
   }
 
   /**
+   * Edit live location.
+   * Use this method to edit live location messages.
+   *
+   * @param  {Float} latitude Latitude of location
+   * @param  {Float} longitude Longitude of location
+   * @param  {Object} [options] Additional Telegram query options
+   * @return {Promise}
+   * @info You must pass in either a chat_id, message_id or an inline_message_id in your addidtional options.
+   * @see https://core.telegram.org/bots/api#editmessagelivelocation
+   */
+  editMessageLiveLocation(latitude, longitude, form = {}) {
+    form.latitude = latitude;
+    form.longitude = longitude;
+    return this._request('editMessageLiveLocation', { form });
+  }
+  
+  /**
+   * Stop live location.
+   * Use this method to stop updating live location messages.
+   *
+   * @param  {Object} [options] Additional Telegram query options
+   * @return {Promise}
+   * @info You must pass in either a chat_id, message_id or an inline_message_id in your addidtional options.
+   * @see https://core.telegram.org/bots/api#stopmessagelivelocation
+   */
+  stopMessageLiveLocation(form = {}) {
+    return this._request('stopMessageLiveLocation', { form });
+  }  
+
+  /**
    * Send venue.
    * Use this method to send information about a venue.
    *
