@@ -416,12 +416,12 @@ class TelegramBot extends EventEmitter {
 
   /**
    * Returns basic information about the bot in form of a `User` object.
+   * @param  {Object} [options] Additional Telegram query options
    * @return {Promise}
    * @see https://core.telegram.org/bots/api#getme
    */
-  getMe() {
-    const _path = 'getMe';
-    return this._request(_path);
+  getMe(form = {}) {
+    return this._request('getMe', { form });
   }
 
   /**
@@ -471,11 +471,12 @@ class TelegramBot extends EventEmitter {
   /**
    * Use this method to remove webhook integration if you decide to
    * switch back to getUpdates. Returns True on success.
+   * @param  {Object} [options] Additional Telegram query options
    * @return {Promise}
    * @see https://core.telegram.org/bots/api#deletewebhook
    */
-  deleteWebHook() {
-    return this._request('deleteWebhook');
+  deleteWebHook(form = {}) {
+    return this._request('deleteWebhook', { form });
   }
 
   /**
@@ -483,11 +484,12 @@ class TelegramBot extends EventEmitter {
    * On success, returns a [WebhookInfo](https://core.telegram.org/bots/api#webhookinfo) object.
    * If the bot is using getUpdates, will return an object with the
    * url field empty.
+   * @param  {Object} [options] Additional Telegram query options
    * @return {Promise}
    * @see https://core.telegram.org/bots/api#getwebhookinfo
    */
-  getWebHookInfo() {
-    return this._request('getWebhookInfo');
+  getWebHookInfo(form = {}) {
+    return this._request('getWebhookInfo', { form });
   }
 
   /**
@@ -842,14 +844,13 @@ class TelegramBot extends EventEmitter {
    *
    * @param  {Number|String} chatId  Unique identifier for the message recipient
    * @param  {String} action Type of action to broadcast.
+   * @param  {Object} [options] Additional Telegram query options
    * @return {Promise}
    * @see https://core.telegram.org/bots/api#sendchataction
    */
-  sendChatAction(chatId, action) {
-    const form = {
-      action,
-      chat_id: chatId
-    };
+  sendChatAction(chatId, action, form = {}) {
+    form.chat_id = chatId;
+    form.action = action;
     return this._request('sendChatAction', { form });
   }
 
@@ -862,14 +863,13 @@ class TelegramBot extends EventEmitter {
    *
    * @param  {Number|String} chatId  Unique identifier for the target group or username of the target supergroup
    * @param  {Number} userId  Unique identifier of the target user
+   * @param  {Object} [options] Additional Telegram query options
    * @return {Promise}
    * @see https://core.telegram.org/bots/api#kickchatmember
    */
-  kickChatMember(chatId, userId) {
-    const form = {
-      chat_id: chatId,
-      user_id: userId
-    };
+  kickChatMember(chatId, userId, form = {}) {
+    form.chat_id = chatId;
+    form.user_id = userId;
     return this._request('kickChatMember', { form });
   }
 
@@ -881,14 +881,13 @@ class TelegramBot extends EventEmitter {
    *
    * @param  {Number|String} chatId  Unique identifier for the target group or username of the target supergroup
    * @param  {Number} userId  Unique identifier of the target user
+   * @param  {Object} [options] Additional Telegram query options
    * @return {Promise}
    * @see https://core.telegram.org/bots/api#unbanchatmember
    */
-  unbanChatMember(chatId, userId) {
-    const form = {
-      chat_id: chatId,
-      user_id: userId
-    };
+  unbanChatMember(chatId, userId, form = {}) {
+    form.chat_id = chatId;
+    form.user_id = userId;
     return this._request('unbanChatMember', { form });
   }
 
@@ -934,6 +933,7 @@ class TelegramBot extends EventEmitter {
    * Returns exported invite link as String on success.
    *
    * @param  {Number|String} chatId Unique identifier for the target chat or username of the target supergroup
+   * @param  {Object} [options] Additional Telegram query options
    * @return {Promise}
    * @see https://core.telegram.org/bots/api#exportchatinvitelink
    */
@@ -949,6 +949,7 @@ class TelegramBot extends EventEmitter {
    *
    * @param  {Number|String} chatId  Unique identifier for the message recipient
    * @param  {stream.Stream|Buffer} photo A file path or a Stream.
+   * @param  {Object} [options] Additional Telegram query options
    * @return {Promise}
    * @see https://core.telegram.org/bots/api#setchatphoto
    */
@@ -973,6 +974,7 @@ class TelegramBot extends EventEmitter {
    * Returns True on success.
    *
    * @param  {Number|String} chatId  Unique identifier for the message recipient
+   * @param  {Object} [options] Additional Telegram query options
    * @return {Promise}
    * @see https://core.telegram.org/bots/api#deletechatphoto
    */
@@ -988,6 +990,7 @@ class TelegramBot extends EventEmitter {
    *
    * @param  {Number|String} chatId  Unique identifier for the message recipient
    * @param  {String} title New chat title, 1-255 characters
+   * @param  {Object} [options] Additional Telegram query options
    * @return {Promise}
    * @see https://core.telegram.org/bots/api#setchattitle
    */
@@ -1004,6 +1007,7 @@ class TelegramBot extends EventEmitter {
    *
    * @param  {Number|String} chatId  Unique identifier for the message recipient
    * @param  {String} description New chat title, 1-255 characters
+   * @param  {Object} [options] Additional Telegram query options
    * @return {Promise}
    * @see https://core.telegram.org/bots/api#setchatdescription
    */
@@ -1020,6 +1024,7 @@ class TelegramBot extends EventEmitter {
    *
    * @param  {Number|String} chatId  Unique identifier for the message recipient
    * @param  {String} messageId Identifier of a message to pin
+   * @param  {Object} [options] Additional Telegram query options
    * @return {Promise}
    * @see https://core.telegram.org/bots/api#pinchatmessage
    */
@@ -1035,6 +1040,7 @@ class TelegramBot extends EventEmitter {
    * Returns True on success.
    *
    * @param  {Number|String} chatId  Unique identifier for the message recipient
+   * @param  {Object} [options] Additional Telegram query options
    * @return {Promise}
    * @see https://core.telegram.org/bots/api#unpinchatmessage
    */
@@ -1266,11 +1272,12 @@ class TelegramBot extends EventEmitter {
    * Attention: link will be valid for 1 hour.
    *
    * @param  {String} fileId  File identifier to get info about
+   * @param  {Object} [options] Additional Telegram query options
    * @return {Promise}
    * @see https://core.telegram.org/bots/api#getfile
    */
-  getFile(fileId) {
-    const form = { file_id: fileId };
+  getFile(fileId, form = {}) {
+    form.file_id = fileId;
     return this._request('getFile', { form });
   }
 
@@ -1283,11 +1290,12 @@ class TelegramBot extends EventEmitter {
    * which returns just path to file on remote server (you will have to manually build full uri after that).
    *
    * @param  {String} fileId  File identifier to get info about
+   * @param  {Object} [options] Additional Telegram query options
    * @return {Promise} promise Promise which will have *fileURI* in resolve callback
    * @see https://core.telegram.org/bots/api#getfile
    */
-  getFileLink(fileId) {
-    return this.getFile(fileId)
+  getFileLink(fileId, form = {}) {
+    return this.getFile(fileId, form)
       .then(resp => `${this.options.baseApiUrl}/file/bot${this.token}/${resp.file_path}`);
   }
 
@@ -1297,11 +1305,12 @@ class TelegramBot extends EventEmitter {
    *
    * @param  {String} fileId  File identifier to get info about
    * @param  {String} downloadDir Absolute path to the folder in which file will be saved
+   * @param  {Object} [options] Additional Telegram query options
    * @return {Promise} promise Promise, which will have *filePath* of downloaded file in resolve callback
    */
-  downloadFile(fileId, downloadDir) {
+  downloadFile(fileId, downloadDir, form = {}) {
     return this
-      .getFileLink(fileId)
+      .getFileLink(fileId, form)
       .then(fileURI => {
         const fileName = fileURI.slice(fileURI.lastIndexOf('/') + 1);
         // TODO: Ensure fileName doesn't contains slashes
@@ -1384,39 +1393,36 @@ class TelegramBot extends EventEmitter {
    * (current name of the user for one-on-one conversations, current
    * username of a user, group or channel, etc.).
    * @param  {Number|String} chatId Unique identifier for the target chat or username of the target supergroup or channel
+   * @param  {Object} [options] Additional Telegram query options
    * @return {Promise}
    * @see https://core.telegram.org/bots/api#getchat
    */
-  getChat(chatId) {
-    const form = {
-      chat_id: chatId
-    };
+  getChat(chatId, form = {}) {
+    form.chat_id = chatId;
     return this._request('getChat', { form });
   }
 
   /**
    * Returns the administrators in a chat in form of an Array of `ChatMember` objects.
    * @param  {Number|String} chatId  Unique identifier for the target group or username of the target supergroup
+   * @param  {Object} [options] Additional Telegram query options
    * @return {Promise}
    * @see https://core.telegram.org/bots/api#getchatadministrators
    */
-  getChatAdministrators(chatId) {
-    const form = {
-      chat_id: chatId
-    };
+  getChatAdministrators(chatId, form = {}) {
+    form.chat_id = chatId;
     return this._request('getChatAdministrators', { form });
   }
 
   /**
    * Use this method to get the number of members in a chat.
    * @param  {Number|String} chatId  Unique identifier for the target group or username of the target supergroup
+   * @param  {Object} [options] Additional Telegram query options
    * @return {Promise}
    * @see https://core.telegram.org/bots/api#getchatmemberscount
    */
-  getChatMembersCount(chatId) {
-    const form = {
-      chat_id: chatId
-    };
+  getChatMembersCount(chatId, form = {}) {
+    form.chat_id = chatId;
     return this._request('getChatMembersCount', { form });
   }
 
@@ -1424,27 +1430,25 @@ class TelegramBot extends EventEmitter {
    * Use this method to get information about a member of a chat.
    * @param  {Number|String} chatId  Unique identifier for the target group or username of the target supergroup
    * @param  {Number} userId  Unique identifier of the target user
+   * @param  {Object} [options] Additional Telegram query options
    * @return {Promise}
    * @see https://core.telegram.org/bots/api#getchatmember
    */
-  getChatMember(chatId, userId) {
-    const form = {
-      chat_id: chatId,
-      user_id: userId
-    };
+  getChatMember(chatId, userId, form = {}) {
+    form.chat_id = chatId;
+    form.user_id = userId;
     return this._request('getChatMember', { form });
   }
 
   /**
    * Leave a group, supergroup or channel.
    * @param  {Number|String} chatId Unique identifier for the target group or username of the target supergroup (in the format @supergroupusername)
+   * @param  {Object} [options] Additional Telegram query options
    * @return {Promise}
    * @see https://core.telegram.org/bots/api#leavechat
    */
-  leaveChat(chatId) {
-    const form = {
-      chat_id: chatId
-    };
+  leaveChat(chatId, form = {}) {
+    form.chat_id = chatId;
     return this._request('leaveChat', { form });
   }
 
@@ -1452,27 +1456,25 @@ class TelegramBot extends EventEmitter {
    * Use this method to set a new group sticker set for a supergroup.
    * @param  {Number|String} chatId Unique identifier for the target group or username of the target supergroup (in the format @supergroupusername)
    * @param  {String} stickerSetName Name of the sticker set to be set as the group sticker set
+   * @param  {Object} [options] Additional Telegram query options
    * @return {Promise}
    * @see https://core.telegram.org/bots/api#setchatstickerset
    */
-  setChatStickerSet(chatId, stickerSetName) {
-    const form = {
-      chat_id: chatId,
-      sticker_set_name: stickerSetName
-    };
+  setChatStickerSet(chatId, stickerSetName, form = {}) {
+    form.chat_id = chatId;
+    form.sticker_set_name = stickerSetName;
     return this._request('setChatStickerSet', { form });
   }
 
   /**
    * Use this method to delete a group sticker set from a supergroup.
    * @param  {Number|String} chatId Unique identifier for the target group or username of the target supergroup (in the format @supergroupusername)
+   * @param  {Object} [options] Additional Telegram query options
    * @return {Promise}
    * @see https://core.telegram.org/bots/api#deletechatstickerset
    */
-  deleteChatStickerSet(chatId) {
-    const form = {
-      chat_id: chatId
-    };
+  deleteChatStickerSet(chatId, form = {}) {
+    form.chat_id = chatId;
     return this._request('deleteChatStickerSet', { form });
   }
 
@@ -1703,15 +1705,14 @@ class TelegramBot extends EventEmitter {
    *
    * @param  {String} sticker File identifier of the sticker
    * @param  {Number} position New sticker position in the set, zero-based
+   * @param  {Object} [options] Additional Telegram query options
    * @return {Promise}
    * @see https://core.telegram.org/bots/api#setstickerpositioninset
    * @todo Add tests for this method!
    */
-  setStickerPositionInSet(sticker, position) {
-    const form = {
-      sticker,
-      position,
-    };
+  setStickerPositionInSet(sticker, position, form = {}) {
+    form.sticker = sticker;
+    form.position = position;
     return this._request('setStickerPositionInSet', { form });
   }
 
@@ -1720,14 +1721,13 @@ class TelegramBot extends EventEmitter {
    * Returns True on success.
    *
    * @param  {String} sticker File identifier of the sticker
+   * @param  {Object} [options] Additional Telegram query options
    * @return {Promise}
    * @see https://core.telegram.org/bots/api#deletestickerfromset
    * @todo Add tests for this method!
    */
-  deleteStickerFromSet(sticker) {
-    const form = {
-      sticker,
-    };
+  deleteStickerFromSet(sticker, form = {}) {
+    form.sticker = sticker;
     return this._request('deleteStickerFromSet', { form });
   }
 }

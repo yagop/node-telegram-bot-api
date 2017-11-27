@@ -12,6 +12,7 @@ Added:
   * (#440) *TelegramBot#setChatStickerSet*, *TelegramBot#deleteChatStickerSet* (by @kamikazechaser)
 1. Add `metadata` argument in `message` event (and
    friends e.g. `text`, `audio`, etc.) (#409) (by @jlsjonas, @GochoMugo)
+1. Add forward-compatibility i.e. support future additional Telegram options (by @GochoMugo)
 1. Add support for Node.js v9 (by @GochoMugo)
 1. Document *TelegramBot.errors*, *TelegramBot.messageTypes* (by @GochoMugo)
 
