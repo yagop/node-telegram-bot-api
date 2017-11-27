@@ -1592,6 +1592,7 @@ class TelegramBot extends EventEmitter {
     opts.qs.name = name;
     opts.qs.title = title;
     opts.qs.emojis = emojis;
+    opts.qs.mask_position = JSON.stringify(options.mask_position);
     try {
       const sendData = this._formatSendData('png_sticker', pngSticker);
       opts.formData = sendData[0];
@@ -1623,6 +1624,7 @@ class TelegramBot extends EventEmitter {
     opts.qs.user_id = userId;
     opts.qs.name = name;
     opts.qs.emojis = emojis;
+    opts.qs.mask_position = JSON.stringify(options.mask_position);
     try {
       const sendData = this._formatSendData('png_sticker', pngSticker);
       opts.formData = sendData[0];
