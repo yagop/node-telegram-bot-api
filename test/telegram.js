@@ -26,6 +26,7 @@ if (!PROVIDER_TOKEN && !isCI) { // If is not running in Travis / Appveyor
 const USERID = process.env.TEST_USER_ID || 777000;
 const GROUPID = process.env.TEST_GROUP_ID || -1001075450562;
 const GAME_SHORT_NAME = process.env.TEST_GAME_SHORT_NAME || 'medusalab_test';
+const STICKER_SET_NAME = process.env.TEST_STICKER_SET_NAME || 'pusheen';
 const timeout = 60 * 1000;
 let portindex = 8091;
 const staticPort = portindex++;
@@ -38,6 +39,8 @@ const staticUrl = `http://127.0.0.1:${staticPort}`;
 const key = `${__dirname}/../examples/key.pem`;
 const ip = '216.58.210.174'; // Google IP ¯\_(ツ)_/¯
 const cert = `${__dirname}/../examples/crt.pem`;
+const lat = 47.5351072;
+const long = -52.7508537;
 let FILE_ID;
 let GAME_CHAT_ID;
 let GAME_MSG_ID;
@@ -107,6 +110,15 @@ describe('TelegramBot', function telegramSuite() {
     }).then(resp => {
       GAME_MSG_ID = resp.message_id;
     });
+  });
+
+  it('allows providing custom Promise library', function test() {
+    TelegramBot.Promise = global.Promise;
+    const promise = bot.stopPolling();
+    assert.ok(promise instanceof global.Promise);
+    assert.ok(!(promise instanceof Promise));
+    // revert
+    TelegramBot.Promise = Promise;
   });
 
   it('automatically starts polling', function test() {
@@ -740,7 +752,7 @@ describe('TelegramBot', function telegramSuite() {
     });
   });
 
-  describe('#sendVideoNote', function sendVideoNoteSuite() {
+  describe.skip('#sendVideoNote', function sendVideoNoteSuite() {
     let videoNoteId;
     this.timeout(timeout);
     before(function before() {
@@ -1073,9 +1085,47 @@ describe('TelegramBot', function telegramSuite() {
       utils.handleRatelimit(bot, 'sendLocation', this);
     });
     it('should send a location', function test() {
-      const lat = 47.5351072;
-      const long = -52.7508537;
       return bot.sendLocation(USERID, lat, long).then(resp => {
+        assert.ok(is.object(resp));
+        assert.ok(is.object(resp.location));
+        assert.ok(is.number(resp.location.latitude));
+        assert.ok(is.number(resp.location.longitude));
+      });
+    });
+  });
+
+  describe('#editMessageLiveLocation', function editMessageLiveLocationSuite() {
+    let message;
+    before(function before() {
+      utils.handleRatelimit(bot, 'editMessageLiveLocation', this);
+      const opts = { live_period: 86400 };
+      return bot.sendLocation(USERID, lat, long, opts).then(resp => { message = resp; });
+    });
+    it('edits live location', function test() {
+      const opts = { chat_id: USERID, message_id: message.message_id };
+      return bot.editMessageLiveLocation(lat + 1, long + 1, opts).then(resp => {
+        assert.ok(is.object(resp));
+        assert.ok(is.object(resp.location));
+        assert.ok(is.number(resp.location.latitude));
+        assert.ok(is.number(resp.location.longitude));
+      });
+    });
+  });
+
+  describe('#stopMessageLiveLocation', function editMessageLiveLocationSuite() {
+    let message;
+    before(function before() {
+      utils.handleRatelimit(bot, 'stopMessageLiveLocation', this);
+      return bot.sendLocation(USERID, lat, long, { live_period: 86400 })
+        .then((resp) => {
+          message = resp;
+          const opts = { chat_id: USERID, message_id: message.message_id };
+          return bot.editMessageLiveLocation(lat + 1, long + 1, opts);
+        });
+    });
+    it('stops location updates', function test() {
+      const opts = { chat_id: USERID, message_id: message.message_id };
+      return bot.stopMessageLiveLocation(opts).then(resp => {
         assert.ok(is.object(resp));
         assert.ok(is.object(resp.location));
         assert.ok(is.number(resp.location.latitude));
@@ -1089,8 +1139,6 @@ describe('TelegramBot', function telegramSuite() {
       utils.handleRatelimit(bot, 'sendVenue', this);
     });
     it('should send a venue', function test() {
-      const lat = 47.5351072;
-      const long = -52.7508537;
       const title = 'The Village Shopping Centre';
       const address = '430 Topsail Rd,St. John\'s, NL A1E 4N1, Canada';
       return bot.sendVenue(USERID, lat, long, title, address).then(resp => {
@@ -1387,4 +1435,33 @@ describe('TelegramBot', function telegramSuite() {
   describe.skip('#answerShippingQuery', function answerShippingQuerySuite() {});
 
   describe.skip('#answerPreCheckoutQuery', function answerPreCheckoutQuerySuite() {});
+
+  describe('#getStickerSet', function getStickerSetSuite() {
+    before(function before() {
+      utils.handleRatelimit(bot, 'getStickerSet', this);
+    });
+    it('should get the sticker set given the name of the set', function test() {
+      return bot.getStickerSet(STICKER_SET_NAME).then(resp => {
+        assert.ok(is.object(resp));
+        assert.equal(resp.name.toLowerCase(), STICKER_SET_NAME);
+        assert.ok(is.string(resp.title));
+        assert.ok(is.boolean(resp.contains_masks));
+        assert.ok(is.array(resp.stickers));
+      });
+    });
+  });
+
+  describe('#uploadStickerFile', function sendPhotoSuite() {
+    before(function before() {
+      utils.handleRatelimit(bot, 'uploadStickerFile', this);
+    });
+    it('should upload a sticker from file', function test() {
+      const sticker = `${__dirname}/data/sticker.png`;
+      return bot.uploadStickerFile(USERID, sticker).then(resp => {
+        assert.ok(is.object(resp));
+        assert.ok(is.string(resp.file_id));
+      });
+    });
+    // Other tests (eg. Buffer, URL) are skipped, because they rely on the same features as sendPhoto.
+  });
 }); // End Telegram

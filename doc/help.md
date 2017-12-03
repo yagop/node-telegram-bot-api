@@ -29,6 +29,8 @@ Sources:
 1. [How do I run my bot behind a proxy?](#proxy)
 1. [Can you add feature X to the library?](#new-feature)
 1. [Is this scalable?](#scalable)
+1. [How do I listen for messages in a chat group?](#messages-in-chat)
+1. [How do I know when a user blocks the bot?](#blocked-bot)
 
 <a name="gifs"></a>
 ### How do I send GIFs?
@@ -67,7 +69,9 @@ Sources:
 <a name="error-meanings"></a>
 ### What does this error mean?
 
-*Not done. PRs welcome!*
+* [502 Bad Gateway](https://github.com/yagop/node-telegram-bot-api/issues/377)
+
+*Not complete. PRs welcome!*
 
 Sources:
 
@@ -124,5 +128,23 @@ Sources:
 Sources:
 
 * Issue [#219](https://github.com/yagop/node-telegram-bot-api/issues/219)
+
+<a name="messages-in-chat"></a>
+### How do I listen for messages in a chat group?
+
+*Not done. PRs welcome!*
+
+Sources:
+
+* Issue [#304](https://github.com/yagop/node-telegram-bot-api/issues/304)
+
+<a name="blocked-bot"></a>
+### How do I know when a user blocks the bot?
+
+*Not done. PRs welcome!*
+
+Sources:
+
+* Issue [#273](https://github.com/yagop/node-telegram-bot-api/issues/273)
 
 [questions]:https://github.com/yagop/node-telegram-bot-api/issues?utf8=%E2%9C%93&q=is%3Aissue%20label%3Aquestion%20

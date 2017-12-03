@@ -12,68 +12,84 @@ TelegramBot
 
 * [TelegramBot](#TelegramBot)
     * [new TelegramBot(token, [options])](#new_TelegramBot_new)
-    * [.startPolling([options])](#TelegramBot+startPolling) ⇒ <code>Promise</code>
-    * ~~[.initPolling([options])](#TelegramBot+initPolling) ⇒ <code>Promise</code>~~
-    * [.stopPolling()](#TelegramBot+stopPolling) ⇒ <code>Promise</code>
-    * [.isPolling()](#TelegramBot+isPolling) ⇒ <code>Boolean</code>
-    * [.openWebHook()](#TelegramBot+openWebHook) ⇒ <code>Promise</code>
-    * [.closeWebHook()](#TelegramBot+closeWebHook) ⇒ <code>Promise</code>
-    * [.hasOpenWebHook()](#TelegramBot+hasOpenWebHook) ⇒ <code>Boolean</code>
-    * [.getMe()](#TelegramBot+getMe) ⇒ <code>Promise</code>
-    * [.setWebHook(url, [options])](#TelegramBot+setWebHook) ⇒ <code>Promise</code>
-    * [.deleteWebHook()](#TelegramBot+deleteWebHook) ⇒ <code>Promise</code>
-    * [.getWebHookInfo()](#TelegramBot+getWebHookInfo) ⇒ <code>Promise</code>
-    * [.getUpdates([options])](#TelegramBot+getUpdates) ⇒ <code>Promise</code>
-    * [.processUpdate(update)](#TelegramBot+processUpdate)
-    * [.sendMessage(chatId, text, [options])](#TelegramBot+sendMessage) ⇒ <code>Promise</code>
-    * [.answerInlineQuery(inlineQueryId, results, [options])](#TelegramBot+answerInlineQuery) ⇒ <code>Promise</code>
-    * [.forwardMessage(chatId, fromChatId, messageId, [options])](#TelegramBot+forwardMessage) ⇒ <code>Promise</code>
-    * [.sendPhoto(chatId, photo, [options], [fileOpts])](#TelegramBot+sendPhoto) ⇒ <code>Promise</code>
-    * [.sendAudio(chatId, audio, [options], [fileOpts])](#TelegramBot+sendAudio) ⇒ <code>Promise</code>
-    * [.sendDocument(chatId, doc, [options], [fileOpts])](#TelegramBot+sendDocument) ⇒ <code>Promise</code>
-    * [.sendSticker(chatId, sticker, [options])](#TelegramBot+sendSticker) ⇒ <code>Promise</code>
-    * [.sendVideo(chatId, video, [options], [fileOpts])](#TelegramBot+sendVideo) ⇒ <code>Promise</code>
-    * [.sendVideoNote(chatId, videoNote, [options], [fileOpts])](#TelegramBot+sendVideoNote) ⇒ <code>Promise</code>
-    * [.sendVoice(chatId, voice, [options], [fileOpts])](#TelegramBot+sendVoice) ⇒ <code>Promise</code>
-    * [.sendChatAction(chatId, action)](#TelegramBot+sendChatAction) ⇒ <code>Promise</code>
-    * [.kickChatMember(chatId, userId)](#TelegramBot+kickChatMember) ⇒ <code>Promise</code>
-    * [.unbanChatMember(chatId, userId)](#TelegramBot+unbanChatMember) ⇒ <code>Promise</code>
-    * [.restrictChatMember(chatId, userId, [options])](#TelegramBot+restrictChatMember) ⇒ <code>Promise</code>
-    * [.promoteChatMember(chatId, userId, [options])](#TelegramBot+promoteChatMember) ⇒ <code>Promise</code>
-    * [.exportChatInviteLink(chatId)](#TelegramBot+exportChatInviteLink) ⇒ <code>Promise</code>
-    * [.setChatPhoto(chatId, photo)](#TelegramBot+setChatPhoto) ⇒ <code>Promise</code>
-    * [.deleteChatPhoto(chatId)](#TelegramBot+deleteChatPhoto) ⇒ <code>Promise</code>
-    * [.setChatTitle(chatId, title)](#TelegramBot+setChatTitle) ⇒ <code>Promise</code>
-    * [.setChatDescription(chatId, description)](#TelegramBot+setChatDescription) ⇒ <code>Promise</code>
-    * [.pinChatMessage(chatId, messageId)](#TelegramBot+pinChatMessage) ⇒ <code>Promise</code>
-    * [.unpinChatMessage(chatId)](#TelegramBot+unpinChatMessage) ⇒ <code>Promise</code>
-    * [.answerCallbackQuery([options])](#TelegramBot+answerCallbackQuery) ⇒ <code>Promise</code>
-    * [.editMessageText(text, [options])](#TelegramBot+editMessageText) ⇒ <code>Promise</code>
-    * [.editMessageCaption(caption, [options])](#TelegramBot+editMessageCaption) ⇒ <code>Promise</code>
-    * [.editMessageReplyMarkup(replyMarkup, [options])](#TelegramBot+editMessageReplyMarkup) ⇒ <code>Promise</code>
-    * [.getUserProfilePhotos(userId, [options])](#TelegramBot+getUserProfilePhotos) ⇒ <code>Promise</code>
-    * [.sendLocation(chatId, latitude, longitude, [options])](#TelegramBot+sendLocation) ⇒ <code>Promise</code>
-    * [.sendVenue(chatId, latitude, longitude, title, address, [options])](#TelegramBot+sendVenue) ⇒ <code>Promise</code>
-    * [.sendContact(chatId, phoneNumber, firstName, [options])](#TelegramBot+sendContact) ⇒ <code>Promise</code>
-    * [.getFile(fileId)](#TelegramBot+getFile) ⇒ <code>Promise</code>
-    * [.getFileLink(fileId)](#TelegramBot+getFileLink) ⇒ <code>Promise</code>
-    * [.downloadFile(fileId, downloadDir)](#TelegramBot+downloadFile) ⇒ <code>Promise</code>
-    * [.onText(regexp, callback)](#TelegramBot+onText)
-    * [.removeTextListener(regexp)](#TelegramBot+removeTextListener) ⇒ <code>Object</code>
-    * [.onReplyToMessage(chatId, messageId, callback)](#TelegramBot+onReplyToMessage) ⇒ <code>Number</code>
-    * [.removeReplyListener(replyListenerId)](#TelegramBot+removeReplyListener) ⇒ <code>Object</code>
-    * [.getChat(chatId)](#TelegramBot+getChat) ⇒ <code>Promise</code>
-    * [.getChatAdministrators(chatId)](#TelegramBot+getChatAdministrators) ⇒ <code>Promise</code>
-    * [.getChatMembersCount(chatId)](#TelegramBot+getChatMembersCount) ⇒ <code>Promise</code>
-    * [.getChatMember(chatId, userId)](#TelegramBot+getChatMember) ⇒ <code>Promise</code>
-    * [.leaveChat(chatId)](#TelegramBot+leaveChat) ⇒ <code>Promise</code>
-    * [.sendGame(chatId, gameShortName, [options])](#TelegramBot+sendGame) ⇒ <code>Promise</code>
-    * [.setGameScore(userId, score, [options])](#TelegramBot+setGameScore) ⇒ <code>Promise</code>
-    * [.getGameHighScores(userId, [options])](#TelegramBot+getGameHighScores) ⇒ <code>Promise</code>
-    * [.deleteMessage(chatId, messageId, [options])](#TelegramBot+deleteMessage) ⇒ <code>Promise</code>
-    * [.sendInvoice(chatId, title, description, payload, providerToken, startParameter, currency, prices, [options])](#TelegramBot+sendInvoice) ⇒ <code>Promise</code>
-    * [.answerShippingQuery(shippingQueryId, ok, [options])](#TelegramBot+answerShippingQuery) ⇒ <code>Promise</code>
-    * [.answerPreCheckoutQuery(preCheckoutQueryId, ok, [options])](#TelegramBot+answerPreCheckoutQuery) ⇒ <code>Promise</code>
+    * _instance_
+        * [.on(event, listener)](#TelegramBot+on)
+        * [.startPolling([options])](#TelegramBot+startPolling) ⇒ <code>Promise</code>
+        * ~~[.initPolling([options])](#TelegramBot+initPolling) ⇒ <code>Promise</code>~~
+        * [.stopPolling()](#TelegramBot+stopPolling) ⇒ <code>Promise</code>
+        * [.isPolling()](#TelegramBot+isPolling) ⇒ <code>Boolean</code>
+        * [.openWebHook()](#TelegramBot+openWebHook) ⇒ <code>Promise</code>
+        * [.closeWebHook()](#TelegramBot+closeWebHook) ⇒ <code>Promise</code>
+        * [.hasOpenWebHook()](#TelegramBot+hasOpenWebHook) ⇒ <code>Boolean</code>
+        * [.getMe([options])](#TelegramBot+getMe) ⇒ <code>Promise</code>
+        * [.setWebHook(url, [options])](#TelegramBot+setWebHook) ⇒ <code>Promise</code>
+        * [.deleteWebHook([options])](#TelegramBot+deleteWebHook) ⇒ <code>Promise</code>
+        * [.getWebHookInfo([options])](#TelegramBot+getWebHookInfo) ⇒ <code>Promise</code>
+        * [.getUpdates([options])](#TelegramBot+getUpdates) ⇒ <code>Promise</code>
+        * [.processUpdate(update)](#TelegramBot+processUpdate)
+        * [.sendMessage(chatId, text, [options])](#TelegramBot+sendMessage) ⇒ <code>Promise</code>
+        * [.answerInlineQuery(inlineQueryId, results, [options])](#TelegramBot+answerInlineQuery) ⇒ <code>Promise</code>
+        * [.forwardMessage(chatId, fromChatId, messageId, [options])](#TelegramBot+forwardMessage) ⇒ <code>Promise</code>
+        * [.sendPhoto(chatId, photo, [options], [fileOpts])](#TelegramBot+sendPhoto) ⇒ <code>Promise</code>
+        * [.sendAudio(chatId, audio, [options], [fileOpts])](#TelegramBot+sendAudio) ⇒ <code>Promise</code>
+        * [.sendDocument(chatId, doc, [options], [fileOpts])](#TelegramBot+sendDocument) ⇒ <code>Promise</code>
+        * [.sendSticker(chatId, sticker, [options])](#TelegramBot+sendSticker) ⇒ <code>Promise</code>
+        * [.sendVideo(chatId, video, [options], [fileOpts])](#TelegramBot+sendVideo) ⇒ <code>Promise</code>
+        * [.sendVideoNote(chatId, videoNote, [options], [fileOpts])](#TelegramBot+sendVideoNote) ⇒ <code>Promise</code>
+        * [.sendVoice(chatId, voice, [options], [fileOpts])](#TelegramBot+sendVoice) ⇒ <code>Promise</code>
+        * [.sendChatAction(chatId, action, [options])](#TelegramBot+sendChatAction) ⇒ <code>Promise</code>
+        * [.kickChatMember(chatId, userId, [options])](#TelegramBot+kickChatMember) ⇒ <code>Promise</code>
+        * [.unbanChatMember(chatId, userId, [options])](#TelegramBot+unbanChatMember) ⇒ <code>Promise</code>
+        * [.restrictChatMember(chatId, userId, [options])](#TelegramBot+restrictChatMember) ⇒ <code>Promise</code>
+        * [.promoteChatMember(chatId, userId, [options])](#TelegramBot+promoteChatMember) ⇒ <code>Promise</code>
+        * [.exportChatInviteLink(chatId, [options])](#TelegramBot+exportChatInviteLink) ⇒ <code>Promise</code>
+        * [.setChatPhoto(chatId, photo, [options])](#TelegramBot+setChatPhoto) ⇒ <code>Promise</code>
+        * [.deleteChatPhoto(chatId, [options])](#TelegramBot+deleteChatPhoto) ⇒ <code>Promise</code>
+        * [.setChatTitle(chatId, title, [options])](#TelegramBot+setChatTitle) ⇒ <code>Promise</code>
+        * [.setChatDescription(chatId, description, [options])](#TelegramBot+setChatDescription) ⇒ <code>Promise</code>
+        * [.pinChatMessage(chatId, messageId, [options])](#TelegramBot+pinChatMessage) ⇒ <code>Promise</code>
+        * [.unpinChatMessage(chatId, [options])](#TelegramBot+unpinChatMessage) ⇒ <code>Promise</code>
+        * [.answerCallbackQuery(callbackQueryId, [options])](#TelegramBot+answerCallbackQuery) ⇒ <code>Promise</code>
+        * [.editMessageText(text, [options])](#TelegramBot+editMessageText) ⇒ <code>Promise</code>
+        * [.editMessageCaption(caption, [options])](#TelegramBot+editMessageCaption) ⇒ <code>Promise</code>
+        * [.editMessageReplyMarkup(replyMarkup, [options])](#TelegramBot+editMessageReplyMarkup) ⇒ <code>Promise</code>
+        * [.getUserProfilePhotos(userId, [options])](#TelegramBot+getUserProfilePhotos) ⇒ <code>Promise</code>
+        * [.sendLocation(chatId, latitude, longitude, [options])](#TelegramBot+sendLocation) ⇒ <code>Promise</code>
+        * [.editMessageLiveLocation(latitude, longitude, [options])](#TelegramBot+editMessageLiveLocation) ⇒ <code>Promise</code>
+        * [.stopMessageLiveLocation([options])](#TelegramBot+stopMessageLiveLocation) ⇒ <code>Promise</code>
+        * [.sendVenue(chatId, latitude, longitude, title, address, [options])](#TelegramBot+sendVenue) ⇒ <code>Promise</code>
+        * [.sendContact(chatId, phoneNumber, firstName, [options])](#TelegramBot+sendContact) ⇒ <code>Promise</code>
+        * [.getFile(fileId, [options])](#TelegramBot+getFile) ⇒ <code>Promise</code>
+        * [.getFileLink(fileId, [options])](#TelegramBot+getFileLink) ⇒ <code>Promise</code>
+        * [.downloadFile(fileId, downloadDir, [options])](#TelegramBot+downloadFile) ⇒ <code>Promise</code>
+        * [.onText(regexp, callback)](#TelegramBot+onText)
+        * [.removeTextListener(regexp)](#TelegramBot+removeTextListener) ⇒ <code>Object</code>
+        * [.onReplyToMessage(chatId, messageId, callback)](#TelegramBot+onReplyToMessage) ⇒ <code>Number</code>
+        * [.removeReplyListener(replyListenerId)](#TelegramBot+removeReplyListener) ⇒ <code>Object</code>
+        * [.getChat(chatId, [options])](#TelegramBot+getChat) ⇒ <code>Promise</code>
+        * [.getChatAdministrators(chatId, [options])](#TelegramBot+getChatAdministrators) ⇒ <code>Promise</code>
+        * [.getChatMembersCount(chatId, [options])](#TelegramBot+getChatMembersCount) ⇒ <code>Promise</code>
+        * [.getChatMember(chatId, userId, [options])](#TelegramBot+getChatMember) ⇒ <code>Promise</code>
+        * [.leaveChat(chatId, [options])](#TelegramBot+leaveChat) ⇒ <code>Promise</code>
+        * [.setChatStickerSet(chatId, stickerSetName, [options])](#TelegramBot+setChatStickerSet) ⇒ <code>Promise</code>
+        * [.deleteChatStickerSet(chatId, [options])](#TelegramBot+deleteChatStickerSet) ⇒ <code>Promise</code>
+        * [.sendGame(chatId, gameShortName, [options])](#TelegramBot+sendGame) ⇒ <code>Promise</code>
+        * [.setGameScore(userId, score, [options])](#TelegramBot+setGameScore) ⇒ <code>Promise</code>
+        * [.getGameHighScores(userId, [options])](#TelegramBot+getGameHighScores) ⇒ <code>Promise</code>
+        * [.deleteMessage(chatId, messageId, [options])](#TelegramBot+deleteMessage) ⇒ <code>Promise</code>
+        * [.sendInvoice(chatId, title, description, payload, providerToken, startParameter, currency, prices, [options])](#TelegramBot+sendInvoice) ⇒ <code>Promise</code>
+        * [.answerShippingQuery(shippingQueryId, ok, [options])](#TelegramBot+answerShippingQuery) ⇒ <code>Promise</code>
+        * [.answerPreCheckoutQuery(preCheckoutQueryId, ok, [options])](#TelegramBot+answerPreCheckoutQuery) ⇒ <code>Promise</code>
+        * [.getStickerSet(name, [options])](#TelegramBot+getStickerSet) ⇒ <code>Promise</code>
+        * [.uploadStickerFile(userId, pngSticker, [options])](#TelegramBot+uploadStickerFile) ⇒ <code>Promise</code>
+        * [.createNewStickerSet(userId, name, title, pngSticker, emojis, [options])](#TelegramBot+createNewStickerSet) ⇒ <code>Promise</code>
+        * [.addStickerToSet(userId, name, pngSticker, emojis, [options])](#TelegramBot+addStickerToSet) ⇒ <code>Promise</code>
+        * [.setStickerPositionInSet(sticker, position, [options])](#TelegramBot+setStickerPositionInSet) ⇒ <code>Promise</code>
+        * [.deleteStickerFromSet(sticker, [options])](#TelegramBot+deleteStickerFromSet) ⇒ <code>Promise</code>
+    * _static_
+        * [.errors](#TelegramBot.errors) : <code>Object</code>
+        * [.messageTypes](#TelegramBot.messageTypes) : <code>Array.&lt;String&gt;</code>
+        * [.Promise](#TelegramBot.Promise)
 
 <a name="new_TelegramBot_new"></a>
 
@@ -106,6 +122,24 @@ Emits `message` when a message arrives.
 | [options.request] | <code>Object</code> |  | Options which will be added for all requests to telegram api.  See https://github.com/request/request#requestoptions-callback for more information. |
 | [options.baseApiUrl] | <code>String</code> | <code>https://api.telegram.org</code> | API Base URl; useful for proxying and testing |
 | [options.filepath] | <code>Boolean</code> | <code>true</code> | Allow passing file-paths as arguments when sending files,  such as photos using `TelegramBot#sendPhoto()`. See [usage information][usage-sending-files-performance]  for more information on this option and its consequences. |
+
+<a name="TelegramBot+on"></a>
+
+### telegramBot.on(event, listener)
+Add listener for the specified [event](https://github.com/yagop/node-telegram-bot-api/blob/master/doc/usage.md#events).
+This is the usual `emitter.on()` method.
+
+**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
+**See**
+
+- [Available events](https://github.com/yagop/node-telegram-bot-api/blob/master/doc/usage.md#events)
+- https://nodejs.org/api/events.html#events_emitter_on_eventname_listener
+
+
+| Param | Type |
+| --- | --- |
+| event | <code>String</code> | 
+| listener | <code>function</code> | 
 
 <a name="TelegramBot+startPolling"></a>
 
@@ -172,11 +206,16 @@ Otherwise, false.
 **Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
 <a name="TelegramBot+getMe"></a>
 
-### telegramBot.getMe() ⇒ <code>Promise</code>
+### telegramBot.getMe([options]) ⇒ <code>Promise</code>
 Returns basic information about the bot in form of a `User` object.
 
 **Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
 **See**: https://core.telegram.org/bots/api#getme  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| [options] | <code>Object</code> | Additional Telegram query options |
+
 <a name="TelegramBot+setWebHook"></a>
 
 ### telegramBot.setWebHook(url, [options]) ⇒ <code>Promise</code>
@@ -195,15 +234,20 @@ that is being deprecated.
 
 <a name="TelegramBot+deleteWebHook"></a>
 
-### telegramBot.deleteWebHook() ⇒ <code>Promise</code>
+### telegramBot.deleteWebHook([options]) ⇒ <code>Promise</code>
 Use this method to remove webhook integration if you decide to
 switch back to getUpdates. Returns True on success.
 
 **Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
 **See**: https://core.telegram.org/bots/api#deletewebhook  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| [options] | <code>Object</code> | Additional Telegram query options |
+
 <a name="TelegramBot+getWebHookInfo"></a>
 
-### telegramBot.getWebHookInfo() ⇒ <code>Promise</code>
+### telegramBot.getWebHookInfo([options]) ⇒ <code>Promise</code>
 Use this method to get current webhook status.
 On success, returns a [WebhookInfo](https://core.telegram.org/bots/api#webhookinfo) object.
 If the bot is using getUpdates, will return an object with the
@@ -211,6 +255,11 @@ url field empty.
 
 **Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
 **See**: https://core.telegram.org/bots/api#getwebhookinfo  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| [options] | <code>Object</code> | Additional Telegram query options |
+
 <a name="TelegramBot+getUpdates"></a>
 
 ### telegramBot.getUpdates([options]) ⇒ <code>Promise</code>
@@ -412,7 +461,7 @@ Send voice
 
 <a name="TelegramBot+sendChatAction"></a>
 
-### telegramBot.sendChatAction(chatId, action) ⇒ <code>Promise</code>
+### telegramBot.sendChatAction(chatId, action, [options]) ⇒ <code>Promise</code>
 Send chat action.
 `typing` for text messages,
 `upload_photo` for photos, `record_video` or `upload_video` for videos,
@@ -426,10 +475,11 @@ Send chat action.
 | --- | --- | --- |
 | chatId | <code>Number</code> &#124; <code>String</code> | Unique identifier for the message recipient |
 | action | <code>String</code> | Type of action to broadcast. |
+| [options] | <code>Object</code> | Additional Telegram query options |
 
 <a name="TelegramBot+kickChatMember"></a>
 
-### telegramBot.kickChatMember(chatId, userId) ⇒ <code>Promise</code>
+### telegramBot.kickChatMember(chatId, userId, [options]) ⇒ <code>Promise</code>
 Use this method to kick a user from a group or a supergroup.
 In the case of supergroups, the user will not be able to return
 to the group on their own using invite links, etc., unless unbanned
@@ -442,11 +492,12 @@ Returns True on success.
 | Param | Type | Description |
 | --- | --- | --- |
 | chatId | <code>Number</code> &#124; <code>String</code> | Unique identifier for the target group or username of the target supergroup |
-| userId | <code>String</code> | Unique identifier of the target user |
+| userId | <code>Number</code> | Unique identifier of the target user |
+| [options] | <code>Object</code> | Additional Telegram query options |
 
 <a name="TelegramBot+unbanChatMember"></a>
 
-### telegramBot.unbanChatMember(chatId, userId) ⇒ <code>Promise</code>
+### telegramBot.unbanChatMember(chatId, userId, [options]) ⇒ <code>Promise</code>
 Use this method to unban a previously kicked user in a supergroup.
 The user will not return to the group automatically, but will be
 able to join via link, etc. The bot must be an administrator in
@@ -458,7 +509,8 @@ the group for this to work. Returns True on success.
 | Param | Type | Description |
 | --- | --- | --- |
 | chatId | <code>Number</code> &#124; <code>String</code> | Unique identifier for the target group or username of the target supergroup |
-| userId | <code>String</code> | Unique identifier of the target user |
+| userId | <code>Number</code> | Unique identifier of the target user |
+| [options] | <code>Object</code> | Additional Telegram query options |
 
 <a name="TelegramBot+restrictChatMember"></a>
 
@@ -474,7 +526,7 @@ to lift restrictions from a user. Returns True on success.
 | Param | Type | Description |
 | --- | --- | --- |
 | chatId | <code>Number</code> &#124; <code>String</code> | Unique identifier for the target chat or username of the target supergroup |
-| userId | <code>String</code> | Unique identifier of the target user |
+| userId | <code>Number</code> | Unique identifier of the target user |
 | [options] | <code>Object</code> | Additional Telegram query options |
 
 <a name="TelegramBot+promoteChatMember"></a>
@@ -491,12 +543,12 @@ Returns True on success.
 | Param | Type | Description |
 | --- | --- | --- |
 | chatId | <code>Number</code> &#124; <code>String</code> | Unique identifier for the target chat or username of the target supergroup |
-| userId | <code>String</code> |  |
+| userId | <code>Number</code> |  |
 | [options] | <code>Object</code> | Additional Telegram query options |
 
 <a name="TelegramBot+exportChatInviteLink"></a>
 
-### telegramBot.exportChatInviteLink(chatId) ⇒ <code>Promise</code>
+### telegramBot.exportChatInviteLink(chatId, [options]) ⇒ <code>Promise</code>
 Use this method to export an invite link to a supergroup or a channel.
 The bot must be an administrator in the chat for this to work and must have the appropriate admin rights.
 Returns exported invite link as String on success.
@@ -507,10 +559,11 @@ Returns exported invite link as String on success.
 | Param | Type | Description |
 | --- | --- | --- |
 | chatId | <code>Number</code> &#124; <code>String</code> | Unique identifier for the target chat or username of the target supergroup |
+| [options] | <code>Object</code> | Additional Telegram query options |
 
 <a name="TelegramBot+setChatPhoto"></a>
 
-### telegramBot.setChatPhoto(chatId, photo) ⇒ <code>Promise</code>
+### telegramBot.setChatPhoto(chatId, photo, [options]) ⇒ <code>Promise</code>
 Use this method to set a new profile photo for the chat. Photos can't be changed for private chats.
 The bot must be an administrator in the chat for this to work and must have the appropriate admin rights.
 Returns True on success.
@@ -522,10 +575,11 @@ Returns True on success.
 | --- | --- | --- |
 | chatId | <code>Number</code> &#124; <code>String</code> | Unique identifier for the message recipient |
 | photo | <code>stream.Stream</code> &#124; <code>Buffer</code> | A file path or a Stream. |
+| [options] | <code>Object</code> | Additional Telegram query options |
 
 <a name="TelegramBot+deleteChatPhoto"></a>
 
-### telegramBot.deleteChatPhoto(chatId) ⇒ <code>Promise</code>
+### telegramBot.deleteChatPhoto(chatId, [options]) ⇒ <code>Promise</code>
 Use this method to delete a chat photo. Photos can't be changed for private chats.
 The bot must be an administrator in the chat for this to work and must have the appropriate admin rights.
 Returns True on success.
@@ -536,10 +590,11 @@ Returns True on success.
 | Param | Type | Description |
 | --- | --- | --- |
 | chatId | <code>Number</code> &#124; <code>String</code> | Unique identifier for the message recipient |
+| [options] | <code>Object</code> | Additional Telegram query options |
 
 <a name="TelegramBot+setChatTitle"></a>
 
-### telegramBot.setChatTitle(chatId, title) ⇒ <code>Promise</code>
+### telegramBot.setChatTitle(chatId, title, [options]) ⇒ <code>Promise</code>
 Use this method to change the title of a chat. Titles can't be changed for private chats.
 The bot must be an administrator in the chat for this to work and must have the appropriate admin rights.
 Returns True on success.
@@ -551,10 +606,11 @@ Returns True on success.
 | --- | --- | --- |
 | chatId | <code>Number</code> &#124; <code>String</code> | Unique identifier for the message recipient |
 | title | <code>String</code> | New chat title, 1-255 characters |
+| [options] | <code>Object</code> | Additional Telegram query options |
 
 <a name="TelegramBot+setChatDescription"></a>
 
-### telegramBot.setChatDescription(chatId, description) ⇒ <code>Promise</code>
+### telegramBot.setChatDescription(chatId, description, [options]) ⇒ <code>Promise</code>
 Use this method to change the description of a supergroup or a channel.
 The bot must be an administrator in the chat for this to work and must have the appropriate admin rights.
 Returns True on success.
@@ -566,10 +622,11 @@ Returns True on success.
 | --- | --- | --- |
 | chatId | <code>Number</code> &#124; <code>String</code> | Unique identifier for the message recipient |
 | description | <code>String</code> | New chat title, 1-255 characters |
+| [options] | <code>Object</code> | Additional Telegram query options |
 
 <a name="TelegramBot+pinChatMessage"></a>
 
-### telegramBot.pinChatMessage(chatId, messageId) ⇒ <code>Promise</code>
+### telegramBot.pinChatMessage(chatId, messageId, [options]) ⇒ <code>Promise</code>
 Use this method to pin a message in a supergroup.
 The bot must be an administrator in the chat for this to work and must have the appropriate admin rights.
 Returns True on success.
@@ -581,10 +638,11 @@ Returns True on success.
 | --- | --- | --- |
 | chatId | <code>Number</code> &#124; <code>String</code> | Unique identifier for the message recipient |
 | messageId | <code>String</code> | Identifier of a message to pin |
+| [options] | <code>Object</code> | Additional Telegram query options |
 
 <a name="TelegramBot+unpinChatMessage"></a>
 
-### telegramBot.unpinChatMessage(chatId) ⇒ <code>Promise</code>
+### telegramBot.unpinChatMessage(chatId, [options]) ⇒ <code>Promise</code>
 Use this method to unpin a message in a supergroup chat.
 The bot must be an administrator in the chat for this to work and must have the appropriate admin rights.
 Returns True on success.
@@ -595,23 +653,25 @@ Returns True on success.
 | Param | Type | Description |
 | --- | --- | --- |
 | chatId | <code>Number</code> &#124; <code>String</code> | Unique identifier for the message recipient |
+| [options] | <code>Object</code> | Additional Telegram query options |
 
 <a name="TelegramBot+answerCallbackQuery"></a>
 
-### telegramBot.answerCallbackQuery([options]) ⇒ <code>Promise</code>
+### telegramBot.answerCallbackQuery(callbackQueryId, [options]) ⇒ <code>Promise</code>
 Use this method to send answers to callback queries sent from
 inline keyboards. The answer will be displayed to the user as
 a notification at the top of the chat screen or as an alert.
 On success, True is returned.
 
-This method has an [older, compatible signature][answerCallbackQuery-v0.27.1]
-that is being deprecated.
+This method has **older, compatible signatures ([1][answerCallbackQuery-v0.27.1])([2][answerCallbackQuery-v0.29.0])**
+that are being deprecated.
 
 **Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
 **See**: https://core.telegram.org/bots/api#answercallbackquery  
 
 | Param | Type | Description |
 | --- | --- | --- |
+| callbackQueryId | <code>String</code> | Unique identifier for the query to be answered |
 | [options] | <code>Object</code> | Additional Telegram query options |
 
 <a name="TelegramBot+editMessageText"></a>
@@ -681,7 +741,7 @@ that is being deprecated.
 
 | Param | Type | Description |
 | --- | --- | --- |
-| userId | <code>Number</code> &#124; <code>String</code> | Unique identifier of the target user |
+| userId | <code>Number</code> | Unique identifier of the target user |
 | [options] | <code>Object</code> | Additional Telegram query options |
 
 <a name="TelegramBot+sendLocation"></a>
@@ -699,6 +759,40 @@ Use this method to send point on the map.
 | latitude | <code>Float</code> | Latitude of location |
 | longitude | <code>Float</code> | Longitude of location |
 | [options] | <code>Object</code> | Additional Telegram query options |
+
+<a name="TelegramBot+editMessageLiveLocation"></a>
+
+### telegramBot.editMessageLiveLocation(latitude, longitude, [options]) ⇒ <code>Promise</code>
+Use this method to edit live location messages sent by
+the bot or via the bot (for inline bots).
+
+Note that you must provide one of chat_id, message_id, or
+inline_message_id in your request.
+
+**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
+**See**: https://core.telegram.org/bots/api#editmessagelivelocation  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| latitude | <code>Float</code> | Latitude of location |
+| longitude | <code>Float</code> | Longitude of location |
+| [options] | <code>Object</code> | Additional Telegram query options (provide either one of chat_id, message_id, or inline_message_id here) |
+
+<a name="TelegramBot+stopMessageLiveLocation"></a>
+
+### telegramBot.stopMessageLiveLocation([options]) ⇒ <code>Promise</code>
+Use this method to stop updating a live location message sent by
+the bot or via the bot (for inline bots) before live_period expires.
+
+Note that you must provide one of chat_id, message_id, or
+inline_message_id in your request.
+
+**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
+**See**: https://core.telegram.org/bots/api#stopmessagelivelocation  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| [options] | <code>Object</code> | Additional Telegram query options (provide either one of chat_id, message_id, or inline_message_id here) |
 
 <a name="TelegramBot+sendVenue"></a>
 
@@ -736,7 +830,7 @@ Use this method to send phone contacts.
 
 <a name="TelegramBot+getFile"></a>
 
-### telegramBot.getFile(fileId) ⇒ <code>Promise</code>
+### telegramBot.getFile(fileId, [options]) ⇒ <code>Promise</code>
 Get file.
 Use this method to get basic info about a file and prepare it for downloading.
 Attention: link will be valid for 1 hour.
@@ -747,10 +841,11 @@ Attention: link will be valid for 1 hour.
 | Param | Type | Description |
 | --- | --- | --- |
 | fileId | <code>String</code> | File identifier to get info about |
+| [options] | <code>Object</code> | Additional Telegram query options |
 
 <a name="TelegramBot+getFileLink"></a>
 
-### telegramBot.getFileLink(fileId) ⇒ <code>Promise</code>
+### telegramBot.getFileLink(fileId, [options]) ⇒ <code>Promise</code>
 Get link for file.
 Use this method to get link for file for subsequent use.
 Attention: link will be valid for 1 hour.
@@ -765,10 +860,11 @@ which returns just path to file on remote server (you will have to manually buil
 | Param | Type | Description |
 | --- | --- | --- |
 | fileId | <code>String</code> | File identifier to get info about |
+| [options] | <code>Object</code> | Additional Telegram query options |
 
 <a name="TelegramBot+downloadFile"></a>
 
-### telegramBot.downloadFile(fileId, downloadDir) ⇒ <code>Promise</code>
+### telegramBot.downloadFile(fileId, downloadDir, [options]) ⇒ <code>Promise</code>
 Downloads file in the specified folder.
 This is just a sugar for (getFile)[#getfilefiled] method
 
@@ -779,6 +875,7 @@ This is just a sugar for (getFile)[#getfilefiled] method
 | --- | --- | --- |
 | fileId | <code>String</code> | File identifier to get info about |
 | downloadDir | <code>String</code> | Absolute path to the folder in which file will be saved |
+| [options] | <code>Object</code> | Additional Telegram query options |
 
 <a name="TelegramBot+onText"></a>
 
@@ -836,7 +933,7 @@ Removes a reply that has been prev. registered for a message response.
 
 <a name="TelegramBot+getChat"></a>
 
-### telegramBot.getChat(chatId) ⇒ <code>Promise</code>
+### telegramBot.getChat(chatId, [options]) ⇒ <code>Promise</code>
 Use this method to get up to date information about the chat
 (current name of the user for one-on-one conversations, current
 username of a user, group or channel, etc.).
@@ -847,10 +944,11 @@ username of a user, group or channel, etc.).
 | Param | Type | Description |
 | --- | --- | --- |
 | chatId | <code>Number</code> &#124; <code>String</code> | Unique identifier for the target chat or username of the target supergroup or channel |
+| [options] | <code>Object</code> | Additional Telegram query options |
 
 <a name="TelegramBot+getChatAdministrators"></a>
 
-### telegramBot.getChatAdministrators(chatId) ⇒ <code>Promise</code>
+### telegramBot.getChatAdministrators(chatId, [options]) ⇒ <code>Promise</code>
 Returns the administrators in a chat in form of an Array of `ChatMember` objects.
 
 **Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
@@ -859,10 +957,11 @@ Returns the administrators in a chat in form of an Array of `ChatMember` objects
 | Param | Type | Description |
 | --- | --- | --- |
 | chatId | <code>Number</code> &#124; <code>String</code> | Unique identifier for the target group or username of the target supergroup |
+| [options] | <code>Object</code> | Additional Telegram query options |
 
 <a name="TelegramBot+getChatMembersCount"></a>
 
-### telegramBot.getChatMembersCount(chatId) ⇒ <code>Promise</code>
+### telegramBot.getChatMembersCount(chatId, [options]) ⇒ <code>Promise</code>
 Use this method to get the number of members in a chat.
 
 **Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
@@ -871,10 +970,11 @@ Use this method to get the number of members in a chat.
 | Param | Type | Description |
 | --- | --- | --- |
 | chatId | <code>Number</code> &#124; <code>String</code> | Unique identifier for the target group or username of the target supergroup |
+| [options] | <code>Object</code> | Additional Telegram query options |
 
 <a name="TelegramBot+getChatMember"></a>
 
-### telegramBot.getChatMember(chatId, userId) ⇒ <code>Promise</code>
+### telegramBot.getChatMember(chatId, userId, [options]) ⇒ <code>Promise</code>
 Use this method to get information about a member of a chat.
 
 **Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
@@ -883,11 +983,12 @@ Use this method to get information about a member of a chat.
 | Param | Type | Description |
 | --- | --- | --- |
 | chatId | <code>Number</code> &#124; <code>String</code> | Unique identifier for the target group or username of the target supergroup |
-| userId | <code>String</code> | Unique identifier of the target user |
+| userId | <code>Number</code> | Unique identifier of the target user |
+| [options] | <code>Object</code> | Additional Telegram query options |
 
 <a name="TelegramBot+leaveChat"></a>
 
-### telegramBot.leaveChat(chatId) ⇒ <code>Promise</code>
+### telegramBot.leaveChat(chatId, [options]) ⇒ <code>Promise</code>
 Leave a group, supergroup or channel.
 
 **Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
@@ -896,6 +997,34 @@ Leave a group, supergroup or channel.
 | Param | Type | Description |
 | --- | --- | --- |
 | chatId | <code>Number</code> &#124; <code>String</code> | Unique identifier for the target group or username of the target supergroup (in the format @supergroupusername) |
+| [options] | <code>Object</code> | Additional Telegram query options |
+
+<a name="TelegramBot+setChatStickerSet"></a>
+
+### telegramBot.setChatStickerSet(chatId, stickerSetName, [options]) ⇒ <code>Promise</code>
+Use this method to set a new group sticker set for a supergroup.
+
+**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
+**See**: https://core.telegram.org/bots/api#setchatstickerset  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| chatId | <code>Number</code> &#124; <code>String</code> | Unique identifier for the target group or username of the target supergroup (in the format @supergroupusername) |
+| stickerSetName | <code>String</code> | Name of the sticker set to be set as the group sticker set |
+| [options] | <code>Object</code> | Additional Telegram query options |
+
+<a name="TelegramBot+deleteChatStickerSet"></a>
+
+### telegramBot.deleteChatStickerSet(chatId, [options]) ⇒ <code>Promise</code>
+Use this method to delete a group sticker set from a supergroup.
+
+**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
+**See**: https://core.telegram.org/bots/api#deletechatstickerset  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| chatId | <code>Number</code> &#124; <code>String</code> | Unique identifier for the target group or username of the target supergroup (in the format @supergroupusername) |
+| [options] | <code>Object</code> | Additional Telegram query options |
 
 <a name="TelegramBot+sendGame"></a>
 
@@ -921,7 +1050,7 @@ Use this method to set the score of the specified user in a game.
 
 | Param | Type | Description |
 | --- | --- | --- |
-| userId | <code>String</code> | Unique identifier of the target user |
+| userId | <code>Number</code> | Unique identifier of the target user |
 | score | <code>Number</code> | New score value. |
 | [options] | <code>Object</code> | Additional Telegram query options |
 
@@ -935,7 +1064,7 @@ Use this method to get data for high score table.
 
 | Param | Type | Description |
 | --- | --- | --- |
-| userId | <code>String</code> | Unique identifier of the target user |
+| userId | <code>Number</code> | Unique identifier of the target user |
 | [options] | <code>Object</code> | Additional Telegram query options |
 
 <a name="TelegramBot+deleteMessage"></a>
@@ -948,7 +1077,7 @@ Use this method to delete a message.
 
 | Param | Type | Description |
 | --- | --- | --- |
-| chatId | <code>String</code> | Unique identifier of the target chat |
+| chatId | <code>Number</code> &#124; <code>String</code> | Unique identifier of the target chat |
 | messageId | <code>String</code> | Unique identifier of the target message |
 | [options] | <code>Object</code> | Additional Telegram query options |
 
@@ -1003,6 +1132,144 @@ Use this method to confirm shipping of a product.
 | ok | <code>Boolean</code> | Specify if every order details are ok |
 | [options] | <code>Object</code> | Additional Telegram query options |
 
+<a name="TelegramBot+getStickerSet"></a>
+
+### telegramBot.getStickerSet(name, [options]) ⇒ <code>Promise</code>
+Use this method to get a sticker set. On success, a [StickerSet](https://core.telegram.org/bots/api#stickerset) object is returned.
+
+**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
+**See**: https://core.telegram.org/bots/api#getstickerset  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| name | <code>String</code> | Name of the sticker set |
+| [options] | <code>Object</code> | Additional Telegram query options |
+
+<a name="TelegramBot+uploadStickerFile"></a>
+
+### telegramBot.uploadStickerFile(userId, pngSticker, [options]) ⇒ <code>Promise</code>
+Use this method to upload a .png file with a sticker for later use in *createNewStickerSet* and *addStickerToSet* methods (can be used multiple
+times). Returns the uploaded [File](https://core.telegram.org/bots/api#file) on success.
+
+**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
+**See**: https://core.telegram.org/bots/api#uploadstickerfile  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| userId | <code>Number</code> | User identifier of sticker file owner |
+| pngSticker | <code>String</code> &#124; <code>stream.Stream</code> &#124; <code>Buffer</code> | A file path or a Stream. Can also be a `file_id` previously uploaded. **Png** image with the  sticker, must be up to 512 kilobytes in size, dimensions must not exceed 512px, and either width or height must be exactly 512px. |
+| [options] | <code>Object</code> | Additional Telegram query options |
+
+<a name="TelegramBot+createNewStickerSet"></a>
+
+### telegramBot.createNewStickerSet(userId, name, title, pngSticker, emojis, [options]) ⇒ <code>Promise</code>
+Use this method to create new sticker set owned by a user.
+The bot will be able to edit the created sticker set.
+Returns True on success.
+
+**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
+**See**: https://core.telegram.org/bots/api#createnewstickerset  
+**Todo**
+
+- [ ] Add tests for this method!
+
+
+| Param | Type | Description |
+| --- | --- | --- |
+| userId | <code>Number</code> | User identifier of created sticker set owner |
+| name | <code>String</code> | Short name of sticker set, to be used in `t.me/addstickers/` URLs (e.g., *animals*) |
+| title | <code>String</code> | Sticker set title, 1-64 characters |
+| pngSticker | <code>String</code> &#124; <code>stream.Stream</code> &#124; <code>Buffer</code> | Png image with the sticker, must be up to 512 kilobytes in size,  dimensions must not exceed 512px, and either width or height must be exactly 512px. |
+| emojis | <code>String</code> | One or more emoji corresponding to the sticker |
+| [options] | <code>Object</code> | Additional Telegram query options |
+
+<a name="TelegramBot+addStickerToSet"></a>
+
+### telegramBot.addStickerToSet(userId, name, pngSticker, emojis, [options]) ⇒ <code>Promise</code>
+Use this method to add a new sticker to a set created by the bot.
+Returns True on success.
+
+**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
+**See**: https://core.telegram.org/bots/api#addstickertoset  
+**Todo**
+
+- [ ] Add tests for this method!
+
+
+| Param | Type | Description |
+| --- | --- | --- |
+| userId | <code>Number</code> | User identifier of sticker set owner |
+| name | <code>String</code> | Sticker set name |
+| pngSticker | <code>String</code> &#124; <code>stream.Stream</code> &#124; <code>Buffer</code> | Png image with the sticker, must be up to 512 kilobytes in size,  dimensions must not exceed 512px, and either width or height must be exactly 512px |
+| emojis | <code>String</code> | One or more emoji corresponding to the sticker |
+| [options] | <code>Object</code> | Additional Telegram query options |
+
+<a name="TelegramBot+setStickerPositionInSet"></a>
+
+### telegramBot.setStickerPositionInSet(sticker, position, [options]) ⇒ <code>Promise</code>
+Use this method to move a sticker in a set created by the bot to a specific position.
+Returns True on success.
+
+**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
+**See**: https://core.telegram.org/bots/api#setstickerpositioninset  
+**Todo**
+
+- [ ] Add tests for this method!
+
+
+| Param | Type | Description |
+| --- | --- | --- |
+| sticker | <code>String</code> | File identifier of the sticker |
+| position | <code>Number</code> | New sticker position in the set, zero-based |
+| [options] | <code>Object</code> | Additional Telegram query options |
+
+<a name="TelegramBot+deleteStickerFromSet"></a>
+
+### telegramBot.deleteStickerFromSet(sticker, [options]) ⇒ <code>Promise</code>
+Use this method to delete a sticker from a set created by the bot.
+Returns True on success.
+
+**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
+**See**: https://core.telegram.org/bots/api#deletestickerfromset  
+**Todo**
+
+- [ ] Add tests for this method!
+
+
+| Param | Type | Description |
+| --- | --- | --- |
+| sticker | <code>String</code> | File identifier of the sticker |
+| [options] | <code>Object</code> | Additional Telegram query options |
+
+<a name="TelegramBot.errors"></a>
+
+### TelegramBot.errors : <code>Object</code>
+The different errors the library uses.
+
+**Kind**: static property of <code>[TelegramBot](#TelegramBot)</code>  
+<a name="TelegramBot.messageTypes"></a>
+
+### TelegramBot.messageTypes : <code>Array.&lt;String&gt;</code>
+The types of message updates the library handles.
+
+**Kind**: static property of <code>[TelegramBot](#TelegramBot)</code>  
+<a name="TelegramBot.Promise"></a>
+
+### TelegramBot.Promise
+Change Promise library used internally, for all existing and new
+instances.
+
+**Kind**: static property of <code>[TelegramBot](#TelegramBot)</code>  
+
+| Param | Type |
+| --- | --- |
+| customPromise | <code>function</code> | 
+
+**Example**  
+```js
+const TelegramBot = require('node-telegram-bot-api');
+TelegramBot.Promise = myPromise;
+```
 * * *
 
 
@@ -1011,3 +1278,4 @@ Use this method to confirm shipping of a product.
 [getUpdates-v0.25.0]:https://github.com/yagop/node-telegram-bot-api/tree/4e5a493cadfaad5589a8d79e55d9e0d103000ce4#TelegramBot+getUpdates
 [getUserProfilePhotos-v0.25.0]:https://github.com/yagop/node-telegram-bot-api/tree/4e5a493cadfaad5589a8d79e55d9e0d103000ce4#TelegramBot+getUserProfilePhotos
 [answerCallbackQuery-v0.27.1]:https://github.com/yagop/node-telegram-bot-api/blob/v0.27.1/doc/api.md#TelegramBot+answerCallbackQuery
+[answerCallbackQuery-v0.29.0]:https://github.com/yagop/node-telegram-bot-api/blob/v0.29.0/doc/api.md#TelegramBot+answerCallbackQuery
