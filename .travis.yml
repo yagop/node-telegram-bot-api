@@ -6,7 +6,7 @@ node_js:
   - "6"
   - "5"
   - "4"
-  - "0.12"
+  # - "0.12"
 after_success:
   - bash <(curl -s https://codecov.io/bash)
 cache:
