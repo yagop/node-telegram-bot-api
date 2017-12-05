@@ -540,6 +540,13 @@ describe('TelegramBot', function telegramSuite() {
         assert.ok(is.array(resp.photo));
       });
     });
+    it('should send a photo from a Buffer', function test() {
+      const photo = fs.readFileSync(`${__dirname}/data/photo.gif`);
+      return bot.sendPhoto(USERID, photo).then(resp => {
+        assert.ok(is.object(resp));
+        assert.ok(is.array(resp.photo));
+      });
+    });
   });
 
   describe('#sendAudio', function sendAudioSuite() {
@@ -583,6 +590,16 @@ describe('TelegramBot', function telegramSuite() {
       return bot.sendAudio(USERID, audio).then(resp => {
         assert.ok(is.object(resp));
         assert.ok(is.object(resp.audio));
+      });
+    });
+    it('should send an audio with custom file options', function test() {
+      const audio = fs.createReadStream(`${__dirname}/data/audio.mp3`);
+      const fileOpts = { filename: 'customfilename.mp3' };
+      return bot.sendAudio(USERID, audio, {}, fileOpts).then(resp => {
+        assert.ok(is.object(resp));
+        assert.ok(is.object(resp.audio));
+        // there is not file_name filed in resp.audio. But it does work.
+        // assert.equal(resp.audio.file_name, fileOpts.filename);
       });
     });
   });
@@ -725,6 +742,14 @@ describe('TelegramBot', function telegramSuite() {
         assert.ok(is.object(resp.video));
       });
     });
+    it('should send a video with custom file options', function test() {
+      const video = fs.createReadStream(`${__dirname}/data/video.mp4`);
+      const fileOpts = { filename: 'customfilename.mp4' };
+      return bot.sendVideo(USERID, video, {}, fileOpts).then(resp => {
+        assert.ok(is.object(resp));
+        assert.ok(is.object(resp.video));
+      });
+    });
   });
 
   describe.skip('#sendVideoNote', function sendVideoNoteSuite() {
@@ -759,6 +784,14 @@ describe('TelegramBot', function telegramSuite() {
     it('should send a video from a Buffer', function test() {
       const video = fs.readFileSync(`${__dirname}/data/video.mp4`);
       return bot.sendVideoNote(USERID, video, { length: 5 }).then(resp => {
+        assert.ok(is.object(resp));
+        assert.ok(is.object(resp.video_note));
+      });
+    });
+    it('should send a video with custom file options', function test() {
+      const video = fs.createReadStream(`${__dirname}/data/video.mp4`);
+      const fileOpts = { filename: 'customfilename.mp4' };
+      return bot.sendVideoNote(USERID, video, { length: 5 }, fileOpts).then(resp => {
         assert.ok(is.object(resp));
         assert.ok(is.object(resp.video_note));
       });
@@ -803,6 +836,14 @@ describe('TelegramBot', function telegramSuite() {
     it('should send a voice from a Buffer', function test() {
       const voice = fs.readFileSync(`${__dirname}/data/voice.ogg`);
       return bot.sendVoice(USERID, voice).then(resp => {
+        assert.ok(is.object(resp));
+        assert.ok(is.object(resp.voice));
+      });
+    });
+    it('should send a voice with custom file options', function test() {
+      const voice = fs.createReadStream(`${__dirname}/data/voice.ogg`);
+      const fileOpts = { filename: 'customfilename.ogg' };
+      return bot.sendVideoNote(USERID, voice, {}, fileOpts).then(resp => {
         assert.ok(is.object(resp));
         assert.ok(is.object(resp.voice));
       });

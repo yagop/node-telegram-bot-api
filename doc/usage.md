@@ -115,6 +115,20 @@ const url = 'https://telegram.org/img/t_logo.png';
 bot.sendPhoto(chatId, url);
 ```
 
+If you wish to specify a custom filename or your own [MIME type](http://en.wikipedia.org/wiki/Internet_media_type),
+you may pass the 4th argument as file options, like so:
+
+```js
+const fileOpts = {
+  // Explicitly specify the file name.
+  filename: 'customfilename',
+  // We use contentType to set the MIME type.
+  // Explicitly specify the MIME type.
+  contentType: 'audio/mpeg'
+};
+bot.sendAudio(chatId, data, {}, fileOpts);
+```
+
 <a name="sending-files-performance"></a>
 ### Performance Issue
 

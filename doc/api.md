@@ -30,13 +30,13 @@ TelegramBot
         * [.sendMessage(chatId, text, [options])](#TelegramBot+sendMessage) ⇒ <code>Promise</code>
         * [.answerInlineQuery(inlineQueryId, results, [options])](#TelegramBot+answerInlineQuery) ⇒ <code>Promise</code>
         * [.forwardMessage(chatId, fromChatId, messageId, [options])](#TelegramBot+forwardMessage) ⇒ <code>Promise</code>
-        * [.sendPhoto(chatId, photo, [options])](#TelegramBot+sendPhoto) ⇒ <code>Promise</code>
-        * [.sendAudio(chatId, audio, [options])](#TelegramBot+sendAudio) ⇒ <code>Promise</code>
+        * [.sendPhoto(chatId, photo, [options], [fileOpts])](#TelegramBot+sendPhoto) ⇒ <code>Promise</code>
+        * [.sendAudio(chatId, audio, [options], [fileOpts])](#TelegramBot+sendAudio) ⇒ <code>Promise</code>
         * [.sendDocument(chatId, doc, [options], [fileOpts])](#TelegramBot+sendDocument) ⇒ <code>Promise</code>
         * [.sendSticker(chatId, sticker, [options])](#TelegramBot+sendSticker) ⇒ <code>Promise</code>
-        * [.sendVideo(chatId, video, [options])](#TelegramBot+sendVideo) ⇒ <code>Promise</code>
-        * [.sendVideoNote(chatId, videoNote, [options])](#TelegramBot+sendVideoNote) ⇒ <code>Promise</code>
-        * [.sendVoice(chatId, voice, [options])](#TelegramBot+sendVoice) ⇒ <code>Promise</code>
+        * [.sendVideo(chatId, video, [options], [fileOpts])](#TelegramBot+sendVideo) ⇒ <code>Promise</code>
+        * [.sendVideoNote(chatId, videoNote, [options], [fileOpts])](#TelegramBot+sendVideoNote) ⇒ <code>Promise</code>
+        * [.sendVoice(chatId, voice, [options], [fileOpts])](#TelegramBot+sendVoice) ⇒ <code>Promise</code>
         * [.sendChatAction(chatId, action, [options])](#TelegramBot+sendChatAction) ⇒ <code>Promise</code>
         * [.kickChatMember(chatId, userId, [options])](#TelegramBot+kickChatMember) ⇒ <code>Promise</code>
         * [.unbanChatMember(chatId, userId, [options])](#TelegramBot+unbanChatMember) ⇒ <code>Promise</code>
@@ -339,31 +339,41 @@ Forward messages of any kind.
 
 <a name="TelegramBot+sendPhoto"></a>
 
-### telegramBot.sendPhoto(chatId, photo, [options]) ⇒ <code>Promise</code>
+### telegramBot.sendPhoto(chatId, photo, [options], [fileOpts]) ⇒ <code>Promise</code>
 Send photo
 
 **Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
-**See**: https://core.telegram.org/bots/api#sendphoto  
+**See**
+
+- https://core.telegram.org/bots/api#sendphoto
+- https://github.com/yagop/node-telegram-bot-api/blob/master/doc/usage.md#sending-files
+
 
 | Param | Type | Description |
 | --- | --- | --- |
 | chatId | <code>Number</code> &#124; <code>String</code> | Unique identifier for the message recipient |
 | photo | <code>String</code> &#124; <code>stream.Stream</code> &#124; <code>Buffer</code> | A file path or a Stream. Can also be a `file_id` previously uploaded |
 | [options] | <code>Object</code> | Additional Telegram query options |
+| [fileOpts] | <code>Object</code> | Optional file related meta-data |
 
 <a name="TelegramBot+sendAudio"></a>
 
-### telegramBot.sendAudio(chatId, audio, [options]) ⇒ <code>Promise</code>
+### telegramBot.sendAudio(chatId, audio, [options], [fileOpts]) ⇒ <code>Promise</code>
 Send audio
 
 **Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
-**See**: https://core.telegram.org/bots/api#sendaudio  
+**See**
+
+- https://core.telegram.org/bots/api#sendaudio
+- https://github.com/yagop/node-telegram-bot-api/blob/master/doc/usage.md#sending-files
+
 
 | Param | Type | Description |
 | --- | --- | --- |
 | chatId | <code>Number</code> &#124; <code>String</code> | Unique identifier for the message recipient |
 | audio | <code>String</code> &#124; <code>stream.Stream</code> &#124; <code>Buffer</code> | A file path, Stream or Buffer. Can also be a `file_id` previously uploaded. |
 | [options] | <code>Object</code> | Additional Telegram query options |
+| [fileOpts] | <code>Object</code> | Optional file related meta-data |
 
 <a name="TelegramBot+sendDocument"></a>
 
@@ -371,7 +381,11 @@ Send audio
 Send Document
 
 **Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
-**See**: https://core.telegram.org/bots/api#sendDocument  
+**See**
+
+- https://core.telegram.org/bots/api#sendDocument
+- https://github.com/yagop/node-telegram-bot-api/blob/master/doc/usage.md#sending-files
+
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -396,46 +410,61 @@ Send .webp stickers.
 
 <a name="TelegramBot+sendVideo"></a>
 
-### telegramBot.sendVideo(chatId, video, [options]) ⇒ <code>Promise</code>
+### telegramBot.sendVideo(chatId, video, [options], [fileOpts]) ⇒ <code>Promise</code>
 Use this method to send video files, Telegram clients support mp4 videos (other formats may be sent as Document).
 
 **Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
-**See**: https://core.telegram.org/bots/api#sendvideo  
+**See**
+
+- https://core.telegram.org/bots/api#sendvideo
+- https://github.com/yagop/node-telegram-bot-api/blob/master/doc/usage.md#sending-files
+
 
 | Param | Type | Description |
 | --- | --- | --- |
 | chatId | <code>Number</code> &#124; <code>String</code> | Unique identifier for the message recipient |
 | video | <code>String</code> &#124; <code>stream.Stream</code> &#124; <code>Buffer</code> | A file path or Stream. Can also be a `file_id` previously uploaded. |
 | [options] | <code>Object</code> | Additional Telegram query options |
+| [fileOpts] | <code>Object</code> | Optional file related meta-data |
 
 <a name="TelegramBot+sendVideoNote"></a>
 
-### telegramBot.sendVideoNote(chatId, videoNote, [options]) ⇒ <code>Promise</code>
+### telegramBot.sendVideoNote(chatId, videoNote, [options], [fileOpts]) ⇒ <code>Promise</code>
 Use this method to send rounded square videos of upto 1 minute long.
 
 **Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
 **Info**: The length parameter is actually optional. However, the API (at time of writing) requires you to always provide it until it is fixed.  
-**See**: https://core.telegram.org/bots/api#sendvideonote  
+**See**
+
+- https://core.telegram.org/bots/api#sendvideonote
+- https://github.com/yagop/node-telegram-bot-api/blob/master/doc/usage.md#sending-files
+
 
 | Param | Type | Description |
 | --- | --- | --- |
 | chatId | <code>Number</code> &#124; <code>String</code> | Unique identifier for the message recipient |
 | videoNote | <code>String</code> &#124; <code>stream.Stream</code> &#124; <code>Buffer</code> | A file path or Stream. Can also be a `file_id` previously uploaded. |
 | [options] | <code>Object</code> | Additional Telegram query options |
+| [fileOpts] | <code>Object</code> | Optional file related meta-data |
 
 <a name="TelegramBot+sendVoice"></a>
 
-### telegramBot.sendVoice(chatId, voice, [options]) ⇒ <code>Promise</code>
+### telegramBot.sendVoice(chatId, voice, [options], [fileOpts]) ⇒ <code>Promise</code>
 Send voice
 
 **Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
-**See**: https://core.telegram.org/bots/api#sendvoice  
+**See**
+
+- https://core.telegram.org/bots/api#sendvoice
+- https://github.com/yagop/node-telegram-bot-api/blob/master/doc/usage.md#sending-files
+
 
 | Param | Type | Description |
 | --- | --- | --- |
 | chatId | <code>Number</code> &#124; <code>String</code> | Unique identifier for the message recipient |
 | voice | <code>String</code> &#124; <code>stream.Stream</code> &#124; <code>Buffer</code> | A file path, Stream or Buffer. Can also be a `file_id` previously uploaded. |
 | [options] | <code>Object</code> | Additional Telegram query options |
+| [fileOpts] | <code>Object</code> | Optional file related meta-data |
 
 <a name="TelegramBot+sendChatAction"></a>
 
