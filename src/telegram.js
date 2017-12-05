@@ -375,13 +375,16 @@ class TelegramBot extends EventEmitter {
    * Stops polling after the last polling request resolves.
    * Multiple invocations do nothing if polling is already stopped.
    * Returning the promise of the last polling request is **deprecated**.
+   * @param  {Object} [options] Options
+   * @param  {Boolean} [options.cancel] Cancel current request
+   * @param  {String} [options.reason] Reason for stopping polling
    * @return {Promise}
    */
-  stopPolling() {
+  stopPolling(options) {
     if (!this._polling) {
       return Promise.resolve();
     }
-    return this._polling.stop();
+    return this._polling.stop(options);
   }
 
   /**

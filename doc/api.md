@@ -16,7 +16,7 @@ TelegramBot
         * [.on(event, listener)](#TelegramBot+on)
         * [.startPolling([options])](#TelegramBot+startPolling) ⇒ <code>Promise</code>
         * ~~[.initPolling([options])](#TelegramBot+initPolling) ⇒ <code>Promise</code>~~
-        * [.stopPolling()](#TelegramBot+stopPolling) ⇒ <code>Promise</code>
+        * [.stopPolling([options])](#TelegramBot+stopPolling) ⇒ <code>Promise</code>
         * [.isPolling()](#TelegramBot+isPolling) ⇒ <code>Boolean</code>
         * [.openWebHook()](#TelegramBot+openWebHook) ⇒ <code>Promise</code>
         * [.closeWebHook()](#TelegramBot+closeWebHook) ⇒ <code>Promise</code>
@@ -169,12 +169,19 @@ Alias of `TelegramBot#startPolling()`. This is **deprecated**.
 
 <a name="TelegramBot+stopPolling"></a>
 
-### telegramBot.stopPolling() ⇒ <code>Promise</code>
+### telegramBot.stopPolling([options]) ⇒ <code>Promise</code>
 Stops polling after the last polling request resolves.
 Multiple invocations do nothing if polling is already stopped.
 Returning the promise of the last polling request is **deprecated**.
 
 **Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| [options] | <code>Object</code> | Options |
+| [options.cancel] | <code>Boolean</code> | Cancel current request |
+| [options.reason] | <code>String</code> | Reason for stopping polling |
+
 <a name="TelegramBot+isPolling"></a>
 
 ### telegramBot.isPolling() ⇒ <code>Boolean</code>

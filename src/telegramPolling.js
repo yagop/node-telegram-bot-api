@@ -49,7 +49,7 @@ class TelegramBotPolling {
 
   /**
    * Stop polling
-   * @param  {Object} [options]
+   * @param  {Object} [options] Options
    * @param  {Boolean} [options.cancel] Cancel current request
    * @param  {String} [options.reason] Reason for stopping polling
    * @return {Promise}
