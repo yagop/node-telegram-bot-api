@@ -6,6 +6,7 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 const is = require('is');
+const fileType = require('file-type');
 const utils = require('./utils');
 const isCI = require('is-ci');
 
@@ -1365,6 +1366,21 @@ describe('TelegramBot', function telegramSuite() {
       const stream = fs.createReadStream(`${__dirname}/data/photo.gif`);
       stream.path = '/?id=123'; // for example, 'http://example.com/?id=666'
       return bot.sendPhoto(USERID, stream);
+    });
+    it('should allow specifying custom MIME type', function test() {
+      let buffer;
+      try {
+        buffer = Buffer.from('abc');
+      } catch (ex) {
+        buffer = new Buffer('abc');
+      }
+      assert.equal(fileType(buffer), null);
+      return bot.sendDocument(USERID, {
+        data: buffer,
+        mime: 'text/plain',
+      }).then(resp => {
+        assert.equal(resp.document.mime_type, 'text/plain');
+      });
     });
   });
 
