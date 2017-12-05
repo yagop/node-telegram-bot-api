@@ -58,15 +58,16 @@ class TelegramBotPolling {
     if (!this._lastRequest) {
       return Promise.resolve();
     }
+    const reason = options.reason || 'Polling stop';
     const lastRequest = this._lastRequest;
     this._lastRequest = null;
     clearTimeout(this._pollingTimeout);
     if (options.cancel) {
-      const reason = options.reason || 'Polling stop';
       lastRequest.cancel(reason);
       return Promise.resolve();
     }
     this._abort = true;
+    lastRequest.cancel(reason);
     return lastRequest.finally(() => {
       this._abort = false;
     });
