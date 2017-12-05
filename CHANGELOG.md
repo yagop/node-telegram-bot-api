@@ -26,6 +26,7 @@ Changed:
 
 Fixed:
 
+1. (#265) Fix the offset infinite loop bug (#36) (by @GochoMugo)
 1. Fix game example (by @MCSH)
 
 

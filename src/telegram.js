@@ -174,6 +174,10 @@ class TelegramBot extends EventEmitter {
    * @param {Boolean} [options.filepath=true] Allow passing file-paths as arguments when sending files,
    *  such as photos using `TelegramBot#sendPhoto()`. See [usage information][usage-sending-files-performance]
    *  for more information on this option and its consequences.
+   * @param {Boolean} [options.badRejection=false] Set to `true`
+   *  **if and only if** the Node.js version you're using terminates the
+   *  process on unhandled rejections. This option is only for
+   *  *forward-compatibility purposes*.
    * @see https://core.telegram.org/bots/api
    */
   constructor(token, options = {}) {
@@ -184,6 +188,7 @@ class TelegramBot extends EventEmitter {
     this.options.webHook = (typeof options.webHook === 'undefined') ? false : options.webHook;
     this.options.baseApiUrl = options.baseApiUrl || 'https://api.telegram.org';
     this.options.filepath = (typeof options.filepath === 'undefined') ? true : options.filepath;
+    this.options.badRejection = (typeof options.badRejection === 'undefined') ? false : options.badRejection;
     this._textRegexpCallbacks = [];
     this._replyListenerId = 0;
     this._replyListeners = [];

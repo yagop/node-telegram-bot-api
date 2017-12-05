@@ -122,6 +122,7 @@ Emits `message` when a message arrives.
 | [options.request] | <code>Object</code> |  | Options which will be added for all requests to telegram api.  See https://github.com/request/request#requestoptions-callback for more information. |
 | [options.baseApiUrl] | <code>String</code> | <code>https://api.telegram.org</code> | API Base URl; useful for proxying and testing |
 | [options.filepath] | <code>Boolean</code> | <code>true</code> | Allow passing file-paths as arguments when sending files,  such as photos using `TelegramBot#sendPhoto()`. See [usage information][usage-sending-files-performance]  for more information on this option and its consequences. |
+| [options.badRejection] | <code>Boolean</code> | <code>false</code> | Set to `true`  **if and only if** the Node.js version you're using terminates the  process on unhandled rejections. This option is only for  *forward-compatibility purposes*. |
 
 <a name="TelegramBot+on"></a>
 

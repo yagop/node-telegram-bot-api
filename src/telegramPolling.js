@@ -1,3 +1,4 @@
+const errors = require('./errors');
 const debug = require('debug')('node-telegram-bot-api');
 const deprecate = require('depd')('node-telegram-bot-api');
 const ANOTHER_WEB_HOOK_USED = 409;
@@ -80,6 +81,18 @@ class TelegramBotPolling {
   }
 
   /**
+   * Handle error thrown during polling.
+   * @private
+   * @param  {Error} error
+   */
+  _error(error) {
+    if (!this.bot.listeners('polling_error').length) {
+      return console.error('error: [polling_error] %j', error); // eslint-disable-line no-console
+    }
+    return this.bot.emit('polling_error', error);
+  }
+
+  /**
    * Invokes polling (with recursion!)
    * @return {Promise} promise of the current request
    * @private
@@ -93,18 +106,59 @@ class TelegramBotPolling {
         updates.forEach(update => {
           this.options.params.offset = update.update_id + 1;
           debug('updated offset: %s', this.options.params.offset);
-          this.bot.processUpdate(update);
+          try {
+            this.bot.processUpdate(update);
+          } catch (err) {
+            err._processing = true;
+            throw err;
+          }
         });
         return null;
       })
       .catch(err => {
         debug('polling error: %s', err.message);
-        if (this.bot.listeners('polling_error').length) {
-          this.bot.emit('polling_error', err);
-        } else {
-          console.error('error: [polling_error] %j', err); // eslint-disable-line no-console
+        if (!err._processing) {
+          return this._error(err);
         }
-        return null;
+        delete err._processing;
+        /*
+         * An error occured while processing the items,
+         * i.e. in `this.bot.processUpdate()` above.
+         * We need to mark the already-processed items
+         * to avoid fetching them again once the application
+         * is restarted, or moves to next polling interval
+         * (in cases where unhandled rejections do not terminate
+         * the process).
+         * See https://github.com/yagop/node-telegram-bot-api/issues/36#issuecomment-268532067
+         */
+        if (!this.bot.options.badRejection) {
+          return this._error(err);
+        }
+        const opts = {
+          offset: this.options.params.offset,
+          limit: 1,
+          timeout: 0,
+        };
+        return this.bot.getUpdates(opts).then(() => {
+          return this._error(err);
+        }).catch(requestErr => {
+          /*
+           * We have been unable to handle this error.
+           * We have to log this to stderr to ensure devops
+           * understands that they may receive already-processed items
+           * on app restart.
+           * We simply can not rescue this situation, emit "error"
+           * event, with the hope that the application exits.
+           */
+          /* eslint-disable no-console */
+          const bugUrl = 'https://github.com/yagop/node-telegram-bot-api/issues/36#issuecomment-268532067';
+          console.error('error: Internal handling of The Offset Infinite Loop failed');
+          console.error(`error: Due to error '${requestErr}'`);
+          console.error('error: You may receive already-processed updates on app restart');
+          console.error(`error: Please see ${bugUrl} for more information`);
+          /* eslint-enable no-console */
+          return this.bot.emit('error', new errors.FatalError(err));
+        });
       })
       .finally(() => {
         if (this._abort) {
