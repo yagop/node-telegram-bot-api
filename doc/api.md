@@ -22,7 +22,7 @@ TelegramBot
         * [.closeWebHook()](#TelegramBot+closeWebHook) ⇒ <code>Promise</code>
         * [.hasOpenWebHook()](#TelegramBot+hasOpenWebHook) ⇒ <code>Boolean</code>
         * [.getMe([options])](#TelegramBot+getMe) ⇒ <code>Promise</code>
-        * [.setWebHook(url, [options])](#TelegramBot+setWebHook) ⇒ <code>Promise</code>
+        * [.setWebHook(url, [options], [fileOptions])](#TelegramBot+setWebHook) ⇒ <code>Promise</code>
         * [.deleteWebHook([options])](#TelegramBot+deleteWebHook) ⇒ <code>Promise</code>
         * [.getWebHookInfo([options])](#TelegramBot+getWebHookInfo) ⇒ <code>Promise</code>
         * [.getUpdates([options])](#TelegramBot+getUpdates) ⇒ <code>Promise</code>
@@ -33,7 +33,7 @@ TelegramBot
         * [.sendPhoto(chatId, photo, [options], [fileOptions])](#TelegramBot+sendPhoto) ⇒ <code>Promise</code>
         * [.sendAudio(chatId, audio, [options], [fileOptions])](#TelegramBot+sendAudio) ⇒ <code>Promise</code>
         * [.sendDocument(chatId, doc, [options], [fileOptions])](#TelegramBot+sendDocument) ⇒ <code>Promise</code>
-        * [.sendSticker(chatId, sticker, [options])](#TelegramBot+sendSticker) ⇒ <code>Promise</code>
+        * [.sendSticker(chatId, sticker, [options], [fileOptions])](#TelegramBot+sendSticker) ⇒ <code>Promise</code>
         * [.sendVideo(chatId, video, [options], [fileOptions])](#TelegramBot+sendVideo) ⇒ <code>Promise</code>
         * [.sendVideoNote(chatId, videoNote, [options], [fileOptions])](#TelegramBot+sendVideoNote) ⇒ <code>Promise</code>
         * [.sendVoice(chatId, voice, [options], [fileOptions])](#TelegramBot+sendVoice) ⇒ <code>Promise</code>
@@ -43,7 +43,7 @@ TelegramBot
         * [.restrictChatMember(chatId, userId, [options])](#TelegramBot+restrictChatMember) ⇒ <code>Promise</code>
         * [.promoteChatMember(chatId, userId, [options])](#TelegramBot+promoteChatMember) ⇒ <code>Promise</code>
         * [.exportChatInviteLink(chatId, [options])](#TelegramBot+exportChatInviteLink) ⇒ <code>Promise</code>
-        * [.setChatPhoto(chatId, photo, [options])](#TelegramBot+setChatPhoto) ⇒ <code>Promise</code>
+        * [.setChatPhoto(chatId, photo, [options], [fileOptions])](#TelegramBot+setChatPhoto) ⇒ <code>Promise</code>
         * [.deleteChatPhoto(chatId, [options])](#TelegramBot+deleteChatPhoto) ⇒ <code>Promise</code>
         * [.setChatTitle(chatId, title, [options])](#TelegramBot+setChatTitle) ⇒ <code>Promise</code>
         * [.setChatDescription(chatId, description, [options])](#TelegramBot+setChatDescription) ⇒ <code>Promise</code>
@@ -81,9 +81,9 @@ TelegramBot
         * [.answerShippingQuery(shippingQueryId, ok, [options])](#TelegramBot+answerShippingQuery) ⇒ <code>Promise</code>
         * [.answerPreCheckoutQuery(preCheckoutQueryId, ok, [options])](#TelegramBot+answerPreCheckoutQuery) ⇒ <code>Promise</code>
         * [.getStickerSet(name, [options])](#TelegramBot+getStickerSet) ⇒ <code>Promise</code>
-        * [.uploadStickerFile(userId, pngSticker, [options])](#TelegramBot+uploadStickerFile) ⇒ <code>Promise</code>
-        * [.createNewStickerSet(userId, name, title, pngSticker, emojis, [options])](#TelegramBot+createNewStickerSet) ⇒ <code>Promise</code>
-        * [.addStickerToSet(userId, name, pngSticker, emojis, [options])](#TelegramBot+addStickerToSet) ⇒ <code>Promise</code>
+        * [.uploadStickerFile(userId, pngSticker, [options], [fileOptions])](#TelegramBot+uploadStickerFile) ⇒ <code>Promise</code>
+        * [.createNewStickerSet(userId, name, title, pngSticker, emojis, [options], [fileOptions])](#TelegramBot+createNewStickerSet) ⇒ <code>Promise</code>
+        * [.addStickerToSet(userId, name, pngSticker, emojis, [options], [fileOptions])](#TelegramBot+addStickerToSet) ⇒ <code>Promise</code>
         * [.setStickerPositionInSet(sticker, position, [options])](#TelegramBot+setStickerPositionInSet) ⇒ <code>Promise</code>
         * [.deleteStickerFromSet(sticker, [options])](#TelegramBot+deleteStickerFromSet) ⇒ <code>Promise</code>
     * _static_
@@ -225,7 +225,7 @@ Returns basic information about the bot in form of a `User` object.
 
 <a name="TelegramBot+setWebHook"></a>
 
-### telegramBot.setWebHook(url, [options]) ⇒ <code>Promise</code>
+### telegramBot.setWebHook(url, [options], [fileOptions]) ⇒ <code>Promise</code>
 Specify an url to receive incoming updates via an outgoing webHook.
 This method has an [older, compatible signature][setWebHook-v0.25.0]
 that is being deprecated.
@@ -238,6 +238,7 @@ that is being deprecated.
 | url | <code>String</code> | URL where Telegram will make HTTP Post. Leave empty to delete webHook. |
 | [options] | <code>Object</code> | Additional Telegram query options |
 | [options.certificate] | <code>String</code> &#124; <code>stream.Stream</code> | PEM certificate key (public). |
+| [fileOptions] | <code>Object</code> | Optional file related meta-data |
 
 <a name="TelegramBot+deleteWebHook"></a>
 
@@ -396,7 +397,7 @@ Send Document
 
 <a name="TelegramBot+sendSticker"></a>
 
-### telegramBot.sendSticker(chatId, sticker, [options]) ⇒ <code>Promise</code>
+### telegramBot.sendSticker(chatId, sticker, [options], [fileOptions]) ⇒ <code>Promise</code>
 Send .webp stickers.
 
 **Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
@@ -407,6 +408,7 @@ Send .webp stickers.
 | chatId | <code>Number</code> &#124; <code>String</code> | Unique identifier for the message recipient |
 | sticker | <code>String</code> &#124; <code>stream.Stream</code> &#124; <code>Buffer</code> | A file path, Stream or Buffer. Can also be a `file_id` previously uploaded. Stickers are WebP format files. |
 | [options] | <code>Object</code> | Additional Telegram query options |
+| [fileOptions] | <code>Object</code> | Optional file related meta-data |
 
 <a name="TelegramBot+sendVideo"></a>
 
@@ -570,7 +572,7 @@ Returns exported invite link as String on success.
 
 <a name="TelegramBot+setChatPhoto"></a>
 
-### telegramBot.setChatPhoto(chatId, photo, [options]) ⇒ <code>Promise</code>
+### telegramBot.setChatPhoto(chatId, photo, [options], [fileOptions]) ⇒ <code>Promise</code>
 Use this method to set a new profile photo for the chat. Photos can't be changed for private chats.
 The bot must be an administrator in the chat for this to work and must have the appropriate admin rights.
 Returns True on success.
@@ -583,6 +585,7 @@ Returns True on success.
 | chatId | <code>Number</code> &#124; <code>String</code> | Unique identifier for the message recipient |
 | photo | <code>stream.Stream</code> &#124; <code>Buffer</code> | A file path or a Stream. |
 | [options] | <code>Object</code> | Additional Telegram query options |
+| [fileOptions] | <code>Object</code> | Optional file related meta-data |
 
 <a name="TelegramBot+deleteChatPhoto"></a>
 
@@ -1154,7 +1157,7 @@ Use this method to get a sticker set. On success, a [StickerSet](https://core.te
 
 <a name="TelegramBot+uploadStickerFile"></a>
 
-### telegramBot.uploadStickerFile(userId, pngSticker, [options]) ⇒ <code>Promise</code>
+### telegramBot.uploadStickerFile(userId, pngSticker, [options], [fileOptions]) ⇒ <code>Promise</code>
 Use this method to upload a .png file with a sticker for later use in *createNewStickerSet* and *addStickerToSet* methods (can be used multiple
 times). Returns the uploaded [File](https://core.telegram.org/bots/api#file) on success.
 
@@ -1166,10 +1169,11 @@ times). Returns the uploaded [File](https://core.telegram.org/bots/api#file) on 
 | userId | <code>Number</code> | User identifier of sticker file owner |
 | pngSticker | <code>String</code> &#124; <code>stream.Stream</code> &#124; <code>Buffer</code> | A file path or a Stream. Can also be a `file_id` previously uploaded. **Png** image with the  sticker, must be up to 512 kilobytes in size, dimensions must not exceed 512px, and either width or height must be exactly 512px. |
 | [options] | <code>Object</code> | Additional Telegram query options |
+| [fileOptions] | <code>Object</code> | Optional file related meta-data |
 
 <a name="TelegramBot+createNewStickerSet"></a>
 
-### telegramBot.createNewStickerSet(userId, name, title, pngSticker, emojis, [options]) ⇒ <code>Promise</code>
+### telegramBot.createNewStickerSet(userId, name, title, pngSticker, emojis, [options], [fileOptions]) ⇒ <code>Promise</code>
 Use this method to create new sticker set owned by a user.
 The bot will be able to edit the created sticker set.
 Returns True on success.
@@ -1189,10 +1193,11 @@ Returns True on success.
 | pngSticker | <code>String</code> &#124; <code>stream.Stream</code> &#124; <code>Buffer</code> | Png image with the sticker, must be up to 512 kilobytes in size,  dimensions must not exceed 512px, and either width or height must be exactly 512px. |
 | emojis | <code>String</code> | One or more emoji corresponding to the sticker |
 | [options] | <code>Object</code> | Additional Telegram query options |
+| [fileOptions] | <code>Object</code> | Optional file related meta-data |
 
 <a name="TelegramBot+addStickerToSet"></a>
 
-### telegramBot.addStickerToSet(userId, name, pngSticker, emojis, [options]) ⇒ <code>Promise</code>
+### telegramBot.addStickerToSet(userId, name, pngSticker, emojis, [options], [fileOptions]) ⇒ <code>Promise</code>
 Use this method to add a new sticker to a set created by the bot.
 Returns True on success.
 
@@ -1210,6 +1215,7 @@ Returns True on success.
 | pngSticker | <code>String</code> &#124; <code>stream.Stream</code> &#124; <code>Buffer</code> | Png image with the sticker, must be up to 512 kilobytes in size,  dimensions must not exceed 512px, and either width or height must be exactly 512px |
 | emojis | <code>String</code> | One or more emoji corresponding to the sticker |
 | [options] | <code>Object</code> | Additional Telegram query options |
+| [fileOptions] | <code>Object</code> | Optional file related meta-data |
 
 <a name="TelegramBot+setStickerPositionInSet"></a>
 

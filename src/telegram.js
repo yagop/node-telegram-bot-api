@@ -469,10 +469,11 @@ class TelegramBot extends EventEmitter {
    * delete webHook.
    * @param  {Object} [options] Additional Telegram query options
    * @param  {String|stream.Stream} [options.certificate] PEM certificate key (public).
+   * @param  {Object} [fileOptions] Optional file related meta-data
    * @return {Promise}
    * @see https://core.telegram.org/bots/api#setwebhook
    */
-  setWebHook(url, options = {}) {
+  setWebHook(url, options = {}, fileOptions = {}) {
     /* The older method signature was setWebHook(url, cert).
      * We need to ensure backwards-compatibility while maintaining
      * consistency of the method signatures throughout the library */
@@ -493,7 +494,7 @@ class TelegramBot extends EventEmitter {
 
     if (cert) {
       try {
-        const sendData = this._formatSendData('certificate', cert);
+        const sendData = this._formatSendData('certificate', cert, fileOptions);
         opts.formData = sendData[0];
         opts.qs.certificate = sendData[1];
       } catch (ex) {
@@ -781,16 +782,17 @@ class TelegramBot extends EventEmitter {
    * @param  {String|stream.Stream|Buffer} sticker A file path, Stream or Buffer.
    * Can also be a `file_id` previously uploaded. Stickers are WebP format files.
    * @param  {Object} [options] Additional Telegram query options
+   * @param  {Object} [fileOptions] Optional file related meta-data
    * @return {Promise}
    * @see https://core.telegram.org/bots/api#sendsticker
    */
-  sendSticker(chatId, sticker, options = {}) {
+  sendSticker(chatId, sticker, options = {}, fileOptions = {}) {
     const opts = {
       qs: options
     };
     opts.qs.chat_id = chatId;
     try {
-      const sendData = this._formatSendData('sticker', sticker);
+      const sendData = this._formatSendData('sticker', sticker, fileOptions);
       opts.formData = sendData[0];
       opts.qs.sticker = sendData[1];
     } catch (ex) {
@@ -994,16 +996,17 @@ class TelegramBot extends EventEmitter {
    * @param  {Number|String} chatId  Unique identifier for the message recipient
    * @param  {stream.Stream|Buffer} photo A file path or a Stream.
    * @param  {Object} [options] Additional Telegram query options
+   * @param  {Object} [fileOptions] Optional file related meta-data
    * @return {Promise}
    * @see https://core.telegram.org/bots/api#setchatphoto
    */
-  setChatPhoto(chatId, photo, options = {}) {
+  setChatPhoto(chatId, photo, options = {}, fileOptions = {}) {
     const opts = {
       qs: options,
     };
     opts.qs.chat_id = chatId;
     try {
-      const sendData = this._formatSendData('photo', photo);
+      const sendData = this._formatSendData('photo', photo, fileOptions);
       opts.formData = sendData[0];
       opts.qs.photo = sendData[1];
     } catch (ex) {
@@ -1659,16 +1662,17 @@ class TelegramBot extends EventEmitter {
    * @param  {String|stream.Stream|Buffer} pngSticker A file path or a Stream. Can also be a `file_id` previously uploaded. **Png** image with the
    *  sticker, must be up to 512 kilobytes in size, dimensions must not exceed 512px, and either width or height must be exactly 512px.
    * @param  {Object} [options] Additional Telegram query options
+   * @param  {Object} [fileOptions] Optional file related meta-data
    * @return {Promise}
    * @see https://core.telegram.org/bots/api#uploadstickerfile
    */
-  uploadStickerFile(userId, pngSticker, options = {}) {
+  uploadStickerFile(userId, pngSticker, options = {}, fileOptions = {}) {
     const opts = {
       qs: options,
     };
     opts.qs.user_id = userId;
     try {
-      const sendData = this._formatSendData('png_sticker', pngSticker);
+      const sendData = this._formatSendData('png_sticker', pngSticker, fileOptions);
       opts.formData = sendData[0];
       opts.qs.png_sticker = sendData[1];
     } catch (ex) {
@@ -1689,11 +1693,12 @@ class TelegramBot extends EventEmitter {
    *  dimensions must not exceed 512px, and either width or height must be exactly 512px.
    * @param  {String} emojis One or more emoji corresponding to the sticker
    * @param  {Object} [options] Additional Telegram query options
+   * @param  {Object} [fileOptions] Optional file related meta-data
    * @return {Promise}
    * @see https://core.telegram.org/bots/api#createnewstickerset
    * @todo Add tests for this method!
    */
-  createNewStickerSet(userId, name, title, pngSticker, emojis, options = {}) {
+  createNewStickerSet(userId, name, title, pngSticker, emojis, options = {}, fileOptions = {}) {
     const opts = {
       qs: options,
     };
@@ -1703,7 +1708,7 @@ class TelegramBot extends EventEmitter {
     opts.qs.emojis = emojis;
     opts.qs.mask_position = stringify(options.mask_position);
     try {
-      const sendData = this._formatSendData('png_sticker', pngSticker);
+      const sendData = this._formatSendData('png_sticker', pngSticker, fileOptions);
       opts.formData = sendData[0];
       opts.qs.png_sticker = sendData[1];
     } catch (ex) {
@@ -1722,11 +1727,12 @@ class TelegramBot extends EventEmitter {
    *  dimensions must not exceed 512px, and either width or height must be exactly 512px
    * @param  {String} emojis One or more emoji corresponding to the sticker
    * @param  {Object} [options] Additional Telegram query options
+   * @param  {Object} [fileOptions] Optional file related meta-data
    * @return {Promise}
    * @see https://core.telegram.org/bots/api#addstickertoset
    * @todo Add tests for this method!
    */
-  addStickerToSet(userId, name, pngSticker, emojis, options = {}) {
+  addStickerToSet(userId, name, pngSticker, emojis, options = {}, fileOptions = {}) {
     const opts = {
       qs: options,
     };
@@ -1735,7 +1741,7 @@ class TelegramBot extends EventEmitter {
     opts.qs.emojis = emojis;
     opts.qs.mask_position = stringify(options.mask_position);
     try {
-      const sendData = this._formatSendData('png_sticker', pngSticker);
+      const sendData = this._formatSendData('png_sticker', pngSticker, fileOptions);
       opts.formData = sendData[0];
       opts.qs.png_sticker = sendData[1];
     } catch (ex) {
