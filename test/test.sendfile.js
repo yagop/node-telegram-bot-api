@@ -8,8 +8,7 @@ const paths = {
 };
 
 
-// TODO:Enable all other tests
-describe.only('sending files', function sendfileSuite() {
+describe('sending files', function sendfileSuite() {
   const bot = new TelegramBot('token ');
 
   before(function beforeSuite() {
