@@ -5,9 +5,11 @@ const assert = require('assert');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
+const stream = require('stream');
 const is = require('is');
 const utils = require('./utils');
 const isCI = require('is-ci');
+const concat = require('concat-stream');
 
 // Allows self-signed certificates to be used in our tests
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
@@ -41,6 +43,7 @@ const ip = '216.58.210.174'; // Google IP ¯\_(ツ)_/¯
 const cert = `${__dirname}/../examples/crt.pem`;
 const lat = 47.5351072;
 const long = -52.7508537;
+const FILE_PATH = `${__dirname}/data/photo.gif`;
 let FILE_ID;
 let GAME_CHAT_ID;
 let GAME_MSG_ID;
@@ -101,7 +104,7 @@ describe('TelegramBot', function telegramSuite() {
     utils.handleRatelimit(bot, 'sendPhoto', this);
     utils.handleRatelimit(bot, 'sendMessage', this);
     utils.handleRatelimit(bot, 'sendGame', this);
-    return bot.sendPhoto(USERID, `${__dirname}/data/photo.gif`).then(resp => {
+    return bot.sendPhoto(USERID, FILE_PATH).then(resp => {
       FILE_ID = resp.photo[0].file_id;
       return bot.sendMessage(USERID, 'chat');
     }).then(resp => {
@@ -1162,6 +1165,21 @@ describe('TelegramBot', function telegramSuite() {
     });
   });
 
+  describe('#getFileStream', function getFileStreamSuite() {
+    this.timeout(timeout);
+    before(function before() {
+      // utils.handleRatelimit(bot, 'getFileStream', this);
+    });
+    it('should get a file stream', function test(done) {
+      const fileStream = bot.getFileStream(FILE_ID);
+      assert.ok(fileStream instanceof stream.Readable);
+      fileStream.pipe(concat(function readFile(buffer) {
+        buffer.equals(fs.readFileSync(FILE_PATH)); // sync :(
+        return done();
+      }));
+    });
+  });
+
   describe('#downloadFile', function downloadFileSuite() {
     const downloadPath = os.tmpdir();
     this.timeout(timeout);
@@ -1362,9 +1380,9 @@ describe('TelegramBot', function telegramSuite() {
       });
     });
     it('should allow stream.path that can not be parsed', function test() {
-      const stream = fs.createReadStream(`${__dirname}/data/photo.gif`);
-      stream.path = '/?id=123'; // for example, 'http://example.com/?id=666'
-      return bot.sendPhoto(USERID, stream);
+      const fileStream = fs.createReadStream(`${__dirname}/data/photo.gif`);
+      fileStream.path = '/?id=123'; // for example, 'http://example.com/?id=666'
+      return bot.sendPhoto(USERID, fileStream);
     });
   });
 

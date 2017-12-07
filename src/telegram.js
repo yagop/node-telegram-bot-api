@@ -1323,6 +1323,28 @@ class TelegramBot extends EventEmitter {
   }
 
   /**
+   * Return a readable stream for file.
+   *
+   * This method is a sugar extension of the [getFileLink](#TelegramBot+getFileLink) method,
+   * which returns the full URI to the file on remote server.
+   *
+   * @param  {String} fileId File identifier to get info about
+   * @param  {Object} [options] Additional Telegram query options
+   * @return {stream.Readable} stream
+   */
+  getFileStream(fileId, form = {}) {
+    const fileStream = new stream.PassThrough();
+    this.getFileLink(fileId, form)
+      .then((fileURI) => {
+        pump(streamedRequest({ uri: fileURI }), fileStream);
+      })
+      .catch((error) => {
+        fileStream.emit('error', error);
+      });
+    return fileStream;
+  }
+
+  /**
    * Downloads file in the specified folder.
    * This is just a sugar for (getFile)[#getfilefiled] method
    *

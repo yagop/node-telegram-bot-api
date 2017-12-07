@@ -61,6 +61,7 @@ TelegramBot
         * [.sendContact(chatId, phoneNumber, firstName, [options])](#TelegramBot+sendContact) ⇒ <code>Promise</code>
         * [.getFile(fileId, [options])](#TelegramBot+getFile) ⇒ <code>Promise</code>
         * [.getFileLink(fileId, [options])](#TelegramBot+getFileLink) ⇒ <code>Promise</code>
+        * [.getFileStream(fileId, [options])](#TelegramBot+getFileStream) ⇒ <code>stream.Readable</code>
         * [.downloadFile(fileId, downloadDir, [options])](#TelegramBot+downloadFile) ⇒ <code>Promise</code>
         * [.onText(regexp, callback)](#TelegramBot+onText)
         * [.removeTextListener(regexp)](#TelegramBot+removeTextListener) ⇒ <code>Object</code>
@@ -835,6 +836,22 @@ which returns just path to file on remote server (you will have to manually buil
 **Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
 **Returns**: <code>Promise</code> - promise Promise which will have *fileURI* in resolve callback  
 **See**: https://core.telegram.org/bots/api#getfile  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| fileId | <code>String</code> | File identifier to get info about |
+| [options] | <code>Object</code> | Additional Telegram query options |
+
+<a name="TelegramBot+getFileStream"></a>
+
+### telegramBot.getFileStream(fileId, [options]) ⇒ <code>stream.Readable</code>
+Return a readable stream for file.
+
+This method is a sugar extension of the [getFileLink](#TelegramBot+getFileLink) method,
+which returns the full URI to the file on remote server.
+
+**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
+**Returns**: <code>stream.Readable</code> - stream  
 
 | Param | Type | Description |
 | --- | --- | --- |
