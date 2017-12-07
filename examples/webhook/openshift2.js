@@ -1,6 +1,18 @@
 /**
  * This example demonstrates setting up webhook
  * on the OpenShift platform.
+ *
+ * !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+ * NOTE:
+ *
+ * Openshift 2 has been shut down.
+ *
+ * This example is kept here for historical/educational purposes.
+ * No changes are expected to be made to the source code below.
+ *
+ * See https://github.com/yagop/node-telegram-bot-api/issues/426 for
+ * more information.
+ * !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
  */
 
 
