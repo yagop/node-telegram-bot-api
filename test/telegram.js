@@ -1173,6 +1173,7 @@ describe('TelegramBot', function telegramSuite() {
     it('should get a file stream', function test(done) {
       const fileStream = bot.getFileStream(FILE_ID);
       assert.ok(fileStream instanceof stream.Readable);
+      assert.equal(fileStream.path, FILE_ID);
       fileStream.pipe(concat(function readFile(buffer) {
         buffer.equals(fs.readFileSync(FILE_PATH)); // sync :(
         return done();

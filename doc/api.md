@@ -846,12 +846,13 @@ which returns just path to file on remote server (you will have to manually buil
 
 ### telegramBot.getFileStream(fileId, [options]) ⇒ <code>stream.Readable</code>
 Return a readable stream for file.
+`fileStream.path` is the specified file ID i.e. `fileId`.
 
 This method is a sugar extension of the [getFileLink](#TelegramBot+getFileLink) method,
 which returns the full URI to the file on remote server.
 
 **Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
-**Returns**: <code>stream.Readable</code> - stream  
+**Returns**: <code>stream.Readable</code> - fileStream  
 
 | Param | Type | Description |
 | --- | --- | --- |
