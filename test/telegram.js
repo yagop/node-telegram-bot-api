@@ -1160,7 +1160,7 @@ describe('TelegramBot', function telegramSuite() {
       return bot.getFileLink(FILE_ID)
         .then(fileURI => {
           assert.ok(is.string(fileURI));
-          assert.ok(/https?:\/\/.*\/file\/bot.*\/.*/.test(fileURI));
+          assert.ok(utils.isTelegramFileURI(fileURI));
         });
     });
   });
@@ -1174,10 +1174,14 @@ describe('TelegramBot', function telegramSuite() {
       const fileStream = bot.getFileStream(FILE_ID);
       assert.ok(fileStream instanceof stream.Readable);
       assert.equal(fileStream.path, FILE_ID);
-      fileStream.pipe(concat(function readFile(buffer) {
-        buffer.equals(fs.readFileSync(FILE_PATH)); // sync :(
-        return done();
-      }));
+      fileStream.on('info', (info) => {
+        assert.ok(info);
+        assert.ok(utils.isTelegramFileURI(info.uri), `${info.uri} is not a file URI`);
+        fileStream.pipe(concat(function readFile(buffer) {
+          buffer.equals(fs.readFileSync(FILE_PATH)); // sync :(
+          return done();
+        }));
+      });
     });
   });
 

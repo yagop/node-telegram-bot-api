@@ -1324,7 +1324,11 @@ class TelegramBot extends EventEmitter {
 
   /**
    * Return a readable stream for file.
+   *
    * `fileStream.path` is the specified file ID i.e. `fileId`.
+   * `fileStream` emits event `info` passing a single argument i.e.
+   * `info` with the interface `{ uri }` where `uri` is the URI of the
+   * file on Telegram servers.
    *
    * This method is a sugar extension of the [getFileLink](#TelegramBot+getFileLink) method,
    * which returns the full URI to the file on remote server.
@@ -1338,6 +1342,9 @@ class TelegramBot extends EventEmitter {
     fileStream.path = fileId;
     this.getFileLink(fileId, form)
       .then((fileURI) => {
+        fileStream.emit('info', {
+          uri: fileURI,
+        });
         pump(streamedRequest({ uri: fileURI }), fileStream);
       })
       .catch((error) => {

@@ -31,6 +31,13 @@ exports = module.exports = {
    */
   isPollingMockServer,
   /**
+   * Return true if the string is a URI to a file
+   * on Telegram servers.
+   * @param  {String} uri
+   * @return {Boolean}
+   */
+  isTelegramFileURI,
+  /**
    * Send a message to the webhook at the specified port and path.
    * @param  {Number} port
    * @param  {String} path
@@ -216,4 +223,9 @@ function handleRatelimit(bot, methodName, suite) {
     return exec();
   };
   return bot;
+}
+
+
+function isTelegramFileURI(uri) {
+  return /https?:\/\/.*\/file\/bot.*\/.*/.test(uri);
 }
