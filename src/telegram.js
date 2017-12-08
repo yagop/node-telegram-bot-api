@@ -1355,7 +1355,9 @@ class TelegramBot extends EventEmitter {
 
   /**
    * Downloads file in the specified folder.
-   * This is just a sugar for (getFile)[#getfilefiled] method
+   *
+   * This method is a sugar extension of the [getFileStream](#TelegramBot+getFileStream) method,
+   * which returns a readable file stream.
    *
    * @param  {String} fileId  File identifier to get info about
    * @param  {String} downloadDir Absolute path to the folder in which file will be saved
@@ -1363,20 +1365,23 @@ class TelegramBot extends EventEmitter {
    * @return {Promise} promise Promise, which will have *filePath* of downloaded file in resolve callback
    */
   downloadFile(fileId, downloadDir, form = {}) {
-    return this
-      .getFileLink(fileId, form)
-      .then(fileURI => {
-        const fileName = fileURI.slice(fileURI.lastIndexOf('/') + 1);
-        // TODO: Ensure fileName doesn't contains slashes
-        const filePath = path.join(downloadDir, fileName);
-
-        // properly handles errors and closes all streams
-        return Promise
-          .fromCallback(next => {
-            pump(streamedRequest({ uri: fileURI }), fs.createWriteStream(filePath), next);
-          })
-          .return(filePath);
+    let resolve;
+    let reject;
+    const promise = new Promise((a, b) => {
+      resolve = a;
+      reject = b;
+    });
+    const fileStream = this.getFileStream(fileId, form);
+    fileStream.on('info', (info) => {
+      const fileName = info.uri.slice(info.uri.lastIndexOf('/') + 1);
+      // TODO: Ensure fileName doesn't contains slashes
+      const filePath = path.join(downloadDir, fileName);
+      pump(fileStream, fs.createWriteStream(filePath), (error) => {
+        if (error) { return reject(error); }
+        return resolve(filePath);
       });
+    });
+    return promise;
   }
 
   /**

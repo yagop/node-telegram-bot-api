@@ -867,7 +867,9 @@ which returns the full URI to the file on remote server.
 
 ### telegramBot.downloadFile(fileId, downloadDir, [options]) ⇒ <code>Promise</code>
 Downloads file in the specified folder.
-This is just a sugar for (getFile)[#getfilefiled] method
+
+This method is a sugar extension of the [getFileStream](#TelegramBot+getFileStream) method,
+which returns a readable file stream.
 
 **Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
 **Returns**: <code>Promise</code> - promise Promise, which will have *filePath* of downloaded file in resolve callback  
