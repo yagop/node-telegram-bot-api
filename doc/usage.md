@@ -129,6 +129,20 @@ const fileOptions = {
 bot.sendAudio(chatId, data, {}, fileOptions);
 ```
 
+**NOTE:** You **MUST** provide an empty object (`{}`) in place of
+*Additional Telegram query options*, if you have **no** query options
+to specify. For example,
+
+```js
+// WRONG!
+// 'fileOptions' will be taken as additional Telegram query options!!!
+bot.sendAudio(chatId, data, fileOptions);
+
+// RIGHT!
+bot.sendAudio(chatId, data, {}, fileOptions);
+```
+
+
 <a name="sending-files-options"></a>
 ### File Options (metadata)
 
