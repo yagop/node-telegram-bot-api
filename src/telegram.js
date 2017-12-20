@@ -153,7 +153,7 @@ class TelegramBot extends EventEmitter {
    *  See https://core.telegram.org/bots/api#getupdates for more information.
    * @param  {Number} [options.polling.params.timeout=10] Timeout in seconds for long polling.
    * @param {Boolean|Object} [options.webHook=false] Set true to enable WebHook or set options
-   * @param {String} [options.webHook.host=0.0.0.0] Host to bind to
+   * @param {String} [options.webHook.host="0.0.0.0"] Host to bind to
    * @param {Number} [options.webHook.port=8443] Port to bind to
    * @param {String} [options.webHook.key] Path to file with PEM private key for webHook server.
    *  The file is read **synchronously**!
@@ -166,11 +166,11 @@ class TelegramBot extends EventEmitter {
    *  Note that `options.webHook.key`, `options.webHook.cert` and `options.webHook.pfx`, if provided, will be
    *  used to override `key`, `cert` and `pfx` in this object, respectively.
    *  See https://nodejs.org/api/https.html#https_https_createserver_options_requestlistener for more information.
-   * @param {String} [options.webHook.healthEndpoint=/healthz] An endpoint for health checks that always responds with 200 OK
+   * @param {String} [options.webHook.healthEndpoint="/healthz"] An endpoint for health checks that always responds with 200 OK
    * @param {Boolean} [options.onlyFirstMatch=false] Set to true to stop after first match. Otherwise, all regexps are executed
    * @param {Object} [options.request] Options which will be added for all requests to telegram api.
    *  See https://github.com/request/request#requestoptions-callback for more information.
-   * @param {String} [options.baseApiUrl=https://api.telegram.org] API Base URl; useful for proxying and testing
+   * @param {String} [options.baseApiUrl="https://api.telegram.org"] API Base URl; useful for proxying and testing
    * @param {Boolean} [options.filepath=true] Allow passing file-paths as arguments when sending files,
    *  such as photos using `TelegramBot#sendPhoto()`. See [usage information][usage-sending-files-performance]
    *  for more information on this option and its consequences.
@@ -477,6 +477,7 @@ class TelegramBot extends EventEmitter {
    * @param  {Object} [fileOptions] Optional file related meta-data
    * @return {Promise}
    * @see https://core.telegram.org/bots/api#setwebhook
+   * @see https://github.com/yagop/node-telegram-bot-api/blob/master/doc/usage.md#sending-files
    */
   setWebHook(url, options = {}, fileOptions = {}) {
     /* The older method signature was setWebHook(url, cert).

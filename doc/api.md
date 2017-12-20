@@ -112,17 +112,17 @@ Emits `message` when a message arrives.
 | [options.polling.params] | <code>Object</code> |  | Parameters to be used in polling API requests.  See https://core.telegram.org/bots/api#getupdates for more information. |
 | [options.polling.params.timeout] | <code>Number</code> | <code>10</code> | Timeout in seconds for long polling. |
 | [options.webHook] | <code>Boolean</code> &#124; <code>Object</code> | <code>false</code> | Set true to enable WebHook or set options |
-| [options.webHook.host] | <code>String</code> | <code>0.0.0.0</code> | Host to bind to |
+| [options.webHook.host] | <code>String</code> | <code>&quot;0.0.0.0&quot;</code> | Host to bind to |
 | [options.webHook.port] | <code>Number</code> | <code>8443</code> | Port to bind to |
 | [options.webHook.key] | <code>String</code> |  | Path to file with PEM private key for webHook server.  The file is read **synchronously**! |
 | [options.webHook.cert] | <code>String</code> |  | Path to file with PEM certificate (public) for webHook server.  The file is read **synchronously**! |
 | [options.webHook.pfx] | <code>String</code> |  | Path to file with PFX private key and certificate chain for webHook server.  The file is read **synchronously**! |
 | [options.webHook.autoOpen] | <code>Boolean</code> | <code>true</code> | Open webHook immediately |
 | [options.webHook.https] | <code>Object</code> |  | Options to be passed to `https.createServer()`.  Note that `options.webHook.key`, `options.webHook.cert` and `options.webHook.pfx`, if provided, will be  used to override `key`, `cert` and `pfx` in this object, respectively.  See https://nodejs.org/api/https.html#https_https_createserver_options_requestlistener for more information. |
-| [options.webHook.healthEndpoint] | <code>String</code> | <code>/healthz</code> | An endpoint for health checks that always responds with 200 OK |
+| [options.webHook.healthEndpoint] | <code>String</code> | <code>&quot;/healthz&quot;</code> | An endpoint for health checks that always responds with 200 OK |
 | [options.onlyFirstMatch] | <code>Boolean</code> | <code>false</code> | Set to true to stop after first match. Otherwise, all regexps are executed |
 | [options.request] | <code>Object</code> |  | Options which will be added for all requests to telegram api.  See https://github.com/request/request#requestoptions-callback for more information. |
-| [options.baseApiUrl] | <code>String</code> | <code>https://api.telegram.org</code> | API Base URl; useful for proxying and testing |
+| [options.baseApiUrl] | <code>String</code> | <code>&quot;https://api.telegram.org&quot;</code> | API Base URl; useful for proxying and testing |
 | [options.filepath] | <code>Boolean</code> | <code>true</code> | Allow passing file-paths as arguments when sending files,  such as photos using `TelegramBot#sendPhoto()`. See [usage information][usage-sending-files-performance]  for more information on this option and its consequences. |
 | [options.badRejection] | <code>Boolean</code> | <code>false</code> | Set to `true`  **if and only if** the Node.js version you're using terminates the  process on unhandled rejections. This option is only for  *forward-compatibility purposes*. |
 
@@ -234,7 +234,11 @@ This method has an [older, compatible signature][setWebHook-v0.25.0]
 that is being deprecated.
 
 **Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
-**See**: https://core.telegram.org/bots/api#setwebhook  
+**See**
+
+- https://core.telegram.org/bots/api#setwebhook
+- https://github.com/yagop/node-telegram-bot-api/blob/master/doc/usage.md#sending-files
+
 
 | Param | Type | Description |
 | --- | --- | --- |
