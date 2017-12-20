@@ -67,6 +67,10 @@ Experimental features reside on the **experimental** branch._
 
 ## Community
 
+We thank all the developers in the Open-Source community who continuously
+take their time and effort in advancing this project.
+See our [list of contributors][contributors].
+
 We have a [Telegram channel][tg-channel] where we post updates on
 the Project. Head over and subscribe!
 
@@ -92,5 +96,6 @@ Copyright © 2017 Yago
 [api-release]:https://github.com/yagop/node-telegram-bot-api/tree/release/doc/api.md
 [api-experimental]:https://github.com/yagop/node-telegram-bot-api/tree/experimental/doc/api.md
 [contributing]:https://github.com/yagop/node-telegram-bot-api/tree/master/CONTRIBUTING.md
+[contributors]:https://github.com/yagop/node-telegram-bot-api/graphs/contributors
 [experimental]:https://github.com/yagop/node-telegram-bot-api/tree/master/doc/experimental.md
 [tg-channel]:https://telegram.me/node_telegram_bot_api
