@@ -7,12 +7,12 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 Added:
 
-1. Support Bot API v3.5:
-    * Allow `provider_data` parameter in *TelegramBot#sendInvoice* (by @GochoMugo)
-    * Add method *TelegramBot#sendMediaGroup()* (by @GochoMugo)
-1. Support Bot API v3.4:
-    * Add methods *TelegramBot#editMessageLiveLocation*, *TelegramBot#stopMessageLiveLocation* (#439) (by @kamikazechaser)
-    * Add methods *TelegramBot#setChatStickerSet*, *TelegramBot#deleteChatStickerSet* (#440) (by @kamikazechaser)
+1. Support Bot API v3.5: (by @GochoMugo)
+    * Allow `provider_data` parameter in *TelegramBot#sendInvoice*
+    * Add method *TelegramBot#sendMediaGroup()*
+1. Support Bot API v3.4: (by @kamikazechaser)
+    * Add methods *TelegramBot#editMessageLiveLocation*, *TelegramBot#stopMessageLiveLocation* (#439)
+    * Add methods *TelegramBot#setChatStickerSet*, *TelegramBot#deleteChatStickerSet* (#440)
 1. Add methods:
     * *TelegramBot#getFileStream* (#442) (by @GochoMugo, requested-by @Xaqron)
 1. Add options to *TelegramBot#stopPolling()* (by @GochoMugo)
@@ -28,7 +28,7 @@ Changed:
 
 Deprecated:
 
-1. Sending files: *(See [usage guide][usage-sending-file])* (by @hufan-akari, @GochoMugo)
+1. Sending files: *(See [usage guide][usage-sending-files])* (by @hufan-akari, @GochoMugo)
     * Error will **not** be thrown if `Buffer` is used and file-type could **not** be detected.
     * Filename will **not** be set to `data.${ext}` if `Buffer` is used
     * Content type will **not** default to `null` or `undefined`
