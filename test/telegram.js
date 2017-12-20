@@ -1409,4 +1409,31 @@ describe('TelegramBot', function telegramSuite() {
     });
     // Other tests (eg. Buffer, URL) are skipped, because they rely on the same features as sendPhoto.
   });
+
+  describe('#sendMediaGroup', function sendMediaGroupSuite() {
+    before(function before() {
+      utils.handleRatelimit(bot, 'sendMediaGroup', this);
+    });
+    it('should send group of photos/videos as album', function test() {
+      return bot.sendMediaGroup(USERID, [
+        {
+          type: 'photo',
+          media: `${__dirname}/data/photo.gif`,
+        },
+        {
+          type: 'video',
+          media: `${__dirname}/data/video.mp4`,
+        },
+        {
+          type: 'photo',
+          media: FILE_ID,
+        },
+      ], {
+        disable_notification: true,
+      }).then(resp => {
+        assert.ok(is.array(resp));
+        assert.equal(resp.length, 3);
+      });
+    });
+  });
 }); // End Telegram

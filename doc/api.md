@@ -87,6 +87,7 @@ TelegramBot
         * [.addStickerToSet(userId, name, pngSticker, emojis, [options], [fileOptions])](#TelegramBot+addStickerToSet) ⇒ <code>Promise</code>
         * [.setStickerPositionInSet(sticker, position, [options])](#TelegramBot+setStickerPositionInSet) ⇒ <code>Promise</code>
         * [.deleteStickerFromSet(sticker, [options])](#TelegramBot+deleteStickerFromSet) ⇒ <code>Promise</code>
+        * [.sendMediaGroup(chatId, media, [options])](#TelegramBot+sendMediaGroup) ⇒ <code>Promise</code>
     * _static_
         * [.errors](#TelegramBot.errors) : <code>Object</code>
         * [.messageTypes](#TelegramBot.messageTypes) : <code>Array.&lt;String&gt;</code>
@@ -1277,6 +1278,29 @@ Returns True on success.
 | Param | Type | Description |
 | --- | --- | --- |
 | sticker | <code>String</code> | File identifier of the sticker |
+| [options] | <code>Object</code> | Additional Telegram query options |
+
+<a name="TelegramBot+sendMediaGroup"></a>
+
+### telegramBot.sendMediaGroup(chatId, media, [options]) ⇒ <code>Promise</code>
+Use this method to send a group of photos or videos as an album.
+On success, an array of the sent [Messages](https://core.telegram.org/bots/api#message)
+is returned.
+
+If you wish to [specify file options](https://github.com/yagop/node-telegram-bot-api/blob/master/doc/usage.md#sending-files),
+add a `fileOptions` property to the target input in `media`.
+
+**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
+**See**
+
+- https://core.telegram.org/bots/api#sendmediagroup
+- https://github.com/yagop/node-telegram-bot-api/blob/master/doc/usage.md#sending-files
+
+
+| Param | Type | Description |
+| --- | --- | --- |
+| chatId | <code>String</code> | Unique identifier for the target chat or username of the target channel (in the format `@channelusername`) |
+| media | <code>Array</code> | A JSON-serialized array describing photos and videos to be sent, must include 2–10 items |
 | [options] | <code>Object</code> | Additional Telegram query options |
 
 <a name="TelegramBot.errors"></a>

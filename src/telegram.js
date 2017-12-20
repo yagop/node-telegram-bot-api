@@ -1822,6 +1822,54 @@ class TelegramBot extends EventEmitter {
     form.sticker = sticker;
     return this._request('deleteStickerFromSet', { form });
   }
+
+  /**
+   * Use this method to send a group of photos or videos as an album.
+   * On success, an array of the sent [Messages](https://core.telegram.org/bots/api#message)
+   * is returned.
+   *
+   * If you wish to [specify file options](https://github.com/yagop/node-telegram-bot-api/blob/master/doc/usage.md#sending-files),
+   * add a `fileOptions` property to the target input in `media`.
+   *
+   * @param  {String} chatId Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
+   * @param  {Array} media A JSON-serialized array describing photos and videos to be sent, must include 2–10 items
+   * @param  {Object} [options] Additional Telegram query options
+   * @return {Promise}
+   * @see https://core.telegram.org/bots/api#sendmediagroup
+   * @see https://github.com/yagop/node-telegram-bot-api/blob/master/doc/usage.md#sending-files
+   */
+  sendMediaGroup(chatId, media, options = {}) {
+    const opts = {
+      qs: options,
+    };
+    opts.qs.chat_id = chatId;
+
+    opts.formData = {};
+    const inputMedia = [];
+    let index = 0;
+    for (const input of media) {
+      const payload = Object.assign({}, input);
+      delete payload.media;
+      delete payload.fileOptions;
+      try {
+        const attachName = String(index);
+        const [formData, fileId] = this._formatSendData(attachName, input.media, input.fileOptions);
+        if (formData) {
+          opts.formData[attachName] = formData[attachName];
+          payload.media = `attach://${attachName}`;
+        } else {
+          payload.media = fileId;
+        }
+      } catch (ex) {
+        return Promise.reject(ex);
+      }
+      inputMedia.push(payload);
+      index++;
+    }
+    opts.qs.media = JSON.stringify(inputMedia);
+
+    return this._request('sendMediaGroup', opts);
+  }
 }
 
 module.exports = TelegramBot;

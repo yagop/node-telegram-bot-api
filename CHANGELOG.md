@@ -12,6 +12,7 @@ Added:
   * (#440) *TelegramBot#setChatStickerSet*, *TelegramBot#deleteChatStickerSet* (by @kamikazechaser)
 1. Support Bot API v3.5:
   * Support `provider_data` parameter in *TelegramBot#sendInvoice* (by @GochoMugo)
+  * Add method *TelegramBot#sendMediaGroup()* (by @GochoMugo)
 1. Add methods:
   * *TelegramBot#getFileStream* (#442) (by @GochoMugo, requested-by @Xaqron)
 1. Add options to *TelegramBot#stopPolling()* (by @GochoMugo)
