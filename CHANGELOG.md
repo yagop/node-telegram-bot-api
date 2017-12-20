@@ -7,17 +7,16 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 Added:
 
-1. Add Bot API v3.4 methods:
-  * (#439) *TelegramBot#editMessageLiveLocation*, *TelegramBot#stopMessageLiveLocation* (by @kamikazechaser)
-  * (#440) *TelegramBot#setChatStickerSet*, *TelegramBot#deleteChatStickerSet* (by @kamikazechaser)
 1. Support Bot API v3.5:
-  * Support `provider_data` parameter in *TelegramBot#sendInvoice* (by @GochoMugo)
-  * Add method *TelegramBot#sendMediaGroup()* (by @GochoMugo)
+    * Allow `provider_data` parameter in *TelegramBot#sendInvoice* (by @GochoMugo)
+    * Add method *TelegramBot#sendMediaGroup()* (by @GochoMugo)
+1. Support Bot API v3.4:
+    * Add methods *TelegramBot#editMessageLiveLocation*, *TelegramBot#stopMessageLiveLocation* (#439) (by @kamikazechaser)
+    * Add methods *TelegramBot#setChatStickerSet*, *TelegramBot#deleteChatStickerSet* (#440) (by @kamikazechaser)
 1. Add methods:
-  * *TelegramBot#getFileStream* (#442) (by @GochoMugo, requested-by @Xaqron)
+    * *TelegramBot#getFileStream* (#442) (by @GochoMugo, requested-by @Xaqron)
 1. Add options to *TelegramBot#stopPolling()* (by @GochoMugo)
-1. Add `metadata` argument in `message` event (and
-   friends e.g. `text`, `audio`, etc.) (#409) (by @jlsjonas, @GochoMugo)
+1. Add `metadata` argument in `message` event (and friends e.g. `text`, `audio`, etc.) (#409) (by @jlsjonas, @GochoMugo)
 1. Add forward-compatibility i.e. support future additional Telegram options (by @GochoMugo)
 1. Add support for Node.js v9 (by @GochoMugo)
 1. Document *TelegramBot.errors*, *TelegramBot.messageTypes* (by @GochoMugo)
@@ -25,19 +24,19 @@ Added:
 Changed:
 
 1. Update *TelegramBot#answerCallbackQuery()* signature (by @GochoMugo)
-1. Improve default error logging of `polling_error` and `webhook_error`
+1. Improve default error logging of `polling_error` and `webhook_error` (#377)
 
 Deprecated:
 
 1. Sending files: *(See [usage guide][usage-sending-file])* (by @hufan-akari, @GochoMugo)
-  * Error will **not** be thrown if `Buffer` is used and file-type could **not** be detected.
-  * Filename will **not** be set to `data.${ext}` if `Buffer` is used
-  * Content type will **not** default to `null` or `undefined`
+    * Error will **not** be thrown if `Buffer` is used and file-type could **not** be detected.
+    * Filename will **not** be set to `data.${ext}` if `Buffer` is used
+    * Content type will **not** default to `null` or `undefined`
 
 Fixed:
 
-1. (#265) Fix the offset infinite loop bug (#36) (by @GochoMugo)
-1. Fix game example (by @MCSH)
+1. Fix the offset infinite loop bug (#265, #36) (by @GochoMugo)
+1. Fix game example (#449, #418) (by @MCSH)
 
 
 * * *
