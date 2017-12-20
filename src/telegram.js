@@ -300,6 +300,10 @@ class TelegramBot extends EventEmitter {
    * @private
    */
   _formatSendData(type, data, fileOptions = {}) {
+    const deprecationMessage =
+      'See https://github.com/yagop/node-telegram-bot-api/blob/master/doc/usage.md#sending-files' +
+      ' for more information on how sending files has been improved and' +
+      ' on how to disable this deprecation message altogether.';
     let filedata = data;
     let filename = fileOptions.filename;
     let contentType = fileOptions.contentType;
@@ -315,7 +319,7 @@ class TelegramBot extends EventEmitter {
       }
     } else if (Buffer.isBuffer(data)) {
       if (!filename && !process.env.NTBA_FIX_350) {
-        deprecate('Buffers will have their filenames default to "filename" instead of "data".');
+        deprecate(`Buffers will have their filenames default to "filename" instead of "data". ${deprecationMessage}`);
         filename = 'data';
       }
       if (!contentType) {
@@ -327,7 +331,7 @@ class TelegramBot extends EventEmitter {
             filename = `${filename}.${ext}`;
           }
         } else if (!process.env.NTBA_FIX_350) {
-          deprecate('An error will no longer be thrown if file-type of buffer could not be detected.');
+          deprecate(`An error will no longer be thrown if file-type of buffer could not be detected. ${deprecationMessage}`);
           throw new errors.FatalError('Unsupported Buffer file-type');
         }
       }
@@ -349,7 +353,7 @@ class TelegramBot extends EventEmitter {
     if (process.env.NTBA_FIX_350) {
       contentType = contentType || 'application/octet-stream';
     } else {
-      deprecate('In the future, content-type of files you send will default to "application/octet-stream".');
+      deprecate(`In the future, content-type of files you send will default to "application/octet-stream". ${deprecationMessage}`);
     }
 
     // TODO: Add missing file extension.
@@ -390,7 +394,7 @@ class TelegramBot extends EventEmitter {
    * @deprecated
    */
   initPolling() {
-    deprecate('TelegramBot#initPolling() is deprecated');
+    deprecate('TelegramBot#initPolling() is deprecated. Use TelegramBot#startPolling() instead.');
     return this.startPolling();
   }
 
