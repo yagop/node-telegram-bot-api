@@ -633,13 +633,6 @@ describe('TelegramBot', function telegramSuite() {
         assert.ok(is.object(resp.document));
       });
     });
-    it('should send a document with custom file options', function test() {
-      const document = fs.createReadStream(`${__dirname}/data/photo.gif`);
-      const fileOpts = { filename: 'customfilename.gif' };
-      return bot.sendDocument(USERID, document, {}, fileOpts).then(resp => {
-        assert.equal(resp.document.file_name, fileOpts.filename);
-      });
-    });
   });
 
   describe('#sendSticker', function sendStickerSuite() {
@@ -1358,36 +1351,6 @@ describe('TelegramBot', function telegramSuite() {
       return bot.getGameHighScores(USERID, opts).then(resp => {
         assert.ok(is.array(resp));
       });
-    });
-  });
-
-  describe('#_formatSendData', function _formatSendDataSuite() {
-    it('should handle buffer path from fs.readStream', function test() {
-      let photo;
-      try {
-        photo = fs.createReadStream(Buffer.from(`${__dirname}/data/photo.gif`));
-      } catch (ex) {
-        // Older Node.js versions do not support passing a Buffer
-        // representation of the path to fs.createReadStream()
-        if (ex instanceof TypeError) return Promise.resolve();
-      }
-      return bot.sendPhoto(USERID, photo).then(resp => {
-        assert.ok(is.object(resp));
-        assert.ok(is.array(resp.photo));
-      });
-    });
-    it('should not accept file-paths if disallowed with constructor option', function test() {
-      const tgbot = new TelegramBot(TOKEN, { filepath: false });
-      const photo = `${__dirname}/data/photo.gif`;
-      return tgbot.sendPhoto(USERID, photo).catch(err => {
-        // TODO: check for error in a better way
-        assert.ok(err.response.body.description.indexOf('Bad Request') !== -1);
-      });
-    });
-    it('should allow stream.path that can not be parsed', function test() {
-      const fileStream = fs.createReadStream(`${__dirname}/data/photo.gif`);
-      fileStream.path = '/?id=123'; // for example, 'http://example.com/?id=666'
-      return bot.sendPhoto(USERID, fileStream);
     });
   });
 

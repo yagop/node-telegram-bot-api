@@ -116,6 +116,63 @@ const url = 'https://telegram.org/img/t_logo.png';
 bot.sendPhoto(chatId, url);
 ```
 
+If you wish to explicitly specify the filename or
+[MIME type](http://en.wikipedia.org/wiki/Internet_media_type),
+you may pass an additional argument as file options, like so:
+
+```js
+const fileOptions = {
+  // Explicitly specify the file name.
+  filename: 'customfilename',
+  // Explicitly specify the MIME type.
+  contentType: 'audio/mpeg',
+};
+bot.sendAudio(chatId, data, {}, fileOptions);
+```
+
+**NOTE:** You **MUST** provide an empty object (`{}`) in place of
+*Additional Telegram query options*, if you have **no** query options
+to specify. For example,
+
+```js
+// WRONG!
+// 'fileOptions' will be taken as additional Telegram query options!!!
+bot.sendAudio(chatId, data, fileOptions);
+
+// RIGHT!
+bot.sendAudio(chatId, data, {}, fileOptions);
+```
+
+
+<a name="sending-files-options"></a>
+### File Options (metadata)
+
+When sending files, the library automatically resolves
+the `filename` and `contentType` properties.
+**For now, this has to be manually activated using environment
+variable `NTBA_FIX_350`.**
+
+In order of highest-to-lowest precedence in searching for
+a value, when resolving the `filename`:
+
+*(`fileOptions` is the Object argument passed to the method.
+The "file" argument passed to the method can be a `Stream`,
+`Buffer` or `filepath`.)*
+
+1. Is `fileOptions.filename` explictly defined?
+1. Does `Stream#path` exist?
+1. Is `filepath` provided?
+1. Default to `"filename"`
+
+And the `contentType`:
+
+1. Is `fileOptions.contentType` explictly-defined?
+1. Does `Stream#path` exist?
+1. Try detecting file-type from the `Buffer`
+1. Is `filepath` provided?
+1. Is `fileOptions.filename` explicitly defined?
+1. Default to `"application/octet-stream"`
+
 <a name="sending-files-performance"></a>
 ### Performance Issue
 
