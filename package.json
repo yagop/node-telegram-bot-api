@@ -55,7 +55,7 @@
     "babel-register": "^6.26.0",
     "concat-stream": "^1.6.0",
     "contributor": "^0.1.25",
-    "eslint": "^4.13.1",
+    "eslint": "^2.13.1",
     "eslint-config-airbnb": "^6.2.0",
     "eslint-plugin-mocha": "^4.11.0",
     "is": "^3.2.1",
