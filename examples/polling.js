@@ -62,8 +62,8 @@ bot.onText(/\/editable/, function onEditableText(msg) {
         [
           {
             text: 'Edit Text',
-             // we shall check for this value when we listen
-             // for "callback_query"
+            // we shall check for this value when we listen
+            // for "callback_query"
             callback_data: 'edit'
           }
         ]

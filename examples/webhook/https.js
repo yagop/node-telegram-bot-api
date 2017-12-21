@@ -9,8 +9,8 @@ const TelegramBot = require('../..');
 const options = {
   webHook: {
     port: 443,
-    key: `${__dirname}/../ssl/key.pem`,  // Path to file with PEM private key
-    cert: `${__dirname}/../ssl/crt.pem`  // Path to file with PEM certificate
+    key: `${__dirname}/../ssl/key.pem`, // Path to file with PEM private key
+    cert: `${__dirname}/../ssl/crt.pem` // Path to file with PEM certificate
   }
 };
 // This URL must route to the port set above (i.e. 443)
