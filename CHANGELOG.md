@@ -5,6 +5,12 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased][Unreleased]
 
+
+
+* * *
+
+## [0.30.0][0.30.0] - 2017-12-21
+
 Added:
 
 1. Support Bot API v3.5: (by @GochoMugo)
@@ -203,4 +209,5 @@ Fixed:
 [0.27.1]:https://github.com/yagop/node-telegram-bot-api/releases/tag/v0.27.1
 [0.28.0]:https://github.com/yagop/node-telegram-bot-api/releases/tag/v0.28.0
 [0.29.0]:https://github.com/yagop/node-telegram-bot-api/releases/tag/v0.29.0
-[Unreleased]:https://github.com/yagop/node-telegram-bot-api/compare/v0.29.0...master
+[0.30.0]:https://github.com/yagop/node-telegram-bot-api/releases/tag/v0.30.0
+[Unreleased]:https://github.com/yagop/node-telegram-bot-api/compare/v0.30.0...master
