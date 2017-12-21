@@ -25,6 +25,7 @@ Changed:
 
 1. Update *TelegramBot#answerCallbackQuery()* signature (by @GochoMugo)
 1. Improve default error logging of `polling_error` and `webhook_error` (#377)
+1. Update dependencies
 
 Deprecated:
 
