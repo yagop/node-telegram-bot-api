@@ -1080,7 +1080,7 @@ class TelegramBot extends EventEmitter {
    * Returns True on success.
    *
    * @param  {Number|String} chatId  Unique identifier for the message recipient
-   * @param  {String} messageId Identifier of a message to pin
+   * @param  {Number} messageId Identifier of a message to pin
    * @param  {Object} [options] Additional Telegram query options
    * @return {Promise}
    * @see https://core.telegram.org/bots/api#pinchatmessage
@@ -1614,7 +1614,7 @@ class TelegramBot extends EventEmitter {
   /**
    * Use this method to delete a message.
    * @param  {Number|String} chatId  Unique identifier of the target chat
-   * @param  {String} messageId  Unique identifier of the target message
+   * @param  {Number} messageId  Unique identifier of the target message
    * @param  {Object} [options] Additional Telegram query options
    * @return {Promise}
    * @see https://core.telegram.org/bots/api#deletemessage

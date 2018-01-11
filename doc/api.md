@@ -654,7 +654,7 @@ Returns True on success.
 | Param | Type | Description |
 | --- | --- | --- |
 | chatId | <code>Number</code> \| <code>String</code> | Unique identifier for the message recipient |
-| messageId | <code>String</code> | Identifier of a message to pin |
+| messageId | <code>Number</code> | Identifier of a message to pin |
 | [options] | <code>Object</code> | Additional Telegram query options |
 
 <a name="TelegramBot+unpinChatMessage"></a>
@@ -1118,7 +1118,7 @@ Use this method to delete a message.
 | Param | Type | Description |
 | --- | --- | --- |
 | chatId | <code>Number</code> \| <code>String</code> | Unique identifier of the target chat |
-| messageId | <code>String</code> | Unique identifier of the target message |
+| messageId | <code>Number</code> | Unique identifier of the target message |
 | [options] | <code>Object</code> | Additional Telegram query options |
 
 <a name="TelegramBot+sendInvoice"></a>
