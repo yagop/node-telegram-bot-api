@@ -584,6 +584,7 @@ class TelegramBot extends EventEmitter {
     const callbackQuery = update.callback_query;
     const shippingQuery = update.shipping_query;
     const preCheckoutQuery = update.pre_checkout_query;
+    const replyToMessage = update.reply_to_message;
 
     if (message) {
       debug('Process Update message %j', message);
@@ -661,6 +662,9 @@ class TelegramBot extends EventEmitter {
     } else if (preCheckoutQuery) {
       debug('Process Update pre_checkout_query %j', preCheckoutQuery);
       this.emit('pre_checkout_query', preCheckoutQuery);
+    } else if (replyToMessage) {
+      debug('Process Update reply_to_message %j', replyToMessage);
+      this.emit('reply_to_message', replyToMessage);
     }
   }
 
