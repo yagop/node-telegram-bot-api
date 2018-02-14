@@ -672,10 +672,10 @@ class TelegramBot extends EventEmitter {
    * @return {Promise}
    * @see https://core.telegram.org/bots/api#sendmessage
    */
-  sendMessage(chatId, text, form = {}) {
-    form.chat_id = chatId;
-    form.text = text;
-    return this._request('sendMessage', { form });
+  sendMessage(chatId, text, options = {}) {
+    options.chat_id = chatId;
+    options.text = text;
+    return this._request('sendMessage', { qs: options });
   }
 
   /**
