@@ -76,6 +76,7 @@ the Project. Head over and subscribe!
 
 Some things built using this library that might interest you:
 
+* [node-telegram-keyboard-wrapper](https://github.com/alexandercerutti/node-telegram-keyboard-wrapper): A wrapper to improve `reply_markup` structures creation in an easy way (supports Inline Keyboards, Reply Keyboard, Remove Keyboard and Force Reply)
 * [tgfancy](https://github.com/GochoMugo/tgfancy): A fancy, higher-level wrapper for Telegram Bot API
 * [node-telegram-bot-api-middleware](https://github.com/idchlife/node-telegram-bot-api-middleware): Middleware for node-telegram-bot-api
 * [teleirc](https://github.com/FruitieX/teleirc): A simple Telegram ↔ IRC gateway
