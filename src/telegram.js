@@ -1379,7 +1379,12 @@ class TelegramBot extends EventEmitter {
         fileStream.emit('info', {
           uri: fileURI,
         });
-        pump(streamedRequest({ uri: fileURI }), fileStream);
+        let options = {};
+        if (this.options.request) {
+          Object.assign(options, this.options.request);
+        }
+        options.uri = fileURI;
+        pump(streamedRequest(options), fileStream);
       })
       .catch((error) => {
         fileStream.emit('error', error);
