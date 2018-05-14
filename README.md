@@ -61,7 +61,7 @@ bot.on('message', (msg) => {
 * [Experimental Features][experimental]
 
 _**Note**: Development is done against the **master** branch.
-Code for the latest release resides on the **release** branch
+Code for the latest release resides on the **release** branch.
 Experimental features reside on the **experimental** branch._
 
 
