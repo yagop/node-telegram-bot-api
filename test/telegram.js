@@ -36,6 +36,7 @@ const pollingPort = portindex++;
 const webHookPort = portindex++;
 const pollingPort2 = portindex++;
 const webHookPort2 = portindex++;
+const webHookPort3 = portindex++;
 const badTgServerPort = portindex++;
 const staticUrl = `http://127.0.0.1:${staticPort}`;
 const key = `${__dirname}/../examples/ssl/key.pem`;
@@ -77,6 +78,7 @@ describe('TelegramBot', function telegramSuite() {
   let testbot;
   let botPolling;
   let botWebHook;
+  let botWebHookWithEndpoint;
 
   before(function beforeAll() {
     this.timeout(timeout);
@@ -100,7 +102,12 @@ describe('TelegramBot', function telegramSuite() {
         port: webHookPort2,
       },
     });
-
+    botWebHookWithEndpoint = new TelegramBot(TOKEN, {
+      webHook: {
+        port: webHookPort3,
+        endpoint: 'webHookEndpoint',
+      }
+    });
     utils.handleRatelimit(bot, 'sendPhoto', this);
     utils.handleRatelimit(bot, 'sendMessage', this);
     utils.handleRatelimit(bot, 'sendGame', this);
@@ -173,11 +180,17 @@ describe('TelegramBot', function telegramSuite() {
         return myBot.stopPolling().then(() => { done(); }).catch(done);
       });
     });
-    it('(webhook) emits "message" on receiving message', function test(done) {
+    it('(webhook) emits "message" on receiving message without specified endpoint', function test(done) {
       botWebHook.once('message', () => {
         return done();
       });
-      utils.sendWebHookMessage(webHookPort2, TOKEN);
+      utils.sendWebHookRequest(webHookPort2, '/');
+    });
+    it('(webhook) emits "message" on receiving message with specified endpoint', function test(done) {
+      botWebHookWithEndpoint.once('message', () => {
+        return done();
+      });
+      utils.sendWebHookRequest(webHookPort3, `/${botWebHookWithEndpoint.options.webHook.endpoint}`);
     });
     it('(webhook) emits "webhook_error" if could not parse webhook request body', function test(done) {
       botWebHook.once('webhook_error', (error) => {
@@ -185,19 +198,19 @@ describe('TelegramBot', function telegramSuite() {
         assert.equal(error.code, 'EPARSE');
         return done();
       });
-      utils.sendWebHookMessage(webHookPort2, TOKEN, { update: 'unparseable!', json: false });
+      utils.sendWebHookRequest(webHookPort2, '/', { update: 'unparseable!', json: false });
     });
   });
 
   describe('WebHook', function webHookSuite() {
     it('returns 200 OK for health endpoint', function test(done) {
-      utils.sendWebHookRequest(webHookPort2, '/healthz').then(resp => {
+      utils.sendWebHookRequest(webHookPort3, '/healthz').then(resp => {
         assert.equal(resp, 'OK');
         return done();
       });
     });
-    it('returns 401 error if token is wrong', function test(done) {
-      utils.sendWebHookMessage(webHookPort2, 'wrong-token').catch(resp => {
+    it('returns 401 error if endpoint is wrong', function test(done) {
+      utils.sendWebHookRequest(webHookPort3, '/wrongPath').catch(resp => {
         assert.equal(resp.statusCode, 401);
         return done();
       });
@@ -205,7 +218,7 @@ describe('TelegramBot', function telegramSuite() {
     it('only accepts POST method', function test() {
       const methods = ['GET', 'PUT', 'DELETE', 'OPTIONS'];
       return Promise.each(methods, (method) => {
-        return utils.sendWebHookMessage(webHookPort2, TOKEN, {
+        return utils.sendWebHookRequest(webHookPort3, `/${botWebHookWithEndpoint.options.webHook.endpoint}`, {
           method,
         }).then(() => {
           throw new Error(`expected error with webhook ${method} request`);
@@ -225,7 +238,7 @@ describe('TelegramBot', function telegramSuite() {
     });
     it('is enabled, through options.key and options.cert', function test() {
       httpsbot = new TelegramBot(TOKEN, { webHook: { port, key, cert } });
-      return utils.sendWebHookMessage(port, TOKEN, { https: true });
+      return utils.sendWebHookRequest(port, '/', { https: true });
     });
     it('is enabled, through options.pfx');
     it('is enabled, through options.https', function test() {
@@ -238,7 +251,7 @@ describe('TelegramBot', function telegramSuite() {
           },
         },
       });
-      return utils.sendWebHookMessage(port, TOKEN, { https: true });
+      return utils.sendWebHookRequest(port, '/', { https: true });
     });
   });
 
@@ -1203,7 +1216,7 @@ describe('TelegramBot', function telegramSuite() {
         assert.ok(botWebHook.removeTextListener(regexp));
         return done();
       });
-      utils.sendWebHookMessage(webHookPort2, TOKEN, {
+      utils.sendWebHookRequest(webHookPort2, '/', {
         message: { text: '/onText ECHO ALOHA' },
       });
     });
@@ -1214,7 +1227,7 @@ describe('TelegramBot', function telegramSuite() {
         assert.ok(botWebHook.removeTextListener(regexp));
         return done();
       });
-      utils.sendWebHookMessage(webHookPort2, TOKEN, {
+      utils.sendWebHookRequest(webHookPort2, '/', {
         message: { text: '/onText ECHO ALOHA' },
       });
     });

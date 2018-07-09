@@ -8,9 +8,10 @@ const TOKEN = process.env.TELEGRAM_TOKEN || 'YOUR_TELEGRAM_BOT_TOKEN';
 const TelegramBot = require('../..');
 const options = {
   webHook: {
-    port: 443,
-    key: `${__dirname}/../ssl/key.pem`, // Path to file with PEM private key
-    cert: `${__dirname}/../ssl/crt.pem` // Path to file with PEM certificate
+    port: 443,                           // Defaults to 8443
+    key: `${__dirname}/../ssl/key.pem`,  // Path to file with PEM private key
+    cert: `${__dirname}/../ssl/crt.pem`, // Path to file with PEM certificate
+    endpoint: '/webHookEndpoint'         // Secret path to the webhook endpoint. Optional
   }
 };
 // This URL must route to the port set above (i.e. 443)

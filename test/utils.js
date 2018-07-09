@@ -50,18 +50,6 @@ exports = module.exports = {
    */
   sendWebHookRequest,
   /**
-   * Send a message to the webhook at the specified port.
-   * @param  {Number} port
-   * @param  {String} token
-   * @param  {Object} [options]
-   * @param  {String} [options.method=POST] Method to use
-   * @param  {Object} [options.update] Update object to send.
-   * @param  {Object} [options.message] Message to send. Default to a generic text message
-   * @param  {Boolean} [options.https=false] Use https
-   * @return {Promise}
-   */
-  sendWebHookMessage,
-  /**
    * Start a mock server at the specified port.
    * @param  {Number} port
    * @param  {Object} [options]
@@ -174,14 +162,6 @@ function sendWebHookRequest(port, path, options = {}) {
     },
     json: (typeof options.json === 'undefined') ? true : options.json,
   });
-}
-
-
-function sendWebHookMessage(port, token, options = {}) {
-  assert.ok(port);
-  assert.ok(token);
-  const path = `/bot${token}`;
-  return sendWebHookRequest(port, path, options);
 }
 
 

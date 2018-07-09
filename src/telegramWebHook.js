@@ -20,6 +20,7 @@ class TelegramBotWebHook {
     this.options.port = this.options.port || 8443;
     this.options.https = this.options.https || {};
     this.options.healthEndpoint = this.options.healthEndpoint || '/healthz';
+    this.options.endpoint = this.options.endpoint || '';
     this._healthRegex = new RegExp(this.options.healthEndpoint);
     this._webServer = null;
     this._open = false;
@@ -131,7 +132,15 @@ class TelegramBotWebHook {
     debug('WebHook request URL: %s', req.url);
     debug('WebHook request headers: %j', req.headers);
 
-    if (req.url.indexOf(this.bot.token) !== -1) {
+    if (this._healthRegex.test(req.url)) {
+      debug('WebHook health check passed');
+      res.statusCode = 200;
+      res.end('OK');
+    } else if (this.options.endpoint && req.url.indexOf(this.options.endpoint) === -1) {
+      debug('WebHook request unauthorized');
+      res.statusCode = 401;
+      res.end();
+    } else {
       if (req.method !== 'POST') {
         debug('WebHook request isn\'t a POST');
         res.statusCode = 418; // I'm a teabot!
@@ -141,14 +150,6 @@ class TelegramBotWebHook {
           .pipe(bl(this._parseBody))
           .on('finish', () => res.end('OK'));
       }
-    } else if (this._healthRegex.test(req.url)) {
-      debug('WebHook health check passed');
-      res.statusCode = 200;
-      res.end('OK');
-    } else {
-      debug('WebHook request unauthorized');
-      res.statusCode = 401;
-      res.end();
     }
   }
 }

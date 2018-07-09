@@ -59,6 +59,7 @@ $ openssl genrsa -out key.pem 2048
 # Our public certificate will be crt.pem
 $ openssl req -new -sha256 -key key.pem -out crt.pem
 ```
+**Note:** Domain, specified in CN section during creation should be equal to your real domain address
 
 Once they are generated, the `crt.pem` should be uploaded, when setting up
 your webhook. For example,
