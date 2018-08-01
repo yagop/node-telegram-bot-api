@@ -35,6 +35,7 @@ TelegramBot
         * [.sendDocument(chatId, doc, [options], [fileOptions])](#TelegramBot+sendDocument) ⇒ <code>Promise</code>
         * [.sendSticker(chatId, sticker, [options], [fileOptions])](#TelegramBot+sendSticker) ⇒ <code>Promise</code>
         * [.sendVideo(chatId, video, [options], [fileOptions])](#TelegramBot+sendVideo) ⇒ <code>Promise</code>
+        * [.sendAnimation(chatId, animation, [options], [fileOptions])](#TelegramBot+sendAnimation) ⇒ <code>Promise</code>
         * [.sendVideoNote(chatId, videoNote, [options], [fileOptions])](#TelegramBot+sendVideoNote) ⇒ <code>Promise</code>
         * [.sendVoice(chatId, voice, [options], [fileOptions])](#TelegramBot+sendVoice) ⇒ <code>Promise</code>
         * [.sendChatAction(chatId, action, [options])](#TelegramBot+sendChatAction) ⇒ <code>Promise</code>
@@ -52,6 +53,7 @@ TelegramBot
         * [.answerCallbackQuery(callbackQueryId, [options])](#TelegramBot+answerCallbackQuery) ⇒ <code>Promise</code>
         * [.editMessageText(text, [options])](#TelegramBot+editMessageText) ⇒ <code>Promise</code>
         * [.editMessageCaption(caption, [options])](#TelegramBot+editMessageCaption) ⇒ <code>Promise</code>
+        * [.editMessageMedia(media, [options])](#TelegramBot+editMessageMedia) ⇒ <code>Promise</code>
         * [.editMessageReplyMarkup(replyMarkup, [options])](#TelegramBot+editMessageReplyMarkup) ⇒ <code>Promise</code>
         * [.getUserProfilePhotos(userId, [options])](#TelegramBot+getUserProfilePhotos) ⇒ <code>Promise</code>
         * [.sendLocation(chatId, latitude, longitude, [options])](#TelegramBot+sendLocation) ⇒ <code>Promise</code>
@@ -436,6 +438,25 @@ Use this method to send video files, Telegram clients support mp4 videos (other 
 | [options] | <code>Object</code> | Additional Telegram query options |
 | [fileOptions] | <code>Object</code> | Optional file related meta-data |
 
+<a name="TelegramBot+sendAnimation"></a>
+
+### telegramBot.sendAnimation(chatId, animation, [options], [fileOptions]) ⇒ <code>Promise</code>
+Use this method to send animation files (GIF or H.264/MPEG-4 AVC video without sound).
+
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
+**See**
+
+- https://core.telegram.org/bots/api#sendanimation
+- https://github.com/yagop/node-telegram-bot-api/blob/master/doc/usage.md#sending-files
+
+
+| Param | Type | Description |
+| --- | --- | --- |
+| chatId | <code>Number</code> \| <code>String</code> | Unique identifier for the message recipient |
+| animation | <code>String</code> \| <code>stream.Stream</code> \| <code>Buffer</code> | A file path, Stream or Buffer. Can also be a `file_id` previously uploaded. |
+| [options] | <code>Object</code> | Additional Telegram query options |
+| [fileOptions] | <code>Object</code> | Optional file related meta-data |
+
 <a name="TelegramBot+sendVideoNote"></a>
 
 ### telegramBot.sendVideoNote(chatId, videoNote, [options], [fileOptions]) ⇒ <code>Promise</code>
@@ -725,6 +746,26 @@ inline_message_id in your request.
 | Param | Type | Description |
 | --- | --- | --- |
 | caption | <code>String</code> | New caption of the message |
+| [options] | <code>Object</code> | Additional Telegram query options (provide either one of chat_id, message_id, or inline_message_id here) |
+
+<a name="TelegramBot+editMessageMedia"></a>
+
+### telegramBot.editMessageMedia(media, [options]) ⇒ <code>Promise</code>
+Use this method to edit audio, document, photo, or video messages.
+If a message is a part of a message album, then it can be edited only to a photo or a video.
+Otherwise, message type can be changed arbitrarily. When inline message is edited, new file can't be uploaded.
+Use previously uploaded file via its file_id or specify a URL.
+On success, the edited Message is returned.
+
+Note that you must provide one of chat_id, message_id, or
+inline_message_id in your request.
+
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
+**See**: https://core.telegram.org/bots/api#editmessagemedia  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| media | <code>Object</code> | A JSON-serialized object for a new media content of the message |
 | [options] | <code>Object</code> | Additional Telegram query options (provide either one of chat_id, message_id, or inline_message_id here) |
 
 <a name="TelegramBot+editMessageReplyMarkup"></a>

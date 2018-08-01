@@ -842,7 +842,7 @@ class TelegramBot extends EventEmitter {
   /**
    * Use this method to send animation files (GIF or H.264/MPEG-4 AVC video without sound).
    * @param  {Number|String} chatId  Unique identifier for the message recipient
-   * @param  {String|stream.Stream|Buffer} doc A file path, Stream or Buffer.
+   * @param  {String|stream.Stream|Buffer} animation A file path, Stream or Buffer.
    * Can also be a `file_id` previously uploaded.
    * @param  {Object} [options] Additional Telegram query options
    * @param  {Object} [fileOptions] Optional file related meta-data
