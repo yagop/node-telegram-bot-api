@@ -37,6 +37,7 @@ const _messageTypes = [
   'new_chat_members',
   'new_chat_photo',
   'new_chat_title',
+  'passport_data',
   'photo',
   'pinned_message',
   'sticker',
