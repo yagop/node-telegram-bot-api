@@ -21,6 +21,7 @@ let Promise = require('bluebird');
 
 const _messageTypes = [
   'text',
+  'animation',
   'audio',
   'channel_chat_created',
   'contact',
