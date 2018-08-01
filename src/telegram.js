@@ -1185,6 +1185,26 @@ class TelegramBot extends EventEmitter {
   }
 
   /**
+   * Use this method to edit audio, document, photo, or video messages.
+   * If a message is a part of a message album, then it can be edited only to a photo or a video.
+   * Otherwise, message type can be changed arbitrarily. When inline message is edited, new file can't be uploaded.
+   * Use previously uploaded file via its file_id or specify a URL.
+   * On success, the edited Message is returned.
+   *
+   * Note that you must provide one of chat_id, message_id, or
+   * inline_message_id in your request.
+   *
+   * @param  {Object} media  A JSON-serialized object for a new media content of the message
+   * @param  {Object} [options] Additional Telegram query options (provide either one of chat_id, message_id, or inline_message_id here)
+   * @return {Promise}
+   * @see https://core.telegram.org/bots/api#editmessagemedia
+   */
+  editMessageMedia(media, form = {}) {
+    form.media = media;
+    return this._request('editMessageMedia', { form });
+  }  
+
+  /**
    * Use this method to edit only the reply markup of messages
    * sent by the bot or via the bot (for inline bots).
    * On success, the edited Message is returned.
