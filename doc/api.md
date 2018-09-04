@@ -391,7 +391,7 @@ Send Document
 **Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
 **See**
 
-- https://core.telegram.org/bots/api#sendDocument
+- https://core.telegram.org/bots/api#senddocument
 - https://github.com/yagop/node-telegram-bot-api/blob/master/doc/usage.md#sending-files
 
 
