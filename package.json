@@ -39,7 +39,8 @@
     "mime": "^1.6.0",
     "pump": "^2.0.0",
     "request": "^2.83.0",
-    "request-promise": "^4.2.2"
+    "request-promise": "^4.2.2",
+    "socks5-https-client": "^1.2.1"
   },
   "devDependencies": {
     "babel-cli": "^6.26.0",

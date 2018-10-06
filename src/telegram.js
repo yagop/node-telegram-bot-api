@@ -8,6 +8,7 @@ const debug = require('debug')('node-telegram-bot-api');
 const EventEmitter = require('eventemitter3');
 const fileType = require('file-type');
 const request = require('request-promise');
+const socksAgent = require('socks5-https-client/lib/Agent');
 const streamedRequest = require('request');
 const qs = require('querystring');
 const stream = require('stream');
@@ -170,6 +171,7 @@ class TelegramBot extends EventEmitter {
    * @param {Boolean} [options.onlyFirstMatch=false] Set to true to stop after first match. Otherwise, all regexps are executed
    * @param {Object} [options.request] Options which will be added for all requests to telegram api.
    *  See https://github.com/request/request#requestoptions-callback for more information.
+   * @param {Object} [options.proxy] SOCKS5 proxy options which will be added for all requests to telegram api.
    * @param {String} [options.baseApiUrl="https://api.telegram.org"] API Base URl; useful for proxying and testing
    * @param {Boolean} [options.filepath=true] Allow passing file-paths as arguments when sending files,
    *  such as photos using `TelegramBot#sendPhoto()`. See [usage information][usage-sending-files-performance]
@@ -189,11 +191,24 @@ class TelegramBot extends EventEmitter {
     this.options.baseApiUrl = options.baseApiUrl || 'https://api.telegram.org';
     this.options.filepath = (typeof options.filepath === 'undefined') ? true : options.filepath;
     this.options.badRejection = (typeof options.badRejection === 'undefined') ? false : options.badRejection;
+    this.options.request = (typeof options.request === 'undefined') ? {} : options.request;
     this._textRegexpCallbacks = [];
     this._replyListenerId = 0;
     this._replyListeners = [];
     this._polling = null;
     this._webHook = null;
+
+    if (options.proxy) {
+      Object.assign(this.options.request, {
+        agentClass: socksAgent,
+        agentOptions: {
+          socksHost: options.proxy.host,
+          socksPort: options.proxy.port,
+          socksUsername: options.proxy.user,
+          socksPassword: options.proxy.password
+        }
+      })
+    }
 
     if (options.polling) {
       const autoStart = options.polling.autoStart;
