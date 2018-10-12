@@ -21,6 +21,7 @@ let Promise = require('bluebird');
 
 const _messageTypes = [
   'text',
+  'animation',
   'audio',
   'channel_chat_created',
   'contact',
@@ -36,6 +37,7 @@ const _messageTypes = [
   'new_chat_members',
   'new_chat_photo',
   'new_chat_title',
+  'passport_data',
   'photo',
   'pinned_message',
   'sticker',
@@ -838,6 +840,32 @@ class TelegramBot extends EventEmitter {
   }
 
   /**
+   * Use this method to send animation files (GIF or H.264/MPEG-4 AVC video without sound).
+   * @param  {Number|String} chatId  Unique identifier for the message recipient
+   * @param  {String|stream.Stream|Buffer} animation A file path, Stream or Buffer.
+   * Can also be a `file_id` previously uploaded.
+   * @param  {Object} [options] Additional Telegram query options
+   * @param  {Object} [fileOptions] Optional file related meta-data
+   * @return {Promise}
+   * @see https://core.telegram.org/bots/api#sendanimation
+   * @see https://github.com/yagop/node-telegram-bot-api/blob/master/doc/usage.md#sending-files
+   */
+  sendAnimation(chatId, animation, options = {}, fileOptions = {}) {
+    const opts = {
+      qs: options
+    };
+    opts.qs.chat_id = chatId;
+    try {
+      const sendData = this._formatSendData('animation', animation, fileOptions);
+      opts.formData = sendData[0];
+      opts.qs.document = sendData[1];
+    } catch (ex) {
+      return Promise.reject(ex);
+    }
+    return this._request('sendAnimation', opts);
+  }  
+
+  /**
    * Use this method to send rounded square videos of upto 1 minute long.
    * @param  {Number|String} chatId  Unique identifier for the message recipient
    * @param  {String|stream.Stream|Buffer} videoNote A file path or Stream.
@@ -1183,6 +1211,26 @@ class TelegramBot extends EventEmitter {
     form.caption = caption;
     return this._request('editMessageCaption', { form });
   }
+
+  /**
+   * Use this method to edit audio, document, photo, or video messages.
+   * If a message is a part of a message album, then it can be edited only to a photo or a video.
+   * Otherwise, message type can be changed arbitrarily. When inline message is edited, new file can't be uploaded.
+   * Use previously uploaded file via its file_id or specify a URL.
+   * On success, the edited Message is returned.
+   *
+   * Note that you must provide one of chat_id, message_id, or
+   * inline_message_id in your request.
+   *
+   * @param  {Object} media  A JSON-serialized object for a new media content of the message
+   * @param  {Object} [options] Additional Telegram query options (provide either one of chat_id, message_id, or inline_message_id here)
+   * @return {Promise}
+   * @see https://core.telegram.org/bots/api#editmessagemedia
+   */
+  editMessageMedia(media, form = {}) {
+    form.media = media;
+    return this._request('editMessageMedia', { form });
+  }  
 
   /**
    * Use this method to edit only the reply markup of messages
