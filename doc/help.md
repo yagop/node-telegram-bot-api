@@ -104,7 +104,30 @@ Sources:
 <a name="proxy"></a>
 ### How do I run my bot behind a proxy?
 
-*Not done. PRs welcome!*
+In order to work with webhooks on your local server, you need to have a proxy server that tunnels to your local machine. One way is to use ngrok to create a public HTTPS URL to tunnel to your local web server.
+
+
+Setting up ngrok
+
+```
+npm install -g ngrok // Install ngrok using npm
+ngrok http 8080 // Assuming that you are using port 8080 to run your local server
+```
+
+On your command line, you should see something like this:
+
+```
+Forwarding http://756f7557.ngrok.io -> localhost:8080      
+Forwarding https://756f7557.ngrok.io -> localhost:8080
+```
+
+Update your webhook code:
+
+```
+bot.setWebHook(`${url}/bot${TELEGRAM_TOKEN}`) // url is your https link
+```
+
+
 
 Sources:
 

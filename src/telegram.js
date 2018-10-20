@@ -770,7 +770,7 @@ class TelegramBot extends EventEmitter {
    * @param  {Object} [options] Additional Telegram query options
    * @param  {Object} [fileOptions] Optional file related meta-data
    * @return {Promise}
-   * @see https://core.telegram.org/bots/api#sendDocument
+   * @see https://core.telegram.org/bots/api#senddocument
    * @see https://github.com/yagop/node-telegram-bot-api/blob/master/doc/usage.md#sending-files
    */
   sendDocument(chatId, doc, options = {}, fileOptions = {}) {
