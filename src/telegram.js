@@ -756,6 +756,11 @@ class TelegramBot extends EventEmitter {
       const sendData = this._formatSendData('audio', audio, fileOptions);
       opts.formData = sendData[0];
       opts.qs.audio = sendData[1];
+      if (options.thumb) {
+        const sendThumbData = this._formatSendData('photo', options.thumb, {});
+        opts.formData.thumb = sendThumbData[0].photo;
+        opts.qs.thumb = sendThumbData[1];
+      }
     } catch (ex) {
       return Promise.reject(ex);
     }
@@ -782,6 +787,11 @@ class TelegramBot extends EventEmitter {
       const sendData = this._formatSendData('document', doc, fileOptions);
       opts.formData = sendData[0];
       opts.qs.document = sendData[1];
+      if (options.thumb) {
+        const sendThumbData = this._formatSendData('photo', options.thumb, {});
+        opts.formData.thumb = sendThumbData[0].photo;
+        opts.qs.thumb = sendThumbData[1];
+      }
     } catch (ex) {
       return Promise.reject(ex);
     }
@@ -833,6 +843,11 @@ class TelegramBot extends EventEmitter {
       const sendData = this._formatSendData('video', video, fileOptions);
       opts.formData = sendData[0];
       opts.qs.video = sendData[1];
+      if (options.thumb) {
+        const sendThumbData = this._formatSendData('photo', options.thumb, {});
+        opts.formData.thumb = sendThumbData[0].photo;
+        opts.qs.thumb = sendThumbData[1];
+      }
     } catch (ex) {
       return Promise.reject(ex);
     }
@@ -863,7 +878,7 @@ class TelegramBot extends EventEmitter {
       return Promise.reject(ex);
     }
     return this._request('sendAnimation', opts);
-  }  
+  }
 
   /**
    * Use this method to send rounded square videos of upto 1 minute long.
@@ -886,6 +901,11 @@ class TelegramBot extends EventEmitter {
       const sendData = this._formatSendData('video_note', videoNote, fileOptions);
       opts.formData = sendData[0];
       opts.qs.video_note = sendData[1];
+      if (options.thumb) {
+        const sendThumbData = this._formatSendData('photo', options.thumb, {});
+        opts.formData.thumb = sendThumbData[0].photo;
+        opts.qs.thumb = sendThumbData[1];
+      }
     } catch (ex) {
       return Promise.reject(ex);
     }
@@ -1230,7 +1250,7 @@ class TelegramBot extends EventEmitter {
   editMessageMedia(media, form = {}) {
     form.media = media;
     return this._request('editMessageMedia', { form });
-  }  
+  }
 
   /**
    * Use this method to edit only the reply markup of messages
