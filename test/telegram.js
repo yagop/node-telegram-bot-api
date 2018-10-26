@@ -1436,4 +1436,28 @@ describe('TelegramBot', function telegramSuite() {
       });
     });
   });
+
+  describe('#sendAnimation', function sendAnimationSuite() {
+    before(function before() {
+      utils.handleRatelimit(bot, 'sendAnimation', this);
+    });
+    it('should send a gif as an animation', function test() {
+      return bot.sendAnimation(USERID, `${__dirname}/data/photo.gif`).then(resp => {
+        assert.ok(is.object(resp));
+        assert.ok(is.object(resp.document));
+
+        describe('#editMessageMedia', function editMessageMediaSuite() {
+          before(function before() {
+            utils.handleRatelimit(bot, 'editMessageMedia', this);
+          });
+          it('should edit a media message', function test() {
+            return bot.editMessageMedia({ type: 'animation', media: resp.document.file_id, caption: 'media message edited'}, { chat_id: resp.chat.id, message_id: resp.message_id}).then(editedResp => {
+              assert.ok(is.object(editedResp));
+              assert.ok(is.string(editedResp.caption));
+            });
+          });
+        });
+      });
+    });
+  });  
 }); // End Telegram

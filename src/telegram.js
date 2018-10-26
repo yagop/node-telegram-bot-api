@@ -1228,7 +1228,7 @@ class TelegramBot extends EventEmitter {
    * @see https://core.telegram.org/bots/api#editmessagemedia
    */
   editMessageMedia(media, form = {}) {
-    form.media = media;
+    form.media = stringify(media);
     return this._request('editMessageMedia', { form });
   }  
 
