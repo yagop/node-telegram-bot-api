@@ -1450,8 +1450,8 @@ describe('TelegramBot', function telegramSuite() {
           before(function before() {
             utils.handleRatelimit(bot, 'editMessageMedia', this);
           });
-          it('should edit a media message', function test() {
-            return bot.editMessageMedia({ type: 'animation', media: resp.document.file_id, caption: 'media message edited'}, { chat_id: resp.chat.id, message_id: resp.message_id}).then(editedResp => {
+          it('should edit a media message', function nextTest() {
+            return bot.editMessageMedia({ type: 'animation', media: resp.document.file_id, caption: 'edited' }, { chat_id: resp.chat.id, message_id: resp.message_id }).then(editedResp => {
               assert.ok(is.object(editedResp));
               assert.ok(is.string(editedResp.caption));
             });
@@ -1459,5 +1459,5 @@ describe('TelegramBot', function telegramSuite() {
         });
       });
     });
-  });  
+  });
 }); // End Telegram

@@ -863,7 +863,7 @@ class TelegramBot extends EventEmitter {
       return Promise.reject(ex);
     }
     return this._request('sendAnimation', opts);
-  }  
+  }
 
   /**
    * Use this method to send rounded square videos of upto 1 minute long.
@@ -1230,7 +1230,7 @@ class TelegramBot extends EventEmitter {
   editMessageMedia(media, form = {}) {
     form.media = stringify(media);
     return this._request('editMessageMedia', { form });
-  }  
+  }
 
   /**
    * Use this method to edit only the reply markup of messages
