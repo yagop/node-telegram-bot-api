@@ -3,7 +3,7 @@
 [![Bot API](https://img.shields.io/badge/Bot%20API-v.4.0.0-00aced.svg)](https://core.telegram.org/bots/api)
 [![Build Status](https://travis-ci.org/yagop/node-telegram-bot-api.svg?branch=master)](https://travis-ci.org/yagop/node-telegram-bot-api)
 [![Build status](https://ci.appveyor.com/api/projects/status/4bgsms61ndojs1em/branch/master?svg=true)](https://ci.appveyor.com/project/yagop/node-telegram-bot-api/branch/master)
-[![Covergae Status](https://codecov.io/gh/yagop/node-telegram-bot-api/branch/master/graph/badge.svg)](https://codecov.io/gh/yagop/node-telegram-bot-api)
+[![Coverage Status](https://codecov.io/gh/yagop/node-telegram-bot-api/branch/master/graph/badge.svg)](https://codecov.io/gh/yagop/node-telegram-bot-api)
 [![https://telegram.me/node_telegram_bot_api](https://img.shields.io/badge/💬%20Telegram-node__telegram__bot__api-blue.svg)](https://telegram.me/node_telegram_bot_api)
 [![https://telegram.me/Yago_Perez](https://img.shields.io/badge/💬%20Telegram-Yago__Perez-blue.svg)](https://telegram.me/Yago_Perez)
 
