@@ -40,6 +40,7 @@ const _messageTypes = [
   'passport_data',
   'photo',
   'pinned_message',
+  'poll',
   'sticker',
   'successful_payment',
   'supergroup_chat_created',
@@ -586,6 +587,7 @@ class TelegramBot extends EventEmitter {
     const callbackQuery = update.callback_query;
     const shippingQuery = update.shipping_query;
     const preCheckoutQuery = update.pre_checkout_query;
+    const poll = update.poll;
 
     if (message) {
       debug('Process Update message %j', message);
@@ -663,6 +665,9 @@ class TelegramBot extends EventEmitter {
     } else if (preCheckoutQuery) {
       debug('Process Update pre_checkout_query %j', preCheckoutQuery);
       this.emit('pre_checkout_query', preCheckoutQuery);
+    } else if (poll) {
+      debug('Process Update poll %j', poll);
+      this.emit('poll', poll);
     }
   }
 
@@ -1370,6 +1375,39 @@ class TelegramBot extends EventEmitter {
     return this._request('sendContact', { form });
   }
 
+  /**
+   * Send poll.
+   * Use this method to send a native poll.
+   *
+   * @param  {Number|String} chatId  Unique identifier for the group/channel
+   * @param  {String} question Poll question, 255 char limit
+   * @param  {Array} pollOptions Poll options, between 2-10 options
+   * @param  {Object} [options] Additional Telegram query options
+   * @return {Promise}
+   * @see https://core.telegram.org/bots/api#sendpoll
+   */
+  sendPoll(chatId, question, pollOptions, form = {}) {
+    form.chat_id = chatId;
+    form.question = question;
+    form.options = stringify(pollOptions);
+    return this._request('sendPoll', { form });
+  }
+
+  /**
+   * Stop poll.
+   * Use this method to stop a native poll.
+   *
+   * @param  {Number|String} chatId  Unique identifier for the group/channel
+   * @param  {Number} pollId Identifier of the original message with the poll
+   * @param  {Object} [options] Additional Telegram query options
+   * @return {Promise}
+   * @see https://core.telegram.org/bots/api#stoppoll
+   */
+  stopPoll(chatId, pollId, form = {}) {
+    form.chat_id = chatId;
+    form.message_id = pollId;
+    return this._request('stopPoll', { form });
+  }
 
   /**
    * Get file.
