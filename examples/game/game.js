@@ -3,10 +3,10 @@
  */
 /* eslint-disable no-console */
 
-const TOKEN = process.env.TELEGRAM_TOKEN || 'YOUR_TELEGRAM_BOT_TOKEN';
-const gameName = process.env.TELEGRAM_GAMENAME || 'YOUR_TELEGRAM_GAMENAME';
+const TOKEN = process.env.TELEGRAM_TOKEN || 851380641:AAF777QXT1qPSjxCV-LfBI_C5720s9fZqKc;
+const gameName = process.env.TELEGRAM_GAMENAME || CoinBank;
 // Specify '0' to use ngrok i.e. localhost tunneling
-let url = process.env.URL || 'https://<PUBLIC-URL>';
+let url = process.env.URL || https://bgsstr.github.io/CoinBank/;
 const port = process.env.PORT || 8080;
 
 const TelegramBot = require('../..');
