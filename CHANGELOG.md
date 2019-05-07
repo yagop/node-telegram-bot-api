@@ -5,6 +5,11 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased][Unreleased]
 
+Added:
+
+1. Support Bot API v4.2: (by @kamikazechaser)
+   * Add methods: *TelegramBot#sendPoll()*, *TelegramBot#stopPoll()*
+   * Support events: *poll*
 
 
 * * *

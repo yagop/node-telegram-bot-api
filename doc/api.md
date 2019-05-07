@@ -61,6 +61,8 @@ TelegramBot
         * [.stopMessageLiveLocation([options])](#TelegramBot+stopMessageLiveLocation) ⇒ <code>Promise</code>
         * [.sendVenue(chatId, latitude, longitude, title, address, [options])](#TelegramBot+sendVenue) ⇒ <code>Promise</code>
         * [.sendContact(chatId, phoneNumber, firstName, [options])](#TelegramBot+sendContact) ⇒ <code>Promise</code>
+        * [.sendPoll(chatId, question, pollOptions, [options])](#TelegramBot+sendPoll) ⇒ <code>Promise</code>
+        * [.stopPoll(chatId, pollId, [options])](#TelegramBot+stopPoll) ⇒ <code>Promise</code>
         * [.getFile(fileId, [options])](#TelegramBot+getFile) ⇒ <code>Promise</code>
         * [.getFileLink(fileId, [options])](#TelegramBot+getFileLink) ⇒ <code>Promise</code>
         * [.getFileStream(fileId, [options])](#TelegramBot+getFileStream) ⇒ <code>stream.Readable</code>
@@ -393,7 +395,7 @@ Send Document
 **Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
 **See**
 
-- https://core.telegram.org/bots/api#senddocument
+- https://core.telegram.org/bots/api#sendDocument
 - https://github.com/yagop/node-telegram-bot-api/blob/master/doc/usage.md#sending-files
 
 
@@ -884,6 +886,37 @@ Use this method to send phone contacts.
 | chatId | <code>Number</code> \| <code>String</code> | Unique identifier for the message recipient |
 | phoneNumber | <code>String</code> | Contact's phone number |
 | firstName | <code>String</code> | Contact's first name |
+| [options] | <code>Object</code> | Additional Telegram query options |
+
+<a name="TelegramBot+sendPoll"></a>
+
+### telegramBot.sendPoll(chatId, question, pollOptions, [options]) ⇒ <code>Promise</code>
+Send poll.
+Use this method to send a native poll.
+
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
+**See**: https://core.telegram.org/bots/api#sendpoll  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| chatId | <code>Number</code> \| <code>String</code> | Unique identifier for the group/channel |
+| question | <code>String</code> | Poll question, 255 char limit |
+| pollOptions | <code>Array</code> | Poll options, between 2-10 options |
+| [options] | <code>Object</code> | Additional Telegram query options |
+
+<a name="TelegramBot+stopPoll"></a>
+
+### telegramBot.stopPoll(chatId, pollId, [options]) ⇒ <code>Promise</code>
+Stop poll.
+Use this method to stop a native poll.
+
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
+**See**: https://core.telegram.org/bots/api#stoppoll  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| chatId | <code>Number</code> \| <code>String</code> | Unique identifier for the group/channel |
+| pollId | <code>Number</code> | Identifier of the original message with the poll |
 | [options] | <code>Object</code> | Additional Telegram query options |
 
 <a name="TelegramBot+getFile"></a>
