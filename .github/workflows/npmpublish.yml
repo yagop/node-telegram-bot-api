@@ -22,7 +22,6 @@ jobs:
           NODE_AUTH_TOKEN: ${{secrets.npm_token}}
 
   publish-gpr:
-    needs: build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
