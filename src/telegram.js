@@ -543,12 +543,150 @@ class TelegramBot extends EventEmitter {
   }
 
   /**
+   * @typedef TelegramLocation
+   * @property {Number} longitude
+   * @property {Number} latitude
+   */
+
+  /**
+   * This object represents a Telegram user or bot
+   * @typedef TelegramUser
+   * @property {Number} id Unique identifier for this user or bot
+   * @property {Boolean} is_bot True, if this user is a bot
+   * @property {String} first_name User‘s or bot’s first name
+   * @property {String} [last_name] User‘s or bot’s last name
+   * @property {String} [username] User‘s or bot’s username
+   * @property {String} [language_code] IETF language tag of the user's language
+   */
+
+  /**
+   * This object represents a message
+   * @typedef TelegramMessage
+   * @property {Number} date
+   * @property {Number} message_id
+   * @property {TelegramChat} chat
+   * @property {TelegramUser} [from]
+   * @property {TelegramUser} [forward_from]
+   * @property {TelegramChat} [forward_from_chat]
+   * @property {Number} [forward_from_message_id]
+   * @property {String} [forward_signature]
+   * @property {String} [forward_sender_name]
+   * @property {Number} [forward_date]
+   * @property {TelegramMessage} [reply_to_message]
+   * @property {Number} [edit_date]
+   * @property {String} [media_group_id]
+   * @property {String} [author_signature]
+   * @property {String} [text]
+   */
+
+  /**
+   * This object represents an incoming inline query.
+   * When the user sends an empty query, your bot could return some default or trending results.
+   * @typedef TelegramInlineQuery
+   * @property {String} id Unique identifier for this query
+   * @property {TelegramUser} from Sender
+   * @property {TelegramLocation} [location] Sender location, only for bots that request user location
+   * @property {String} query Text of the query (up to 512 characters)
+   * @property {String} offset Offset of the results to be returned, can be controlled by the bot
+   */
+
+  /**
+   * This object represents a result of an inline query that was chosen by the user and sent to their chat partner.
+   * @typedef TelegramChosenInlineResult
+   * @property {String} result_id The unique identifier for the result that was chosen
+   * @property {TelegramUser} from The user that chose the result
+   * @property {TelegramLocation} [location] Sender location, only for bots that request user location
+   * @property {String} inline_message_id Identifier of the sent inline message. Available only if there is an inline keyboard attached to the message.
+   * @property {String} query The query that was used to obtain the result
+   */
+
+   /**
+    * This object represents an incoming callback query from a callback button in an inline keyboard
+    * @typedef TelegramCallbackQuery
+    * @property {String} id Unique identifier for this query
+    * @property {TelegramUser} from Sender
+    * @property {String} chat_instance Global identifier, uniquely corresponding to the chat to which the message with the callback button was sent
+    * @property {TelegramMessage} [message] Message with the callback button that originated the query
+    * @property {String} [inline_message_id] Identifier of the message sent via the bot in inline mode, that originated the query
+    * @property {String} [data] Data associated with the callback button. Be aware that a bad client can send arbitrary data in this field
+    * @property {String} [game_short_name] Short name of a Game to be returned, serves as the unique identifier for the game
+    */
+
+  /**
+   * This object represents a shipping address
+   * @typedef TelegramShippingAddress
+   * @property {String} country_code ISO 3166-1 alpha-2 country code
+   * @property {String} state State, if applicable
+   * @property {String} city City
+   * @property {String} street_line1 First line for the address
+   * @property {String} street_line2 Second line for the address
+   * @property {String} post_code Address post code
+   */
+
+  /**
+   * @typedef TelegramShippingQuery
+   * @property {String} id Unique query identifier
+   * @property {TelegramUser} from User who sent the query
+   * @property {String} invoice_payload Bot specified invoice payload
+   * @property {TelegramShippingAddress} shipping_address User specified shipping address
+   */
+
+   /**
+    * This object contains information about one answer option in a poll
+    * @typedef TelegramPollOption
+    * @property {String} text Option text, 1-100 characters
+    * @property {Number} voter_count Number of users that voted for this option
+    *
+    * This object contains information about a poll
+    * @typedef TelegramPoll
+    * @property {String} id Unique poll identifier
+    * @property {String} question Poll question, 1-255 characters
+    * @property {TelegramPollOption[]} options List of poll options
+    * @property {Boolean} is_closed True, if the poll is closed
+    */
+
+    /**
+     * This object represents information about an order
+     * @typedef TelegramOrderInfo
+     * @property {String} [name] User name
+     * @property {String} [phone_number] User's phone number
+     * @property {String} [email] User email
+     * @property {TelegramShippingAddress} [shipping_address] User shipping address
+     *
+     * @typedef TelegramPreCheckoutQuery
+     * @property {String} id  Unique query identifier
+     * @property {TelegramUser} from User who sent the query
+     * @property {String} currency Three-letter ISO 4217 currency code
+     * @property {Number} total_amount Total price in the smallest units of the currency
+     * @property {String} invoice_payload Bot specified invoice payload
+     * @property {String} [shipping_option_id] Identifier of the shipping option chosen by the user
+     * @property {TelegramOrderInfo} [order_info] Order info provided by the user
+     */
+
+  /**
+   * This object represents an incoming update.
+   * At most one of the optional parameters can be present in any given update
+   * @typedef TelegramUpdate
+   * @property {Number} update_id The update‘s unique identifier.
+   * @property {TelegramMessage} [message] New incoming message of any kind — text, photo, sticker, etc
+   * @property {TelegramMessage} [edited_message] New version of a message that is known to the bot and was edited
+   * @property {TelegramMessage} [channel_post] New incoming channel post of any kind — text, photo, sticker, etc
+   * @property {TelegramMessage} [edited_channel_post] New version of a channel post that is known to the bot and was edited
+   * @property {TelegramInlineQuery} [inline_query] New incoming inline query
+   * @property {TelegramChosenInlineResult} [chosen_inline_result] The result of an inline query that was chosen by a user and sent to their chat partner
+   * @property {TelegramCallbackQuery} [callback_query] New incoming callback quer
+   * @property {TelegramShippingQuery} [shipping_query] New incoming shipping query. Only for invoices with flexible price
+   * @property {TelegramPreCheckoutQuery} [pre_checkout_query] New incoming pre-checkout query. Contains full information about checkout
+   * @property {TelegramPoll} [poll] New poll state. Bots receive only updates about stopped polls and polls, which are sent by the bot
+   */
+
+  /**
    * Use this method to receive incoming updates using long polling.
    * This method has an [older, compatible signature][getUpdates-v0.25.0]
    * that is being deprecated.
    *
    * @param  {Object} [options] Additional Telegram query options
-   * @return {Promise}
+   * @return {Promise<TelegramUpdate>}
    * @see https://core.telegram.org/bots/api#getupdates
    */
   getUpdates(form = {}) {
