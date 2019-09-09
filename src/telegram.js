@@ -608,7 +608,7 @@ class TelegramBot extends EventEmitter {
    * @property {String} [forward_signature] For messages forwarded from channels, signature of the post author if present
    * @property {String} [forward_sender_name] Sender's name for messages forwarded from users who disallow adding a link to their account in forwarded messages
    * @property {Number} [forward_date] For forwarded messages, date the original message was sent in Unix time
-   * @property {TelegramMessage} [reply_to_message] For replies, the original message. Note that the Message object in this field will not contain further reply_to_message fields even if it itself is a reply
+   * @property {TelegramMessage} [reply_to_message] For replies, the original message.
    * @property {Number} [edit_date] Date the message was last edited in Unix time
    * @property {String} [media_group_id] The unique identifier of a media message group this message belongs to
    * @property {String} [author_signature] Signature of the post author for messages in channels
@@ -621,7 +621,7 @@ class TelegramBot extends EventEmitter {
    * @property {Boolean} [channel_chat_created] Service message: the channel has been created
    * @property {Number} [migrate_to_chat_id] The group has been migrated to a supergroup with the specified identifier
    * @property {Number} [migrate_from_chat_id] The supergroup has been migrated from a group with the specified identifier
-   * @property {TelegramMessage} [pinned_message] Specified message was pinned. Note that the Message object in this field will not contain further reply_to_message fields even if it is itself a reply
+   * @property {TelegramMessage} [pinned_message] Specified message was pinned
    */
 
   /**
