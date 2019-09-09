@@ -560,23 +560,68 @@ class TelegramBot extends EventEmitter {
    */
 
   /**
+   * @typedef TelegramChatPhoto
+   * @property {String} small_file_id File identifier of small (160x160) chat photo
+   * @property {String} big_file_id File identifier of big (640x640) chat photo
+   */
+
+  /**
+    * @typedef TelegramChatPermissions
+    * @property {Boolean} [can_send_messages] True, if the user is allowed to send text messages, contacts, locations and venues
+    * @property {Boolean} [can_send_media_messages] True, if the user is allowed to send audios, documents, photos, videos, video notes and voice notes, implies can_send_messages
+    * @property {Boolean} [can_send_polls] True, if the user is allowed to send polls, implies can_send_messages
+    * @property {Boolean} [can_send_other_messages] True, if the user is allowed to send animations, games, stickers and use inline bots, implies can_send_media_messages
+    * @property {Boolean} [can_add_web_page_previews] True, if the user is allowed to add web page previews to their messages, implies can_send_media_messages
+    * @property {Boolean} [can_change_info] True, if the user is allowed to change the chat title, photo and other settings. Ignored in public supergroups
+    * @property {Boolean} [can_invite_users] True, if the user is allowed to invite new users to the chat
+    * @property {Boolean} [can_pin_messages] True, if the user is allowed to pin messages. Ignored in public supergroups
+    */
+
+  /**
+    * This object represents a chat
+    * @typedef TelegramChat
+    * @property {Number} id Unique identifier for this chat
+    * @property {"private"|"group"|"supergroup"|"channel"} type Type of chat
+    * @property {String} [title] Title, for supergroups, channels and group chats
+    * @property {String} [username] Username, for private chats, supergroups and channels if available
+    * @property {String} [first_name] First name of the other party in a private chat
+    * @property {String} [last_name] Last name of the other party in a private chat
+    * @property {TelegramChatPhoto} [photo] Chat photo. Returned only in getChat.
+    * @property {String} [description] Description, for groups, supergroups and channel chats. Returned only in getChat
+    * @property {String} [invite_link] Chat invite link, for groups, supergroups and channel chats
+    * @property {TelegramMessage} [pinned_message] Pinned message, for groups, supergroups and channels. Returned only in getChat
+    * @property {TelegramChatPermissions} [permissions] Default chat member permissions, for groups and supergroups. Returned only in getChat
+    * @property {String} [sticker_set_name] For supergroups, name of group sticker set. Returned only in getChat
+    * @property {Boolean} [can_set_sticker_set] True, if the bot can change the group sticker set. Returned only in getChat.
+    */
+
+  /**
    * This object represents a message
    * @typedef TelegramMessage
-   * @property {Number} date
-   * @property {Number} message_id
-   * @property {TelegramChat} chat
-   * @property {TelegramUser} [from]
-   * @property {TelegramUser} [forward_from]
-   * @property {TelegramChat} [forward_from_chat]
-   * @property {Number} [forward_from_message_id]
-   * @property {String} [forward_signature]
-   * @property {String} [forward_sender_name]
-   * @property {Number} [forward_date]
-   * @property {TelegramMessage} [reply_to_message]
-   * @property {Number} [edit_date]
-   * @property {String} [media_group_id]
-   * @property {String} [author_signature]
-   * @property {String} [text]
+   * @property {Number} date Date the message was sent in Unix time
+   * @property {Number} message_id Unique message identifier inside this chat
+   * @property {TelegramChat} chat Conversation the message belongs to
+   * @property {TelegramUser} [from] Sender, empty for messages sent to channels
+   * @property {TelegramUser} [forward_from] For forwarded messages, sender of the original message
+   * @property {TelegramChat} [forward_from_chat] For messages forwarded from channels, information about the original channel
+   * @property {Number} [forward_from_message_id] For messages forwarded from channels, identifier of the original message in the channel
+   * @property {String} [forward_signature] For messages forwarded from channels, signature of the post author if present
+   * @property {String} [forward_sender_name] Sender's name for messages forwarded from users who disallow adding a link to their account in forwarded messages
+   * @property {Number} [forward_date] For forwarded messages, date the original message was sent in Unix time
+   * @property {TelegramMessage} [reply_to_message] For replies, the original message. Note that the Message object in this field will not contain further reply_to_message fields even if it itself is a reply
+   * @property {Number} [edit_date] Date the message was last edited in Unix time
+   * @property {String} [media_group_id] The unique identifier of a media message group this message belongs to
+   * @property {String} [author_signature] Signature of the post author for messages in channels
+   * @property {String} [text] For text messages, the actual UTF-8 text of the message, 0-4096 characters
+   * @property {String} [caption] Caption for the animation, audio, document, photo, video, or voice, 0-1024 characters
+   * @property {String} [new_chat_title]  A chat title was changed to this value
+   * @property {Boolean} [delete_chat_photo] Service message: the chat photo was deleted
+   * @property {Boolean} [group_chat_created] Service message: the group has been created
+   * @property {Boolean} [supergroup_chat_created] Service message: the supergroup has been created
+   * @property {Boolean} [channel_chat_created] Service message: the channel has been created
+   * @property {Number} [migrate_to_chat_id] The group has been migrated to a supergroup with the specified identifier
+   * @property {Number} [migrate_from_chat_id] The supergroup has been migrated from a group with the specified identifier
+   * @property {TelegramMessage} [pinned_message] Specified message was pinned. Note that the Message object in this field will not contain further reply_to_message fields even if it is itself a reply
    */
 
   /**

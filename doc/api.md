@@ -25,7 +25,7 @@ TelegramBot
         * [.setWebHook(url, [options], [fileOptions])](#TelegramBot+setWebHook) ⇒ <code>Promise</code>
         * [.deleteWebHook([options])](#TelegramBot+deleteWebHook) ⇒ <code>Promise</code>
         * [.getWebHookInfo([options])](#TelegramBot+getWebHookInfo) ⇒ <code>Promise</code>
-        * [.getUpdates([options])](#TelegramBot+getUpdates) ⇒ <code>Promise</code>
+        * [.getUpdates([options])](#TelegramBot+getUpdates) ⇒ [<code>Promise.&lt;TelegramUpdate&gt;</code>](#TelegramUpdate)
         * [.processUpdate(update)](#TelegramBot+processUpdate)
         * [.sendMessage(chatId, text, [options])](#TelegramBot+sendMessage) ⇒ <code>Promise</code>
         * [.answerInlineQuery(inlineQueryId, results, [options])](#TelegramBot+answerInlineQuery) ⇒ <code>Promise</code>
@@ -281,7 +281,7 @@ url field empty.
 
 <a name="TelegramBot+getUpdates"></a>
 
-### telegramBot.getUpdates([options]) ⇒ <code>Promise</code>
+### telegramBot.getUpdates([options]) ⇒ [<code>Promise.&lt;TelegramUpdate&gt;</code>](#TelegramUpdate)
 Use this method to receive incoming updates using long polling.
 This method has an [older, compatible signature][getUpdates-v0.25.0]
 that is being deprecated.
