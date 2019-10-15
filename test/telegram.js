@@ -1112,7 +1112,7 @@ describe('TelegramBot', function telegramSuite() {
   // to retry after ~72000 secs (1200 mins / 20 hrs).
   // We surely can NOT wait for that much time during testing
   // (or in most practical cases for that matter!)
-  describe('#sendContact', function sendContactSuite() {
+  describe.skip('#sendContact', function sendContactSuite() {
     before(function before() {
       utils.handleRatelimit(bot, 'sendContact', this);
     });
