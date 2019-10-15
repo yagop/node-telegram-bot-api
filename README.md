@@ -3,11 +3,11 @@
 > Node.js module to interact with the official [Telegram Bot API](https://core.telegram.org/bots/api).
 
 [![Bot API](https://img.shields.io/badge/Bot%20API-v.4.4.0-00aced.svg?style=flat-square)](https://core.telegram.org/bots/api)
-[![Build Status](https://travis-ci.org/yagop/node-telegram-bot-api.svg?style=flat-square&branch=master)](https://travis-ci.org/yagop/node-telegram-bot-api)
+[![Build Status](https://img.shields.io/travis/yagop/node-telegram-bot-api/master?style=flat-square)](https://travis-ci.org/yagop/node-telegram-bot-api)
 [![Coverage Status](https://img.shields.io/codecov/c/github/yagop/node-telegram-bot-api?style=flat-square)](https://codecov.io/gh/yagop/node-telegram-bot-api)
 [![https://telegram.me/node_telegram_bot_api](https://img.shields.io/badge/💬%20Telegram-Channel-blue.svg?style=flat-square)](https://telegram.me/node_telegram_bot_api)
 [![https://telegram.me/ntbasupport](https://img.shields.io/badge/💬%20Telegram-Group-blue.svg?style=flat-square)](https://telegram.me/ntbasupport)
-[![https://telegram.me/Yago_Perez](https://img.shields.io/badge/💬%20Telegram-Yago Perez-blue.svg?style=flat-square)](https://telegram.me/Yago_Perez)
+[![https://telegram.me/Yago_Perez](https://img.shields.io/badge/💬%20Telegram-Yago_Perez-blue.svg?style=flat-square)](https://telegram.me/Yago_Perez)
 
 
 ## Install
