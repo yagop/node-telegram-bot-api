@@ -87,7 +87,7 @@ Some things built using this library that might interest you:
 
 **The MIT License (MIT)**
 
-Copyright © 2018 Yago
+Copyright © 2019 Yago
 
 [usage]:https://github.com/yagop/node-telegram-bot-api/tree/master/doc/usage.md
 [examples]:https://github.com/yagop/node-telegram-bot-api/tree/master/examples

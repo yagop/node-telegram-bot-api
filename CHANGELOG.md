@@ -3,13 +3,16 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased][Unreleased]
+## [0.40.0][0.40.0] - 2019-10-15
 
 Added:
 
 1. Support Bot API v4.2: (by @kamikazechaser)
    * Add methods: *TelegramBot#sendPoll()*, *TelegramBot#stopPoll()*
    * Support events: *poll*
+1. Support Bot API v4.0: (by @kamikazechaser)
+   * Add methods: *TelegramBot#editMessageMedia()*, *TelegramBot#sendAnimation()*
+   * Support new message types: *passport_data*, *animation*
 
 
 * * *
