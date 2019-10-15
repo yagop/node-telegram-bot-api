@@ -6,9 +6,12 @@ node_js:
   - "8"
   - "7"
   - "6"
-script:
-   - 'if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then bash ./travis/run_on_pull_requests; fi'
-   - 'if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then bash ./travis/run_on_non_pull_requests; fi'  
+#
+# create required bash scripts to run builds on pull requests in the future
+#
+#script:
+#   - 'if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then bash ./travis/run_on_pull_requests; fi'
+#   - 'if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then bash ./travis/run_on_non_pull_requests; fi'
 after_success:
   - bash <(curl -s https://codecov.io/bash)
 cache:
