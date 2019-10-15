@@ -5,8 +5,8 @@
 Node.js module to interact with the official [Telegram Bot API](https://core.telegram.org/bots/api).
 
 [![Bot API](https://img.shields.io/badge/Bot%20API-v.4.4.0-00aced.svg?style=flat-square&logo=telegram)](https://core.telegram.org/bots/api)
+[![npm package](https://img.shields.io/npm/v/node-telegram-bot-api?logo=npm&style=flat-square)](https://www.npmjs.org/package/node-telegram-bot-api)
 [![Build Status](https://img.shields.io/travis/yagop/node-telegram-bot-api/master?style=flat-square&logo=travis)](https://travis-ci.org/yagop/node-telegram-bot-api)
-[![Build status](https://img.shields.io/appveyor/ci/yagop/node-telegram-bot-api/master?logo=appveyor&style=flat-square)](https://ci.appveyor.com/project/yagop/node-telegram-bot-api/branch/master)
 [![Coverage Status](https://img.shields.io/codecov/c/github/yagop/node-telegram-bot-api?style=flat-square&logo=codecov)](https://codecov.io/gh/yagop/node-telegram-bot-api)
 
 [![https://telegram.me/node_telegram_bot_api](https://img.shields.io/badge/💬%20Telegram-Channel-blue.svg?style=flat-square)](https://telegram.me/node_telegram_bot_api)
