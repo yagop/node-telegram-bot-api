@@ -1057,13 +1057,7 @@ describe('TelegramBot', function telegramSuite() {
       return bot.sendLocation(USERID, lat, long, opts).then(resp => { message = resp; });
     });
     it('edits live location', function test() {
-      const replyMarkup = JSON.stringify({
-        inline_keyboard: [[{
-          text: 'Test button',
-          callback_data: 'test'
-        }]]
-      });
-      const opts = { chat_id: USERID, message_id: message.message_id, reply_markup: replyMarkup };
+      const opts = { chat_id: USERID, message_id: message.message_id };
       return bot.editMessageLiveLocation(lat + 1, long + 1, opts).then(resp => {
         assert.ok(is.object(resp));
         assert.ok(is.object(resp.location));
@@ -1073,21 +1067,13 @@ describe('TelegramBot', function telegramSuite() {
     });
   });
 
-  describe('#stopMessageLiveLocation', function editMessageLiveLocationSuite() {
+  describe.skip('#stopMessageLiveLocation', function editMessageLiveLocationSuite() {
     let message;
     before(function before() {
       utils.handleRatelimit(bot, 'stopMessageLiveLocation', this);
       return bot.sendLocation(USERID, lat, long, { live_period: 86400 })
         .then((resp) => {
           message = resp;
-          const replyMarkup = JSON.stringify({
-            inline_keyboard: [[{
-              text: 'Test button',
-              callback_data: 'test'
-            }]]
-          });
-          const opts = { chat_id: USERID, message_id: message.message_id, reply_markup: replyMarkup };
-          return bot.editMessageLiveLocation(lat + 1, long + 1, opts);
         });
     });
     it('stops location updates', function test() {
@@ -1126,7 +1112,7 @@ describe('TelegramBot', function telegramSuite() {
   // to retry after ~72000 secs (1200 mins / 20 hrs).
   // We surely can NOT wait for that much time during testing
   // (or in most practical cases for that matter!)
-  describe.skip('#sendContact', function sendContactSuite() {
+  describe('#sendContact', function sendContactSuite() {
     before(function before() {
       utils.handleRatelimit(bot, 'sendContact', this);
     });
