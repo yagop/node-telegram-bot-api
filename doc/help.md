@@ -110,6 +110,7 @@ Sources:
 
 * Issue [#122](https://github.com/yagop/node-telegram-bot-api/issues/122)
 * Issue [#253](https://github.com/yagop/node-telegram-bot-api/issues/253)
+* Issue [#766](https://github.com/yagop/node-telegram-bot-api/issues/766)
 
 <a name="new-feature"></a>
 ### Can you add feature X to the library?
