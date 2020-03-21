@@ -94,7 +94,7 @@ TelegramBot
         * [.sendMediaGroup(chatId, media, [options])](#TelegramBot+sendMediaGroup) ⇒ <code>Promise</code>
     * _static_
         * [.errors](#TelegramBot.errors) : <code>Object</code>
-        * [.messageTypes](#TelegramBot.messageTypes) : <code>Array.&lt;String&gt;</code>
+        * [.messageTypes](#TelegramBot.messageTypes) : <code>[ &#x27;Array&#x27; ].&lt;String&gt;</code>
         * [.Promise](#TelegramBot.Promise)
 
 <a name="new_TelegramBot_new"></a>
@@ -332,7 +332,7 @@ Send answers to an inline query.
 | Param | Type | Description |
 | --- | --- | --- |
 | inlineQueryId | <code>String</code> | Unique identifier of the query |
-| results | <code>Array.&lt;InlineQueryResult&gt;</code> | An array of results for the inline query |
+| results | <code>[ &#x27;Array&#x27; ].&lt;InlineQueryResult&gt;</code> | An array of results for the inline query |
 | [options] | <code>Object</code> | Additional Telegram query options |
 
 <a name="TelegramBot+forwardMessage"></a>
@@ -1389,7 +1389,7 @@ The different errors the library uses.
 **Kind**: static property of [<code>TelegramBot</code>](#TelegramBot)  
 <a name="TelegramBot.messageTypes"></a>
 
-### TelegramBot.messageTypes : <code>Array.&lt;String&gt;</code>
+### TelegramBot.messageTypes : <code>[ &#x27;Array&#x27; ].&lt;String&gt;</code>
 The types of message updates the library handles.
 
 **Kind**: static property of [<code>TelegramBot</code>](#TelegramBot)  
