@@ -17,8 +17,8 @@ Node.js module to interact with the official [Telegram Bot API](https://core.tel
 
 ## Install
 
-```bash
-npm install --save node-telegram-bot-api
+```sh
+npm i node-telegram-bot-api
 ```
 
 ## Usage
