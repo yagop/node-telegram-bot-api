@@ -17,7 +17,7 @@ that emits the following events:
      `sticker`, `video`, `voice`, `contact`, `location`,
      `new_chat_members`, `left_chat_member`, `new_chat_title`,
      `new_chat_photo`, `delete_chat_photo`, `group_chat_created`,
-     `game`, `pinned_message`, `poll`, `migrate_from_chat_id`, `migrate_to_chat_id`,
+     `game`, `pinned_message`, `poll`, `dice`, `migrate_from_chat_id`, `migrate_to_chat_id`,
      `channel_chat_created`, `supergroup_chat_created`,
      `successful_payment`, `invoice`, `video_note`
   1. **Arguments**: `message` ([Message][message]), `metadata` (`{ type?:string }`)

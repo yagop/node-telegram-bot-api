@@ -26,6 +26,7 @@ const _messageTypes = [
   'channel_chat_created',
   'contact',
   'delete_chat_photo',
+  'dice',
   'document',
   'game',
   'group_chat_created',
@@ -765,6 +766,29 @@ class TelegramBot extends EventEmitter {
       return Promise.reject(ex);
     }
     return this._request('sendAudio', opts);
+  }
+
+  /**
+   * Send Dice
+   * Use this method to send a dice.
+   * 
+   * @param  {Number|String} chatId  Unique identifier for the message recipient
+   * @param  {Object} [options] Additional Telegram query options
+   * @return {Promise}
+   * @see https://core.telegram.org/bots/api#senddice
+   */
+  sendDice(chatId, options = {}) {
+    const opts = {
+      qs: options,
+    };
+    opts.qs.chat_id = chatId;
+    try {
+      const sendData = this._formatSendData('dice');
+      opts.formData = sendData[0];
+    } catch (ex) {
+      return Promise.reject(ex);
+    }
+    return this._request('sendDice', opts);
   }
 
   /**

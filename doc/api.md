@@ -63,6 +63,7 @@ TelegramBot
         * [.sendContact(chatId, phoneNumber, firstName, [options])](#TelegramBot+sendContact) ⇒ <code>Promise</code>
         * [.sendPoll(chatId, question, pollOptions, [options])](#TelegramBot+sendPoll) ⇒ <code>Promise</code>
         * [.stopPoll(chatId, pollId, [options])](#TelegramBot+stopPoll) ⇒ <code>Promise</code>
+        * [.sendDice(chatId, [options])](#TelegramBot+sendDice) ⇒ <code>Promise</code>
         * [.getFile(fileId, [options])](#TelegramBot+getFile) ⇒ <code>Promise</code>
         * [.getFileLink(fileId, [options])](#TelegramBot+getFileLink) ⇒ <code>Promise</code>
         * [.getFileStream(fileId, [options])](#TelegramBot+getFileStream) ⇒ <code>stream.Readable</code>
@@ -917,6 +918,20 @@ Use this method to stop a native poll.
 | --- | --- | --- |
 | chatId | <code>Number</code> \| <code>String</code> | Unique identifier for the group/channel |
 | pollId | <code>Number</code> | Identifier of the original message with the poll |
+| [options] | <code>Object</code> | Additional Telegram query options |
+
+<a name="TelegramBot+sendDice"></a>
+
+### telegramBot.sendDice(chatId, [options]) ⇒ <code>Promise</code>
+Send Dice.
+Use this method to send a dice.
+
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
+**See**: https://core.telegram.org/bots/api#senddice 
+
+| Param | Type | Description |
+| --- | --- | --- |
+| chatId | <code>Number</code> \| <code>String</code> | Unique identifier for the group/channel |
 | [options] | <code>Object</code> | Additional Telegram query options |
 
 <a name="TelegramBot+getFile"></a>
