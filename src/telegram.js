@@ -1205,6 +1205,19 @@ class TelegramBot extends EventEmitter {
   }
 
    /**
+   * Returns True on success.
+   * Use this method to change the list of the bot's commands.
+   * @param  {Array} commands Poll options, between 2-10 options
+   * @param  {Object} [options] Additional Telegram query options
+   * @return {Promise}
+   * @see https://core.telegram.org/bots/api#setmycommands
+   */
+  setMyCommands(commands, form = {}) {
+    form.commands = stringify(commands);
+    return this._request('setMyCommands', { form });
+  }
+
+   /**
    * Returns Array of BotCommand on success.
    * @param  {Object} [options] Additional Telegram query options
    * @return {Promise}
