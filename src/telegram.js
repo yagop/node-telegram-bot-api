@@ -771,7 +771,6 @@ class TelegramBot extends EventEmitter {
   /**
    * Send Dice
    * Use this method to send a dice.
-   * 
    * @param  {Number|String} chatId  Unique identifier for the message recipient
    * @param  {Object} [options] Additional Telegram query options
    * @return {Promise}
@@ -1203,6 +1202,16 @@ class TelegramBot extends EventEmitter {
       form.callback_query_id = callbackQueryId;
     }
     return this._request('answerCallbackQuery', { form });
+  }
+
+   /**
+   * Returns Array of BotCommand on success.
+   * @param  {Object} [options] Additional Telegram query options
+   * @return {Promise}
+   * @see https://core.telegram.org/bots/api#getmycommands
+   */
+  getMyCommands(form = {}) {
+    return this._request('getMyCommands', { form });
   }
 
   /**
