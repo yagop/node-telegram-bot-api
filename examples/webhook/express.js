@@ -10,7 +10,6 @@ const port = process.env.PORT;
 
 const TelegramBot = require('../..');
 const express = require('express');
-const bodyParser = require('body-parser');
 
 // No need to pass any parameters as we will handle the updates with Express
 const bot = new TelegramBot(TOKEN);
@@ -21,7 +20,7 @@ bot.setWebHook(`${url}/bot${TOKEN}`);
 const app = express();
 
 // parse the updates to JSON
-app.use(bodyParser.json());
+app.use(express.json());
 
 // We are receiving updates at the route below!
 app.post(`/bot${TOKEN}`, (req, res) => {
