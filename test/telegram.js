@@ -43,7 +43,7 @@ const cert = `${__dirname}/../examples/ssl/crt.pem`;
 const ip = '216.58.210.174'; // Google IP ¯\_(ツ)_/¯
 const lat = 47.5351072;
 const long = -52.7508537;
-const FILE_PATH = `${__dirname}/data/photo.gif`;
+const FILE_PATH = `${__dirname}/data/photo.png`;
 let FILE_ID;
 let GAME_CHAT_ID;
 let GAME_MSG_ID;
@@ -507,7 +507,7 @@ describe('TelegramBot', function telegramSuite() {
       utils.handleRatelimit(bot, 'sendPhoto', this);
     });
     it('should send a photo from file', function test() {
-      const photo = `${__dirname}/data/photo.gif`;
+      const photo = `${__dirname}/data/photo.png`;
       return bot.sendPhoto(USERID, photo).then(resp => {
         assert.ok(is.object(resp));
         assert.ok(is.array(resp.photo));
@@ -523,21 +523,21 @@ describe('TelegramBot', function telegramSuite() {
       });
     });
     it('should send a photo from fs.readStream', function test() {
-      const photo = fs.createReadStream(`${__dirname}/data/photo.gif`);
+      const photo = fs.createReadStream(`${__dirname}/data/photo.png`);
       return bot.sendPhoto(USERID, photo).then(resp => {
         assert.ok(is.object(resp));
         assert.ok(is.array(resp.photo));
       });
     });
     it('should send a photo from request Stream', function test() {
-      const photo = request(`${staticUrl}/photo.gif`);
+      const photo = request(`${staticUrl}/photo.png`);
       return bot.sendPhoto(USERID, photo).then(resp => {
         assert.ok(is.object(resp));
         assert.ok(is.array(resp.photo));
       });
     });
     it('should send a photo from a Buffer', function test() {
-      const photo = fs.readFileSync(`${__dirname}/data/photo.gif`);
+      const photo = fs.readFileSync(`${__dirname}/data/photo.png`);
       return bot.sendPhoto(USERID, photo).then(resp => {
         assert.ok(is.object(resp));
         assert.ok(is.array(resp.photo));
@@ -885,7 +885,8 @@ describe('TelegramBot', function telegramSuite() {
       utils.handleRatelimit(bot, 'setChatTitle', this);
     });
     it('should set the chat title', function test() {
-      return bot.setChatTitle(GROUPID, 'ntba test group').then(resp => {
+      const random = Math.floor(Math.random() * 1000);
+      return bot.setChatTitle(GROUPID, `ntba test group (random: ${random})`).then(resp => {
         assert.equal(resp, true);
       });
     });
@@ -956,7 +957,7 @@ describe('TelegramBot', function telegramSuite() {
       utils.handleRatelimit(bot, 'editMessageCaption', this);
     });
     it('should edit a caption sent by the bot', function test() {
-      const photo = `${__dirname}/data/photo.gif`;
+      const photo = `${__dirname}/data/photo.png`;
       const options = { caption: 'test caption' };
       return bot.sendPhoto(USERID, photo, options).then(resp => {
         assert.equal(resp.caption, 'test caption');
@@ -1416,7 +1417,7 @@ describe('TelegramBot', function telegramSuite() {
       return bot.sendMediaGroup(USERID, [
         {
           type: 'photo',
-          media: `${__dirname}/data/photo.gif`,
+          media: `${__dirname}/data/photo.png`,
         },
         {
           type: 'video',
