@@ -43,6 +43,8 @@ TelegramBot
         * [.unbanChatMember(chatId, userId, [options])](#TelegramBot+unbanChatMember) ⇒ <code>Promise</code>
         * [.restrictChatMember(chatId, userId, [options])](#TelegramBot+restrictChatMember) ⇒ <code>Promise</code>
         * [.promoteChatMember(chatId, userId, [options])](#TelegramBot+promoteChatMember) ⇒ <code>Promise</code>
+        * [.setChatAdministratorCustomTitle(chatId, userId, customTitle, [options])](#TelegramBot+setChatAdministratorCustomTitle) ⇒ <code>Promise</code>
+        * [.setChatPermissions(chatId, ChatPermissions, [options])](#TelegramBot+setChatPermissions) ⇒ <code>Promise</code>
         * [.exportChatInviteLink(chatId, [options])](#TelegramBot+exportChatInviteLink) ⇒ <code>Promise</code>
         * [.setChatPhoto(chatId, photo, [options], [fileOptions])](#TelegramBot+setChatPhoto) ⇒ <code>Promise</code>
         * [.deleteChatPhoto(chatId, [options])](#TelegramBot+deleteChatPhoto) ⇒ <code>Promise</code>
@@ -586,6 +588,38 @@ Returns True on success.
 | --- | --- | --- |
 | chatId | <code>Number</code> \| <code>String</code> | Unique identifier for the target chat or username of the target supergroup |
 | userId | <code>Number</code> |  |
+| [options] | <code>Object</code> | Additional Telegram query options |
+
+<a name="TelegramBot+setChatAdministratorCustomTitle"></a>
+
+### telegramBot.setChatAdministratorCustomTitle(chatId, userId, customTitle, [options]) ⇒ <code>Promise</code>
+Use this method to set a custom title for an administrator in a supergroup promoted by the bot.
+Returns True on success.
+
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
+**See**: https://core.telegram.org/bots/api#setchatadministratorcustomtitle
+
+| Param | Type | Description |
+| --- | --- | --- |
+| chatId | <code>Integer or String</code> \| <code>String</code> | Unique identifier for the target chat or username of the target supergroup |
+| userId | <code>Integer</code> | Unique identifier of the target user |
+| customTitle | <code>String</code> | New custom title for the administrator; 0-16 characters, emoji are not allowed |
+| [options] | <code>Object</code> | Additional Telegram query options |
+
+<a name="TelegramBot+setChatPermissions"></a>
+
+### telegramBot.setChatPermissions(chatId, ChatPermissions, [options]) ⇒ <code>Promise</code>
+Use this method to set default chat permissions for all members. The bot must be an administrator
+in the group or a supergroup for this to work and must have the can_restrict_members admin rights.
+Returns True on success.
+
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
+**See**: https://core.telegram.org/bots/api#setchatpermissions
+
+| Param | Type | Description |
+| --- | --- | --- |
+| chatId | <code>Integer or String</code> \| <code>String</code> | Unique identifier for the target chat or username of the target supergroup |
+| ChatPermissions | <code>Object</code> | New default chat permissions |
 | [options] | <code>Object</code> | Additional Telegram query options |
 
 <a name="TelegramBot+exportChatInviteLink"></a>

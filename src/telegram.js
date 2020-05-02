@@ -1040,6 +1040,42 @@ class TelegramBot extends EventEmitter {
   }
 
   /**
+   * Use this method to set a custom title for an administrator in a supergroup promoted by the bot.
+   * Returns True on success.
+   *
+   * @param  {Number|String} chatId  Unique identifier for the message recipient
+   * @param  {Number} userId Unique identifier of the target user
+   * @param  {String} customTitle New custom title for the administrator; 0-16 characters, emoji are not allowed
+   * @param  {Object} [options] Additional Telegram query options
+   * @return {Promise}
+   * @see https://core.telegram.org/bots/api#setchatadministratorcustomtitle
+   */
+  setChatAdministratorCustomTitle(chatId, userId, customTitle, form = {}) {
+    form.chat_id = chatId;
+    form.user_id = userId;
+	  form.custom_title = customTitle;
+    return this._request('setChatAdministratorCustomTitle', { form });
+  }
+
+  /**
+   * Use this method to set default chat permissions for all members.
+   * The bot must be an administrator in the group or a supergroup for this to
+   * work and must have the can_restrict_members admin rights.
+   * Returns True on success.
+   *
+   * @param  {Number|String} chatId  Unique identifier for the message recipient
+   * @param  {Array} chatPermissions New default chat permissions
+   * @param  {Object} [options] Additional Telegram query options
+   * @return {Promise}
+   * @see https://core.telegram.org/bots/api#setchatpermissions
+   */
+  setChatPermissions(chatId, userId, chatPermissions, form = {}) {
+    form.chat_id = chatId;
+    form.permissions = stringify(chatPermissions);
+    return this._request('setChatPermissions', { form });
+  }
+
+  /**
    * Use this method to export an invite link to a supergroup or a channel.
    * The bot must be an administrator in the chat for this to work and must have the appropriate admin rights.
    * Returns exported invite link as String on success.
