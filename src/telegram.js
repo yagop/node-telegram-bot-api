@@ -1053,7 +1053,7 @@ class TelegramBot extends EventEmitter {
   setChatAdministratorCustomTitle(chatId, userId, customTitle, form = {}) {
     form.chat_id = chatId;
     form.user_id = userId;
-	  form.custom_title = customTitle;
+    form.custom_title = customTitle;
     return this._request('setChatAdministratorCustomTitle', { form });
   }
 
@@ -1240,25 +1240,25 @@ class TelegramBot extends EventEmitter {
     return this._request('answerCallbackQuery', { form });
   }
 
-   /**
-   * Returns True on success.
-   * Use this method to change the list of the bot's commands.
-   * @param  {Array} commands Poll options, between 2-10 options
-   * @param  {Object} [options] Additional Telegram query options
-   * @return {Promise}
-   * @see https://core.telegram.org/bots/api#setmycommands
-   */
+  /**
+  * Returns True on success.
+  * Use this method to change the list of the bot's commands.
+  * @param  {Array} commands Poll options, between 2-10 options
+  * @param  {Object} [options] Additional Telegram query options
+  * @return {Promise}
+  * @see https://core.telegram.org/bots/api#setmycommands
+  */
   setMyCommands(commands, form = {}) {
     form.commands = stringify(commands);
     return this._request('setMyCommands', { form });
   }
 
-   /**
-   * Returns Array of BotCommand on success.
-   * @param  {Object} [options] Additional Telegram query options
-   * @return {Promise}
-   * @see https://core.telegram.org/bots/api#getmycommands
-   */
+  /**
+  * Returns Array of BotCommand on success.
+  * @param  {Object} [options] Additional Telegram query options
+  * @return {Promise}
+  * @see https://core.telegram.org/bots/api#getmycommands
+  */
   getMyCommands(form = {}) {
     return this._request('getMyCommands', { form });
   }
