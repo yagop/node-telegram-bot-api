@@ -5,24 +5,24 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [0.50.0][0.50.0] - 2020-05-2020
 1. Support Bot API v4.8: (by @danielperez9430)
-  * Add methods: *sendDice()*
+   * Add methods: *sendDice()*
 1. Support Bot API v4.7: (by @danielperez9430)
-  * Add methods: *getMyCommands()*,*setMyCommands()*
+   * Add methods: *getMyCommands()*,*setMyCommands()*
 1. Support Bot API v4.5: (by @danielperez9430)
-  * Add methods: *setChatAdministratorCustomTitle()*
+   * Add methods: *setChatAdministratorCustomTitle()*
 1. Support Bot API v4.4: (by @danielperez9430)
-  * Add methods: *setChatPermissions()*
+   * Add methods: *setChatPermissions()*
 
 Changed: (by @danielperez9430)
  * New message type: *dice*
  * Fix Bugs in tests
 
 New Test: (by @danielperez9430)
-1. sendDice
-1. getMyCommands
-1. setMyCommands
-1. setChatAdministratorCustomTitle
-1. setChatPermissions
+   * sendDice
+   * getMyCommands
+   * setMyCommands
+   * setChatAdministratorCustomTitle
+   * setChatPermissions
 
 ## [0.40.0][0.40.0] - 2019-05-04
 
