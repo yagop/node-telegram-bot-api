@@ -1069,9 +1069,9 @@ class TelegramBot extends EventEmitter {
    * @return {Promise}
    * @see https://core.telegram.org/bots/api#setchatpermissions
    */
-  setChatPermissions(chatId, userId, chatPermissions, form = {}) {
+  setChatPermissions(chatId, chatPermissions, form = {}) {
     form.chat_id = chatId;
-    form.permissions = stringify(chatPermissions);
+    form.permissions = JSON.stringify(chatPermissions);
     return this._request('setChatPermissions', { form });
   }
 
