@@ -12,6 +12,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
    * Add methods: *setChatAdministratorCustomTitle()*
 1. Support Bot API v4.4: (by @danielperez9430)
    * Add methods: *setChatPermissions()*
+1. Support for poll_answer (by @JieJiSS)
 
 Changed: (by @danielperez9430)
  * New message type: *dice*
