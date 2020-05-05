@@ -1175,6 +1175,29 @@ describe('TelegramBot', function telegramSuite() {
     });
   });
 
+  describe('#sendPoll', function sendPollSuite() {
+    it('should send a Poll', function test() {
+      const question = '¿Are you okey?';
+      const answers = ['Yes', 'No'];
+      const opts = { is_anonymous: true };
+      return bot.sendPoll(GROUPID, question, answers, opts).then(resp => {
+        assert.ok(is.object(resp));
+      });
+    });
+    it('should send a Quiz', function test() {
+      const question = '¿Are you okey?';
+      const answers = ['Yes', 'No'];
+      const opts = {
+        is_anonymous: true,
+        type: 'quiz',
+        correct_option_id: 0
+      };
+      return bot.sendPoll(GROUPID, question, answers, opts).then(resp => {
+        assert.ok(is.object(resp));
+      });
+    });
+  });
+
   describe('#sendDice', function sendDiceSuite() {
     it('should send a Dice', function test() {
       return bot.sendDice(GROUPID).then(resp => {
