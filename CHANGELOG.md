@@ -4,6 +4,9 @@ All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [0.50.0][0.50.0] - 2020-05-2020
+
+Added: 
+
 1. Support Bot API v4.8: (by @danielperez9430)
    * Add methods: *sendDice()*
 1. Support Bot API v4.7: (by @danielperez9430)
@@ -13,10 +16,13 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 1. Support Bot API v4.4: (by @danielperez9430)
    * Add methods: *setChatPermissions()*
 1. Support for poll_answer (by @JieJiSS)
+1. Add request options in file stream (by @zhangpanyi )
 
 Changed: (by @danielperez9430)
  * New message type: *dice*
  * Fix Bugs in tests
+ * Fix regex compare (by @ledamint)
+ * Fix listening for error events when downloading files (by @Kraigo)
 
 New Test: (by @danielperez9430)
    * sendDice
