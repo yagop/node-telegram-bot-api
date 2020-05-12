@@ -1587,6 +1587,9 @@ class TelegramBot extends EventEmitter {
         return resolve(filePath);
       });
     });
+    fileStream.on('error', (err) => {
+      reject(err);
+    });
     return promise;
   }
 
