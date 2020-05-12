@@ -26,6 +26,7 @@ const _messageTypes = [
   'channel_chat_created',
   'contact',
   'delete_chat_photo',
+  'dice',
   'document',
   'game',
   'group_chat_created',
@@ -588,6 +589,7 @@ class TelegramBot extends EventEmitter {
     const shippingQuery = update.shipping_query;
     const preCheckoutQuery = update.pre_checkout_query;
     const poll = update.poll;
+    const pollAnswer = update.poll_answer;
 
     if (message) {
       debug('Process Update message %j', message);
@@ -668,6 +670,9 @@ class TelegramBot extends EventEmitter {
     } else if (poll) {
       debug('Process Update poll %j', poll);
       this.emit('poll', poll);
+    } else if (pollAnswer) {
+      debug('Process Update poll_answer %j', pollAnswer);
+      this.emit('poll_answer', pollAnswer);
     }
   }
 
@@ -765,6 +770,28 @@ class TelegramBot extends EventEmitter {
       return Promise.reject(ex);
     }
     return this._request('sendAudio', opts);
+  }
+
+  /**
+   * Send Dice
+   * Use this method to send a dice.
+   * @param  {Number|String} chatId  Unique identifier for the message recipient
+   * @param  {Object} [options] Additional Telegram query options
+   * @return {Promise}
+   * @see https://core.telegram.org/bots/api#senddice
+   */
+  sendDice(chatId, options = {}) {
+    const opts = {
+      qs: options,
+    };
+    opts.qs.chat_id = chatId;
+    try {
+      const sendData = this._formatSendData('dice');
+      opts.formData = sendData[0];
+    } catch (ex) {
+      return Promise.reject(ex);
+    }
+    return this._request('sendDice', opts);
   }
 
   /**
@@ -1017,6 +1044,42 @@ class TelegramBot extends EventEmitter {
   }
 
   /**
+   * Use this method to set a custom title for an administrator in a supergroup promoted by the bot.
+   * Returns True on success.
+   *
+   * @param  {Number|String} chatId  Unique identifier for the message recipient
+   * @param  {Number} userId Unique identifier of the target user
+   * @param  {String} customTitle New custom title for the administrator; 0-16 characters, emoji are not allowed
+   * @param  {Object} [options] Additional Telegram query options
+   * @return {Promise}
+   * @see https://core.telegram.org/bots/api#setchatadministratorcustomtitle
+   */
+  setChatAdministratorCustomTitle(chatId, userId, customTitle, form = {}) {
+    form.chat_id = chatId;
+    form.user_id = userId;
+    form.custom_title = customTitle;
+    return this._request('setChatAdministratorCustomTitle', { form });
+  }
+
+  /**
+   * Use this method to set default chat permissions for all members.
+   * The bot must be an administrator in the group or a supergroup for this to
+   * work and must have the can_restrict_members admin rights.
+   * Returns True on success.
+   *
+   * @param  {Number|String} chatId  Unique identifier for the message recipient
+   * @param  {Array} chatPermissions New default chat permissions
+   * @param  {Object} [options] Additional Telegram query options
+   * @return {Promise}
+   * @see https://core.telegram.org/bots/api#setchatpermissions
+   */
+  setChatPermissions(chatId, chatPermissions, form = {}) {
+    form.chat_id = chatId;
+    form.permissions = JSON.stringify(chatPermissions);
+    return this._request('setChatPermissions', { form });
+  }
+
+  /**
    * Use this method to export an invite link to a supergroup or a channel.
    * The bot must be an administrator in the chat for this to work and must have the appropriate admin rights.
    * Returns exported invite link as String on success.
@@ -1179,6 +1242,29 @@ class TelegramBot extends EventEmitter {
       form.callback_query_id = callbackQueryId;
     }
     return this._request('answerCallbackQuery', { form });
+  }
+
+  /**
+  * Returns True on success.
+  * Use this method to change the list of the bot's commands.
+  * @param  {Array} commands Poll options, between 2-10 options
+  * @param  {Object} [options] Additional Telegram query options
+  * @return {Promise}
+  * @see https://core.telegram.org/bots/api#setmycommands
+  */
+  setMyCommands(commands, form = {}) {
+    form.commands = stringify(commands);
+    return this._request('setMyCommands', { form });
+  }
+
+  /**
+  * Returns Array of BotCommand on success.
+  * @param  {Object} [options] Additional Telegram query options
+  * @return {Promise}
+  * @see https://core.telegram.org/bots/api#getmycommands
+  */
+  getMyCommands(form = {}) {
+    return this._request('getMyCommands', { form });
   }
 
   /**
