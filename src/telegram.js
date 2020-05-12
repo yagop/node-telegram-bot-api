@@ -1609,7 +1609,7 @@ class TelegramBot extends EventEmitter {
    */
   removeTextListener(regexp) {
     const index = this._textRegexpCallbacks.findIndex((textListener) => {
-      return textListener.regexp === regexp;
+      return String(textListener.regexp) === String(regexp);
     });
     if (index === -1) {
       return null;
