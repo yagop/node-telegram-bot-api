@@ -8,5 +8,5 @@
 * [Guía: Creación de bots de Telegram en Nodejs [ES]](https://tecnonucleous.com/creacion-de-bots-de-telegram-en-nodejs/)
 * [node-telegram-bot-api-tutorial:a telegram bot helper to send templates by sms](https://github.com/vito2005/chatManagerTelegramBot)
 * [Telegram bot using blockchain services](https://ilanolkies.com/post/Telegram-bot-using-blockchain-services)
-
+* [How to set webhooks using express local server and NGROK](https://github.com/leobloise/node-telegram-bot-api-wb-tutorial)
 > Send a PR with useful links **not** listed above
