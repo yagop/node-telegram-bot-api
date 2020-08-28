@@ -7,7 +7,8 @@
 const TOKEN = process.env.TELEGRAM_TOKEN || 'YOUR_TELEGRAM_BOT_TOKEN';
 const TelegramBot = require('..');
 const request = require('request');
-const options = {
+const options = 
+{
   polling: true
 };
 const bot = new TelegramBot(TOKEN, options);
@@ -24,7 +25,8 @@ bot.onText(/\/photo/, function onPhotoText(msg) {
 
 
 // Matches /audio
-bot.onText(/\/audio/, function onAudioText(msg) {
+bot.onText(/\/audio/, function onAudioText(msg) 
+{
   // From HTTP request
   const url = 'https://upload.wikimedia.org/wikipedia/commons/c/c8/Example.ogg';
   const audio = request(url);
@@ -75,7 +77,8 @@ bot.onText(/\/editable/, function onEditableText(msg) {
 
 
 // Handle callback queries
-bot.on('callback_query', function onCallbackQuery(callbackQuery) {
+bot.on('callback_query', function onCallbackQuery(callbackQuery) 
+{
   const action = callbackQuery.data;
   const msg = callbackQuery.message;
   const opts = {
@@ -84,7 +87,8 @@ bot.on('callback_query', function onCallbackQuery(callbackQuery) {
   };
   let text;
 
-  if (action === 'edit') {
+  if (action === 'edit') 
+  {
     text = 'Edited Text';
   }
 
