@@ -30,7 +30,7 @@
   },
   "dependencies": {
     "array.prototype.findindex": "^2.0.2",
-    "bl": "^1.2.1",
+    "bl": "^1.2.3",
     "bluebird": "^3.5.1",
     "debug": "^3.1.0",
     "depd": "^1.1.1",
