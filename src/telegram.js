@@ -1202,6 +1202,21 @@ class TelegramBot extends EventEmitter {
     return this._request('unpinChatMessage', { form });
   }
 
+   /**
+   * Use this method to clear the list of pinned messages in a chat
+   * The bot must be an administrator in the chat for this to work and must have the appropriate admin rights.
+   * Returns True on success.
+   *
+   * @param  {Number|String} chatId  Unique identifier for the message recipient
+   * @param  {Object} [options] Additional Telegram query options
+   * @return {Promise}
+   * @see https://core.telegram.org/bots/api#unpinallchatmessages
+   */
+  unpinAllChatMessages(chatId, form = {}) {
+    form.chat_id = chatId;
+    return this._request('unpinAllChatMessages', { form });
+  }
+
   /**
    * Use this method to send answers to callback queries sent from
    * inline keyboards. The answer will be displayed to the user as

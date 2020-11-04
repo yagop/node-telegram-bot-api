@@ -52,6 +52,7 @@ TelegramBot
         * [.setChatDescription(chatId, description, [options])](#TelegramBot+setChatDescription) ⇒ <code>Promise</code>
         * [.pinChatMessage(chatId, messageId, [options])](#TelegramBot+pinChatMessage) ⇒ <code>Promise</code>
         * [.unpinChatMessage(chatId, [options])](#TelegramBot+unpinChatMessage) ⇒ <code>Promise</code>
+        * [.unpinAllChatMessages(chatId, [options])](#TelegramBot+unpinAllChatMessages) ⇒ <code>Promise</code>
         * [.answerCallbackQuery(callbackQueryId, [options])](#TelegramBot+answerCallbackQuery) ⇒ <code>Promise</code>
         * [.setMyCommands(commands, [options])](#TelegramBot+setMyCommands) ⇒ <code>Promise</code>
         * [.getMyCommands([options])](#TelegramBot+getMyCommands) ⇒ <code>Promise</code>
@@ -720,12 +721,27 @@ Returns True on success.
 <a name="TelegramBot+unpinChatMessage"></a>
 
 ### telegramBot.unpinChatMessage(chatId, [options]) ⇒ <code>Promise</code>
-Use this method to unpin a message in a supergroup chat.
+Use this method to remove a message from the list of pinned messages in a chat.
 The bot must be an administrator in the chat for this to work and must have the appropriate admin rights.
 Returns True on success.
 
 **Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
 **See**: https://core.telegram.org/bots/api#unpinchatmessage
+
+| Param | Type | Description |
+| --- | --- | --- |
+| chatId | <code>Number</code> \| <code>String</code> | Unique identifier for the message recipient |
+| [options] | <code>Object</code> | Additional Telegram query options |
+
+<a name="TelegramBot+unpinAllChatMessages"></a>
+
+### telegramBot.unpinAllChatMessages(chatId, [options]) ⇒ <code>Promise</code>
+Use this method to clear the list of pinned messages in a chat
+The bot must be an administrator in the chat for this to work and must have the appropriate admin rights.
+Returns True on success.
+
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
+**See**: https://core.telegram.org/bots/api#unpinallchatmessages
 
 | Param | Type | Description |
 | --- | --- | --- |
