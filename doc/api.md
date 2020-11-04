@@ -30,6 +30,7 @@ TelegramBot
         * [.sendMessage(chatId, text, [options])](#TelegramBot+sendMessage) ⇒ <code>Promise</code>
         * [.answerInlineQuery(inlineQueryId, results, [options])](#TelegramBot+answerInlineQuery) ⇒ <code>Promise</code>
         * [.forwardMessage(chatId, fromChatId, messageId, [options])](#TelegramBot+forwardMessage) ⇒ <code>Promise</code>
+        * [.copyMessage(chatId, fromChatId, messageId, [options])](#TelegramBot+copyMessage) ⇒ <code>Promise</code>
         * [.sendPhoto(chatId, photo, [options], [fileOptions])](#TelegramBot+sendPhoto) ⇒ <code>Promise</code>
         * [.sendAudio(chatId, audio, [options], [fileOptions])](#TelegramBot+sendAudio) ⇒ <code>Promise</code>
         * [.sendDocument(chatId, doc, [options], [fileOptions])](#TelegramBot+sendDocument) ⇒ <code>Promise</code>
@@ -345,6 +346,20 @@ Send answers to an inline query.
 
 ### telegramBot.forwardMessage(chatId, fromChatId, messageId, [options]) ⇒ <code>Promise</code>
 Forward messages of any kind.
+
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
+
+| Param | Type | Description |
+| --- | --- | --- |
+| chatId | <code>Number</code> \| <code>String</code> | Unique identifier for the message recipient |
+| fromChatId | <code>Number</code> \| <code>String</code> | Unique identifier for the chat where the original message was sent |
+| messageId | <code>Number</code> \| <code>String</code> | Unique message identifier |
+| [options] | <code>Object</code> | Additional Telegram query options |
+
+<a name="TelegramBot+copyMessage"></a>
+
+### telegramBot.copyMessage(chatId, fromChatId, messageId, [options]) ⇒ <code>Promise</code>
+Copy messages of any kind.
 
 **Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
 

@@ -721,6 +721,25 @@ class TelegramBot extends EventEmitter {
   }
 
   /**
+   * Copy messages of any kind.
+   * The method is analogous to the method forwardMessages, but the copied message doesn't 
+   * have a link to the original message. 
+   * Returns the MessageId of the sent message on success.
+   * @param  {Number|String} chatId     Unique identifier for the message recipient
+   * @param  {Number|String} fromChatId Unique identifier for the chat where the
+   * original message was sent
+   * @param  {Number|String} messageId  Unique message identifier
+   * @param  {Object} [options] Additional Telegram query options
+   * @return {Promise}
+   */
+  copyMessage(chatId, fromChatId, messageId, form = {}) {
+    form.chat_id = chatId;
+    form.from_chat_id = fromChatId;
+    form.message_id = messageId;
+    return this._request('copyMessage', { form });
+  }
+
+  /**
    * Send photo
    * @param  {Number|String} chatId  Unique identifier for the message recipient
    * @param  {String|stream.Stream|Buffer} photo A file path or a Stream. Can
