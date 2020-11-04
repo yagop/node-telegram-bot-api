@@ -475,8 +475,8 @@ class TelegramBot extends EventEmitter {
 
   /**
    * This method log out your bot from the cloud Bot API server before launching the bot locally.
-   * You must log out the bot before running it locally, otherwise there is no guarantee that the bot will receive updates. 
-   * After a successful call, you will not be able to log in again using the same token for 10 minutes. 
+   * You must log out the bot before running it locally, otherwise there is no guarantee that the bot will receive updates.
+   * After a successful call, you will not be able to log in again using the same token for 10 minutes.
    * Returns True on success.
    * @param  {Object} [options] Additional Telegram query options
    * @return {Promise}
@@ -488,7 +488,7 @@ class TelegramBot extends EventEmitter {
 
   /**
    * This method close the bot instance before moving it from one local server to another.
-   * This method will return error 429 in the first 10 minutes after the bot is launched. 
+   * This method will return error 429 in the first 10 minutes after the bot is launched.
    * Returns True on success.
    * @param  {Object} [options] Additional Telegram query options
    * @return {Promise}
@@ -748,8 +748,8 @@ class TelegramBot extends EventEmitter {
 
   /**
    * Copy messages of any kind.
-   * The method is analogous to the method forwardMessages, but the copied message doesn't 
-   * have a link to the original message. 
+   * The method is analogous to the method forwardMessages, but the copied message doesn't
+   * have a link to the original message.
    * Returns the MessageId of the sent message on success.
    * @param  {Number|String} chatId     Unique identifier for the message recipient
    * @param  {Number|String} fromChatId Unique identifier for the chat where the

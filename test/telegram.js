@@ -63,11 +63,11 @@ describe('module.exports', function moduleExportsSuite() {
   const nodeVersion = parseInt(process.versions.node.split('.')[0], 10);
   it('is loaded from src/ on Node.js v6+ and above', function test() {
     if (nodeVersion <= 5) this.skip(); // skip on Node.js v5 and below
-    assert.equal(TelegramBot, require('../src/telegram'));
+    assert.strictEqual(TelegramBot, require('../src/telegram'));
   });
   it('is loaded from lib/ on Node.js v5 and below', function test() {
     if (nodeVersion > 5) this.skip(); // skip on newer versions
-    assert.equal(TelegramBot, require('../lib/telegram'));
+    assert.strictEqual(TelegramBot, require('../lib/telegram'));
   });
 });
 
@@ -125,22 +125,22 @@ describe('TelegramBot', function telegramSuite() {
   });
 
   it('automatically starts polling', function test() {
-    assert.equal(botPolling.isPolling(), true);
+    assert.strictEqual(botPolling.isPolling(), true);
     return utils.isPollingMockServer(pollingPort2);
   });
 
   it('automatically opens webhook', function test() {
-    assert.equal(botWebHook.hasOpenWebHook(), true);
+    assert.strictEqual(botWebHook.hasOpenWebHook(), true);
     return utils.hasOpenWebHook(webHookPort2);
   });
 
   it('does not automatically poll if "autoStart" is false', function test() {
-    assert.equal(testbot.isPolling(), false);
+    assert.strictEqual(testbot.isPolling(), false);
     return utils.isPollingMockServer(pollingPort, true);
   });
 
   it('does not automatically open webhook if "autoOpen" is false', function test() {
-    assert.equal(testbot.hasOpenWebHook(), false);
+    assert.strictEqual(testbot.hasOpenWebHook(), false);
     return utils.hasOpenWebHook(webHookPort, true);
   });
 
@@ -169,7 +169,7 @@ describe('TelegramBot', function telegramSuite() {
       const myBot = new TelegramBot(12345, { polling: true });
       myBot.once('polling_error', (error) => {
         assert.ok(error);
-        assert.equal(error.code, 'ETELEGRAM');
+        assert.strictEqual(error.code, 'ETELEGRAM');
         return myBot.stopPolling().then(() => { done(); }).catch(done);
       });
     });
@@ -182,7 +182,7 @@ describe('TelegramBot', function telegramSuite() {
     it('(webhook) emits "webhook_error" if could not parse webhook request body', function test(done) {
       botWebHook.once('webhook_error', (error) => {
         assert.ok(error);
-        assert.equal(error.code, 'EPARSE');
+        assert.strictEqual(error.code, 'EPARSE');
         return done();
       });
       utils.sendWebHookMessage(webHookPort2, TOKEN, { update: 'unparseable!', json: false });
@@ -192,13 +192,13 @@ describe('TelegramBot', function telegramSuite() {
   describe('WebHook', function webHookSuite() {
     it('returns 200 OK for health endpoint', function test(done) {
       utils.sendWebHookRequest(webHookPort2, '/healthz').then(resp => {
-        assert.equal(resp, 'OK');
+        assert.strictEqual(resp, 'OK');
         return done();
       });
     });
     it('returns 401 error if token is wrong', function test(done) {
       utils.sendWebHookMessage(webHookPort2, 'wrong-token').catch(resp => {
-        assert.equal(resp.statusCode, 401);
+        assert.strictEqual(resp.statusCode, 401);
         return done();
       });
     });
@@ -250,7 +250,7 @@ describe('TelegramBot', function telegramSuite() {
       const myBot = new TelegramBot(null);
       return myBot.sendMessage(USERID, 'text').catch(error => {
         // FIX: assert.ok(error instanceof TelegramBot.errors.FatalError);
-        assert.equal(error.code, 'EFATAL');
+        assert.strictEqual(error.code, 'EFATAL');
         assert.ok(error.message.indexOf('not provided') > -1);
       });
     });
@@ -263,7 +263,7 @@ describe('TelegramBot', function telegramSuite() {
       }
       return bot.sendPhoto(USERID, buffer).catch(error => {
         // FIX: assert.ok(error instanceof TelegramBot.errors.FatalError);
-        assert.equal(error.code, 'EFATAL');
+        assert.strictEqual(error.code, 'EFATAL');
         assert.ok(error.message.indexOf('Unsupported') > -1);
       });
     });
@@ -273,13 +273,13 @@ describe('TelegramBot', function telegramSuite() {
       });
       return myBot.getMe().catch(error => {
         // FIX: assert.ok(error instanceof TelegramBot.errors.FatalError);
-        assert.equal(error.code, 'EFATAL');
+        assert.strictEqual(error.code, 'EFATAL');
       });
     });
     it('ParseError is thrown if response body could not be parsed', function test() {
       botParse.sendMessage(USERID, 'text').catch(error => {
         // FIX: assert.ok(error instanceof TelegramBot.errors.ParseError);
-        assert.equal(error.code, 'EPARSE');
+        assert.strictEqual(error.code, 'EPARSE');
         assert.ok(typeof error.response === 'object');
         assert.ok(typeof error.response.body === 'string');
       });
@@ -287,7 +287,7 @@ describe('TelegramBot', function telegramSuite() {
     it('TelegramError is thrown if error is from Telegram', function test() {
       return bot.sendMessage('404', 'text').catch(error => {
         // FIX: assert.ok(error instanceof TelegramBot.errors.TelegramError);
-        assert.equal(error.code, 'ETELEGRAM');
+        assert.strictEqual(error.code, 'ETELEGRAM');
         assert.ok(typeof error.response === 'object');
         assert.ok(typeof error.response.body === 'object');
       });
@@ -304,7 +304,7 @@ describe('TelegramBot', function telegramSuite() {
       return botWebHook.startPolling().catch((err) => {
         // TODO: check for error in a better way
         // FIX: assert.ok(err instanceof TelegramBot.errors.FatalError);
-        assert.equal(err.code, 'EFATAL');
+        assert.strictEqual(err.code, 'EFATAL');
         assert.ok(err.message.indexOf('mutually exclusive') !== -1);
       });
     });
@@ -312,12 +312,12 @@ describe('TelegramBot', function telegramSuite() {
 
   describe('#isPolling', function isPollingSuite() {
     it('returns true if bot is polling', function test() {
-      assert.equal(testbot.isPolling(), true);
+      assert.strictEqual(testbot.isPolling(), true);
       return utils.isPollingMockServer(pollingPort);
     });
     it('returns false if bot is not polling', function test() {
       return testbot.stopPolling().then(() => {
-        assert.equal(testbot.isPolling(), false);
+        assert.strictEqual(testbot.isPolling(), false);
         utils.clearPollingCheck(pollingPort);
         return utils.isPollingMockServer(pollingPort, true);
       });
@@ -346,7 +346,7 @@ describe('TelegramBot', function telegramSuite() {
       return botPolling.openWebHook().catch((err) => {
         // TODO: check for error in a better way
         // FIX: assert.ok(err instanceof TelegramBot.errors.FatalError);
-        assert.equal(err.code, 'EFATAL');
+        assert.strictEqual(err.code, 'EFATAL');
         assert.ok(err.message.indexOf('mutually exclusive') !== -1);
       });
     });
@@ -354,12 +354,12 @@ describe('TelegramBot', function telegramSuite() {
 
   describe('#hasOpenWebHook', function hasOpenWebHookSuite() {
     it('returns true if webhook is opened', function test() {
-      assert.equal(testbot.hasOpenWebHook(), true);
+      assert.strictEqual(testbot.hasOpenWebHook(), true);
       return utils.hasOpenWebHook(webHookPort);
     });
     it('returns false if webhook is closed', function test() {
       testbot.closeWebHook().then(() => {
-        assert.equal(testbot.hasOpenWebHook(), false);
+        assert.strictEqual(testbot.hasOpenWebHook(), false);
         return utils.hasOpenWebHook(webHookPort, true);
       });
     });
@@ -397,28 +397,28 @@ describe('TelegramBot', function telegramSuite() {
       return bot
         .setWebHook(ip)
         .then(resp => {
-          assert.equal(resp, true);
+          assert.strictEqual(resp, true);
         });
     });
     it('should set a webHook with certificate', function test() {
       return bot
         .setWebHook(ip, { certificate: cert })
         .then(resp => {
-          assert.equal(resp, true);
+          assert.strictEqual(resp, true);
         });
     });
     it('(v0.25.0 and lower) should set a webHook with certificate', function test() {
       return bot
         .setWebHook(ip, cert)
         .then(resp => {
-          assert.equal(resp, true);
+          assert.strictEqual(resp, true);
         });
     });
     it('should delete the webHook', function test() {
       return bot
         .setWebHook('')
         .then(resp => {
-          assert.equal(resp, true);
+          assert.strictEqual(resp, true);
         });
     });
   });
@@ -429,7 +429,7 @@ describe('TelegramBot', function telegramSuite() {
     });
     it('should delete webhook', function test() {
       return bot.deleteWebHook().then(resp => {
-        assert.equal(resp, true);
+        assert.strictEqual(resp, true);
       });
     });
   });
@@ -459,12 +459,12 @@ describe('TelegramBot', function telegramSuite() {
     });
     it('should return an Array', function test() {
       return bot.getUpdates(opts).then(resp => {
-        assert.equal(Array.isArray(resp), true);
+        assert.strictEqual(Array.isArray(resp), true);
       });
     });
     it('(v0.25.0 and lower) should return an Array', function test() {
       return bot.getUpdates(opts.timeout, opts.limit).then(resp => {
-        assert.equal(Array.isArray(resp), true);
+        assert.strictEqual(Array.isArray(resp), true);
       });
     });
   });
@@ -495,6 +495,23 @@ describe('TelegramBot', function telegramSuite() {
           .then(forwarded => {
             assert.ok(is.object(forwarded));
             assert.ok(is.number(forwarded.message_id));
+          });
+      });
+    });
+  });
+
+  describe('#copyMessage', function copyMessageSuite() {
+    before(function before() {
+      utils.handleRatelimit(bot, 'sendMessage', this);
+      utils.handleRatelimit(bot, 'copyMessage', this);
+    });
+    it('should send copy of a message', function test() {
+      return bot.sendMessage(USERID, 'test').then(resp => {
+        const messageId = resp.message_id;
+        return bot.copyMessage(USERID, USERID, messageId)
+          .then(copy => {
+            assert.ok(is.object(copy));
+            assert.ok(is.number(copy.message_id));
           });
       });
     });
@@ -812,7 +829,7 @@ describe('TelegramBot', function telegramSuite() {
     it('should send a chat action', function test() {
       const action = 'typing';
       return bot.sendChatAction(USERID, action).then(resp => {
-        assert.equal(resp, true);
+        assert.strictEqual(resp, true);
       });
     });
   });
@@ -892,25 +909,25 @@ describe('TelegramBot', function telegramSuite() {
     it('should set a chat photo from file', function test() {
       const photo = `${__dirname}/data/chat_photo.png`;
       return bot.setChatPhoto(GROUPID, photo).then(resp => {
-        assert.equal(resp, true);
+        assert.strictEqual(resp, true);
       });
     });
     it('should set a chat photo from fs.readStream', function test() {
       const photo = fs.createReadStream(`${__dirname}/data/chat_photo.png`);
       return bot.setChatPhoto(GROUPID, photo).then(resp => {
-        assert.equal(resp, true);
+        assert.strictEqual(resp, true);
       });
     });
     it('should set a chat photo from request Stream', function test() {
       const photo = request(`${staticUrl}/chat_photo.png`);
       return bot.setChatPhoto(GROUPID, photo).then(resp => {
-        assert.equal(resp, true);
+        assert.strictEqual(resp, true);
       });
     });
     it('should set a chat photo from a Buffer', function test() {
       const photo = fs.readFileSync(`${__dirname}/data/chat_photo.png`);
       return bot.setChatPhoto(GROUPID, photo).then(resp => {
-        assert.equal(resp, true);
+        assert.strictEqual(resp, true);
       });
     });
   });
@@ -921,7 +938,7 @@ describe('TelegramBot', function telegramSuite() {
     });
     it('should delete the chat photo', function test() {
       return bot.deleteChatPhoto(GROUPID).then(resp => {
-        assert.equal(resp, true);
+        assert.strictEqual(resp, true);
       });
     });
   });
@@ -933,7 +950,7 @@ describe('TelegramBot', function telegramSuite() {
     it('should set the chat title', function test() {
       const random = Math.floor(Math.random() * 1000);
       return bot.setChatTitle(GROUPID, `ntba test group (random: ${random})`).then(resp => {
-        assert.equal(resp, true);
+        assert.strictEqual(resp, true);
       });
     });
   });
@@ -946,7 +963,7 @@ describe('TelegramBot', function telegramSuite() {
       const random = Math.floor(Math.random() * 1000);
       const description = `node-telegram-bot-api test group (random: ${random})`;
       return bot.setChatDescription(GROUPID, description).then(resp => {
-        assert.equal(resp, true);
+        assert.strictEqual(resp, true);
       });
     });
   });
@@ -961,7 +978,7 @@ describe('TelegramBot', function telegramSuite() {
     });
     it('should pin chat message', function test() {
       return bot.pinChatMessage(GROUPID, messageId).then(resp => {
-        assert.equal(resp, true);
+        assert.strictEqual(resp, true);
       });
     });
   });
@@ -972,7 +989,18 @@ describe('TelegramBot', function telegramSuite() {
     });
     it('should unpin chat message', function test() {
       return bot.unpinChatMessage(GROUPID).then(resp => {
-        assert.equal(resp, true);
+        assert.strictEqual(resp, true);
+      });
+    });
+  });
+
+  describe('#unpinAllChatMessages', function unpinAllChatMessagesSuite() {
+    before(function before() {
+      utils.handleRatelimit(bot, 'unpinAllChatMessages', this);
+    });
+    it('should unpin all chats messages', function test() {
+      return bot.unpinAllChatMessages(GROUPID).then(resp => {
+        assert.ok(is.boolean(resp));
       });
     });
   });
@@ -984,13 +1012,13 @@ describe('TelegramBot', function telegramSuite() {
     });
     it('should edit a message sent by the bot', function test() {
       return bot.sendMessage(USERID, 'test').then(resp => {
-        assert.equal(resp.text, 'test');
+        assert.strictEqual(resp.text, 'test');
         const opts = {
           chat_id: USERID,
           message_id: resp.message_id
         };
         return bot.editMessageText('edit test', opts).then(msg => {
-          assert.equal(msg.text, 'edit test');
+          assert.strictEqual(msg.text, 'edit test');
         });
       });
     });
@@ -1006,13 +1034,13 @@ describe('TelegramBot', function telegramSuite() {
       const photo = `${__dirname}/data/photo.png`;
       const options = { caption: 'test caption' };
       return bot.sendPhoto(USERID, photo, options).then(resp => {
-        assert.equal(resp.caption, 'test caption');
+        assert.strictEqual(resp.caption, 'test caption');
         const opts = {
           chat_id: USERID,
           message_id: resp.message_id
         };
         return bot.editMessageCaption('new test caption', opts).then(msg => {
-          assert.equal(msg.caption, 'new test caption');
+          assert.strictEqual(msg.caption, 'new test caption');
         });
       });
     });
@@ -1053,7 +1081,7 @@ describe('TelegramBot', function telegramSuite() {
     });
     it('should delete message', function test() {
       return bot.deleteMessage(USERID, messageId).then(resp => {
-        assert.equal(resp, true);
+        assert.strictEqual(resp, true);
       });
     });
   });
@@ -1248,7 +1276,7 @@ describe('TelegramBot', function telegramSuite() {
     it('should get a file stream', function test(done) {
       const fileStream = bot.getFileStream(FILE_ID);
       assert.ok(fileStream instanceof stream.Readable);
-      assert.equal(fileStream.path, FILE_ID);
+      assert.strictEqual(fileStream.path, FILE_ID);
       fileStream.on('info', (info) => {
         assert.ok(info);
         assert.ok(utils.isTelegramFileURI(info.uri), `${info.uri} is not a file URI`);
@@ -1270,7 +1298,7 @@ describe('TelegramBot', function telegramSuite() {
       return bot.downloadFile(FILE_ID, downloadPath)
         .then(filePath => {
           assert.ok(is.string(filePath));
-          assert.equal(path.dirname(filePath), downloadPath);
+          assert.strictEqual(path.dirname(filePath), downloadPath);
           assert.ok(fs.existsSync(filePath));
           fs.unlinkSync(filePath); // Delete file after test
         });
@@ -1281,7 +1309,7 @@ describe('TelegramBot', function telegramSuite() {
     it('should call `onText` callback on match', function test(done) {
       const regexp = /\/onText (.+)/;
       botWebHook.onText(regexp, (msg, match) => {
-        assert.equal(match[1], 'ECHO ALOHA');
+        assert.strictEqual(match[1], 'ECHO ALOHA');
         assert.ok(botWebHook.removeTextListener(regexp));
         return done();
       });
@@ -1292,7 +1320,7 @@ describe('TelegramBot', function telegramSuite() {
     it('should reset the global regex state with each message', function test(done) {
       const regexp = /\/onText (.+)/g;
       botWebHook.onText(regexp, () => {
-        assert.equal(regexp.lastIndex, 0);
+        assert.strictEqual(regexp.lastIndex, 0);
         assert.ok(botWebHook.removeTextListener(regexp));
         return done();
       });
@@ -1314,10 +1342,10 @@ describe('TelegramBot', function telegramSuite() {
       bot.onText(regexp, callback);
       bot.onText(regexp2, callback);
       const textListener = bot.removeTextListener(regexp);
-      assert.equal(regexp, textListener.regexp);
+      assert.strictEqual(regexp, textListener.regexp);
     });
     it('returns `null` if missing', function test() {
-      assert.equal(null, bot.removeTextListener(/404/));
+      assert.strictEqual(null, bot.removeTextListener(/404/));
     });
   });
 
@@ -1330,14 +1358,14 @@ describe('TelegramBot', function telegramSuite() {
     it('returns the right reply-listener', function test() {
       const id = bot.onReplyToMessage(chatId, messageId, callback);
       const replyListener = bot.removeReplyListener(id);
-      assert.equal(id, replyListener.id);
-      assert.equal(chatId, replyListener.chatId);
-      assert.equal(messageId, replyListener.messageId);
-      assert.equal(callback, replyListener.callback);
+      assert.strictEqual(id, replyListener.id);
+      assert.strictEqual(chatId, replyListener.chatId);
+      assert.strictEqual(messageId, replyListener.messageId);
+      assert.strictEqual(callback, replyListener.callback);
     });
     it('returns `null` if missing', function test() {
       // NOTE: '0' is never a valid reply listener ID :)
-      assert.equal(null, bot.removeReplyListener(0));
+      assert.strictEqual(null, bot.removeReplyListener(0));
     });
   });
 
@@ -1467,7 +1495,7 @@ describe('TelegramBot', function telegramSuite() {
     it('should get the sticker set given the name of the set', function test() {
       return bot.getStickerSet(STICKER_SET_NAME).then(resp => {
         assert.ok(is.object(resp));
-        assert.equal(resp.name.toLowerCase(), STICKER_SET_NAME);
+        assert.strictEqual(resp.name.toLowerCase(), STICKER_SET_NAME);
         assert.ok(is.string(resp.title));
         assert.ok(is.boolean(resp.contains_masks));
         assert.ok(is.array(resp.stickers));
@@ -1511,7 +1539,7 @@ describe('TelegramBot', function telegramSuite() {
         disable_notification: true,
       }).then(resp => {
         assert.ok(is.array(resp));
-        assert.equal(resp.length, 3);
+        assert.strictEqual(resp.length, 3);
       });
     });
   });

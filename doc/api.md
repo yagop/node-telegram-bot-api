@@ -767,7 +767,7 @@ Returns True on success.
 <a name="TelegramBot+unpinChatMessage"></a>
 
 ### telegramBot.unpinChatMessage(chatId, [options]) ⇒ <code>Promise</code>
-Use this method to remove a message from the list of pinned messages in a chat.
+Use this method to unpin a message from the list of pinned messages in a chat.
 The bot must be an administrator in the chat for this to work and must have the appropriate admin rights.
 Returns True on success.
 
