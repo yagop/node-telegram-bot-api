@@ -22,6 +22,8 @@ TelegramBot
         * [.closeWebHook()](#TelegramBot+closeWebHook) ⇒ <code>Promise</code>
         * [.hasOpenWebHook()](#TelegramBot+hasOpenWebHook) ⇒ <code>Boolean</code>
         * [.getMe([options])](#TelegramBot+getMe) ⇒ <code>Promise</code>
+        * [.logOut([options])](#TelegramBot+logOut) ⇒ <code>Promise</code>
+        * [.close([options])](#TelegramBot+close) ⇒ <code>Promise</code>
         * [.setWebHook(url, [options], [fileOptions])](#TelegramBot+setWebHook) ⇒ <code>Promise</code>
         * [.deleteWebHook([options])](#TelegramBot+deleteWebHook) ⇒ <code>Promise</code>
         * [.getWebHookInfo([options])](#TelegramBot+getWebHookInfo) ⇒ <code>Promise</code>
@@ -232,6 +234,35 @@ Returns basic information about the bot in form of a `User` object.
 
 **Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
 **See**: https://core.telegram.org/bots/api#getme
+
+| Param | Type | Description |
+| --- | --- | --- |
+| [options] | <code>Object</code> | Additional Telegram query options |
+
+<a name="TelegramBot+logOut"></a>
+
+### telegramBot.logOut([options]) ⇒ <code>Promise</code>
+This method log out your bot from the cloud Bot API server before launching the bot locally.
+You must log out the bot before running it locally, otherwise there is no guarantee that the bot will receive updates. 
+After a successful call, you will not be able to log in again using the same token for 10 minutes. 
+Returns True on success.
+
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
+**See**: https://core.telegram.org/bots/api#logout
+
+| Param | Type | Description |
+| --- | --- | --- |
+| [options] | <code>Object</code> | Additional Telegram query options |
+
+<a name="TelegramBot+close"></a>
+
+### telegramBot.close([options]) ⇒ <code>Promise</code>
+This method close the bot instance before moving it from one local server to another.
+This method will return error 429 in the first 10 minutes after the bot is launched. 
+Returns True on success.
+
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
+**See**: https://core.telegram.org/bots/api#close
 
 | Param | Type | Description |
 | --- | --- | --- |

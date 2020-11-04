@@ -474,6 +474,31 @@ class TelegramBot extends EventEmitter {
   }
 
   /**
+   * This method log out your bot from the cloud Bot API server before launching the bot locally.
+   * You must log out the bot before running it locally, otherwise there is no guarantee that the bot will receive updates. 
+   * After a successful call, you will not be able to log in again using the same token for 10 minutes. 
+   * Returns True on success.
+   * @param  {Object} [options] Additional Telegram query options
+   * @return {Promise}
+   * @see https://core.telegram.org/bots/api#logout
+   */
+  logOut(form = {}) {
+    return this._request('logOut', { form });
+  }
+
+  /**
+   * This method close the bot instance before moving it from one local server to another.
+   * This method will return error 429 in the first 10 minutes after the bot is launched. 
+   * Returns True on success.
+   * @param  {Object} [options] Additional Telegram query options
+   * @return {Promise}
+   * @see https://core.telegram.org/bots/api#close
+   */
+  close(form = {}) {
+    return this._request('close', { form });
+  }
+
+  /**
    * Specify an url to receive incoming updates via an outgoing webHook.
    * This method has an [older, compatible signature][setWebHook-v0.25.0]
    * that is being deprecated.
@@ -712,6 +737,7 @@ class TelegramBot extends EventEmitter {
    * @param  {Number|String} messageId  Unique message identifier
    * @param  {Object} [options] Additional Telegram query options
    * @return {Promise}
+   * @see https://core.telegram.org/bots/api#forwardmessage
    */
   forwardMessage(chatId, fromChatId, messageId, form = {}) {
     form.chat_id = chatId;
@@ -731,6 +757,7 @@ class TelegramBot extends EventEmitter {
    * @param  {Number|String} messageId  Unique message identifier
    * @param  {Object} [options] Additional Telegram query options
    * @return {Promise}
+   * @see https://core.telegram.org/bots/api#copymessage
    */
   copyMessage(chatId, fromChatId, messageId, form = {}) {
     form.chat_id = chatId;
