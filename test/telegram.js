@@ -1315,9 +1315,6 @@ describe('TelegramBot', function telegramSuite() {
       bot.onText(regexp2, callback);
       const textListener = bot.removeTextListener(regexp);
       assert.equal(regexp, textListener.regexp);
-      assert.equal(callback, textListener.callback);
-      assert.notEqual(regexp2, textListener.regexp);
-      assert.equal(null, bot.removeTextListener(regexp));
     });
     it('returns `null` if missing', function test() {
       assert.equal(null, bot.removeTextListener(/404/));

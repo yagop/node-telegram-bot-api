@@ -1551,7 +1551,7 @@ class TelegramBot extends EventEmitter {
         fileStream.emit('info', {
           uri: fileURI,
         });
-        pump(streamedRequest({ uri: fileURI }), fileStream);
+        pump(streamedRequest(Object.assign({ uri: fileURI }, this.options.request)), fileStream);
       })
       .catch((error) => {
         fileStream.emit('error', error);
@@ -1587,6 +1587,9 @@ class TelegramBot extends EventEmitter {
         return resolve(filePath);
       });
     });
+    fileStream.on('error', (err) => {
+      reject(err);
+    });
     return promise;
   }
 
@@ -1609,7 +1612,7 @@ class TelegramBot extends EventEmitter {
    */
   removeTextListener(regexp) {
     const index = this._textRegexpCallbacks.findIndex((textListener) => {
-      return textListener.regexp === regexp;
+      return String(textListener.regexp) === String(regexp);
     });
     if (index === -1) {
       return null;
