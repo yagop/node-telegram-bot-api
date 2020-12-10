@@ -80,6 +80,8 @@ TelegramBot
         * [.removeTextListener(regexp)](#TelegramBot+removeTextListener) ⇒ <code>Object</code>
         * [.onReplyToMessage(chatId, messageId, callback)](#TelegramBot+onReplyToMessage) ⇒ <code>Number</code>
         * [.removeReplyListener(replyListenerId)](#TelegramBot+removeReplyListener) ⇒ <code>Object</code>
+        * [.clearTextListeners()](#TelegramBot+clearTextListeners)
+        * [.clearReplyListeners()](#TelegramBot+clearReplyListeners)
         * [.getChat(chatId, [options])](#TelegramBot+getChat) ⇒ <code>Promise</code>
         * [.getChatAdministrators(chatId, [options])](#TelegramBot+getChatAdministrators) ⇒ <code>Promise</code>
         * [.getChatMembersCount(chatId, [options])](#TelegramBot+getChatMembersCount) ⇒ <code>Promise</code>
@@ -1184,6 +1186,20 @@ Removes a reply that has been prev. registered for a message response.
 | Param | Type | Description |
 | --- | --- | --- |
 | replyListenerId | <code>Number</code> | The ID of the reply listener. |
+
+<a name="TelegramBot+clearTextListeners"></a>
+
+### telegramBot.clearTextListeners()
+Remove all listeners registered with `onText()`.
+
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
+
+<a name="TelegramBot+clearReplyListeners"></a>
+
+### telegramBot.clearReplyListeners()
+Removes all replies that have been previously registered for a message response.
+
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
 
 <a name="TelegramBot+getChat"></a>
 
