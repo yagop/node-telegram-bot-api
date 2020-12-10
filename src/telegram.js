@@ -936,7 +936,7 @@ class TelegramBot extends EventEmitter {
     try {
       const sendData = this._formatSendData('animation', animation, fileOptions);
       opts.formData = sendData[0];
-      opts.qs.document = sendData[1];
+      opts.qs.animation = sendData[1];
     } catch (ex) {
       return Promise.reject(ex);
     }
