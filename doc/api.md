@@ -22,6 +22,8 @@ TelegramBot
         * [.closeWebHook()](#TelegramBot+closeWebHook) ⇒ <code>Promise</code>
         * [.hasOpenWebHook()](#TelegramBot+hasOpenWebHook) ⇒ <code>Boolean</code>
         * [.getMe([options])](#TelegramBot+getMe) ⇒ <code>Promise</code>
+        * [.logOut([options])](#TelegramBot+logOut) ⇒ <code>Promise</code>
+        * [.close([options])](#TelegramBot+close) ⇒ <code>Promise</code>
         * [.setWebHook(url, [options], [fileOptions])](#TelegramBot+setWebHook) ⇒ <code>Promise</code>
         * [.deleteWebHook([options])](#TelegramBot+deleteWebHook) ⇒ <code>Promise</code>
         * [.getWebHookInfo([options])](#TelegramBot+getWebHookInfo) ⇒ <code>Promise</code>
@@ -30,6 +32,7 @@ TelegramBot
         * [.sendMessage(chatId, text, [options])](#TelegramBot+sendMessage) ⇒ <code>Promise</code>
         * [.answerInlineQuery(inlineQueryId, results, [options])](#TelegramBot+answerInlineQuery) ⇒ <code>Promise</code>
         * [.forwardMessage(chatId, fromChatId, messageId, [options])](#TelegramBot+forwardMessage) ⇒ <code>Promise</code>
+        * [.copyMessage(chatId, fromChatId, messageId, [options])](#TelegramBot+copyMessage) ⇒ <code>Promise</code>
         * [.sendPhoto(chatId, photo, [options], [fileOptions])](#TelegramBot+sendPhoto) ⇒ <code>Promise</code>
         * [.sendAudio(chatId, audio, [options], [fileOptions])](#TelegramBot+sendAudio) ⇒ <code>Promise</code>
         * [.sendDocument(chatId, doc, [options], [fileOptions])](#TelegramBot+sendDocument) ⇒ <code>Promise</code>
@@ -52,6 +55,7 @@ TelegramBot
         * [.setChatDescription(chatId, description, [options])](#TelegramBot+setChatDescription) ⇒ <code>Promise</code>
         * [.pinChatMessage(chatId, messageId, [options])](#TelegramBot+pinChatMessage) ⇒ <code>Promise</code>
         * [.unpinChatMessage(chatId, [options])](#TelegramBot+unpinChatMessage) ⇒ <code>Promise</code>
+        * [.unpinAllChatMessages(chatId, [options])](#TelegramBot+unpinAllChatMessages) ⇒ <code>Promise</code>
         * [.answerCallbackQuery(callbackQueryId, [options])](#TelegramBot+answerCallbackQuery) ⇒ <code>Promise</code>
         * [.setMyCommands(commands, [options])](#TelegramBot+setMyCommands) ⇒ <code>Promise</code>
         * [.getMyCommands([options])](#TelegramBot+getMyCommands) ⇒ <code>Promise</code>
@@ -235,6 +239,35 @@ Returns basic information about the bot in form of a `User` object.
 | --- | --- | --- |
 | [options] | <code>Object</code> | Additional Telegram query options |
 
+<a name="TelegramBot+logOut"></a>
+
+### telegramBot.logOut([options]) ⇒ <code>Promise</code>
+This method log out your bot from the cloud Bot API server before launching the bot locally.
+You must log out the bot before running it locally, otherwise there is no guarantee that the bot will receive updates. 
+After a successful call, you will not be able to log in again using the same token for 10 minutes. 
+Returns True on success.
+
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
+**See**: https://core.telegram.org/bots/api#logout
+
+| Param | Type | Description |
+| --- | --- | --- |
+| [options] | <code>Object</code> | Additional Telegram query options |
+
+<a name="TelegramBot+close"></a>
+
+### telegramBot.close([options]) ⇒ <code>Promise</code>
+This method close the bot instance before moving it from one local server to another.
+This method will return error 429 in the first 10 minutes after the bot is launched. 
+Returns True on success.
+
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
+**See**: https://core.telegram.org/bots/api#close
+
+| Param | Type | Description |
+| --- | --- | --- |
+| [options] | <code>Object</code> | Additional Telegram query options |
+
 <a name="TelegramBot+setWebHook"></a>
 
 ### telegramBot.setWebHook(url, [options], [fileOptions]) ⇒ <code>Promise</code>
@@ -344,6 +377,20 @@ Send answers to an inline query.
 
 ### telegramBot.forwardMessage(chatId, fromChatId, messageId, [options]) ⇒ <code>Promise</code>
 Forward messages of any kind.
+
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
+
+| Param | Type | Description |
+| --- | --- | --- |
+| chatId | <code>Number</code> \| <code>String</code> | Unique identifier for the message recipient |
+| fromChatId | <code>Number</code> \| <code>String</code> | Unique identifier for the chat where the original message was sent |
+| messageId | <code>Number</code> \| <code>String</code> | Unique message identifier |
+| [options] | <code>Object</code> | Additional Telegram query options |
+
+<a name="TelegramBot+copyMessage"></a>
+
+### telegramBot.copyMessage(chatId, fromChatId, messageId, [options]) ⇒ <code>Promise</code>
+Copy messages of any kind.
 
 **Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
 
@@ -720,12 +767,27 @@ Returns True on success.
 <a name="TelegramBot+unpinChatMessage"></a>
 
 ### telegramBot.unpinChatMessage(chatId, [options]) ⇒ <code>Promise</code>
-Use this method to unpin a message in a supergroup chat.
+Use this method to unpin a message from the list of pinned messages in a chat.
 The bot must be an administrator in the chat for this to work and must have the appropriate admin rights.
 Returns True on success.
 
 **Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
 **See**: https://core.telegram.org/bots/api#unpinchatmessage
+
+| Param | Type | Description |
+| --- | --- | --- |
+| chatId | <code>Number</code> \| <code>String</code> | Unique identifier for the message recipient |
+| [options] | <code>Object</code> | Additional Telegram query options |
+
+<a name="TelegramBot+unpinAllChatMessages"></a>
+
+### telegramBot.unpinAllChatMessages(chatId, [options]) ⇒ <code>Promise</code>
+Use this method to clear the list of pinned messages in a chat
+The bot must be an administrator in the chat for this to work and must have the appropriate admin rights.
+Returns True on success.
+
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
+**See**: https://core.telegram.org/bots/api#unpinallchatmessages
 
 | Param | Type | Description |
 | --- | --- | --- |

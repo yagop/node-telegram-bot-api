@@ -3,9 +3,28 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [0.51.0][0.51.0] - 2020-11-04
+
+Added:
+
+1. Support Bot API v5.0: (by @danielperez9430)
+    * Add method *copyMessage()*
+    * Add method *unpinAllChatMessages()*
+    * Add method *close()*
+    * Add method *logOut()*
+
+  Changed: (by @danielperez9430)
+    * Remove trailing-spaces
+    * Fix Bugs in Test
+
+  New Test: (by @danielperez9430)
+    * copyMessage
+    * unpinAllChatMessages
+
+
 ## [0.50.0][0.50.0] - 2020-05-2020
 
-Added: 
+Added:
 
 1. Support Bot API v4.8: (by @danielperez9430)
    * Add methods: *sendDice()*
