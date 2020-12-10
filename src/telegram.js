@@ -1621,6 +1621,13 @@ class TelegramBot extends EventEmitter {
   }
 
   /**
+   * Remove all listeners registered with `onText()`.
+   */
+  clearTextListeners() {
+    this._textRegexpCallbacks = [];
+  }
+
+  /**
    * Register a reply to wait for a message response.
    * @param  {Number|String}   chatId       The chat id where the message cames from.
    * @param  {Number|String}   messageId    The message id to be replied.
@@ -1654,6 +1661,13 @@ class TelegramBot extends EventEmitter {
       return null;
     }
     return this._replyListeners.splice(index, 1)[0];
+  }
+
+  /**
+   * Removes all replies that have been prev. registered for a message response.
+   */
+  clearReplyListeners() {
+    this._replyListeners = [];
   }
 
   /**
