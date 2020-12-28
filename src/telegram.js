@@ -2045,6 +2045,38 @@ class TelegramBot extends EventEmitter {
     }
     return this._request('addStickerToSet', opts);
   }
+  
+  /**
+   * Use this method to add a thumb to a set created by the bot.
+   * Returns True on success.
+   *
+   * @param  {Number} userId User identifier of sticker set owner
+   * @param  {String} name Sticker set name
+   * @param  {String|stream.Stream|Buffer} pngThumb A PNG image with the thumbnail,
+   * must be up to 128 kilobytes in size and have width and height exactly 100px,
+   * or a TGS animation with the thumbnail up to 32 kilobytes in size;
+   * @param  {Object} [options] Additional Telegram query options
+   * @param  {Object} [fileOptions] Optional file related meta-data
+   * @return {Promise}
+   * @see https://core.telegram.org/bots/api#setstickersetthumb
+   * @todo Add tests for this method!
+   */
+  setStickerSetThumb(userId, name, pngThumb, options = {}, fileOptions = {}) {
+    const opts = {
+      qs: options,
+    };
+    opts.qs.user_id = userId;
+    opts.qs.name = name;
+    opts.qs.mask_position = stringify(options.mask_position);
+    try {
+      const sendData = this._formatSendData('thumb', pngThumb, fileOptions);
+      opts.formData = sendData[0];
+      opts.qs.thumb = sendData[1];
+    } catch (ex) {
+      return Promise.reject(ex);
+    }
+    return this._request('setStickerSetThumb', opts);
+  }
 
   /**
    * Use this method to move a sticker in a set created by the bot to a specific position.
