@@ -240,6 +240,24 @@ class TelegramBot extends EventEmitter {
   }
 
   /**
+   * Add thumb data if it is not URL string
+   * @param {Object} opts Object; Both 'qs' and 'form'
+   */
+  _addThumbData(opts) {
+    if (typeof opts.qs.thumb === 'object' && !Array.isArray(opts.qs.thumb)) {
+      if (!opts.qs.thumb.file) {
+        throw new errors.FatalError('Thumb file not provided.');
+      }
+      const thumbFile = opts.qs.thumb.file;
+      delete opts.qs.thumb.file;
+      const thumbData = this._formatSendData('thumb', thumbFile, opts.qs.thumb);
+      opts.formData = Object.assign(opts.formData, thumbData[0]);
+      opts.qs.thumb = thumbData[1];
+    }
+    return opts;
+  }
+
+  /**
    * Make request against the API
    * @param  {String} _path API endpoint
    * @param  {Object} [options]
@@ -815,7 +833,7 @@ class TelegramBot extends EventEmitter {
     } catch (ex) {
       return Promise.reject(ex);
     }
-    return this._request('sendAudio', opts);
+    return this._request('sendAudio', this._addThumbData(opts));
   }
 
   /**
@@ -863,7 +881,7 @@ class TelegramBot extends EventEmitter {
     } catch (ex) {
       return Promise.reject(ex);
     }
-    return this._request('sendDocument', opts);
+    return this._request('sendDocument', this._addThumbData(opts));
   }
 
   /**
@@ -914,7 +932,7 @@ class TelegramBot extends EventEmitter {
     } catch (ex) {
       return Promise.reject(ex);
     }
-    return this._request('sendVideo', opts);
+    return this._request('sendVideo', this._addThumbData(opts));
   }
 
   /**
@@ -940,7 +958,7 @@ class TelegramBot extends EventEmitter {
     } catch (ex) {
       return Promise.reject(ex);
     }
-    return this._request('sendAnimation', opts);
+    return this._request('sendAnimation', this._addThumbData(opts));
   }
 
   /**
@@ -967,7 +985,7 @@ class TelegramBot extends EventEmitter {
     } catch (ex) {
       return Promise.reject(ex);
     }
-    return this._request('sendVideoNote', opts);
+    return this._request('sendVideoNote', this._addThumbData(opts));
   }
 
   /**
