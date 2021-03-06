@@ -761,10 +761,11 @@ class TelegramBot extends EventEmitter {
         opts.formData.thumb = sendThumbData[0].photo;
         opts.qs.thumb = sendThumbData[1];
       }
+      return this._request('sendAudio', opts);
     } catch (ex) {
       return Promise.reject(ex);
     }
-    return this._request('sendAudio', opts);
+
   }
 
   /**
@@ -792,10 +793,10 @@ class TelegramBot extends EventEmitter {
         opts.formData.thumb = sendThumbData[0].photo;
         opts.qs.thumb = sendThumbData[1];
       }
+      return this._request('sendDocument', opts);
     } catch (ex) {
       return Promise.reject(ex);
     }
-    return this._request('sendDocument', opts);
   }
 
   /**
@@ -817,10 +818,10 @@ class TelegramBot extends EventEmitter {
       const sendData = this._formatSendData('sticker', sticker, fileOptions);
       opts.formData = sendData[0];
       opts.qs.sticker = sendData[1];
+      return this._request('sendSticker', opts);
     } catch (ex) {
       return Promise.reject(ex);
     }
-    return this._request('sendSticker', opts);
   }
 
   /**
@@ -848,10 +849,10 @@ class TelegramBot extends EventEmitter {
         opts.formData.thumb = sendThumbData[0].photo;
         opts.qs.thumb = sendThumbData[1];
       }
+      return this._request('sendVideo', opts);
     } catch (ex) {
       return Promise.reject(ex);
     }
-    return this._request('sendVideo', opts);
   }
 
   /**
@@ -874,10 +875,10 @@ class TelegramBot extends EventEmitter {
       const sendData = this._formatSendData('animation', animation, fileOptions);
       opts.formData = sendData[0];
       opts.qs.document = sendData[1];
+      return this._request('sendAnimation', opts);
     } catch (ex) {
       return Promise.reject(ex);
     }
-    return this._request('sendAnimation', opts);
   }
 
   /**
@@ -906,10 +907,10 @@ class TelegramBot extends EventEmitter {
         opts.formData.thumb = sendThumbData[0].photo;
         opts.qs.thumb = sendThumbData[1];
       }
+      return this._request('sendVideoNote', opts);
     } catch (ex) {
       return Promise.reject(ex);
     }
-    return this._request('sendVideoNote', opts);
   }
 
   /**
@@ -932,10 +933,10 @@ class TelegramBot extends EventEmitter {
       const sendData = this._formatSendData('voice', voice, fileOptions);
       opts.formData = sendData[0];
       opts.qs.voice = sendData[1];
+      return this._request('sendVoice', opts);
     } catch (ex) {
       return Promise.reject(ex);
     }
-    return this._request('sendVoice', opts);
   }
 
 
@@ -1067,10 +1068,10 @@ class TelegramBot extends EventEmitter {
       const sendData = this._formatSendData('photo', photo, fileOptions);
       opts.formData = sendData[0];
       opts.qs.photo = sendData[1];
+      return this._request('setChatPhoto', opts);
     } catch (ex) {
       return Promise.reject(ex);
     }
-    return this._request('setChatPhoto', opts);
   }
 
   /**
