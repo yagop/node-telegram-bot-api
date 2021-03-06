@@ -1,6 +1,6 @@
 {
   "name": "node-telegram-bot-api",
-  "version": "0.30.0",
+  "version": "0.30.5",
   "description": "Telegram Bot API",
   "main": "./index.js",
   "directories": {
@@ -17,7 +17,7 @@
     "gen-doc": "echo 'WARNING: `npm run gen-doc` is deprecated. Use `npm run doc` instead.' && npm run doc",
     "doc": "jsdoc2md --files src/telegram.js --template doc/api.hbs > doc/api.md",
     "build": "babel -d ./lib src",
-    "prepublishOnly": "npm run build && npm run gen-doc",
+    "prepublishOnly": "npm run build",
     "eslint": "eslint ./src ./test ./examples",
     "mocha": "mocha",
     "pretest": "npm run build",
