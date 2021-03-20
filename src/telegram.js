@@ -48,6 +48,9 @@ const _messageTypes = [
   'video',
   'video_note',
   'voice',
+  'voice_chat_started',
+  'voice_chat_ended',
+  'voice_chat_participants_invited'
 ];
 const _deprecatedMessageTypes = [
   'new_chat_participant', 'left_chat_participant'
