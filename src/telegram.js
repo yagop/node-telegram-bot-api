@@ -50,7 +50,8 @@ const _messageTypes = [
   'voice',
   'voice_chat_started',
   'voice_chat_ended',
-  'voice_chat_participants_invited'
+  'voice_chat_participants_invited',
+  'message_auto_delete_timer_changed'
 ];
 const _deprecatedMessageTypes = [
   'new_chat_participant', 'left_chat_participant'
