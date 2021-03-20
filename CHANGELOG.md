@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
+## [0.52.0][0.52.0] - 2021-03-20
+
+Added:
+
+1. Support Bot API v5.1: (by @danielperez9430)
+    * Add method *createChatInviteLink()*
+    * Add method *editChatInviteLink()*
+    * Add method *revokeChatInviteLink()*
+
+  New Test: (by @danielperez9430)
+    * createChatInviteLink
+    * editChatInviteLink
+    * revokeChatInviteLink
 
 ## [0.51.0][0.51.0] - 2020-11-04
 

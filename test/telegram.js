@@ -901,6 +901,33 @@ describe('TelegramBot', function telegramSuite() {
     });
   });
 
+  describe('#createChatInviteLink', function createChatInviteLinkSuite() {
+    let inviteLink;
+    before(function before() {
+      utils.handleRatelimit(bot, 'createChatInviteLink', this);
+      utils.handleRatelimit(bot, 'editChatInviteLink', this);
+      utils.handleRatelimit(bot, 'revokeChatInviteLink', this);
+    });
+    it('should create a chat invite link', function test() {
+      return bot.createChatInviteLink(GROUPID).then(resp => {
+        assert(resp.invite_link.match(/^https:\/\/t\.me\/joinchat\/.+$/i), 'is a telegram invite link');
+        inviteLink = resp.invite_link;
+      });
+    });
+
+    it('should edit chat invite link', function test() {
+      return bot.editChatInviteLink(GROUPID, inviteLink, { member_limit: 3 }).then(resp => {
+        assert.strictEqual(resp.member_limit, 3);
+      });
+    });
+
+    it('should revoke chat invite link', function test() {
+      return bot.revokeChatInviteLink(GROUPID, inviteLink).then(resp => {
+        assert.strictEqual(resp.is_revoked, true);
+      });
+    });
+  });
+
   describe('#setChatPhoto', function setChatPhotoSuite() {
     this.timeout(timeout);
     before(function before() {
