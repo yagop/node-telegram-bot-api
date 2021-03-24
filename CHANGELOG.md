@@ -17,6 +17,11 @@ Added:
      * *voice_chat_ended*
      * *voice_chat_participants_invited*
      * *message_auto_delete_timer_changed*
+     * *chat_invite_link*
+     * *chat_member_updated*
+   * Add support for new updates:
+     * *my_chat_member*
+     * *chat_member*
    
    New Test: (by @danielperez9430)
    
