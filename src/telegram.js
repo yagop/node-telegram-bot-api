@@ -48,6 +48,12 @@ const _messageTypes = [
   'video',
   'video_note',
   'voice',
+  'voice_chat_started',
+  'voice_chat_ended',
+  'voice_chat_participants_invited',
+  'message_auto_delete_timer_changed',
+  'chat_invite_link',
+  'chat_member_updated'
 ];
 const _deprecatedMessageTypes = [
   'new_chat_participant', 'left_chat_participant'
@@ -615,6 +621,8 @@ class TelegramBot extends EventEmitter {
     const preCheckoutQuery = update.pre_checkout_query;
     const poll = update.poll;
     const pollAnswer = update.poll_answer;
+    const chatMember = update.chat_member;
+    const myChatMember = update.my_chat_member;
 
     if (message) {
       debug('Process Update message %j', message);
@@ -698,6 +706,12 @@ class TelegramBot extends EventEmitter {
     } else if (pollAnswer) {
       debug('Process Update poll_answer %j', pollAnswer);
       this.emit('poll_answer', pollAnswer);
+    } else if (chatMember) {
+      debug('Process Update chat_member %j', chatMember);
+      this.emit('chat_member', chatMember);
+    } else if (myChatMember) {
+      debug('Process Update my_chat_member %j', myChatMember);
+      this.emit('my_chat_member', myChatMember);
     }
   }
 
@@ -1141,6 +1155,56 @@ class TelegramBot extends EventEmitter {
   }
 
   /**
+   * Use this method to create an additional invite link for a chat.
+   * The bot must be an administrator in the chat for this to work and must have the appropriate admin rights.
+   * Returns the new invite link as ChatInviteLink object.
+   *
+   * @param  {Number|String} chatId Unique identifier for the target chat or username of the target supergroup
+   * @param  {Object} [options] Additional Telegram query options
+   * @return {Object} ChatInviteLink
+   * @see https://core.telegram.org/bots/api#createchatinvitelink
+   */
+  createChatInviteLink(chatId, form = {}) {
+    form.chat_id = chatId;
+    return this._request('createChatInviteLink', { form });
+  }
+
+  /**
+   * Use this method to edit a non-primary invite link created by the bot.
+   * The bot must be an administrator in the chat for this to work and must have the appropriate admin rights.
+   * Returns the edited invite link as a ChatInviteLink object.
+   *
+   * @param  {Number|String} chatId Unique identifier for the target chat or username of the target supergroup
+   * @param  {String} inviteLink Text with the invite link to edit
+   * @param  {Object} [options] Additional Telegram query options
+   * @return {Object} ChatInviteLink
+   * @see https://core.telegram.org/bots/api#editchatinvitelink
+   */
+  editChatInviteLink(chatId, inviteLink, form = {}) {
+    form.chat_id = chatId;
+    form.invite_link = inviteLink;
+    return this._request('editChatInviteLink', { form });
+  }
+
+  /**
+   * Use this method to revoke an invite link created by the bot.
+   * Note: If the primary link is revoked, a new link is automatically generated
+   * The bot must be an administrator in the chat for this to work and must have the appropriate admin rights.
+   * Returns the revoked invite link as ChatInviteLink object.
+   *
+   * @param  {Number|String} chatId Unique identifier for the target chat or username of the target supergroup
+   * @param  {Object} [options] Additional Telegram query options
+   * @return {Object} ChatInviteLink
+   * @see https://core.telegram.org/bots/api#revokechatinvitelink
+   */
+  revokeChatInviteLink(chatId, inviteLink, form = {}) {
+    form.chat_id = chatId;
+    form.invite_link = inviteLink;
+    return this._request('revokeChatInviteLink', { form });
+  }
+
+
+  /**
    * Use this method to set a new profile photo for the chat. Photos can't be changed for private chats.
    * The bot must be an administrator in the chat for this to work and must have the appropriate admin rights.
    * Returns True on success.
@@ -1248,16 +1312,16 @@ class TelegramBot extends EventEmitter {
     return this._request('unpinChatMessage', { form });
   }
 
-   /**
-   * Use this method to clear the list of pinned messages in a chat
-   * The bot must be an administrator in the chat for this to work and must have the appropriate admin rights.
-   * Returns True on success.
-   *
-   * @param  {Number|String} chatId  Unique identifier for the message recipient
-   * @param  {Object} [options] Additional Telegram query options
-   * @return {Promise}
-   * @see https://core.telegram.org/bots/api#unpinallchatmessages
-   */
+  /**
+  * Use this method to clear the list of pinned messages in a chat
+  * The bot must be an administrator in the chat for this to work and must have the appropriate admin rights.
+  * Returns True on success.
+  *
+  * @param  {Number|String} chatId  Unique identifier for the message recipient
+  * @param  {Object} [options] Additional Telegram query options
+  * @return {Promise}
+  * @see https://core.telegram.org/bots/api#unpinallchatmessages
+  */
   unpinAllChatMessages(chatId, form = {}) {
     form.chat_id = chatId;
     return this._request('unpinAllChatMessages', { form });
