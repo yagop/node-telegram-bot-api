@@ -2,7 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
+## [0.52.1][0.52.1] - 2021-04-2021
 
+Added:
+
+1. Support Bot API v5.2:(@danielperez9430)
+
+   * Add support for new messageTypes:
+     * *voice_chat_scheduled*
 ## [0.52.0][0.52.0] - 2021-03-20
 
 Added:
