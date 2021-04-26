@@ -10,6 +10,7 @@ Added:
 
    * Add support for new messageTypes:
      * *voice_chat_scheduled*
+
 ## [0.52.0][0.52.0] - 2021-03-20
 
 Added:
