@@ -51,6 +51,7 @@ const _messageTypes = [
   'voice_chat_started',
   'voice_chat_ended',
   'voice_chat_participants_invited',
+  'voice_chat_scheduled',
   'message_auto_delete_timer_changed',
   'chat_invite_link',
   'chat_member_updated'
@@ -1015,7 +1016,7 @@ class TelegramBot extends EventEmitter {
    * Send chat action.
    * `typing` for text messages,
    * `upload_photo` for photos, `record_video` or `upload_video` for videos,
-   * `record_audio` or `upload_audio` for audio files, `upload_document` for general files,
+   * `record_voice` or `upload_voice` for audio files, `upload_document` for general files,
    * `find_location` for location data.
    *
    * @param  {Number|String} chatId  Unique identifier for the message recipient
