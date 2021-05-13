@@ -16,8 +16,6 @@ class TelegramBotWebHook {
   constructor(bot) {
     this.bot = bot;
     this.options = (typeof bot.options.webHook === 'boolean') ? {} : bot.options.webHook;
-    this.options.host = this.options.host || '0.0.0.0';
-    this.options.port = this.options.port || 8443;
     this.options.https = this.options.https || {};
     this.options.healthEndpoint = this.options.healthEndpoint || '/healthz';
     this._healthRegex = new RegExp(this.options.healthEndpoint);
@@ -52,13 +50,30 @@ class TelegramBotWebHook {
     if (this.isOpen()) {
       return Promise.resolve();
     }
-    return new Promise(resolve => {
-      this._webServer.listen(this.options.port, this.options.host, () => {
-        debug('WebHook listening on port %s', this.options.port);
-        this._open = true;
-        return resolve();
-      });
-    });
+
+    const promises = [];
+
+    if (this.options.path) {
+      promises.push(new Promise(resolve => {
+        this._webServer.listen(this.options.path, () => {
+          debug('WebHook listening on UNIX socket %s', this.options.path);
+          this._open = true;
+          return resolve();
+        });
+      }));
+    }
+
+    if (this.options.host || this.options.port || !this.options.path) {
+      promises.push(new Promise(resolve => {
+        this._webServer.listen(this.options.port || 8443, this.options.host || '0.0.0.0', () => {
+          debug('WebHook listening on port %s', this.options.port);
+          this._open = true;
+          return resolve();
+        });
+      }));
+    }
+
+    return Promise.all(promises);
   }
 
   /**
