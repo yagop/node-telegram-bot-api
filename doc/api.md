@@ -132,7 +132,7 @@ Emits `message` when a message arrives.
 | [options.webHook] | <code>Boolean</code> \| <code>Object</code> | <code>false</code> | Set true to enable WebHook or set options |
 | [options.webHook.host] | <code>String</code> | <code>&quot;0.0.0.0&quot;</code> | Host to bind to |
 | [options.webHook.port] | <code>Number</code> | <code>8443</code> | Port to bind to |
-| [options.webHook.path] | <code>String</code> |  | Path for a UNIX socket to bind to. Setting this option disables the TCP WebHook server unless host and/or port are explicitly specified |
+| [options.webHook.socketPath] | <code>String</code> |  | Path for a UNIX socket to bind to. Setting this option disables the TCP WebHook server unless host and/or port are explicitly specified |
 | [options.webHook.key] | <code>String</code> |  | Path to file with PEM private key for webHook server.  The file is read **synchronously**! |
 | [options.webHook.cert] | <code>String</code> |  | Path to file with PEM certificate (public) for webHook server.  The file is read **synchronously**! |
 | [options.webHook.pfx] | <code>String</code> |  | Path to file with PFX private key and certificate chain for webHook server.  The file is read **synchronously**! |

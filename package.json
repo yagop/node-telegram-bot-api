@@ -1,5 +1,5 @@
 {
-  "name": "node-telegram-bot-api",
+  "name": "@kascheml/node-telegram-bot-api",
   "version": "0.53.0",
   "description": "Telegram Bot API",
   "main": "./index.js",

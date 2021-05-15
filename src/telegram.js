@@ -166,7 +166,7 @@ class TelegramBot extends EventEmitter {
    * @param {Boolean|Object} [options.webHook=false] Set true to enable WebHook or set options
    * @param {String} [options.webHook.host="0.0.0.0"] Host to bind to
    * @param {Number} [options.webHook.port=8443] Port to bind to
-   * @param {String} [options.webHook.path] Path for a UNIX socket to bind to. Setting this option disables the TCP WebHook server unless host and/or port are explicitly specified
+   * @param {String} [options.webHook.socketPath] Path for a UNIX socket to bind to. Setting this option disables the TCP WebHook server unless host and/or port are explicitly specified
    * @param {String} [options.webHook.key] Path to file with PEM private key for webHook server.
    *  The file is read **synchronously**!
    * @param {String} [options.webHook.cert] Path to file with PEM certificate (public) for webHook server.
