@@ -43,7 +43,8 @@ TelegramBot
         * [.sendVideoNote(chatId, videoNote, [options], [fileOptions])](#TelegramBot+sendVideoNote) ⇒ <code>Promise</code>
         * [.sendVoice(chatId, voice, [options], [fileOptions])](#TelegramBot+sendVoice) ⇒ <code>Promise</code>
         * [.sendChatAction(chatId, action, [options])](#TelegramBot+sendChatAction) ⇒ <code>Promise</code>
-        * [.kickChatMember(chatId, userId, [options])](#TelegramBot+kickChatMember) ⇒ <code>Promise</code>
+        * ~~[.kickChatMember(chatId, userId, [options])](#TelegramBot+kickChatMember) ⇒ <code>Promise</code>~~
+        * [.banChatMember(chatId, userId, [options])](#TelegramBot+banChatMember) ⇒ <code>Promise</code>
         * [.unbanChatMember(chatId, userId, [options])](#TelegramBot+unbanChatMember) ⇒ <code>Promise</code>
         * [.restrictChatMember(chatId, userId, [options])](#TelegramBot+restrictChatMember) ⇒ <code>Promise</code>
         * [.promoteChatMember(chatId, userId, [options])](#TelegramBot+promoteChatMember) ⇒ <code>Promise</code>
@@ -63,6 +64,7 @@ TelegramBot
         * [.answerCallbackQuery(callbackQueryId, [options])](#TelegramBot+answerCallbackQuery) ⇒ <code>Promise</code>
         * [.setMyCommands(commands, [options])](#TelegramBot+setMyCommands) ⇒ <code>Promise</code>
         * [.getMyCommands([options])](#TelegramBot+getMyCommands) ⇒ <code>Promise</code>
+        * [.deleteMyCommands([options])](#TelegramBot+deleteMyCommands) ⇒ <code>Promise</code>
         * [.editMessageText(text, [options])](#TelegramBot+editMessageText) ⇒ <code>Promise</code>
         * [.editMessageCaption(caption, [options])](#TelegramBot+editMessageCaption) ⇒ <code>Promise</code>
         * [.editMessageMedia(media, [options])](#TelegramBot+editMessageMedia) ⇒ <code>Promise</code>
@@ -87,7 +89,8 @@ TelegramBot
         * [.clearReplyListeners()](#TelegramBot+clearReplyListeners)
         * [.getChat(chatId, [options])](#TelegramBot+getChat) ⇒ <code>Promise</code>
         * [.getChatAdministrators(chatId, [options])](#TelegramBot+getChatAdministrators) ⇒ <code>Promise</code>
-        * [.getChatMembersCount(chatId, [options])](#TelegramBot+getChatMembersCount) ⇒ <code>Promise</code>
+        * ~~[.getChatMembersCount(chatId, [options])](#TelegramBot+getChatMembersCount) ⇒ <code>Promise</code>~~
+        * [.getChatMemberCount(chatId, [options])](#TelegramBot+getChatMemberCount) ⇒ <code>Promise</code>
         * [.getChatMember(chatId, userId, [options])](#TelegramBot+getChatMember) ⇒ <code>Promise</code>
         * [.leaveChat(chatId, [options])](#TelegramBot+leaveChat) ⇒ <code>Promise</code>
         * [.setChatStickerSet(chatId, stickerSetName, [options])](#TelegramBot+setChatStickerSet) ⇒ <code>Promise</code>
@@ -548,7 +551,7 @@ Send voice
 <a name="TelegramBot+sendChatAction"></a>
 
 ### telegramBot.sendChatAction(chatId, action, [options]) ⇒ <code>Promise</code>
-Send chat action.`typing` for text messages,`upload_photo` for photos, `record_video` or `upload_video` for videos,`record_audio` or `upload_audio` for audio files, `upload_document` for general files,`find_location` for location data.
+Send chat action.`typing` for text messages,`upload_photo` for photos, `record_video` or `upload_video` for videos,`record_voice` or `upload_voice` for audio files, `upload_document` for general files,`find_location` for location data.
 
 **Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
 **See**: https://core.telegram.org/bots/api#sendchataction  
@@ -561,11 +564,27 @@ Send chat action.`typing` for text messages,`upload_photo` for photos, `record
 
 <a name="TelegramBot+kickChatMember"></a>
 
-### telegramBot.kickChatMember(chatId, userId, [options]) ⇒ <code>Promise</code>
+### ~~telegramBot.kickChatMember(chatId, userId, [options]) ⇒ <code>Promise</code>~~
+***Deprecated***
+
 Use this method to kick a user from a group or a supergroup.In the case of supergroups, the user will not be able to returnto the group on their own using invite links, etc., unless unbannedfirst. The bot must be an administrator in the group for this to work.Returns True on success.
 
 **Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
 **See**: https://core.telegram.org/bots/api#kickchatmember  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| chatId | <code>Number</code> \| <code>String</code> | Unique identifier for the target group or username of the target supergroup |
+| userId | <code>Number</code> | Unique identifier of the target user |
+| [options] | <code>Object</code> | Additional Telegram query options |
+
+<a name="TelegramBot+banChatMember"></a>
+
+### telegramBot.banChatMember(chatId, userId, [options]) ⇒ <code>Promise</code>
+Use this method to ban a user in a group, a supergroup or a channel.In the case of supergroups and channels, the user will not be able toreturn to the chat on their own using invite links, etc., unless unbanned first..The bot must be an administrator in the group for this to work.Returns True on success.
+
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
+**See**: https://core.telegram.org/bots/api#banchatmember  
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -829,6 +848,18 @@ Returns Array of BotCommand on success.
 
 **Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
 **See**: https://core.telegram.org/bots/api#getmycommands  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| [options] | <code>Object</code> | Additional Telegram query options |
+
+<a name="TelegramBot+deleteMyCommands"></a>
+
+### telegramBot.deleteMyCommands([options]) ⇒ <code>Promise</code>
+Returns True on success.Use this method to delete the list of the bot's commands for the given scope and user language.
+
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
+**See**: https://core.telegram.org/bots/api#deletemycommands  
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -1145,11 +1176,26 @@ Returns the administrators in a chat in form of an Array of `ChatMember` objects
 
 <a name="TelegramBot+getChatMembersCount"></a>
 
-### telegramBot.getChatMembersCount(chatId, [options]) ⇒ <code>Promise</code>
-Use this method to get the number of members in a chat.
+### ~~telegramBot.getChatMembersCount(chatId, [options]) ⇒ <code>Promise</code>~~
+***Deprecated***
+
+Use this method to get the number of members in a chat.Returns Int on success.
 
 **Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
 **See**: https://core.telegram.org/bots/api#getchatmemberscount  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| chatId | <code>Number</code> \| <code>String</code> | Unique identifier for the target group or username of the target supergroup |
+| [options] | <code>Object</code> | Additional Telegram query options |
+
+<a name="TelegramBot+getChatMemberCount"></a>
+
+### telegramBot.getChatMemberCount(chatId, [options]) ⇒ <code>Promise</code>
+Use this method to get the number of members in a chat.Returns Int on success
+
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
+**See**: https://core.telegram.org/bots/api#getchatmembercount  
 
 | Param | Type | Description |
 | --- | --- | --- |

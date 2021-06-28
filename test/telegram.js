@@ -834,7 +834,7 @@ describe('TelegramBot', function telegramSuite() {
     });
   });
 
-  describe.skip('#kickChatMember', function kickChatMemberSuite() { });
+  describe.skip('#banChatMember', function banChatMemberSuite() { });
 
   describe.skip('#unbanChatMember', function unbanChatMemberSuite() { });
 
@@ -860,6 +860,14 @@ describe('TelegramBot', function telegramSuite() {
     it('should get bot commands', function test() {
       return bot.getMyCommands().then(resp => {
         assert.ok(is.array(resp));
+      });
+    });
+  });
+
+  describe('#deleteMyCommands', function deleteMyCommandsSuite() {
+    it('should delete bot commands', function test() {
+      return bot.deleteMyCommands().then(resp => {
+        assert.ok(is.boolean(resp));
       });
     });
   });
@@ -1418,12 +1426,12 @@ describe('TelegramBot', function telegramSuite() {
     });
   });
 
-  describe('#getChatMembersCount', function getChatMembersCountSuite() {
+  describe('#getChatMemberCount', function getChatMemberCountSuite() {
     before(function before() {
-      utils.handleRatelimit(bot, 'getChatMembersCount', this);
+      utils.handleRatelimit(bot, 'getChatMemberCount', this);
     });
     it('should return an Integer', function test() {
-      return bot.getChatMembersCount(GROUPID).then(resp => {
+      return bot.getChatMemberCount(GROUPID).then(resp => {
         assert.ok(Number.isInteger(resp));
       });
     });
