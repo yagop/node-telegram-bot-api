@@ -2,7 +2,28 @@
 
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
-## [0.52.1][0.52.1] - 2021-04-26
+
+## [0.54.0][0.54.0] - 2021-06-29
+
+Added:
+
+1. Support Bot API v5.3: (@danielperez9430)
+
+   * Add method *deleteMyCommands()*
+   * Add method *banChatMember()*
+   * Add method *getChatMemberCount()*
+
+   New Test:
+   
+   * deleteMyCommands
+   * banChatMember
+   * getChatMemberCount
+
+   Deprecated:
+   * Method *kickChatMember()*
+   * Method *getChatMembersCount()*
+
+## [0.53.0][0.53.0] - 2021-04-26
 
 Added:
 

@@ -1043,11 +1043,32 @@ class TelegramBot extends EventEmitter {
    * @param  {Object} [options] Additional Telegram query options
    * @return {Promise}
    * @see https://core.telegram.org/bots/api#kickchatmember
+   * @deprecated Deprecated since Telegram Bot API v5.3, replace with "banChatMember"
    */
   kickChatMember(chatId, userId, form = {}) {
+    deprecate('The method kickChatMembet is deprecated since Telegram Bot API v5.3, replace it with "banChatMember"');
     form.chat_id = chatId;
     form.user_id = userId;
     return this._request('kickChatMember', { form });
+  }
+
+  /**
+  * Use this method to ban a user in a group, a supergroup or a channel.
+  * In the case of supergroups and channels, the user will not be able to
+  * return to the chat on their own using invite links, etc., unless unbanned first..
+  * The bot must be an administrator in the group for this to work.
+  * Returns True on success.
+  *
+  * @param  {Number|String} chatId  Unique identifier for the target group or username of the target supergroup
+  * @param  {Number} userId  Unique identifier of the target user
+  * @param  {Object} [options] Additional Telegram query options
+  * @return {Promise}
+  * @see https://core.telegram.org/bots/api#banchatmember
+  */
+  banChatMember(chatId, userId, form = {}) {
+    form.chat_id = chatId;
+    form.user_id = userId;
+    return this._request('banChatMember', { form });
   }
 
   /**
@@ -1391,6 +1412,17 @@ class TelegramBot extends EventEmitter {
   */
   getMyCommands(form = {}) {
     return this._request('getMyCommands', { form });
+  }
+
+  /**
+  * Returns True on success.
+  * Use this method to delete the list of the bot's commands for the given scope and user language.
+  * @param  {Object} [options] Additional Telegram query options
+  * @return {Promise}
+  * @see https://core.telegram.org/bots/api#deletemycommands
+  */
+  deleteMyCommands(form = {}) {
+    return this._request('deleteMyCommands', { form });
   }
 
   /**
@@ -1824,14 +1856,31 @@ class TelegramBot extends EventEmitter {
 
   /**
    * Use this method to get the number of members in a chat.
+   * Returns Int on success.
    * @param  {Number|String} chatId  Unique identifier for the target group or username of the target supergroup
    * @param  {Object} [options] Additional Telegram query options
    * @return {Promise}
    * @see https://core.telegram.org/bots/api#getchatmemberscount
+   * @deprecated Deprecated since Telegram Bot API v5.3, replace it with "getChatMembersCount"
    */
   getChatMembersCount(chatId, form = {}) {
+    deprecate('The method "getChatMembersCount" is deprecated since Telegram Bot API v5.3, replace it with "getChatMemberCount"');
+
     form.chat_id = chatId;
     return this._request('getChatMembersCount', { form });
+  }
+
+  /**
+   * Use this method to get the number of members in a chat.
+   * Returns Int on success
+   * @param  {Number|String} chatId  Unique identifier for the target group or username of the target supergroup
+   * @param  {Object} [options] Additional Telegram query options
+   * @return {Promise}
+   * @see https://core.telegram.org/bots/api#getchatmembercount
+   */
+  getChatMemberCount(chatId, form = {}) {
+    form.chat_id = chatId;
+    return this._request('getChatMemberCount', { form });
   }
 
   /**
