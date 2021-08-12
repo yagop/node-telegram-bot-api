@@ -89,8 +89,7 @@ Some things built using this library that might interest you:
 * [teleirc](https://github.com/FruitieX/teleirc): A simple Telegram ↔ IRC gateway
 * [bot-brother](https://github.com/SerjoPepper/bot-brother): Node.js library to help you easily create telegram bots
 * [redbot](https://github.com/guidone/node-red-contrib-chatbot): A Node-RED plugin to create telegram bots visually
-* [node-telegram-keyboard-wrapper](https://github.com/alexandercerutti/node-telegram-keyboard-wrapper): A wrapper to improve `reply_markup` structures creation in an easy way (supports Inline Keyboards, Reply Keyboard, Remove Keyboard and Force Reply)
-* [node-telegram-operation-manager](https://github.com/alexandercerutti/node-telegram-operation-manager): A utility to manage replies flows and commands. Let also create custom queues for your own bot.
+* [node-telegram-keyboard-wrapper](https://github.com/alexandercerutti/node-telegram-keyboard-wrapper): A wrapper to improve keyboards structures creation through a more easy-to-see way (supports Inline Keyboards, Reply Keyboard, Remove Keyboard and Force Reply)
 
 ## License
 
