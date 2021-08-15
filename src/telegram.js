@@ -26,6 +26,7 @@ const _messageTypes = [
   'channel_chat_created',
   'contact',
   'delete_chat_photo',
+  'dice',
   'document',
   'game',
   'group_chat_created',
@@ -40,12 +41,20 @@ const _messageTypes = [
   'passport_data',
   'photo',
   'pinned_message',
+  'poll',
   'sticker',
   'successful_payment',
   'supergroup_chat_created',
   'video',
   'video_note',
   'voice',
+  'voice_chat_started',
+  'voice_chat_ended',
+  'voice_chat_participants_invited',
+  'voice_chat_scheduled',
+  'message_auto_delete_timer_changed',
+  'chat_invite_link',
+  'chat_member_updated'
 ];
 const _deprecatedMessageTypes = [
   'new_chat_participant', 'left_chat_participant'
@@ -472,6 +481,31 @@ class TelegramBot extends EventEmitter {
   }
 
   /**
+   * This method log out your bot from the cloud Bot API server before launching the bot locally.
+   * You must log out the bot before running it locally, otherwise there is no guarantee that the bot will receive updates.
+   * After a successful call, you will not be able to log in again using the same token for 10 minutes.
+   * Returns True on success.
+   * @param  {Object} [options] Additional Telegram query options
+   * @return {Promise}
+   * @see https://core.telegram.org/bots/api#logout
+   */
+  logOut(form = {}) {
+    return this._request('logOut', { form });
+  }
+
+  /**
+   * This method close the bot instance before moving it from one local server to another.
+   * This method will return error 429 in the first 10 minutes after the bot is launched.
+   * Returns True on success.
+   * @param  {Object} [options] Additional Telegram query options
+   * @return {Promise}
+   * @see https://core.telegram.org/bots/api#close
+   */
+  close(form = {}) {
+    return this._request('close', { form });
+  }
+
+  /**
    * Specify an url to receive incoming updates via an outgoing webHook.
    * This method has an [older, compatible signature][setWebHook-v0.25.0]
    * that is being deprecated.
@@ -586,6 +620,10 @@ class TelegramBot extends EventEmitter {
     const callbackQuery = update.callback_query;
     const shippingQuery = update.shipping_query;
     const preCheckoutQuery = update.pre_checkout_query;
+    const poll = update.poll;
+    const pollAnswer = update.poll_answer;
+    const chatMember = update.chat_member;
+    const myChatMember = update.my_chat_member;
 
     if (message) {
       debug('Process Update message %j', message);
@@ -663,6 +701,18 @@ class TelegramBot extends EventEmitter {
     } else if (preCheckoutQuery) {
       debug('Process Update pre_checkout_query %j', preCheckoutQuery);
       this.emit('pre_checkout_query', preCheckoutQuery);
+    } else if (poll) {
+      debug('Process Update poll %j', poll);
+      this.emit('poll', poll);
+    } else if (pollAnswer) {
+      debug('Process Update poll_answer %j', pollAnswer);
+      this.emit('poll_answer', pollAnswer);
+    } else if (chatMember) {
+      debug('Process Update chat_member %j', chatMember);
+      this.emit('chat_member', chatMember);
+    } else if (myChatMember) {
+      debug('Process Update my_chat_member %j', myChatMember);
+      this.emit('my_chat_member', myChatMember);
     }
   }
 
@@ -702,12 +752,33 @@ class TelegramBot extends EventEmitter {
    * @param  {Number|String} messageId  Unique message identifier
    * @param  {Object} [options] Additional Telegram query options
    * @return {Promise}
+   * @see https://core.telegram.org/bots/api#forwardmessage
    */
   forwardMessage(chatId, fromChatId, messageId, form = {}) {
     form.chat_id = chatId;
     form.from_chat_id = fromChatId;
     form.message_id = messageId;
     return this._request('forwardMessage', { form });
+  }
+
+  /**
+   * Copy messages of any kind.
+   * The method is analogous to the method forwardMessages, but the copied message doesn't
+   * have a link to the original message.
+   * Returns the MessageId of the sent message on success.
+   * @param  {Number|String} chatId     Unique identifier for the message recipient
+   * @param  {Number|String} fromChatId Unique identifier for the chat where the
+   * original message was sent
+   * @param  {Number|String} messageId  Unique message identifier
+   * @param  {Object} [options] Additional Telegram query options
+   * @return {Promise}
+   * @see https://core.telegram.org/bots/api#copymessage
+   */
+  copyMessage(chatId, fromChatId, messageId, form = {}) {
+    form.chat_id = chatId;
+    form.from_chat_id = fromChatId;
+    form.message_id = messageId;
+    return this._request('copyMessage', { form });
   }
 
   /**
@@ -766,6 +837,28 @@ class TelegramBot extends EventEmitter {
       return Promise.reject(ex);
     }
 
+  }
+
+  /**
+   * Send Dice
+   * Use this method to send a dice.
+   * @param  {Number|String} chatId  Unique identifier for the message recipient
+   * @param  {Object} [options] Additional Telegram query options
+   * @return {Promise}
+   * @see https://core.telegram.org/bots/api#senddice
+   */
+  sendDice(chatId, options = {}) {
+    const opts = {
+      qs: options,
+    };
+    opts.qs.chat_id = chatId;
+    try {
+      const sendData = this._formatSendData('dice');
+      opts.formData = sendData[0];
+    } catch (ex) {
+      return Promise.reject(ex);
+    }
+    return this._request('sendDice', opts);
   }
 
   /**
@@ -874,11 +967,11 @@ class TelegramBot extends EventEmitter {
     try {
       const sendData = this._formatSendData('animation', animation, fileOptions);
       opts.formData = sendData[0];
-      opts.qs.document = sendData[1];
-      return this._request('sendAnimation', opts);
+      opts.qs.animation = sendData[1];
     } catch (ex) {
       return Promise.reject(ex);
     }
+    return this._request('sendAnimation', opts);
   }
 
   /**
@@ -944,7 +1037,7 @@ class TelegramBot extends EventEmitter {
    * Send chat action.
    * `typing` for text messages,
    * `upload_photo` for photos, `record_video` or `upload_video` for videos,
-   * `record_audio` or `upload_audio` for audio files, `upload_document` for general files,
+   * `record_voice` or `upload_voice` for audio files, `upload_document` for general files,
    * `find_location` for location data.
    *
    * @param  {Number|String} chatId  Unique identifier for the message recipient
@@ -971,11 +1064,32 @@ class TelegramBot extends EventEmitter {
    * @param  {Object} [options] Additional Telegram query options
    * @return {Promise}
    * @see https://core.telegram.org/bots/api#kickchatmember
+   * @deprecated Deprecated since Telegram Bot API v5.3, replace with "banChatMember"
    */
   kickChatMember(chatId, userId, form = {}) {
+    deprecate('The method kickChatMembet is deprecated since Telegram Bot API v5.3, replace it with "banChatMember"');
     form.chat_id = chatId;
     form.user_id = userId;
     return this._request('kickChatMember', { form });
+  }
+
+  /**
+  * Use this method to ban a user in a group, a supergroup or a channel.
+  * In the case of supergroups and channels, the user will not be able to
+  * return to the chat on their own using invite links, etc., unless unbanned first..
+  * The bot must be an administrator in the group for this to work.
+  * Returns True on success.
+  *
+  * @param  {Number|String} chatId  Unique identifier for the target group or username of the target supergroup
+  * @param  {Number} userId  Unique identifier of the target user
+  * @param  {Object} [options] Additional Telegram query options
+  * @return {Promise}
+  * @see https://core.telegram.org/bots/api#banchatmember
+  */
+  banChatMember(chatId, userId, form = {}) {
+    form.chat_id = chatId;
+    form.user_id = userId;
+    return this._request('banChatMember', { form });
   }
 
   /**
@@ -1033,6 +1147,42 @@ class TelegramBot extends EventEmitter {
   }
 
   /**
+   * Use this method to set a custom title for an administrator in a supergroup promoted by the bot.
+   * Returns True on success.
+   *
+   * @param  {Number|String} chatId  Unique identifier for the message recipient
+   * @param  {Number} userId Unique identifier of the target user
+   * @param  {String} customTitle New custom title for the administrator; 0-16 characters, emoji are not allowed
+   * @param  {Object} [options] Additional Telegram query options
+   * @return {Promise}
+   * @see https://core.telegram.org/bots/api#setchatadministratorcustomtitle
+   */
+  setChatAdministratorCustomTitle(chatId, userId, customTitle, form = {}) {
+    form.chat_id = chatId;
+    form.user_id = userId;
+    form.custom_title = customTitle;
+    return this._request('setChatAdministratorCustomTitle', { form });
+  }
+
+  /**
+   * Use this method to set default chat permissions for all members.
+   * The bot must be an administrator in the group or a supergroup for this to
+   * work and must have the can_restrict_members admin rights.
+   * Returns True on success.
+   *
+   * @param  {Number|String} chatId  Unique identifier for the message recipient
+   * @param  {Array} chatPermissions New default chat permissions
+   * @param  {Object} [options] Additional Telegram query options
+   * @return {Promise}
+   * @see https://core.telegram.org/bots/api#setchatpermissions
+   */
+  setChatPermissions(chatId, chatPermissions, form = {}) {
+    form.chat_id = chatId;
+    form.permissions = JSON.stringify(chatPermissions);
+    return this._request('setChatPermissions', { form });
+  }
+
+  /**
    * Use this method to export an invite link to a supergroup or a channel.
    * The bot must be an administrator in the chat for this to work and must have the appropriate admin rights.
    * Returns exported invite link as String on success.
@@ -1046,6 +1196,56 @@ class TelegramBot extends EventEmitter {
     form.chat_id = chatId;
     return this._request('exportChatInviteLink', { form });
   }
+
+  /**
+   * Use this method to create an additional invite link for a chat.
+   * The bot must be an administrator in the chat for this to work and must have the appropriate admin rights.
+   * Returns the new invite link as ChatInviteLink object.
+   *
+   * @param  {Number|String} chatId Unique identifier for the target chat or username of the target supergroup
+   * @param  {Object} [options] Additional Telegram query options
+   * @return {Object} ChatInviteLink
+   * @see https://core.telegram.org/bots/api#createchatinvitelink
+   */
+  createChatInviteLink(chatId, form = {}) {
+    form.chat_id = chatId;
+    return this._request('createChatInviteLink', { form });
+  }
+
+  /**
+   * Use this method to edit a non-primary invite link created by the bot.
+   * The bot must be an administrator in the chat for this to work and must have the appropriate admin rights.
+   * Returns the edited invite link as a ChatInviteLink object.
+   *
+   * @param  {Number|String} chatId Unique identifier for the target chat or username of the target supergroup
+   * @param  {String} inviteLink Text with the invite link to edit
+   * @param  {Object} [options] Additional Telegram query options
+   * @return {Object} ChatInviteLink
+   * @see https://core.telegram.org/bots/api#editchatinvitelink
+   */
+  editChatInviteLink(chatId, inviteLink, form = {}) {
+    form.chat_id = chatId;
+    form.invite_link = inviteLink;
+    return this._request('editChatInviteLink', { form });
+  }
+
+  /**
+   * Use this method to revoke an invite link created by the bot.
+   * Note: If the primary link is revoked, a new link is automatically generated
+   * The bot must be an administrator in the chat for this to work and must have the appropriate admin rights.
+   * Returns the revoked invite link as ChatInviteLink object.
+   *
+   * @param  {Number|String} chatId Unique identifier for the target chat or username of the target supergroup
+   * @param  {Object} [options] Additional Telegram query options
+   * @return {Object} ChatInviteLink
+   * @see https://core.telegram.org/bots/api#revokechatinvitelink
+   */
+  revokeChatInviteLink(chatId, inviteLink, form = {}) {
+    form.chat_id = chatId;
+    form.invite_link = inviteLink;
+    return this._request('revokeChatInviteLink', { form });
+  }
+
 
   /**
    * Use this method to set a new profile photo for the chat. Photos can't be changed for private chats.
@@ -1156,6 +1356,21 @@ class TelegramBot extends EventEmitter {
   }
 
   /**
+  * Use this method to clear the list of pinned messages in a chat
+  * The bot must be an administrator in the chat for this to work and must have the appropriate admin rights.
+  * Returns True on success.
+  *
+  * @param  {Number|String} chatId  Unique identifier for the message recipient
+  * @param  {Object} [options] Additional Telegram query options
+  * @return {Promise}
+  * @see https://core.telegram.org/bots/api#unpinallchatmessages
+  */
+  unpinAllChatMessages(chatId, form = {}) {
+    form.chat_id = chatId;
+    return this._request('unpinAllChatMessages', { form });
+  }
+
+  /**
    * Use this method to send answers to callback queries sent from
    * inline keyboards. The answer will be displayed to the user as
    * a notification at the top of the chat screen or as an alert.
@@ -1195,6 +1410,40 @@ class TelegramBot extends EventEmitter {
       form.callback_query_id = callbackQueryId;
     }
     return this._request('answerCallbackQuery', { form });
+  }
+
+  /**
+  * Returns True on success.
+  * Use this method to change the list of the bot's commands.
+  * @param  {Array} commands Poll options, between 2-10 options
+  * @param  {Object} [options] Additional Telegram query options
+  * @return {Promise}
+  * @see https://core.telegram.org/bots/api#setmycommands
+  */
+  setMyCommands(commands, form = {}) {
+    form.commands = stringify(commands);
+    return this._request('setMyCommands', { form });
+  }
+
+  /**
+  * Returns Array of BotCommand on success.
+  * @param  {Object} [options] Additional Telegram query options
+  * @return {Promise}
+  * @see https://core.telegram.org/bots/api#getmycommands
+  */
+  getMyCommands(form = {}) {
+    return this._request('getMyCommands', { form });
+  }
+
+  /**
+  * Returns True on success.
+  * Use this method to delete the list of the bot's commands for the given scope and user language.
+  * @param  {Object} [options] Additional Telegram query options
+  * @return {Promise}
+  * @see https://core.telegram.org/bots/api#deletemycommands
+  */
+  deleteMyCommands(form = {}) {
+    return this._request('deleteMyCommands', { form });
   }
 
   /**
@@ -1249,7 +1498,7 @@ class TelegramBot extends EventEmitter {
    * @see https://core.telegram.org/bots/api#editmessagemedia
    */
   editMessageMedia(media, form = {}) {
-    form.media = media;
+    form.media = stringify(media);
     return this._request('editMessageMedia', { form });
   }
 
@@ -1391,6 +1640,39 @@ class TelegramBot extends EventEmitter {
     return this._request('sendContact', { form });
   }
 
+  /**
+   * Send poll.
+   * Use this method to send a native poll.
+   *
+   * @param  {Number|String} chatId  Unique identifier for the group/channel
+   * @param  {String} question Poll question, 255 char limit
+   * @param  {Array} pollOptions Poll options, between 2-10 options
+   * @param  {Object} [options] Additional Telegram query options
+   * @return {Promise}
+   * @see https://core.telegram.org/bots/api#sendpoll
+   */
+  sendPoll(chatId, question, pollOptions, form = {}) {
+    form.chat_id = chatId;
+    form.question = question;
+    form.options = stringify(pollOptions);
+    return this._request('sendPoll', { form });
+  }
+
+  /**
+   * Stop poll.
+   * Use this method to stop a native poll.
+   *
+   * @param  {Number|String} chatId  Unique identifier for the group/channel
+   * @param  {Number} pollId Identifier of the original message with the poll
+   * @param  {Object} [options] Additional Telegram query options
+   * @return {Promise}
+   * @see https://core.telegram.org/bots/api#stoppoll
+   */
+  stopPoll(chatId, pollId, form = {}) {
+    form.chat_id = chatId;
+    form.message_id = pollId;
+    return this._request('stopPoll', { form });
+  }
 
   /**
    * Get file.
@@ -1448,7 +1730,7 @@ class TelegramBot extends EventEmitter {
         fileStream.emit('info', {
           uri: fileURI,
         });
-        pump(streamedRequest({ uri: fileURI }), fileStream);
+        pump(streamedRequest(Object.assign({ uri: fileURI }, this.options.request)), fileStream);
       })
       .catch((error) => {
         fileStream.emit('error', error);
@@ -1484,6 +1766,9 @@ class TelegramBot extends EventEmitter {
         return resolve(filePath);
       });
     });
+    fileStream.on('error', (err) => {
+      reject(err);
+    });
     return promise;
   }
 
@@ -1506,12 +1791,19 @@ class TelegramBot extends EventEmitter {
    */
   removeTextListener(regexp) {
     const index = this._textRegexpCallbacks.findIndex((textListener) => {
-      return textListener.regexp === regexp;
+      return String(textListener.regexp) === String(regexp);
     });
     if (index === -1) {
       return null;
     }
     return this._textRegexpCallbacks.splice(index, 1)[0];
+  }
+
+  /**
+   * Remove all listeners registered with `onText()`.
+   */
+  clearTextListeners() {
+    this._textRegexpCallbacks = [];
   }
 
   /**
@@ -1551,6 +1843,13 @@ class TelegramBot extends EventEmitter {
   }
 
   /**
+   * Removes all replies that have been prev. registered for a message response.
+   */
+  clearReplyListeners() {
+    this._replyListeners = [];
+  }
+
+  /**
    * Use this method to get up to date information about the chat
    * (current name of the user for one-on-one conversations, current
    * username of a user, group or channel, etc.).
@@ -1578,14 +1877,31 @@ class TelegramBot extends EventEmitter {
 
   /**
    * Use this method to get the number of members in a chat.
+   * Returns Int on success.
    * @param  {Number|String} chatId  Unique identifier for the target group or username of the target supergroup
    * @param  {Object} [options] Additional Telegram query options
    * @return {Promise}
    * @see https://core.telegram.org/bots/api#getchatmemberscount
+   * @deprecated Deprecated since Telegram Bot API v5.3, replace it with "getChatMembersCount"
    */
   getChatMembersCount(chatId, form = {}) {
+    deprecate('The method "getChatMembersCount" is deprecated since Telegram Bot API v5.3, replace it with "getChatMemberCount"');
+
     form.chat_id = chatId;
     return this._request('getChatMembersCount', { form });
+  }
+
+  /**
+   * Use this method to get the number of members in a chat.
+   * Returns Int on success
+   * @param  {Number|String} chatId  Unique identifier for the target group or username of the target supergroup
+   * @param  {Object} [options] Additional Telegram query options
+   * @return {Promise}
+   * @see https://core.telegram.org/bots/api#getchatmembercount
+   */
+  getChatMemberCount(chatId, form = {}) {
+    form.chat_id = chatId;
+    return this._request('getChatMemberCount', { form });
   }
 
   /**

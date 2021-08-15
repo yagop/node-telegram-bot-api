@@ -1,19 +1,25 @@
-# Node.js Telegram Bot API
+<h1 align="center">Node.js Telegram Bot API</h1>
 
-[![Bot API](https://img.shields.io/badge/Bot%20API-v.3.5.0-00aced.svg)](https://core.telegram.org/bots/api)
-[![Build Status](https://travis-ci.org/yagop/node-telegram-bot-api.svg?branch=master)](https://travis-ci.org/yagop/node-telegram-bot-api)
-[![Build status](https://ci.appveyor.com/api/projects/status/ujko6bsum3g5msjh/branch/master?svg=true)](https://ci.appveyor.com/project/yagop/node-telegram-bot-api/branch/master)
-[![Coverage Status](https://coveralls.io/repos/yagop/node-telegram-bot-api/badge.svg?branch=master)](https://coveralls.io/r/yagop/node-telegram-bot-api?branch=master)
-[![bitHound Score](https://www.bithound.io/github/yagop/node-telegram-bot-api/badges/score.svg)](https://www.bithound.io/github/yagop/node-telegram-bot-api)
-[![https://telegram.me/node_telegram_bot_api](https://img.shields.io/badge/💬%20Telegram-node__telegram__bot__api-blue.svg)](https://telegram.me/node_telegram_bot_api)
-[![https://telegram.me/Yago_Perez](https://img.shields.io/badge/💬%20Telegram-Yago__Perez-blue.svg)](https://telegram.me/Yago_Perez)
+<div align="center">
 
-Node.js module to interact with official [Telegram Bot API](https://core.telegram.org/bots/api). A bot token is **required** and can be obtained by talking to [@botfather](https://telegram.me/BotFather).
+Node.js module to interact with the official [Telegram Bot API](https://core.telegram.org/bots/api).
+
+
+[![Bot API](https://img.shields.io/badge/Bot%20API-v.5.2-00aced.svg?style=flat-square&logo=telegram)](https://core.telegram.org/bots/api)
+[![npm package](https://img.shields.io/npm/v/node-telegram-bot-api?logo=npm&style=flat-square)](https://www.npmjs.org/package/node-telegram-bot-api)
+[![Build Status](https://img.shields.io/travis/yagop/node-telegram-bot-api/master?style=flat-square&logo=travis)](https://travis-ci.org/yagop/node-telegram-bot-api)
+[![Coverage Status](https://img.shields.io/codecov/c/github/yagop/node-telegram-bot-api?style=flat-square&logo=codecov)](https://codecov.io/gh/yagop/node-telegram-bot-api)
+
+[![https://telegram.me/node_telegram_bot_api](https://img.shields.io/badge/💬%20Telegram-Channel-blue.svg?style=flat-square)](https://telegram.me/node_telegram_bot_api)
+[![https://telegram.me/ntbasupport](https://img.shields.io/badge/💬%20Telegram-Group-blue.svg?style=flat-square)](https://telegram.me/ntbasupport)
+[![https://telegram.me/Yago_Perez](https://img.shields.io/badge/💬%20Telegram-Yago_Perez-blue.svg?style=flat-square)](https://telegram.me/Yago_Perez)
+
+</div>
 
 ## Install
 
-```bash
-npm install --save node-telegram-bot-api
+```sh
+npm i node-telegram-bot-api
 ```
 
 ## Usage
@@ -56,7 +62,7 @@ bot.on('message', (msg) => {
 * [Examples][examples]
 * [Tutorials][tutorials]
 * [Help Information][help]
-* API Reference ([release][api-release] / [development][api-dev] / [experimental][api-experimental])
+* API Reference [api-release] / [development][api-dev] / [experimental][api-experimental])
 * [Contributing to the Project][contributing]
 * [Experimental Features][experimental]
 
@@ -74,6 +80,8 @@ See our [list of contributors][contributors].
 We have a [Telegram channel][tg-channel] where we post updates on
 the Project. Head over and subscribe!
 
+We also have a [Telegram  group][tg-group] to discuss issues related to this library.
+
 Some things built using this library that might interest you:
 
 * [tgfancy](https://github.com/GochoMugo/tgfancy): A fancy, higher-level wrapper for Telegram Bot API
@@ -81,13 +89,13 @@ Some things built using this library that might interest you:
 * [teleirc](https://github.com/FruitieX/teleirc): A simple Telegram ↔ IRC gateway
 * [bot-brother](https://github.com/SerjoPepper/bot-brother): Node.js library to help you easily create telegram bots
 * [redbot](https://github.com/guidone/node-red-contrib-chatbot): A Node-RED plugin to create telegram bots visually
-* [node-telegram-keyboard-wrapper](https://github.com/alexandercerutti/node-telegram-keyboard-wrapper): A wrapper to improve `reply_markup` structures creation in an easy way (supports Inline Keyboards, Reply Keyboard, Remove Keyboard and Force Reply)
+* [node-telegram-keyboard-wrapper](https://github.com/alexandercerutti/node-telegram-keyboard-wrapper): A wrapper to improve keyboards structures creation through a more easy-to-see way (supports Inline Keyboards, Reply Keyboard, Remove Keyboard and Force Reply)
 
 ## License
 
 **The MIT License (MIT)**
 
-Copyright © 2017 Yago
+Copyright © 2019 Yago
 
 [usage]:https://github.com/yagop/node-telegram-bot-api/tree/master/doc/usage.md
 [examples]:https://github.com/yagop/node-telegram-bot-api/tree/master/examples
@@ -100,3 +108,4 @@ Copyright © 2017 Yago
 [contributors]:https://github.com/yagop/node-telegram-bot-api/graphs/contributors
 [experimental]:https://github.com/yagop/node-telegram-bot-api/tree/master/doc/experimental.md
 [tg-channel]:https://telegram.me/node_telegram_bot_api
+[tg-group]:https://telegram.me/ntbasupport

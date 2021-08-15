@@ -1,6 +1,6 @@
 {
   "name": "node-telegram-bot-api",
-  "version": "0.30.5",
+  "version": "0.54.0",
   "description": "Telegram Bot API",
   "main": "./index.js",
   "directories": {
@@ -30,7 +30,7 @@
   },
   "dependencies": {
     "array.prototype.findindex": "^2.0.2",
-    "bl": "^1.2.1",
+    "bl": "^1.2.3",
     "bluebird": "^3.5.1",
     "debug": "^3.1.0",
     "depd": "^1.1.1",

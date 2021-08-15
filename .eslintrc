@@ -5,7 +5,7 @@
     "new-cap": 0,
     "prefer-arrow-callback": 0,
     "no-param-reassign": [2,{"props":false}],
-    "max-len": [2, 150],
+    "max-len": [2, 200],
     "arrow-body-style": 0,
     "comma-dangle": 0
   },

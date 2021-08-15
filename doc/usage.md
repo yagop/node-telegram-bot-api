@@ -17,7 +17,7 @@ that emits the following events:
      `sticker`, `video`, `voice`, `contact`, `location`,
      `new_chat_members`, `left_chat_member`, `new_chat_title`,
      `new_chat_photo`, `delete_chat_photo`, `group_chat_created`,
-     `game`, `pinned_message`, `migrate_from_chat_id`, `migrate_to_chat_id`,
+     `game`, `pinned_message`, `poll`, `dice`, `migrate_from_chat_id`, `migrate_to_chat_id`,
      `channel_chat_created`, `supergroup_chat_created`,
      `successful_payment`, `invoice`, `video_note`
   1. **Arguments**: `message` ([Message][message]), `metadata` (`{ type?:string }`)
@@ -34,6 +34,7 @@ that emits the following events:
   1. `edited_channel_post_caption`
 1. `shipping_query`: Received a new incoming shipping query
 1. `pre_checkout_query`: Received a new  incoming pre-checkout query
+1. `poll`: Received a new  incoming poll
 1. `polling_error`: Error occurred during polling. See [polling errors](#polling-errors).
 1. `webhook_error`: Error occurred handling a webhook request. See [webhook errors](#webhook-errors).
 1. `error`: Unexpected error occurred, usually fatal!

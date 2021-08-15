@@ -7,3 +7,4 @@ output.md
 output/
 lib/
 lib-doc/
+.DS_Store
