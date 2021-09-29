@@ -1101,9 +1101,10 @@ class TelegramBot extends EventEmitter {
    * @return {Promise}
    * @see https://core.telegram.org/bots/api#restrictchatmember
    */
-  restrictChatMember(chatId, userId, form = {}) {
+  restrictChatMember(chatId, userId, form = {}, untilDate) {
     form.chat_id = chatId;
     form.user_id = userId;
+    form.until_date = untilDate;
     return this._request('restrictChatMember', { form });
   }
 
