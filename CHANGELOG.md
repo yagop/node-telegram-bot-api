@@ -11,7 +11,7 @@ Added:
 
    * Add method *approveChatJoinRequest()*
    * Add method *declineChatJoinRequest()*
-   * Add support for new messageTypes:
+   * Add support for new updates:
      * *chat_join_request*
 
 ## [0.54.0][0.54.0] - 2021-06-29

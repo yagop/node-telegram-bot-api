@@ -24,7 +24,6 @@ const _messageTypes = [
   'animation',
   'audio',
   'channel_chat_created',
-  'chat_join_request',
   'contact',
   'delete_chat_photo',
   'dice',
@@ -717,7 +716,7 @@ class TelegramBot extends EventEmitter {
       this.emit('my_chat_member', myChatMember);
     } else if (chatJoinRequest) {
       debug('Process Update my_chat_member %j', chatJoinRequest);
-      this.emit('my_chat_member', chatJoinRequest);
+      this.emit('chat_join_request', chatJoinRequest);
     }
   }
 
