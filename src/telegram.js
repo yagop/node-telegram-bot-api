@@ -24,6 +24,7 @@ const _messageTypes = [
   'animation',
   'audio',
   'channel_chat_created',
+  'chat_join_request',
   'contact',
   'delete_chat_photo',
   'dice',
@@ -1017,7 +1018,8 @@ class TelegramBot extends EventEmitter {
    * `typing` for text messages,
    * `upload_photo` for photos, `record_video` or `upload_video` for videos,
    * `record_voice` or `upload_voice` for audio files, `upload_document` for general files,
-   * `find_location` for location data.
+   * `choose_sticker` for stickers, `find_location` for location data,
+   * `record_video_note` or `upload_video_note` for video notes.
    *
    * @param  {Number|String} chatId  Unique identifier for the message recipient
    * @param  {String} action Type of action to broadcast.
@@ -1223,6 +1225,40 @@ class TelegramBot extends EventEmitter {
     form.chat_id = chatId;
     form.invite_link = inviteLink;
     return this._request('revokeChatInviteLink', { form });
+  }
+
+  /**
+   * Use this method to approve a chat join request. 
+   * The bot must be an administrator in the chat for this to work and must have the can_invite_users administrator right.
+   * Returns True on success.
+   *
+   * @param  {Number|String} chatId Unique identifier for the target chat or username of the target supergroup
+   * @param  {Number} userId  Unique identifier of the target user
+   * @param  {Object} [options] Additional Telegram query options
+   * @return {Boolean} True on success
+   * @see https://core.telegram.org/bots/api#approvechatjoinrequest
+   */
+  approveChatJoinRequest(chatId, userId, form = {}) {
+    form.chat_id = chatId;
+    form.userId = userId;
+    return this._request('approveChatJoinRequest', { form });
+  }
+
+  /**
+   * Use this method to decline a chat join request.
+   * The bot must be an administrator in the chat for this to work and must have the can_invite_users administrator right.
+   * Returns True on success.
+   *
+   * @param  {Number|String} chatId Unique identifier for the target chat or username of the target supergroup
+   * @param  {Number} userId  Unique identifier of the target user
+   * @param  {Object} [options] Additional Telegram query options
+   * @return {Boolean} True on success
+   * @see https://core.telegram.org/bots/api#declinechatjoinrequest
+   */
+  declineChatJoinRequest(chatId, userId, form = {}) {
+    form.chat_id = chatId;
+    form.userId = userId;
+    return this._request('declineChatJoinRequest', { form });
   }
 
 
