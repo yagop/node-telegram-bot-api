@@ -1243,7 +1243,7 @@ class TelegramBot extends EventEmitter {
    */
   approveChatJoinRequest(chatId, userId, form = {}) {
     form.chat_id = chatId;
-    form.userId = userId;
+    form.user_id = userId;
     return this._request('approveChatJoinRequest', { form });
   }
 
@@ -1260,7 +1260,7 @@ class TelegramBot extends EventEmitter {
    */
   declineChatJoinRequest(chatId, userId, form = {}) {
     form.chat_id = chatId;
-    form.userId = userId;
+    form.user_id = userId;
     return this._request('declineChatJoinRequest', { form });
   }
 
