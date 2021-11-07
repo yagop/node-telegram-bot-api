@@ -3,6 +3,21 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [0.55.0][0.55.0] - 2021-11-06
+
+Added:
+
+1. Support Bot API v5.4: (@danielperez9430)
+
+   * Add method *approveChatJoinRequest()*
+   * Add method *declineChatJoinRequest()*
+   * Add support for new updates:
+     * *chat_join_request*
+   
+   Fixes:
+
+   * Method *editMessageMedia*: Now you can send a local file (`"attach://" + filePatch`)
+
 ## [0.54.0][0.54.0] - 2021-06-29
 
 Added:

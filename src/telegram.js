@@ -624,6 +624,7 @@ class TelegramBot extends EventEmitter {
     const pollAnswer = update.poll_answer;
     const chatMember = update.chat_member;
     const myChatMember = update.my_chat_member;
+    const chatJoinRequest = update.chat_join_request;
 
     if (message) {
       debug('Process Update message %j', message);
@@ -713,6 +714,9 @@ class TelegramBot extends EventEmitter {
     } else if (myChatMember) {
       debug('Process Update my_chat_member %j', myChatMember);
       this.emit('my_chat_member', myChatMember);
+    } else if (chatJoinRequest) {
+      debug('Process Update my_chat_member %j', chatJoinRequest);
+      this.emit('chat_join_request', chatJoinRequest);
     }
   }
 
@@ -1017,7 +1021,8 @@ class TelegramBot extends EventEmitter {
    * `typing` for text messages,
    * `upload_photo` for photos, `record_video` or `upload_video` for videos,
    * `record_voice` or `upload_voice` for audio files, `upload_document` for general files,
-   * `find_location` for location data.
+   * `choose_sticker` for stickers, `find_location` for location data,
+   * `record_video_note` or `upload_video_note` for video notes.
    *
    * @param  {Number|String} chatId  Unique identifier for the message recipient
    * @param  {String} action Type of action to broadcast.
@@ -1223,6 +1228,40 @@ class TelegramBot extends EventEmitter {
     form.chat_id = chatId;
     form.invite_link = inviteLink;
     return this._request('revokeChatInviteLink', { form });
+  }
+
+  /**
+   * Use this method to approve a chat join request.
+   * The bot must be an administrator in the chat for this to work and must have the can_invite_users administrator right.
+   * Returns True on success.
+   *
+   * @param  {Number|String} chatId Unique identifier for the target chat or username of the target supergroup
+   * @param  {Number} userId  Unique identifier of the target user
+   * @param  {Object} [options] Additional Telegram query options
+   * @return {Boolean} True on success
+   * @see https://core.telegram.org/bots/api#approvechatjoinrequest
+   */
+  approveChatJoinRequest(chatId, userId, form = {}) {
+    form.chat_id = chatId;
+    form.user_id = userId;
+    return this._request('approveChatJoinRequest', { form });
+  }
+
+  /**
+   * Use this method to decline a chat join request.
+   * The bot must be an administrator in the chat for this to work and must have the can_invite_users administrator right.
+   * Returns True on success.
+   *
+   * @param  {Number|String} chatId Unique identifier for the target chat or username of the target supergroup
+   * @param  {Number} userId  Unique identifier of the target user
+   * @param  {Object} [options] Additional Telegram query options
+   * @return {Boolean} True on success
+   * @see https://core.telegram.org/bots/api#declinechatjoinrequest
+   */
+  declineChatJoinRequest(chatId, userId, form = {}) {
+    form.chat_id = chatId;
+    form.user_id = userId;
+    return this._request('declineChatJoinRequest', { form });
   }
 
 
@@ -1477,7 +1516,43 @@ class TelegramBot extends EventEmitter {
    * @see https://core.telegram.org/bots/api#editmessagemedia
    */
   editMessageMedia(media, form = {}) {
+    const regexAttach = /attach:\/\/.+/;
+
+    if (typeof media.media === 'string' && regexAttach.test(media.media)) {
+      const opts = {
+        qs: form,
+      };
+
+      opts.formData = {};
+
+      const payload = Object.assign({}, media);
+      delete payload.media;
+
+      try {
+        const attachName = String(0);
+        const [formData] = this._formatSendData(
+          attachName,
+          media.media.replace('attach://', ''),
+          media.fileOptions,
+        );
+
+        if (formData) {
+          opts.formData[attachName] = formData[attachName];
+          payload.media = `attach://${attachName}`;
+        } else {
+          throw new errors.FatalError(`Failed to process the replacement action for your ${media.type}`);
+        }
+      } catch (ex) {
+        return Promise.reject(ex);
+      }
+
+      opts.qs.media = JSON.stringify(payload);
+
+      return this._request('editMessageMedia', opts);
+    }
+
     form.media = stringify(media);
+
     return this._request('editMessageMedia', { form });
   }
 
