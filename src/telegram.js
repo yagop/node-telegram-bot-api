@@ -624,6 +624,7 @@ class TelegramBot extends EventEmitter {
     const pollAnswer = update.poll_answer;
     const chatMember = update.chat_member;
     const myChatMember = update.my_chat_member;
+    const chatJoinRequest = update.chat_join_request;
 
     if (message) {
       debug('Process Update message %j', message);
@@ -713,6 +714,9 @@ class TelegramBot extends EventEmitter {
     } else if (myChatMember) {
       debug('Process Update my_chat_member %j', myChatMember);
       this.emit('my_chat_member', myChatMember);
+    } else if (chatJoinRequest) {
+      debug('Process Update my_chat_member %j', chatJoinRequest);
+      this.emit('chat_join_request', chatJoinRequest);
     }
   }
 
