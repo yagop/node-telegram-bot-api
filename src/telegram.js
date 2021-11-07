@@ -1017,7 +1017,8 @@ class TelegramBot extends EventEmitter {
    * `typing` for text messages,
    * `upload_photo` for photos, `record_video` or `upload_video` for videos,
    * `record_voice` or `upload_voice` for audio files, `upload_document` for general files,
-   * `find_location` for location data.
+   * `choose_sticker` for stickers, `find_location` for location data,
+   * `record_video_note` or `upload_video_note` for video notes.
    *
    * @param  {Number|String} chatId  Unique identifier for the message recipient
    * @param  {String} action Type of action to broadcast.

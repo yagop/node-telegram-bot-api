@@ -54,6 +54,8 @@ TelegramBot
         * [.createChatInviteLink(chatId, [options])](#TelegramBot+createChatInviteLink) ⇒ <code>Object</code>
         * [.editChatInviteLink(chatId, inviteLink, [options])](#TelegramBot+editChatInviteLink) ⇒ <code>Object</code>
         * [.revokeChatInviteLink(chatId, [options])](#TelegramBot+revokeChatInviteLink) ⇒ <code>Object</code>
+        * [.approveChatJoinRequest(chatId, userId, [options])](#TelegramBot+approveChatJoinRequest) ⇒ <code>Boolean</code>
+        * [.declineChatJoinRequest(chatId, userId, [options])](#TelegramBot+declineChatJoinRequest) ⇒ <code>Boolean</code>
         * [.setChatPhoto(chatId, photo, [options], [fileOptions])](#TelegramBot+setChatPhoto) ⇒ <code>Promise</code>
         * [.deleteChatPhoto(chatId, [options])](#TelegramBot+deleteChatPhoto) ⇒ <code>Promise</code>
         * [.setChatTitle(chatId, title, [options])](#TelegramBot+setChatTitle) ⇒ <code>Promise</code>
@@ -584,7 +586,8 @@ Send chat action.
 `typing` for text messages,
 `upload_photo` for photos, `record_video` or `upload_video` for videos,
 `record_voice` or `upload_voice` for audio files, `upload_document` for general files,
-`find_location` for location data.
+`choose_sticker` for stickers, `find_location` for location data,
+`record_video_note` or `upload_video_note` for video notes.
 
 **Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
 **See**: https://core.telegram.org/bots/api#sendchataction  
