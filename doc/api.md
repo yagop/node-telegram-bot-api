@@ -782,6 +782,40 @@ Returns the revoked invite link as ChatInviteLink object.
 | chatId | <code>Number</code> \| <code>String</code> | Unique identifier for the target chat or username of the target supergroup |
 | [options] | <code>Object</code> | Additional Telegram query options |
 
+<a name="TelegramBot+approveChatJoinRequest"></a>
+
+### telegramBot.approveChatJoinRequest(chatId, userId, [options]) ⇒ <code>Boolean</code>
+Use this method to approve a chat join request. 
+The bot must be an administrator in the chat for this to work and must have the can_invite_users administrator right.
+Returns True on success.
+
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
+**Returns**: <code>Boolean</code> - True on success  
+**See**: https://core.telegram.org/bots/api#approvechatjoinrequest  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| chatId | <code>Number</code> \| <code>String</code> | Unique identifier for the target chat or username of the target supergroup |
+| userId | <code>Number</code> | Unique identifier of the target user |
+| [options] | <code>Object</code> | Additional Telegram query options |
+
+<a name="TelegramBot+declineChatJoinRequest"></a>
+
+### telegramBot.declineChatJoinRequest(chatId, userId, [options]) ⇒ <code>Boolean</code>
+Use this method to decline a chat join request.
+The bot must be an administrator in the chat for this to work and must have the can_invite_users administrator right.
+Returns True on success.
+
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
+**Returns**: <code>Boolean</code> - True on success  
+**See**: https://core.telegram.org/bots/api#declinechatjoinrequest  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| chatId | <code>Number</code> \| <code>String</code> | Unique identifier for the target chat or username of the target supergroup |
+| userId | <code>Number</code> | Unique identifier of the target user |
+| [options] | <code>Object</code> | Additional Telegram query options |
+
 <a name="TelegramBot+setChatPhoto"></a>
 
 ### telegramBot.setChatPhoto(chatId, photo, [options], [fileOptions]) ⇒ <code>Promise</code>
