@@ -1225,6 +1225,40 @@ class TelegramBot extends EventEmitter {
     return this._request('revokeChatInviteLink', { form });
   }
 
+  /**
+   * Use this method to approve a chat join request. 
+   * The bot must be an administrator in the chat for this to work and must have the can_invite_users administrator right.
+   * Returns True on success.
+   *
+   * @param  {Number|String} chatId Unique identifier for the target chat or username of the target supergroup
+   * @param  {Number} userId  Unique identifier of the target user
+   * @param  {Object} [options] Additional Telegram query options
+   * @return {Boolean} True on success
+   * @see https://core.telegram.org/bots/api#approvechatjoinrequest
+   */
+  approveChatJoinRequest(chatId, userId, form = {}) {
+    form.chat_id = chatId;
+    form.user_id = userId;
+    return this._request('approveChatJoinRequest', { form });
+  }
+
+  /**
+   * Use this method to decline a chat join request.
+   * The bot must be an administrator in the chat for this to work and must have the can_invite_users administrator right.
+   * Returns True on success.
+   *
+   * @param  {Number|String} chatId Unique identifier for the target chat or username of the target supergroup
+   * @param  {Number} userId  Unique identifier of the target user
+   * @param  {Object} [options] Additional Telegram query options
+   * @return {Boolean} True on success
+   * @see https://core.telegram.org/bots/api#declinechatjoinrequest
+   */
+  declineChatJoinRequest(chatId, userId, form = {}) {
+    form.chat_id = chatId;
+    form.user_id = userId;
+    return this._request('declineChatJoinRequest', { form });
+  }
+
 
   /**
    * Use this method to set a new profile photo for the chat. Photos can't be changed for private chats.
