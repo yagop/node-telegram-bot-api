@@ -1231,7 +1231,7 @@ class TelegramBot extends EventEmitter {
   }
 
   /**
-   * Use this method to approve a chat join request. 
+   * Use this method to approve a chat join request.
    * The bot must be an administrator in the chat for this to work and must have the can_invite_users administrator right.
    * Returns True on success.
    *
@@ -1516,7 +1516,43 @@ class TelegramBot extends EventEmitter {
    * @see https://core.telegram.org/bots/api#editmessagemedia
    */
   editMessageMedia(media, form = {}) {
+    const regexAttach = /attach:\/\/.+/;
+
+    if (typeof media.media === 'string' && regexAttach.test(media.media)) {
+      const opts = {
+        qs: form,
+      };
+
+      opts.formData = {};
+
+      const payload = Object.assign({}, media);
+      delete payload.media;
+
+      try {
+        const attachName = String(0);
+        const [formData] = this._formatSendData(
+          attachName,
+          media.media.replace('attach://', ''),
+          media.fileOptions,
+        );
+
+        if (formData) {
+          opts.formData[attachName] = formData[attachName];
+          payload.media = `attach://${attachName}`;
+        } else {
+          throw new errors.FatalError(`Failed to process the replacement action for your ${media.type}`);
+        }
+      } catch (ex) {
+        return Promise.reject(ex);
+      }
+
+      opts.qs.media = JSON.stringify(payload);
+
+      return this._request('editMessageMedia', opts);
+    }
+
     form.media = stringify(media);
+
     return this._request('editMessageMedia', { form });
   }
 
