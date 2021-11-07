@@ -13,6 +13,10 @@ Added:
    * Add method *declineChatJoinRequest()*
    * Add support for new updates:
      * *chat_join_request*
+   
+   Fixes:
+
+   * Method *editMessageMedia*: Now you can send a local file (`"attach://" + filePatch`)
 
 ## [0.54.0][0.54.0] - 2021-06-29
 
