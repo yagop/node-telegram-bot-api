@@ -880,6 +880,10 @@ describe('TelegramBot', function telegramSuite() {
     });
   });
 
+  describe.skip('#banChatSenderChat', function banChatSenderChatSuite() { });
+
+  describe.skip('#unbanChatSenderChat', function banChatSenderChatSuite() { });
+
   describe('#setChatPermissions ', function setChatPermissionsSuite() {
     it('should set chat permissions', function test() {
       const ChatPermissions = {

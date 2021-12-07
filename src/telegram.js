@@ -1148,6 +1148,44 @@ class TelegramBot extends EventEmitter {
     return this._request('setChatAdministratorCustomTitle', { form });
   }
 
+
+  /**
+   * Use this method to ban a channel chat in a supergroup or a channel.
+   * The owner of the chat will not be able to send messages and join live streams
+   * on behalf of the chat, unless it is unbanned first.
+   * The bot must be an administrator in the supergroup or channel for this to work
+   * and must have the appropriate administrator rights.
+   * Returns True on success.
+   *
+   * @param  {Number|String} chatId  Unique identifier for the target group or username of the target supergroup
+   * @param  {Number} senderChatId  Unique identifier of the target user
+   * @param  {Object} [options] Additional Telegram query options
+   * @return {Boolean}
+   * @see https://core.telegram.org/bots/api#banchatsenderchat
+   */
+  banChatSenderChat(chatId, senderChatId, form = {}) {
+    form.chat_id = chatId;
+    form.sender_chat_id = senderChatId;
+    return this._request('banChatSenderChat', { form });
+  }
+
+  /**
+  * Use this method to unban a previously banned channel chat in a supergroup or channel.
+  * The bot must be an administrator for this to work and must have the appropriate administrator rights.
+  * Returns True on success.
+  *
+  * @param  {Number|String} chatId  Unique identifier for the target group or username of the target supergroup
+  * @param  {Number} senderChatId  Unique identifier of the target user
+  * @param  {Object} [options] Additional Telegram query options
+  * @return {Boolean}
+  * @see https://core.telegram.org/bots/api#unbanchatsenderchat
+  */
+  unbanChatSenderChat(chatId, senderChatId, form = {}) {
+    form.chat_id = chatId;
+    form.sender_chat_id = senderChatId;
+    return this._request('unbanChatSenderChat', { form });
+  }
+
   /**
    * Use this method to set default chat permissions for all members.
    * The bot must be an administrator in the group or a supergroup for this to
