@@ -904,7 +904,7 @@ describe('TelegramBot', function telegramSuite() {
     });
     it('should export the group invite link', function test() {
       return bot.exportChatInviteLink(GROUPID).then(resp => {
-        assert(resp.match(/^https:\/\/t\.me\/joinchat\/.+$/i), 'is a telegram invite link');
+        assert(resp.match(/^https:\/\/t\.me\/.+$/i), 'is a telegram invite link');
       });
     });
   });
@@ -918,7 +918,7 @@ describe('TelegramBot', function telegramSuite() {
     });
     it('should create a chat invite link', function test() {
       return bot.createChatInviteLink(GROUPID).then(resp => {
-        assert(resp.invite_link.match(/^https:\/\/t\.me\/joinchat\/.+$/i), 'is a telegram invite link');
+        assert(resp.invite_link.match(/^https:\/\/t\.me\/.+$/i), 'is a telegram invite link');
         inviteLink = resp.invite_link;
       });
     });
