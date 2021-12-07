@@ -49,6 +49,8 @@ TelegramBot
         * [.restrictChatMember(chatId, userId, [options])](#TelegramBot+restrictChatMember) ⇒ <code>Promise</code>
         * [.promoteChatMember(chatId, userId, [options])](#TelegramBot+promoteChatMember) ⇒ <code>Promise</code>
         * [.setChatAdministratorCustomTitle(chatId, userId, customTitle, [options])](#TelegramBot+setChatAdministratorCustomTitle) ⇒ <code>Promise</code>
+        * [.banChatSenderChat(chatId, senderChatId, [options])](#TelegramBot+banChatSenderChat) ⇒ <code>Boolean</code>
+        * [.unbanChatSenderChat(chatId, senderChatId, [options])](#TelegramBot+unbanChatSenderChat) ⇒ <code>Boolean</code>
         * [.setChatPermissions(chatId, chatPermissions, [options])](#TelegramBot+setChatPermissions) ⇒ <code>Promise</code>
         * [.exportChatInviteLink(chatId, [options])](#TelegramBot+exportChatInviteLink) ⇒ <code>Promise</code>
         * [.createChatInviteLink(chatId, [options])](#TelegramBot+createChatInviteLink) ⇒ <code>Object</code>
@@ -701,6 +703,38 @@ Returns True on success.
 | chatId | <code>Number</code> \| <code>String</code> | Unique identifier for the message recipient |
 | userId | <code>Number</code> | Unique identifier of the target user |
 | customTitle | <code>String</code> | New custom title for the administrator; 0-16 characters, emoji are not allowed |
+| [options] | <code>Object</code> | Additional Telegram query options |
+
+<a name="TelegramBot+banChatSenderChat"></a>
+
+### telegramBot.banChatSenderChat(chatId, senderChatId, [options]) ⇒ <code>Promise</code>
+Use this method to ban a channel chat in a supergroup or a channel.
+The owner of the chat will not be able to send messages and join live streams on behalf of the chat, unless it is unbanned first.
+Returns True on success.
+
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
+**See**: https://core.telegram.org/bots/api#banchatsenderchat  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| chatId | <code>Number</code> \| <code>String</code> | Unique identifier for the target chat or username of the target channel |
+| senderChatId | <code>Number</code> | 	Unique identifier of the target sender chat |
+| [options] | <code>Object</code> | Additional Telegram query options |
+
+<a name="TelegramBot+unbanChatSenderChat"></a>
+
+### telegramBot.unbanChatSenderChat(chatId, senderChatId, [options]) ⇒ <code>Promise</code>
+Use this method to unban a previously banned channel chat in a supergroup or channel.
+The bot must be an administrator for this to work and must have the appropriate administrator rights.
+Returns True on success.
+
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
+**See**: https://core.telegram.org/bots/api#unbanchatsenderchat  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| chatId | <code>Number</code> \| <code>String</code> | Unique identifier for the target chat or username of the target channel |
+| senderChatId | <code>Number</code> | 	Unique identifier of the target sender chat |
 | [options] | <code>Object</code> | Additional Telegram query options |
 
 <a name="TelegramBot+setChatPermissions"></a>
