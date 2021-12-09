@@ -1545,8 +1545,7 @@ class TelegramBot extends EventEmitter {
    * Use previously uploaded file via its file_id or specify a URL.
    * On success, the edited Message is returned.
    *
-   * Note that you must provide one of chat_id, message_id, or
-   * inline_message_id in your request.
+   * Note that you must provide one of chat_id, message_id, or inline_message_id in your request.
    *
    * @param  {Object} media  A JSON-serialized object for a new media content of the message
    * @param  {Object} [options] Additional Telegram query options (provide either one of chat_id, message_id, or inline_message_id here)
@@ -1571,7 +1570,7 @@ class TelegramBot extends EventEmitter {
         const [formData] = this._formatSendData(
           attachName,
           media.media.replace('attach://', ''),
-          media.fileOptions,
+          media.fileOptions
         );
 
         if (formData) {
