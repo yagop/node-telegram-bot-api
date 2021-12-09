@@ -707,9 +707,12 @@ Returns True on success.
 
 <a name="TelegramBot+banChatSenderChat"></a>
 
-### telegramBot.banChatSenderChat(chatId, senderChatId, [options]) ⇒ <code>Promise</code>
+### telegramBot.banChatSenderChat(chatId, senderChatId, [options]) ⇒ <code>Boolean</code>
 Use this method to ban a channel chat in a supergroup or a channel.
-The owner of the chat will not be able to send messages and join live streams on behalf of the chat, unless it is unbanned first.
+The owner of the chat will not be able to send messages and join live streams
+on behalf of the chat, unless it is unbanned first.
+The bot must be an administrator in the supergroup or channel for this to work
+and must have the appropriate administrator rights.
 Returns True on success.
 
 **Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
@@ -717,13 +720,13 @@ Returns True on success.
 
 | Param | Type | Description |
 | --- | --- | --- |
-| chatId | <code>Number</code> \| <code>String</code> | Unique identifier for the target chat or username of the target channel |
-| senderChatId | <code>Number</code> | 	Unique identifier of the target sender chat |
+| chatId | <code>Number</code> \| <code>String</code> | Unique identifier for the target group or username of the target supergroup |
+| senderChatId | <code>Number</code> | Unique identifier of the target user |
 | [options] | <code>Object</code> | Additional Telegram query options |
 
 <a name="TelegramBot+unbanChatSenderChat"></a>
 
-### telegramBot.unbanChatSenderChat(chatId, senderChatId, [options]) ⇒ <code>Promise</code>
+### telegramBot.unbanChatSenderChat(chatId, senderChatId, [options]) ⇒ <code>Boolean</code>
 Use this method to unban a previously banned channel chat in a supergroup or channel.
 The bot must be an administrator for this to work and must have the appropriate administrator rights.
 Returns True on success.
@@ -733,8 +736,8 @@ Returns True on success.
 
 | Param | Type | Description |
 | --- | --- | --- |
-| chatId | <code>Number</code> \| <code>String</code> | Unique identifier for the target chat or username of the target channel |
-| senderChatId | <code>Number</code> | 	Unique identifier of the target sender chat |
+| chatId | <code>Number</code> \| <code>String</code> | Unique identifier for the target group or username of the target supergroup |
+| senderChatId | <code>Number</code> | Unique identifier of the target user |
 | [options] | <code>Object</code> | Additional Telegram query options |
 
 <a name="TelegramBot+setChatPermissions"></a>
@@ -822,7 +825,7 @@ Returns the revoked invite link as ChatInviteLink object.
 <a name="TelegramBot+approveChatJoinRequest"></a>
 
 ### telegramBot.approveChatJoinRequest(chatId, userId, [options]) ⇒ <code>Boolean</code>
-Use this method to approve a chat join request. 
+Use this method to approve a chat join request.
 The bot must be an administrator in the chat for this to work and must have the can_invite_users administrator right.
 Returns True on success.
 
@@ -1066,8 +1069,7 @@ Otherwise, message type can be changed arbitrarily. When inline message is edite
 Use previously uploaded file via its file_id or specify a URL.
 On success, the edited Message is returned.
 
-Note that you must provide one of chat_id, message_id, or
-inline_message_id in your request.
+Note that you must provide one of chat_id, message_id, or inline_message_id in your request.
 
 **Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
 **See**: https://core.telegram.org/bots/api#editmessagemedia  
