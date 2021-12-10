@@ -3,6 +3,19 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [0.56.0][0.56.0] - 2021-12-07
+
+Added:
+
+1. Support Bot API v5.5: (@danielperez9430)
+
+   * Add method *banChatSenderChat()*
+   * Add method *unbanChatSenderChat()*
+
+   Fixes:
+
+   * Tests for support with new invite link format
+
 ## [0.55.0][0.55.0] - 2021-11-06
 
 Added:
