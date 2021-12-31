@@ -1406,8 +1406,9 @@ class TelegramBot extends EventEmitter {
    * @return {Promise}
    * @see https://core.telegram.org/bots/api#unpinchatmessage
    */
-  unpinChatMessage(chatId, form = {}) {
+  unpinChatMessage(chatId, messageId, form = {}) {
     form.chat_id = chatId;
+    form.message_id = messageId;
     return this._request('unpinChatMessage', { form });
   }
 
