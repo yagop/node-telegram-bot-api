@@ -1,9 +1,14 @@
 # Usage
 
-* [Events](#events)
-* [WebHooks](#webhooks)
-* [Sending files](#sending-files)
-* [Error handling](#error-handling)
+- [Usage](#usage)
+  - [Events](#events)
+  - [WebHooks](#webhooks)
+  - [Sending files](#sending-files)
+    - [File Options (metadata)](#file-options-metadata)
+    - [Performance Issue](#performance-issue)
+  - [Error handling](#error-handling)
+  - [Polling errors](#polling-errors)
+  - [WebHook errors](#webhook-errors)
 
 <a name="events"></a>
 ## Events
@@ -35,9 +40,13 @@ that emits the following events:
 1. `shipping_query`: Received a new incoming shipping query
 1. `pre_checkout_query`: Received a new  incoming pre-checkout query
 1. `poll`: Received a new  incoming poll
-1. `polling_error`: Error occurred during polling. See [polling errors](#polling-errors).
-1. `webhook_error`: Error occurred handling a webhook request. See [webhook errors](#webhook-errors).
-1. `error`: Unexpected error occurred, usually fatal!
+2. `poll_answer`: A user has changed their answer in a non-anonymous poll (Only polls sent by the bot)
+3. `chat_member`: A chat member's status was updated in a chat
+4. `my_chat_member`: The bot's chat member status was updated in a chat
+5. `chat_join_request`: A request to join the chat has been sent (The bot must have the can_invite_users administrator right)
+5. `polling_error`: Error occurred during polling. See [polling errors](#polling-errors).
+6. `webhook_error`: Error occurred handling a webhook request. See [webhook errors](#webhook-errors).
+7. `error`: Unexpected error occurred, usually fatal!
 
 **Tip:** Its much better to listen a specific event rather than on
 `message` in order to stay safe from the content.
