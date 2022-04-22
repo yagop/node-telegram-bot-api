@@ -66,8 +66,13 @@ TelegramBot
         * [.unpinChatMessage(chatId, [options])](#TelegramBot+unpinChatMessage) ⇒ <code>Promise</code>
         * [.unpinAllChatMessages(chatId, [options])](#TelegramBot+unpinAllChatMessages) ⇒ <code>Promise</code>
         * [.answerCallbackQuery(callbackQueryId, [options])](#TelegramBot+answerCallbackQuery) ⇒ <code>Promise</code>
+        * [.answerWebAppQuery(webAppQueryId, result, [options])](#TelegramBot+answerWebAppQuery) ⇒ <code>Promise</code>
         * [.setMyCommands(commands, [options])](#TelegramBot+setMyCommands) ⇒ <code>Promise</code>
         * [.getMyCommands([options])](#TelegramBot+getMyCommands) ⇒ <code>Promise</code>
+        * [.setChatMenuButton([options])](#TelegramBot+setChatMenuButton) ⇒ <code>Promise</code>
+        * [.getChatMenuButton([options])](#TelegramBot+getChatMenuButton) ⇒ <code>Promise</code>
+        * [.setMyDefaultAdministratorRights([options])](#TelegramBot+setMyDefaultAdministratorRights) ⇒ <code>Promise</code>
+        * [.getMyDefaultAdministratorRights([options])](#TelegramBot+getMyDefaultAdministratorRights) ⇒ <code>Promise</code>
         * [.deleteMyCommands([options])](#TelegramBot+deleteMyCommands) ⇒ <code>Promise</code>
         * [.editMessageText(text, [options])](#TelegramBot+editMessageText) ⇒ <code>Promise</code>
         * [.editMessageCaption(caption, [options])](#TelegramBot+editMessageCaption) ⇒ <code>Promise</code>
@@ -985,11 +990,26 @@ that are being deprecated.
 | callbackQueryId | <code>String</code> | Unique identifier for the query to be answered |
 | [options] | <code>Object</code> | Additional Telegram query options |
 
+<a name="TelegramBot+answerWebAppQuery"></a>
+
+### telegramBot.answerWebAppQuery(webAppQueryId, result, [options]) ⇒ <code>Promise</code>
+Use this method to set the result of an interaction with a Web App and send a corresponding message on behalf of the user to the chat from which the query originated.
+On success, a SentWebAppMessage object is returned.
+
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
+**See**: https://core.telegram.org/bots/api#answercallbackquery  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| webAppQueryId | <code>String</code> | Unique identifier for the query to be answered |
+| result | <code>InlineQueryResult</code> | object that represents one result of an inline query |
+| [options] | <code>Object</code> | Additional Telegram query options |
+
 <a name="TelegramBot+setMyCommands"></a>
 
 ### telegramBot.setMyCommands(commands, [options]) ⇒ <code>Promise</code>
-Returns True on success.
 Use this method to change the list of the bot's commands.
+Returns True on success.
 
 **Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
 **See**: https://core.telegram.org/bots/api#setmycommands  
@@ -1002,10 +1022,64 @@ Use this method to change the list of the bot's commands.
 <a name="TelegramBot+getMyCommands"></a>
 
 ### telegramBot.getMyCommands([options]) ⇒ <code>Promise</code>
-Returns Array of BotCommand on success.
+Use this method to get the current list of the bot's commands for the given scope and user language.
+Returns Array of BotCommand on success. If commands aren't set, an empty list is returned.
 
 **Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
 **See**: https://core.telegram.org/bots/api#getmycommands  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| [options] | <code>Object</code> | Additional Telegram query options |
+
+<a name="TelegramBot+setChatMenuButton"></a>
+
+### telegramBot.setChatMenuButton([options]) ⇒ <code>Promise</code>
+Use this method to change the bot's menu button in a private chat, or the default menu button.
+Returns True on success.
+
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
+**See**: https://core.telegram.org/bots/api#setchatmenubutton  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| [options] | <code>Object</code> | Additional Telegram query options |
+
+<a name="TelegramBot+getChatMenuButton"></a>
+
+### telegramBot.getChatMenuButton([options]) ⇒ <code>Promise</code>
+Use this method to get the current value of the bot's menu button in a private chat, or the default menu button.
+Returns MenuButton on success.
+
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
+**See**: https://core.telegram.org/bots/api#getchatmenubutton  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| [options] | <code>Object</code> | Additional Telegram query options |
+
+<a name="TelegramBot+setMyDefaultAdministratorRights"></a>
+
+### telegramBot.setMyDefaultAdministratorRights([options]) ⇒ <code>Promise</code>
+Use this method to change the default administrator rights requested by the bot when it's added as an administrator to groups or channels.
+These rights will be suggested to users, but they are are free to modify the list before adding the bot.
+Returns True on success.
+
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
+**See**: https://core.telegram.org/bots/api#getchatmenubutton  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| [options] | <code>Object</code> | Additional Telegram query options |
+
+<a name="TelegramBot+getMyDefaultAdministratorRights"></a>
+
+### telegramBot.getMyDefaultAdministratorRights([options]) ⇒ <code>Promise</code>
+Use this method to get the current default administrator rights of the bot.
+Returns ChatAdministratorRights on success.
+
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
+**See**: https://core.telegram.org/bots/api#getmydefaultadministratorrights  
 
 | Param | Type | Description |
 | --- | --- | --- |
