@@ -864,6 +864,72 @@ describe('TelegramBot', function telegramSuite() {
     });
   });
 
+
+  describe('#setChatMenuButton', function setChatMenuButtonSuite() {
+    it('should set chat menu button', function test() {
+      return bot.setChatMenuButton({
+        chat_id: USERID,
+        menu_button: JSON.stringify({ type: 'web_app', text: 'Hello', web_app: { url: 'https://webappcontent.telegram.org/cafe' } }),
+      })
+        .then(resp => {
+          assert.ok(is.boolean(resp));
+        });
+    });
+  });
+
+  describe('#getChatMenuButton', function getChatMenuButtonSuite() {
+    it('should get chat menu button', function test() {
+      return bot.getChatMenuButton().then(resp => {
+        assert.ok(is.equal(resp, {
+          type: 'web_app',
+          text: 'Hello',
+          web_app: { url: 'https://webappcontent.telegram.org/cafe' }
+        }));
+      });
+    });
+  });
+
+  describe('#setMyDefaultAdministratorRights', function setMyDefaultAdministratorRightsSuite() {
+    it('should set default administrator rights', function test() {
+      return bot.setMyDefaultAdministratorRights({
+        rights: JSON.stringify({
+          can_manage_chat: true,
+          can_change_info: true,
+          can_delete_messages: false,
+          can_invite_users: true,
+          can_restrict_members: false,
+          can_pin_messages: true,
+          can_promote_members: false,
+          can_manage_video_chats: false,
+          is_anonymous: false
+        }),
+        for_channels: false
+      }).then(resp => {
+        assert.ok(is.boolean(resp));
+      });
+    });
+  });
+
+  describe('#getMyDefaultAdministratorRights ', function getMyDefaultAdministratorRightsSuite() {
+    it('should get my default administrator rights', function test() {
+      return bot.getMyDefaultAdministratorRights({
+        for_channels: false
+      }).then(resp => {
+        assert.ok(is.equal(resp, {
+          can_manage_chat: true,
+          can_change_info: true,
+          can_delete_messages: false,
+          can_invite_users: true,
+          can_restrict_members: false,
+          can_pin_messages: true,
+          can_promote_members: false,
+          can_manage_video_chats: false,
+          is_anonymous: false
+        }));
+      });
+    });
+  });
+
   describe('#deleteMyCommands', function deleteMyCommandsSuite() {
     it('should delete bot commands', function test() {
       return bot.deleteMyCommands().then(resp => {

@@ -48,13 +48,14 @@ const _messageTypes = [
   'video',
   'video_note',
   'voice',
-  'voice_chat_started',
-  'voice_chat_ended',
-  'voice_chat_participants_invited',
-  'voice_chat_scheduled',
+  'video_chat_started',
+  'video_chat_ended',
+  'video_chat_participants_invited',
+  'video_chat_scheduled',
   'message_auto_delete_timer_changed',
   'chat_invite_link',
-  'chat_member_updated'
+  'chat_member_updated',
+  'web_app_data',
 ];
 const _deprecatedMessageTypes = [
   'new_chat_participant', 'left_chat_participant'
@@ -1469,8 +1470,25 @@ class TelegramBot extends EventEmitter {
   }
 
   /**
-  * Returns True on success.
+   * Use this method to set the result of an interaction with a Web App and send a corresponding message on behalf of the user to the chat from which the query originated.
+   * On success, a SentWebAppMessage object is returned.
+   *
+   * @param  {String} webAppQueryId Unique identifier for the query to be answered
+   * @param  {InlineQueryResult} result object that represents one result of an inline query
+   * @param  {Object} [options] Additional Telegram query options
+   * @return {Promise}
+   * @see https://core.telegram.org/bots/api#answercallbackquery
+   */
+  answerWebAppQuery(webAppQueryId, result, form = {}) {
+    form.web_app_query_id = webAppQueryId;
+    form.result = stringify(result);
+    return this._request('answerCallbackQuery', { form });
+  }
+
+
+  /**
   * Use this method to change the list of the bot's commands.
+  * Returns True on success.
   * @param  {Array} commands Poll options, between 2-10 options
   * @param  {Object} [options] Additional Telegram query options
   * @return {Promise}
@@ -1482,13 +1500,59 @@ class TelegramBot extends EventEmitter {
   }
 
   /**
-  * Returns Array of BotCommand on success.
+  * Use this method to get the current list of the bot's commands for the given scope and user language.
+  * Returns Array of BotCommand on success. If commands aren't set, an empty list is returned.
   * @param  {Object} [options] Additional Telegram query options
   * @return {Promise}
   * @see https://core.telegram.org/bots/api#getmycommands
   */
   getMyCommands(form = {}) {
     return this._request('getMyCommands', { form });
+  }
+
+  /**
+  * Use this method to change the bot's menu button in a private chat, or the default menu button.
+  * Returns True on success.
+  * @param  {Object} [options] Additional Telegram query options
+  * @return {Promise}
+  * @see https://core.telegram.org/bots/api#setchatmenubutton
+  */
+  setChatMenuButton(form = {}) {
+    return this._request('setChatMenuButton', { form });
+  }
+
+  /**
+  * Use this method to get the current value of the bot's menu button in a private chat, or the default menu button.
+  * Returns MenuButton on success.
+  * @param  {Object} [options] Additional Telegram query options
+  * @return {Promise}
+  * @see https://core.telegram.org/bots/api#getchatmenubutton
+  */
+  getChatMenuButton(form = {}) {
+    return this._request('getChatMenuButton', { form });
+  }
+
+  /**
+  * Use this method to change the default administrator rights requested by the bot when it's added as an administrator to groups or channels.
+  * These rights will be suggested to users, but they are are free to modify the list before adding the bot.
+  * Returns True on success.
+  * @param  {Object} [options] Additional Telegram query options
+  * @return {Promise}
+  * @see https://core.telegram.org/bots/api#getchatmenubutton
+  */
+  setMyDefaultAdministratorRights(form = {}) {
+    return this._request('setMyDefaultAdministratorRights', { form });
+  }
+
+  /**
+  * Use this method to get the current default administrator rights of the bot.
+  * Returns ChatAdministratorRights on success.
+  * @param  {Object} [options] Additional Telegram query options
+  * @return {Promise}
+  * @see https://core.telegram.org/bots/api#getmydefaultadministratorrights
+  */
+  getMyDefaultAdministratorRights(form = {}) {
+    return this._request('getMyDefaultAdministratorRights', { form });
   }
 
   /**
