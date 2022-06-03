@@ -827,7 +827,9 @@ class TelegramBot extends EventEmitter {
     const opts = {
       qs: options
     };
+
     opts.qs.chat_id = chatId;
+
     try {
       const sendData = this._formatSendData('audio', audio, fileOptions);
       opts.formData = sendData[0];
@@ -835,6 +837,21 @@ class TelegramBot extends EventEmitter {
     } catch (ex) {
       return Promise.reject(ex);
     }
+
+    if (options.thumb) {
+      try {
+        const attachName = 'photo';
+        const [formData] = this._formatSendData(attachName, options.thumb.replace('attach://', ''));
+
+        if (formData) {
+          opts.formData[attachName] = formData[attachName];
+          opts.qs.thumb = `attach://${attachName}`;
+        }
+      } catch (ex) {
+        return Promise.reject(ex);
+      }
+    }
+
     return this._request('sendAudio', opts);
   }
 
@@ -2335,7 +2352,7 @@ class TelegramBot extends EventEmitter {
     }
     return this._request('addStickerToSet', opts);
   }
-  
+
   /**
    * Use this method to add a thumb to a set created by the bot.
    * Returns True on success.

@@ -605,6 +605,14 @@ describe('TelegramBot', function telegramSuite() {
         assert.ok(is.object(resp.audio));
       });
     });
+    it('should send an audio from id with thumb', function test() {
+      const audio = audioId;
+      return bot.sendAudio(USERID, audio, { thumb: 'attach://./files/sticker_thumb.png' }).then(resp => {
+        assert.ok(is.object(resp));
+        assert.ok(is.object(resp.audio));
+        assert.ok(is.object(resp.audio.thumb));
+      });
+    });
   });
 
   describe('#sendDocument', function sendDocumentSuite() {
