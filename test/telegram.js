@@ -29,6 +29,7 @@ const USERID = process.env.TEST_USER_ID || 777000;
 const GROUPID = process.env.TEST_GROUP_ID || -1001075450562;
 const GAME_SHORT_NAME = process.env.TEST_GAME_SHORT_NAME || 'medusalab_test';
 const STICKER_SET_NAME = process.env.TEST_STICKER_SET_NAME || 'pusheen';
+const CURRENT_TIMESTAMP = Date.now();
 const timeout = 60 * 1000;
 let portindex = 8091;
 const staticPort = portindex++;
@@ -47,6 +48,7 @@ const FILE_PATH = `${__dirname}/data/photo.png`;
 let FILE_ID;
 let GAME_CHAT_ID;
 let GAME_MSG_ID;
+let BOT_USERNAME;
 
 before(function beforeAll() {
   utils.startStaticServer(staticPort);
@@ -112,6 +114,10 @@ describe('TelegramBot', function telegramSuite() {
       return bot.sendGame(USERID, GAME_SHORT_NAME);
     }).then(resp => {
       GAME_MSG_ID = resp.message_id;
+    }).then(() => {
+      return bot.getMe().then(resp => {
+        BOT_USERNAME = resp.username;
+      });
     });
   });
 
@@ -605,9 +611,11 @@ describe('TelegramBot', function telegramSuite() {
         assert.ok(is.object(resp.audio));
       });
     });
-    it('should send an audio from id with thumb', function test() {
-      const audio = audioId;
-      return bot.sendAudio(USERID, audio, { thumb: 'attach://./files/sticker_thumb.png' }).then(resp => {
+    it('should send an audio file with thumb', function test() {
+      const audio = `${__dirname}/data/audio.mp3`;
+      const thumbImg = `attach://${__dirname}/data/sticker_thumb.png`;
+
+      return bot.sendAudio(USERID, audio, { thumb: thumbImg }).then(resp => {
         assert.ok(is.object(resp));
         assert.ok(is.object(resp.audio));
         assert.ok(is.object(resp.audio.thumb));
@@ -748,7 +756,7 @@ describe('TelegramBot', function telegramSuite() {
     });
   });
 
-  describe.skip('#sendVideoNote', function sendVideoNoteSuite() {
+  describe('#sendVideoNote', function sendVideoNoteSuite() {
     let videoNoteId;
     this.timeout(timeout);
     before(function before() {
@@ -758,8 +766,8 @@ describe('TelegramBot', function telegramSuite() {
       const video = `${__dirname}/data/video.mp4`;
       return bot.sendVideoNote(USERID, video, { length: 5 }).then(resp => {
         assert.ok(is.object(resp));
-        assert.ok(is.object(resp.video_note));
-        videoNoteId = resp.video_note.file_id;
+        assert.ok(is.object(resp.video));
+        videoNoteId = resp.video.file_id;
       });
     });
     it('should send a video from id', function test() {
@@ -767,21 +775,21 @@ describe('TelegramBot', function telegramSuite() {
       assert.ok(videoNoteId);
       return bot.sendVideoNote(USERID, videoNoteId, { length: 5 }).then(resp => {
         assert.ok(is.object(resp));
-        assert.ok(is.object(resp.video_note));
+        assert.ok(is.object(resp.video));
       });
     });
     it('should send a video from fs.readStream', function test() {
       const video = fs.createReadStream(`${__dirname}/data/video.mp4`);
       return bot.sendVideoNote(USERID, video, { length: 5 }).then(resp => {
         assert.ok(is.object(resp));
-        assert.ok(is.object(resp.video_note));
+        assert.ok(is.object(resp.video));
       });
     });
     it('should send a video from a Buffer', function test() {
       const video = fs.readFileSync(`${__dirname}/data/video.mp4`);
       return bot.sendVideoNote(USERID, video, { length: 5 }).then(resp => {
         assert.ok(is.object(resp));
-        assert.ok(is.object(resp.video_note));
+        assert.ok(is.object(resp.video));
       });
     });
   });
@@ -1601,6 +1609,23 @@ describe('TelegramBot', function telegramSuite() {
 
   describe.skip('#answerPreCheckoutQuery', function answerPreCheckoutQuerySuite() { });
 
+  describe('#createNewStickerSet', function createNewStickerSetSuite() {
+    before(function before() {
+      utils.handleRatelimit(bot, 'createNewStickerSet', this);
+    });
+
+    it('should create a new sticker set', function test(done) {
+      const sticker = `${__dirname}/data/sticker.png`;
+      const stickerPackName = `s${CURRENT_TIMESTAMP}_by_${BOT_USERNAME}`;
+
+      bot.createNewStickerSet(USERID, stickerPackName, 'Sticker Pack Title', sticker, '😍').then((resp) => {
+        assert.ok(is.boolean(resp));
+      });
+      setTimeout(() => done(), 2000);
+    });
+  });
+
+
   describe('#getStickerSet', function getStickerSetSuite() {
     before(function before() {
       utils.handleRatelimit(bot, 'getStickerSet', this);
@@ -1612,6 +1637,31 @@ describe('TelegramBot', function telegramSuite() {
         assert.ok(is.string(resp.title));
         assert.ok(is.boolean(resp.contains_masks));
         assert.ok(is.array(resp.stickers));
+      });
+    });
+    it('should get the recent sticker set created given the name of the set', function test() {
+      const stickerPackName = `s${CURRENT_TIMESTAMP}_by_${BOT_USERNAME}`;
+      return bot.getStickerSet(stickerPackName).then(resp => {
+        assert.ok(is.object(resp));
+        assert.strictEqual(resp.name.toLowerCase(), stickerPackName.toLowerCase());
+        assert.ok(is.string(resp.title));
+        assert.ok(is.boolean(resp.contains_masks));
+        assert.ok(is.array(resp.stickers));
+      });
+    });
+  });
+
+  describe('#setStickerSetThumb', function setStickerSetThumbSuite() {
+    before(function before() {
+      utils.handleRatelimit(bot, 'setStickerSetThumb', this);
+    });
+
+    it('should set a sticker set thumb', function test() {
+      const stickerThumb = `${__dirname}/data/sticker_thumb.png`;
+      const stickerPackName = `s${CURRENT_TIMESTAMP}_by_${BOT_USERNAME}`;
+
+      bot.setStickerSetThumb(USERID, stickerPackName, stickerThumb).then((resp) => {
+        assert.ok(is.boolean(resp));
       });
     });
   });
