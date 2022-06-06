@@ -1503,7 +1503,7 @@ class TelegramBot extends EventEmitter {
   answerWebAppQuery(webAppQueryId, result, form = {}) {
     form.web_app_query_id = webAppQueryId;
     form.result = stringify(result);
-    return this._request('answerCallbackQuery', { form });
+    return this._request('answerWebAppQuery', { form });
   }
 
 
