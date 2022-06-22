@@ -115,6 +115,7 @@ TelegramBot
         * [.uploadStickerFile(userId, pngSticker, [options], [fileOptions])](#TelegramBot+uploadStickerFile) ⇒ <code>Promise</code>
         * [.createNewStickerSet(userId, name, title, pngSticker, emojis, [options], [fileOptions])](#TelegramBot+createNewStickerSet) ⇒ <code>Promise</code>
         * [.addStickerToSet(userId, name, pngSticker, emojis, [options], [fileOptions])](#TelegramBot+addStickerToSet) ⇒ <code>Promise</code>
+        * [.setStickerSetThumb(userId, name, pngThumb, [options], [fileOptions])](#TelegramBot+setStickerSetThumb) ⇒ <code>Promise</code>
         * [.setStickerPositionInSet(sticker, position, [options])](#TelegramBot+setStickerPositionInSet) ⇒ <code>Promise</code>
         * [.deleteStickerFromSet(sticker, [options])](#TelegramBot+deleteStickerFromSet) ⇒ <code>Promise</code>
         * [.sendMediaGroup(chatId, media, [options])](#TelegramBot+sendMediaGroup) ⇒ <code>Promise</code>
@@ -1730,6 +1731,27 @@ Returns True on success.
 | name | <code>String</code> | Sticker set name |
 | pngSticker | <code>String</code> \| <code>stream.Stream</code> \| <code>Buffer</code> | Png image with the sticker, must be up to 512 kilobytes in size,  dimensions must not exceed 512px, and either width or height must be exactly 512px |
 | emojis | <code>String</code> | One or more emoji corresponding to the sticker |
+| [options] | <code>Object</code> | Additional Telegram query options |
+| [fileOptions] | <code>Object</code> | Optional file related meta-data |
+
+<a name="TelegramBot+setStickerSetThumb"></a>
+
+### telegramBot.setStickerSetThumb(userId, name, pngThumb, [options], [fileOptions]) ⇒ <code>Promise</code>
+Use this method to add a thumb to a set created by the bot.
+Returns True on success.
+
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
+**See**: https://core.telegram.org/bots/api#setstickersetthumb  
+**Todo**
+
+- [ ] Add tests for this method!
+
+
+| Param | Type | Description |
+| --- | --- | --- |
+| userId | <code>Number</code> | User identifier of sticker set owner |
+| name | <code>String</code> | Sticker set name |
+| pngThumb | <code>String</code> \| <code>stream.Stream</code> \| <code>Buffer</code> | A PNG image with the thumbnail, must be up to 128 kilobytes in size and have width and height exactly 100px, or a TGS animation with the thumbnail up to 32 kilobytes in size; |
 | [options] | <code>Object</code> | Additional Telegram query options |
 | [fileOptions] | <code>Object</code> | Optional file related meta-data |
 
