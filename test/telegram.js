@@ -158,7 +158,7 @@ describe('TelegramBot', function telegramSuite() {
     myBot.on('polling_error', (error) => {
       assert.ifError(error);
     });
-    return myBot.setWebHook(ip).then(() => {
+    return myBot.setWebHook(ip, {}).then(() => {
       return myBot.startPolling();
     }).then(() => {
       return myBot.stopPolling();
@@ -401,7 +401,7 @@ describe('TelegramBot', function telegramSuite() {
     });
     it('should set a webHook', function test() {
       return bot
-        .setWebHook(ip)
+        .setWebHook(ip, {})
         .then(resp => {
           assert.strictEqual(resp, true);
         });
@@ -422,7 +422,7 @@ describe('TelegramBot', function telegramSuite() {
     });
     it('should delete the webHook', function test() {
       return bot
-        .setWebHook('')
+        .setWebHook('', {})
         .then(resp => {
           assert.strictEqual(resp, true);
         });
@@ -895,8 +895,7 @@ describe('TelegramBot', function telegramSuite() {
 
   describe('#getChatMenuButton', function getChatMenuButtonSuite() {
     it('should get chat menu button', function test() {
-      return bot.getChatMenuButton().then(resp => {
-        console.log(resp);
+      return bot.getChatMenuButton({ chat_id: USERID }).then(resp => {
         assert.ok(is.equal(resp, {
           type: 'web_app',
           text: 'Hello',
