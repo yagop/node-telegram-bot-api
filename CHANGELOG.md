@@ -3,6 +3,27 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [0.58.0][0.58.0] - 2022-06-22
+
+1. Support Bot API v6.1: (@danielperez9430)
+   * Add method *createInvoiceLink()*
+
+2. Support for setStickerSetThumb (@elihaidv)
+
+3. Add new test (@danielperez9430)
+   * createInvoiceLink
+
+4. Test fixes (@danielperez9430)
+   * sendVideoNote
+   * createNewStickerSet
+   * setStickerSetThumb
+   * getChatMenuButton
+   * setWebHook
+
+5. Bug fixes (@danielperez9430)
+   * answerWebAppQuery
+   * Support for send thumb in sendAudio 
+
 ## [0.57.0][0.57.0] - 2022-04-23
 
 Added:
