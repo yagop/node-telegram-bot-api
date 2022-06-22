@@ -2216,7 +2216,31 @@ class TelegramBot extends EventEmitter {
   }
 
   /**
-   * Answer shipping query..
+   * Create Invoice Link
+   * Use this method to create a link for an invoice. Returns the created invoice link as String on success.
+   *
+   * @param {String} title Product name, 1-32 characters
+   * @param {String} description Product description, 1-255 characters
+   * @param {String} payload Bot defined invoice payload
+   * @param {String} providerToken Payment provider token
+   * @param {String} currency Three-letter ISO 4217 currency code
+   * @param {Array} prices Breakdown of prices
+   * @param {Object} [options] Additional Telegram query options
+   * @returns {String}
+   * @see https://core.telegram.org/bots/api#createinvoicelink
+   */
+  createInvoiceLink(title, description, payload, providerToken, currency, prices, form = {}) {
+    form.title = title;
+    form.description = description;
+    form.payload = payload;
+    form.provider_token = providerToken;
+    form.currency = currency;
+    form.prices = stringify(prices);
+    return this._request('createInvoiceLink', { form });
+  }
+
+  /**
+   * Answer shipping query.
    * Use this method to reply to shipping queries.
    *
    * @param  {String} shippingQueryId  Unique identifier for the query to be answered
