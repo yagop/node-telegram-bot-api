@@ -896,6 +896,7 @@ describe('TelegramBot', function telegramSuite() {
   describe('#getChatMenuButton', function getChatMenuButtonSuite() {
     it('should get chat menu button', function test() {
       return bot.getChatMenuButton().then(resp => {
+        console.log(resp);
         assert.ok(is.equal(resp, {
           type: 'web_app',
           text: 'Hello',
