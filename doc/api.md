@@ -109,12 +109,14 @@ TelegramBot
         * [.getGameHighScores(userId, [options])](#TelegramBot+getGameHighScores) ⇒ <code>Promise</code>
         * [.deleteMessage(chatId, messageId, [options])](#TelegramBot+deleteMessage) ⇒ <code>Promise</code>
         * [.sendInvoice(chatId, title, description, payload, providerToken, startParameter, currency, prices, [options])](#TelegramBot+sendInvoice) ⇒ <code>Promise</code>
+        * [.createInvoiceLink(title, description, payload, providerToken, currency, prices, [options])](#TelegramBot+createInvoiceLink) ⇒ <code>String</code>
         * [.answerShippingQuery(shippingQueryId, ok, [options])](#TelegramBot+answerShippingQuery) ⇒ <code>Promise</code>
         * [.answerPreCheckoutQuery(preCheckoutQueryId, ok, [options])](#TelegramBot+answerPreCheckoutQuery) ⇒ <code>Promise</code>
         * [.getStickerSet(name, [options])](#TelegramBot+getStickerSet) ⇒ <code>Promise</code>
         * [.uploadStickerFile(userId, pngSticker, [options], [fileOptions])](#TelegramBot+uploadStickerFile) ⇒ <code>Promise</code>
         * [.createNewStickerSet(userId, name, title, pngSticker, emojis, [options], [fileOptions])](#TelegramBot+createNewStickerSet) ⇒ <code>Promise</code>
         * [.addStickerToSet(userId, name, pngSticker, emojis, [options], [fileOptions])](#TelegramBot+addStickerToSet) ⇒ <code>Promise</code>
+        * [.setStickerSetThumb(userId, name, pngThumb, [options], [fileOptions])](#TelegramBot+setStickerSetThumb) ⇒ <code>Promise</code>
         * [.setStickerPositionInSet(sticker, position, [options])](#TelegramBot+setStickerPositionInSet) ⇒ <code>Promise</code>
         * [.deleteStickerFromSet(sticker, [options])](#TelegramBot+deleteStickerFromSet) ⇒ <code>Promise</code>
         * [.sendMediaGroup(chatId, media, [options])](#TelegramBot+sendMediaGroup) ⇒ <code>Promise</code>
@@ -1628,10 +1630,29 @@ Use this method to send an invoice.
 | prices | <code>Array</code> | Breakdown of prices |
 | [options] | <code>Object</code> | Additional Telegram query options |
 
+<a name="TelegramBot+createInvoiceLink"></a>
+
+### telegramBot.createInvoiceLink(title, description, payload, providerToken, currency, prices, [options]) ⇒ <code>String</code>
+Create Invoice Link
+Use this method to create a link for an invoice. Returns the created invoice link as String on success.
+
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
+**See**: https://core.telegram.org/bots/api#createinvoicelink  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| title | <code>String</code> | Product name, 1-32 characters |
+| description | <code>String</code> | Product description, 1-255 characters |
+| payload | <code>String</code> | Bot defined invoice payload |
+| providerToken | <code>String</code> | Payment provider token |
+| currency | <code>String</code> | Three-letter ISO 4217 currency code |
+| prices | <code>Array</code> | Breakdown of prices |
+| [options] | <code>Object</code> | Additional Telegram query options |
+
 <a name="TelegramBot+answerShippingQuery"></a>
 
 ### telegramBot.answerShippingQuery(shippingQueryId, ok, [options]) ⇒ <code>Promise</code>
-Answer shipping query..
+Answer shipping query.
 Use this method to reply to shipping queries.
 
 **Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
@@ -1730,6 +1751,27 @@ Returns True on success.
 | name | <code>String</code> | Sticker set name |
 | pngSticker | <code>String</code> \| <code>stream.Stream</code> \| <code>Buffer</code> | Png image with the sticker, must be up to 512 kilobytes in size,  dimensions must not exceed 512px, and either width or height must be exactly 512px |
 | emojis | <code>String</code> | One or more emoji corresponding to the sticker |
+| [options] | <code>Object</code> | Additional Telegram query options |
+| [fileOptions] | <code>Object</code> | Optional file related meta-data |
+
+<a name="TelegramBot+setStickerSetThumb"></a>
+
+### telegramBot.setStickerSetThumb(userId, name, pngThumb, [options], [fileOptions]) ⇒ <code>Promise</code>
+Use this method to add a thumb to a set created by the bot.
+Returns True on success.
+
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
+**See**: https://core.telegram.org/bots/api#setstickersetthumb  
+**Todo**
+
+- [ ] Add tests for this method!
+
+
+| Param | Type | Description |
+| --- | --- | --- |
+| userId | <code>Number</code> | User identifier of sticker set owner |
+| name | <code>String</code> | Sticker set name |
+| pngThumb | <code>String</code> \| <code>stream.Stream</code> \| <code>Buffer</code> | A PNG image with the thumbnail, must be up to 128 kilobytes in size and have width and height exactly 100px, or a TGS animation with the thumbnail up to 32 kilobytes in size; |
 | [options] | <code>Object</code> | Additional Telegram query options |
 | [fileOptions] | <code>Object</code> | Optional file related meta-data |
 
