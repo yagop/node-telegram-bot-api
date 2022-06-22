@@ -109,6 +109,7 @@ TelegramBot
         * [.getGameHighScores(userId, [options])](#TelegramBot+getGameHighScores) ⇒ <code>Promise</code>
         * [.deleteMessage(chatId, messageId, [options])](#TelegramBot+deleteMessage) ⇒ <code>Promise</code>
         * [.sendInvoice(chatId, title, description, payload, providerToken, startParameter, currency, prices, [options])](#TelegramBot+sendInvoice) ⇒ <code>Promise</code>
+        * [.createInvoiceLink(title, description, payload, providerToken, currency, prices, [options])](#TelegramBot+createInvoiceLink) ⇒ <code>String</code>
         * [.answerShippingQuery(shippingQueryId, ok, [options])](#TelegramBot+answerShippingQuery) ⇒ <code>Promise</code>
         * [.answerPreCheckoutQuery(preCheckoutQueryId, ok, [options])](#TelegramBot+answerPreCheckoutQuery) ⇒ <code>Promise</code>
         * [.getStickerSet(name, [options])](#TelegramBot+getStickerSet) ⇒ <code>Promise</code>
@@ -1629,10 +1630,29 @@ Use this method to send an invoice.
 | prices | <code>Array</code> | Breakdown of prices |
 | [options] | <code>Object</code> | Additional Telegram query options |
 
+<a name="TelegramBot+createInvoiceLink"></a>
+
+### telegramBot.createInvoiceLink(title, description, payload, providerToken, currency, prices, [options]) ⇒ <code>String</code>
+Create Invoice Link
+Use this method to create a link for an invoice. Returns the created invoice link as String on success.
+
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
+**See**: https://core.telegram.org/bots/api#createinvoicelink  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| title | <code>String</code> | Product name, 1-32 characters |
+| description | <code>String</code> | Product description, 1-255 characters |
+| payload | <code>String</code> | Bot defined invoice payload |
+| providerToken | <code>String</code> | Payment provider token |
+| currency | <code>String</code> | Three-letter ISO 4217 currency code |
+| prices | <code>Array</code> | Breakdown of prices |
+| [options] | <code>Object</code> | Additional Telegram query options |
+
 <a name="TelegramBot+answerShippingQuery"></a>
 
 ### telegramBot.answerShippingQuery(shippingQueryId, ok, [options]) ⇒ <code>Promise</code>
-Answer shipping query..
+Answer shipping query.
 Use this method to reply to shipping queries.
 
 **Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  

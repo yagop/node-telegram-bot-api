@@ -1605,6 +1605,27 @@ describe('TelegramBot', function telegramSuite() {
     });
   });
 
+  describe('#createInvoiceLink', function createInvoiceLinkSuite() {
+    before(function before() {
+      utils.handleRatelimit(bot, 'createInvoiceLink', this);
+    });
+    it('should create an invoice link', function test() {
+      if (isCI) {
+        this.skip(); // Skip test for now
+      }
+      const title = 'Invoice link product';
+      const description = 'Our test invoice link product';
+      const payload = 'sku-p002';
+      const providerToken = PROVIDER_TOKEN;
+      const currency = 'EUR';
+      const prices = [{ label: 'NTBA API', amount: 12000 }, { label: 'tax', amount: 10000 }];
+      return bot.createInvoiceLink(title, description, payload, providerToken, currency, prices).then(resp => {
+        console.log(resp);
+        assert.ok(is.string(resp));
+      });
+    });
+  });
+
   describe.skip('#answerShippingQuery', function answerShippingQuerySuite() { });
 
   describe.skip('#answerPreCheckoutQuery', function answerPreCheckoutQuerySuite() { });
