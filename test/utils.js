@@ -81,7 +81,6 @@ exports = module.exports = {
 
 const assert = require('assert');
 const http = require('http');
-const Promise = require('bluebird');
 const request = require('request-promise');
 const statics = require('node-static');
 
