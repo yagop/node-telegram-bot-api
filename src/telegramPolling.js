@@ -1,6 +1,6 @@
 const errors = require('./errors');
 const debug = require('debug')('node-telegram-bot-api');
-const deprecate = require('depd')('node-telegram-bot-api');
+const deprecate = require('./utils').deprecate;
 const ANOTHER_WEB_HOOK_USED = 409;
 
 

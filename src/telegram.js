@@ -16,7 +16,7 @@ const path = require('path');
 const URL = require('url');
 const fs = require('fs');
 const pump = require('pump');
-const deprecate = require('depd')('node-telegram-bot-api');
+const deprecate = require('./utils').deprecate;
 
 const _messageTypes = [
   'text',
