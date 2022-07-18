@@ -92,6 +92,15 @@ Some things built using this library that might interest you:
 * [node-telegram-keyboard-wrapper](https://github.com/alexandercerutti/node-telegram-keyboard-wrapper): A wrapper to improve keyboards structures creation through a more easy-to-see way (supports Inline Keyboards, Reply Keyboard, Remove Keyboard and Force Reply)
 * [beetube-bot](https://github.com/kodjunkie/beetube-bot): A telegram bot for music, videos, movies, EDM tracks, torrent downloads, files and more.
 
+
+## Contributors
+
+<p align="center">
+  <a href="https://github.com/yagop/node-telegram-bot-api/graphs/contributors">
+    <img src="https://contrib.rocks/image?repo=yagop/node-telegram-bot-api" />
+  </a>
+</p>
+
 ## License
 
 **The MIT License (MIT)**

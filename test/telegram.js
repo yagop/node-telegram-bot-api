@@ -1,5 +1,4 @@
 const TelegramBot = require('..');
-const Promise = require('bluebird');
 const request = require('request-promise');
 const assert = require('assert');
 const fs = require('fs');
@@ -121,15 +120,6 @@ describe('TelegramBot', function telegramSuite() {
     });
   });
 
-  it('allows providing custom Promise library', function test() {
-    TelegramBot.Promise = global.Promise;
-    const promise = bot.stopPolling();
-    assert.ok(promise instanceof global.Promise);
-    assert.ok(!(promise instanceof Promise));
-    // revert
-    TelegramBot.Promise = Promise;
-  });
-
   it('automatically starts polling', function test() {
     assert.strictEqual(botPolling.isPolling(), true);
     return utils.isPollingMockServer(pollingPort2);
@@ -210,7 +200,7 @@ describe('TelegramBot', function telegramSuite() {
     });
     it('only accepts POST method', function test() {
       const methods = ['GET', 'PUT', 'DELETE', 'OPTIONS'];
-      return Promise.each(methods, (method) => {
+      return Promise.all(methods, (method) => {
         return utils.sendWebHookMessage(webHookPort2, TOKEN, {
           method,
         }).then(() => {

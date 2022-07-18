@@ -123,7 +123,6 @@ TelegramBot
     * _static_
         * [.errors](#TelegramBot.errors) : <code>Object</code>
         * [.messageTypes](#TelegramBot.messageTypes) : <code>[ &#x27;Array&#x27; ].&lt;String&gt;</code>
-        * [.Promise](#TelegramBot.Promise)
 
 <a name="new_TelegramBot_new"></a>
 
@@ -1847,23 +1846,6 @@ The different errors the library uses.
 The types of message updates the library handles.
 
 **Kind**: static property of [<code>TelegramBot</code>](#TelegramBot)  
-<a name="TelegramBot.Promise"></a>
-
-### TelegramBot.Promise
-Change Promise library used internally, for all existing and new
-instances.
-
-**Kind**: static property of [<code>TelegramBot</code>](#TelegramBot)  
-
-| Param | Type |
-| --- | --- |
-| customPromise | <code>function</code> | 
-
-**Example**  
-```js
-const TelegramBot = require('node-telegram-bot-api');
-TelegramBot.Promise = myPromise;
-```
 * * *
 
 
