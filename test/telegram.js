@@ -48,6 +48,7 @@ let FILE_ID;
 let GAME_CHAT_ID;
 let GAME_MSG_ID;
 let BOT_USERNAME;
+let CHAT_INFO;
 
 before(function beforeAll() {
   utils.startStaticServer(staticPort);
@@ -117,7 +118,10 @@ describe('TelegramBot', function telegramSuite() {
       return bot.getMe().then(resp => {
         BOT_USERNAME = resp.username;
       });
-    });
+    }).then(() =>
+    bot.getChat(GROUPID).then(resp => {
+      CHAT_INFO = resp;
+    }));
   });
 
   it('automatically starts polling', function test() {
@@ -1336,6 +1340,23 @@ describe('TelegramBot', function telegramSuite() {
       });
     });
   });
+
+  describe('#stopPoll', function stopPollSuite() {
+    let msg;
+    before(function before() {
+      utils.handleRatelimit(bot, 'stopPoll', this);
+      return bot.sendPoll(GROUPID, '¿Poll for stop before?', ['Yes', 'No']).then(resp => {
+        msg = resp;
+      });
+    });
+    it('should stop a Poll', function test() {
+      return bot.stopPoll(GROUPID, msg.message_id).then(resp => {
+        assert.ok(is.boolean(resp.is_closed) && resp.is_closed === true);
+      });
+    }
+    );
+  });
+
 
   describe('#sendDice', function sendDiceSuite() {
     it('should send a Dice', function test() {
