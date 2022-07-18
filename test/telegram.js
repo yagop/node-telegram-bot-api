@@ -1549,6 +1549,36 @@ describe('TelegramBot', function telegramSuite() {
 
   describe.skip('#leaveChat', function leaveChatSuite() { });
 
+  describe('#setChatStickerSet', function setChatStickerSetSuite() {
+    before(function before() {
+      utils.handleRatelimit(bot, 'setChatStickerSet', this);
+      // Check if the chat can set sticker sets
+      if (!CHAT_INFO.can_set_sticker_set) {
+        this.skip();
+      }
+    });
+    it('should return a Boolean', function test() {
+      return bot.setChatStickerSet(GROUPID, STICKER_SET_NAME).then(resp => {
+        assert.ok(is.boolean(resp));
+      });
+    });
+  });
+
+  describe('#deleteChatStickerSet', function deleteChatStickerSetSuite() {
+    before(function before() {
+      utils.handleRatelimit(bot, 'deleteChatStickerSet', this);
+      // Check if the chat can delete sticker sets
+      if (!CHAT_INFO.can_set_sticker_set) {
+        this.skip();
+      }
+    });
+    it('should return a Boolean', function test() {
+      return bot.deleteChatStickerSet(GROUPID).then(resp => {
+        assert.ok(is.boolean(resp));
+      });
+    });
+  });
+
   describe('#sendGame', function sendGameSuite() {
     before(function before() {
       utils.handleRatelimit(bot, 'sendGame', this);
