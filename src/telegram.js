@@ -1162,7 +1162,7 @@ class TelegramBot extends EventEmitter {
       inputMedia.push(payload);
       index++;
     }
-    opts.qs.media = JSON.stringify(inputMedia);
+    opts.qs.media = stringify(inputMedia);
 
     return this._request('sendMediaGroup', opts);
   }
@@ -1517,7 +1517,7 @@ class TelegramBot extends EventEmitter {
    */
   setChatPermissions(chatId, chatPermissions, form = {}) {
     form.chat_id = chatId;
-    form.permissions = JSON.stringify(chatPermissions);
+    form.permissions = stringify(chatPermissions);
     return this._request('setChatPermissions', { form });
   }
 
@@ -2055,7 +2055,7 @@ class TelegramBot extends EventEmitter {
         return Promise.reject(ex);
       }
 
-      opts.qs.media = JSON.stringify(payload);
+      opts.qs.media = stringify(payload);
 
       return this._request('editMessageMedia', opts);
     }
@@ -2234,7 +2234,7 @@ class TelegramBot extends EventEmitter {
    * @param  {Number} userId User identifier of sticker set owner
    * @param  {String} name Sticker set name
    * @param  {String|stream.Stream|Buffer} sticker Png image with the sticker (must be up to 512 kilobytes in size,
-   * dimensions must not exceed 512px, and either width or height must be exactly 512px), [TGS animation](https://core.telegram.org/stickers#animated-sticker-requirements)
+   * dimensions must not exceed 512px, and either width or height must be exactly 512px, [TGS animation](https://core.telegram.org/stickers#animated-sticker-requirements)
    * with the sticker or [WEBM video](https://core.telegram.org/stickers#video-sticker-requirements) with the sticker.
    * @param  {String} emojis One or more emoji corresponding to the sticker
    * @param  {String} stickerType Allow values: `png_sticker`, `tgs_sticker`, or `webm_sticker`.
