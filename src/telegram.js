@@ -1905,6 +1905,11 @@ class TelegramBot extends EventEmitter {
    */
   setMyCommands(commands, form = {}) {
     form.commands = stringify(commands);
+
+    if (form.scope) {
+      form.scope = stringify(form.scope);
+    }
+
     return this._request('setMyCommands', { form });
   }
 
@@ -2387,6 +2392,11 @@ class TelegramBot extends EventEmitter {
     form.currency = currency;
     form.prices = stringify(prices);
     form.provider_data = stringify(form.provider_data);
+
+    if (form.suggested_tip_amounts) {
+      form.suggested_tip_amounts = stringify(form.suggested_tip_amounts);
+    }
+
     return this._request('sendInvoice', { form });
   }
 
