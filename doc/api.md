@@ -105,7 +105,7 @@ TelegramBot
         * [.getStickerSet(name, [options])](#TelegramBot+getStickerSet) ⇒ <code>Promise</code>
         * [.uploadStickerFile(userId, pngSticker, [options], [fileOptions])](#TelegramBot+uploadStickerFile) ⇒ <code>Promise</code>
         * [.createNewStickerSet(userId, name, title, pngSticker, emojis, [options], [fileOptions])](#TelegramBot+createNewStickerSet) ⇒ <code>Promise</code>
-        * [.addStickerToSet(userId, name, pngSticker, emojis, [options], [fileOptions])](#TelegramBot+addStickerToSet) ⇒ <code>Promise</code>
+        * [.addStickerToSet(userId, name, sticker, emojis, stickerType, [options], [fileOptions])](#TelegramBot+addStickerToSet) ⇒ <code>Promise</code>
         * [.setStickerPositionInSet(sticker, position, [options])](#TelegramBot+setStickerPositionInSet) ⇒ <code>Promise</code>
         * [.deleteStickerFromSet(sticker, [options])](#TelegramBot+deleteStickerFromSet) ⇒ <code>Promise</code>
         * [.setStickerSetThumb(userId, name, pngThumb, [options], [fileOptions])](#TelegramBot+setStickerSetThumb) ⇒ <code>Promise</code>
@@ -1660,7 +1660,7 @@ You must use exactly one of the fields *png_sticker*, *tgs_sticker*, or *webm_st
 
 <a name="TelegramBot+addStickerToSet"></a>
 
-### telegramBot.addStickerToSet(userId, name, pngSticker, emojis, [options], [fileOptions]) ⇒ <code>Promise</code>
+### telegramBot.addStickerToSet(userId, name, sticker, emojis, stickerType, [options], [fileOptions]) ⇒ <code>Promise</code>
 Use this method to add a new sticker to a set created by the bot.
 
 You must use exactly one of the fields *png_sticker*, *tgs_sticker*, or *webm_sticker*
@@ -1673,14 +1673,15 @@ Animated stickers can be added to animated sticker sets and only to them:
 **Returns**: <code>Promise</code> - True on success  
 **See**: https://core.telegram.org/bots/api#addstickertoset  
 
-| Param | Type | Description |
-| --- | --- | --- |
-| userId | <code>Number</code> | User identifier of sticker set owner |
-| name | <code>String</code> | Sticker set name |
-| pngSticker | <code>String</code> \| <code>stream.Stream</code> \| <code>Buffer</code> | Png image with the sticker, must be up to 512 kilobytes in size,  dimensions must not exceed 512px, and either width or height must be exactly 512px |
-| emojis | <code>String</code> | One or more emoji corresponding to the sticker |
-| [options] | <code>Object</code> | Additional Telegram query options |
-| [fileOptions] | <code>Object</code> | Optional file related meta-data |
+| Param | Type | Default | Description |
+| --- | --- | --- | --- |
+| userId | <code>Number</code> |  | User identifier of sticker set owner |
+| name | <code>String</code> |  | Sticker set name |
+| sticker | <code>String</code> \| <code>stream.Stream</code> \| <code>Buffer</code> |  | Png image with the sticker (must be up to 512 kilobytes in size, dimensions must not exceed 512px, and either width or height must be exactly 512px), [TGS animation](https://core.telegram.org/stickers#animated-sticker-requirements) with the sticker or [WEBM video](https://core.telegram.org/stickers#video-sticker-requirements) with the sticker. |
+| emojis | <code>String</code> |  | One or more emoji corresponding to the sticker |
+| stickerType | <code>String</code> | <code>png_sticker</code> | Allow values: `png_sticker`, `tgs_sticker`, or `webm_sticker`. |
+| [options] | <code>Object</code> |  | Additional Telegram query options |
+| [fileOptions] | <code>Object</code> |  | Optional file related meta-data |
 
 <a name="TelegramBot+setStickerPositionInSet"></a>
 
