@@ -48,6 +48,8 @@ let FILE_ID;
 let GAME_CHAT_ID;
 let GAME_MSG_ID;
 let BOT_USERNAME;
+let CHAT_INFO;
+let STICKER_FILE_ID_FROM_SET;
 
 before(function beforeAll() {
   utils.startStaticServer(staticPort);
@@ -105,6 +107,9 @@ describe('TelegramBot', function telegramSuite() {
     utils.handleRatelimit(bot, 'sendPhoto', this);
     utils.handleRatelimit(bot, 'sendMessage', this);
     utils.handleRatelimit(bot, 'sendGame', this);
+    utils.handleRatelimit(bot, 'getMe', this);
+    utils.handleRatelimit(bot, 'getChat', this);
+
     return bot.sendPhoto(USERID, FILE_PATH).then(resp => {
       FILE_ID = resp.photo[0].file_id;
       return bot.sendMessage(USERID, 'chat');
@@ -117,7 +122,10 @@ describe('TelegramBot', function telegramSuite() {
       return bot.getMe().then(resp => {
         BOT_USERNAME = resp.username;
       });
-    });
+    }).then(() =>
+      bot.getChat(GROUPID).then(resp => {
+        CHAT_INFO = resp;
+      }));
   });
 
   it('automatically starts polling', function test() {
@@ -372,18 +380,6 @@ describe('TelegramBot', function telegramSuite() {
     });
   });
 
-  describe('#getMe', function getMeSuite() {
-    before(function before() {
-      utils.handleRatelimit(bot, 'getMe', this);
-    });
-    it('should return an User object', function test() {
-      return bot.getMe().then(resp => {
-        assert.ok(is.object(resp));
-        assert.ok(is.number(resp.id));
-        assert.ok(is.string(resp.first_name));
-      });
-    });
-  });
 
   describe('#setWebHook', function setWebHookSuite() {
     before(function before() {
@@ -419,17 +415,6 @@ describe('TelegramBot', function telegramSuite() {
     });
   });
 
-  describe('#deleteWebHook', function deleteWebHookSuite() {
-    before(function before() {
-      utils.handleRatelimit(bot, 'deleteWebHook', this);
-    });
-    it('should delete webhook', function test() {
-      return bot.deleteWebHook().then(resp => {
-        assert.strictEqual(resp, true);
-      });
-    });
-  });
-
   describe('#getWebHookInfo', function getWebHookInfoSuite() {
     before(function before() {
       utils.handleRatelimit(bot, 'getWebHookInfo', this);
@@ -439,6 +424,17 @@ describe('TelegramBot', function telegramSuite() {
         assert.ok(is.object(resp));
         assert.ok(is.boolean(resp.has_custom_certificate));
         assert.ok(is.number(resp.pending_update_count));
+      });
+    });
+  });
+
+  describe('#deleteWebHook', function deleteWebHookSuite() {
+    before(function before() {
+      utils.handleRatelimit(bot, 'deleteWebHook', this);
+    });
+    it('should delete webhook', function test() {
+      return bot.deleteWebHook().then(resp => {
+        assert.strictEqual(resp, true);
       });
     });
   });
@@ -465,6 +461,140 @@ describe('TelegramBot', function telegramSuite() {
     });
   });
 
+  describe('#getMe', function getMeSuite() {
+    before(function before() {
+      utils.handleRatelimit(bot, 'getMe', this);
+    });
+    it('should return an User object', function test() {
+      return bot.getMe().then(resp => {
+        assert.ok(is.object(resp));
+        assert.ok(is.number(resp.id));
+        assert.ok(is.string(resp.first_name));
+      });
+    });
+  });
+
+  describe('#getFileLink', function getFileLinkSuite() {
+    this.timeout(timeout);
+    before(function before() {
+      utils.handleRatelimit(bot, 'getFileLink', this);
+    });
+    it('should get a file link', function test() {
+      return bot.getFileLink(FILE_ID)
+        .then(fileURI => {
+          assert.ok(is.string(fileURI));
+          assert.ok(utils.isTelegramFileURI(fileURI));
+        });
+    });
+  });
+
+  describe('#getFileStream', function getFileStreamSuite() {
+    this.timeout(timeout);
+    before(function before() {
+      // utils.handleRatelimit(bot, 'getFileStream', this);
+    });
+    it('should get a file stream', function test(done) {
+      const fileStream = bot.getFileStream(FILE_ID);
+      assert.ok(fileStream instanceof stream.Readable);
+      assert.strictEqual(fileStream.path, FILE_ID);
+      fileStream.on('info', (info) => {
+        assert.ok(info);
+        assert.ok(utils.isTelegramFileURI(info.uri), `${info.uri} is not a file URI`);
+        fileStream.pipe(concat(function readFile(buffer) {
+          buffer.equals(fs.readFileSync(FILE_PATH)); // sync :(
+          return done();
+        }));
+      });
+    });
+  });
+
+  describe('#downloadFile', function downloadFileSuite() {
+    const downloadPath = os.tmpdir();
+    this.timeout(timeout);
+    before(function before() {
+      utils.handleRatelimit(bot, 'downloadFile', this);
+    });
+    it('should download a file', function test() {
+      return bot.downloadFile(FILE_ID, downloadPath)
+        .then(filePath => {
+          assert.ok(is.string(filePath));
+          assert.strictEqual(path.dirname(filePath), downloadPath);
+          assert.ok(fs.existsSync(filePath));
+          fs.unlinkSync(filePath); // Delete file after test
+        });
+    });
+  });
+
+  describe('#onText', function onTextSuite() {
+    it('should call `onText` callback on match', function test(done) {
+      const regexp = /\/onText (.+)/;
+      botWebHook.onText(regexp, (msg, match) => {
+        assert.strictEqual(match[1], 'ECHO ALOHA');
+        assert.ok(botWebHook.removeTextListener(regexp));
+        return done();
+      });
+      utils.sendWebHookMessage(webHookPort2, TOKEN, {
+        message: { text: '/onText ECHO ALOHA' },
+      });
+    });
+    it('should reset the global regex state with each message', function test(done) {
+      const regexp = /\/onText (.+)/g;
+      botWebHook.onText(regexp, () => {
+        assert.strictEqual(regexp.lastIndex, 0);
+        assert.ok(botWebHook.removeTextListener(regexp));
+        return done();
+      });
+      utils.sendWebHookMessage(webHookPort2, TOKEN, {
+        message: { text: '/onText ECHO ALOHA' },
+      });
+    });
+  });
+
+  describe('#removeTextListener', function removeTextListenerSuite() {
+    const regexp = /\/onText/;
+    const regexp2 = /\/onText/;
+    const callback = function noop() { };
+    after(function after() {
+      bot.removeTextListener(regexp);
+      bot.removeTextListener(regexp2);
+    });
+    it('removes the right text-listener', function test() {
+      bot.onText(regexp, callback);
+      bot.onText(regexp2, callback);
+      const textListener = bot.removeTextListener(regexp);
+      assert.strictEqual(regexp, textListener.regexp);
+    });
+    it('returns `null` if missing', function test() {
+      assert.strictEqual(null, bot.removeTextListener(/404/));
+    });
+  });
+
+  describe.skip('#onReplyToMessage', function onReplyToMessageSuite() { });
+
+  describe('#removeReplyListener', function removeReplyListenerSuite() {
+    const chatId = -1234;
+    const messageId = 1;
+    const callback = function noop() { };
+    it('returns the right reply-listener', function test() {
+      const id = bot.onReplyToMessage(chatId, messageId, callback);
+      const replyListener = bot.removeReplyListener(id);
+      assert.strictEqual(id, replyListener.id);
+      assert.strictEqual(chatId, replyListener.chatId);
+      assert.strictEqual(messageId, replyListener.messageId);
+      assert.strictEqual(callback, replyListener.callback);
+    });
+    it('returns `null` if missing', function test() {
+      // NOTE: '0' is never a valid reply listener ID :)
+      assert.strictEqual(null, bot.removeReplyListener(0));
+    });
+  });
+
+  /** Telegram Bot API Methods */
+
+  describe.skip('#logOut', function logOutSuite() { });
+
+  describe.skip('#close', function closeSuite() { });
+
   describe('#sendMessage', function sendMessageSuite() {
     before(function before() {
       utils.handleRatelimit(bot, 'sendMessage', this);
@@ -476,8 +606,6 @@ describe('TelegramBot', function telegramSuite() {
       });
     });
   });
-
-  describe.skip('#answerInlineQuery', function answerInlineQuerySuite() { });
 
   describe('#forwardMessage', function forwardMessageSuite() {
     before(function before() {
@@ -658,50 +786,6 @@ describe('TelegramBot', function telegramSuite() {
     });
   });
 
-  describe('#sendSticker', function sendStickerSuite() {
-    let stickerId;
-    this.timeout(timeout);
-    before(function before() {
-      utils.handleRatelimit(bot, 'sendSticker', this);
-    });
-    it('should send a sticker from file', function test() {
-      const sticker = `${__dirname}/data/sticker.webp`;
-      return bot.sendSticker(USERID, sticker).then(resp => {
-        assert.ok(is.object(resp));
-        assert.ok(is.object(resp.sticker));
-        stickerId = resp.sticker.file_id;
-      });
-    });
-    it('should send a sticker from id', function test() {
-      // Send the same photo as before
-      return bot.sendSticker(USERID, stickerId).then(resp => {
-        assert.ok(is.object(resp));
-        assert.ok(is.object(resp.sticker));
-      });
-    });
-    it('should send a sticker from fs.readStream', function test() {
-      const sticker = fs.createReadStream(`${__dirname}/data/sticker.webp`);
-      return bot.sendSticker(USERID, sticker).then(resp => {
-        assert.ok(is.object(resp));
-        assert.ok(is.object(resp.sticker));
-      });
-    });
-    it('should send a sticker from request Stream', function test() {
-      const sticker = request(`${staticUrl}/sticker.webp`);
-      return bot.sendSticker(USERID, sticker).then(resp => {
-        assert.ok(is.object(resp));
-        assert.ok(is.object(resp.sticker));
-      });
-    });
-    it('should send a sticker from a Buffer', function test() {
-      const sticker = fs.readFileSync(`${__dirname}/data/sticker.webp`);
-      return bot.sendSticker(USERID, sticker).then(resp => {
-        assert.ok(is.object(resp));
-        assert.ok(is.object(resp.sticker));
-      });
-    });
-  });
-
   describe('#sendVideo', function sendVideoSuite() {
     let videoId;
     this.timeout(timeout);
@@ -746,40 +830,14 @@ describe('TelegramBot', function telegramSuite() {
     });
   });
 
-  describe('#sendVideoNote', function sendVideoNoteSuite() {
-    let videoNoteId;
-    this.timeout(timeout);
+  describe('#sendAnimation', function sendAnimationSuite() {
     before(function before() {
-      utils.handleRatelimit(bot, 'sendVideoNote', this);
+      utils.handleRatelimit(bot, 'sendAnimation', this);
     });
-    it('should send a video from file', function test() {
-      const video = `${__dirname}/data/video.mp4`;
-      return bot.sendVideoNote(USERID, video, { length: 5 }).then(resp => {
+    it('should send a gif as an animation', function test() {
+      return bot.sendAnimation(USERID, `${__dirname}/data/photo.gif`).then(resp => {
         assert.ok(is.object(resp));
-        assert.ok(is.object(resp.video));
-        videoNoteId = resp.video.file_id;
-      });
-    });
-    it('should send a video from id', function test() {
-      // Send the same videonote as before
-      assert.ok(videoNoteId);
-      return bot.sendVideoNote(USERID, videoNoteId, { length: 5 }).then(resp => {
-        assert.ok(is.object(resp));
-        assert.ok(is.object(resp.video));
-      });
-    });
-    it('should send a video from fs.readStream', function test() {
-      const video = fs.createReadStream(`${__dirname}/data/video.mp4`);
-      return bot.sendVideoNote(USERID, video, { length: 5 }).then(resp => {
-        assert.ok(is.object(resp));
-        assert.ok(is.object(resp.video));
-      });
-    });
-    it('should send a video from a Buffer', function test() {
-      const video = fs.readFileSync(`${__dirname}/data/video.mp4`);
-      return bot.sendVideoNote(USERID, video, { length: 5 }).then(resp => {
-        assert.ok(is.object(resp));
-        assert.ok(is.object(resp.video));
+        assert.ok(is.object(resp.document));
       });
     });
   });
@@ -828,6 +886,204 @@ describe('TelegramBot', function telegramSuite() {
     });
   });
 
+
+  describe('#sendVideoNote', function sendVideoNoteSuite() {
+    let videoNoteId;
+    this.timeout(timeout);
+    before(function before() {
+      utils.handleRatelimit(bot, 'sendVideoNote', this);
+    });
+    it('should send a video from file', function test() {
+      const video = `${__dirname}/data/video.mp4`;
+      return bot.sendVideoNote(USERID, video, { length: 5 }).then(resp => {
+        assert.ok(is.object(resp));
+        assert.ok(is.object(resp.video));
+        videoNoteId = resp.video.file_id;
+      });
+    });
+    it('should send a video from id', function test() {
+      // Send the same videonote as before
+      assert.ok(videoNoteId);
+      return bot.sendVideoNote(USERID, videoNoteId, { length: 5 }).then(resp => {
+        assert.ok(is.object(resp));
+        assert.ok(is.object(resp.video));
+      });
+    });
+    it('should send a video from fs.readStream', function test() {
+      const video = fs.createReadStream(`${__dirname}/data/video.mp4`);
+      return bot.sendVideoNote(USERID, video, { length: 5 }).then(resp => {
+        assert.ok(is.object(resp));
+        assert.ok(is.object(resp.video));
+      });
+    });
+    it('should send a video from a Buffer', function test() {
+      const video = fs.readFileSync(`${__dirname}/data/video.mp4`);
+      return bot.sendVideoNote(USERID, video, { length: 5 }).then(resp => {
+        assert.ok(is.object(resp));
+        assert.ok(is.object(resp.video));
+      });
+    });
+  });
+
+  describe('#sendMediaGroup', function sendMediaGroupSuite() {
+    before(function before() {
+      utils.handleRatelimit(bot, 'sendMediaGroup', this);
+    });
+    it('should send group of photos/videos as album', function test() {
+      return bot.sendMediaGroup(USERID, [
+        {
+          type: 'photo',
+          media: `${__dirname}/data/photo.png`,
+        },
+        {
+          type: 'video',
+          media: `${__dirname}/data/video.mp4`,
+        },
+        {
+          type: 'photo',
+          media: FILE_ID,
+        },
+      ], {
+        disable_notification: true,
+      }).then(resp => {
+        assert.ok(is.array(resp));
+        assert.strictEqual(resp.length, 3);
+      });
+    });
+  });
+
+  describe('#sendLocation', function sendLocationSuite() {
+    before(function before() {
+      utils.handleRatelimit(bot, 'sendLocation', this);
+    });
+    it('should send a location', function test() {
+      return bot.sendLocation(USERID, lat, long).then(resp => {
+        assert.ok(is.object(resp));
+        assert.ok(is.object(resp.location));
+        assert.ok(is.number(resp.location.latitude));
+        assert.ok(is.number(resp.location.longitude));
+      });
+    });
+  });
+
+  describe('#editMessageLiveLocation', function editMessageLiveLocationSuite() {
+    let message;
+    before(function before() {
+      utils.handleRatelimit(bot, 'editMessageLiveLocation', this);
+      const opts = { live_period: 86400 };
+      return bot.sendLocation(USERID, lat, long, opts).then(resp => { message = resp; });
+    });
+    it('edits live location', function test() {
+      const opts = { chat_id: USERID, message_id: message.message_id };
+      return bot.editMessageLiveLocation(lat + 1, long + 1, opts).then(resp => {
+        assert.ok(is.object(resp));
+        assert.ok(is.object(resp.location));
+        assert.ok(is.number(resp.location.latitude));
+        assert.ok(is.number(resp.location.longitude));
+      });
+    });
+  });
+
+  describe.skip('#stopMessageLiveLocation', function editMessageLiveLocationSuite() {
+    let message;
+    before(function before() {
+      utils.handleRatelimit(bot, 'stopMessageLiveLocation', this);
+      return bot.sendLocation(USERID, lat, long, { live_period: 86400 })
+        .then((resp) => {
+          message = resp;
+        });
+    });
+    it('stops location updates', function test() {
+      const opts = { chat_id: USERID, message_id: message.message_id };
+      return bot.stopMessageLiveLocation(opts).then(resp => {
+        assert.ok(is.object(resp));
+        assert.ok(is.object(resp.location));
+        assert.ok(is.number(resp.location.latitude));
+        assert.ok(is.number(resp.location.longitude));
+      });
+    });
+  });
+
+
+  describe('#sendVenue', function sendVenueSuite() {
+    before(function before() {
+      utils.handleRatelimit(bot, 'sendVenue', this);
+    });
+    it('should send a venue', function test() {
+      const title = 'The Village Shopping Centre';
+      const address = '430 Topsail Rd,St. John\'s, NL A1E 4N1, Canada';
+      return bot.sendVenue(USERID, lat, long, title, address).then(resp => {
+        assert.ok(is.object(resp));
+        assert.ok(is.object(resp.venue));
+        assert.ok(is.object(resp.venue.location));
+        assert.ok(is.number(resp.venue.location.latitude));
+        assert.ok(is.number(resp.venue.location.longitude));
+        assert.ok(is.string(resp.venue.title));
+        assert.ok(is.string(resp.venue.address));
+      });
+    });
+  });
+
+
+  // NOTE: We are skipping TelegramBot#sendContact() as the
+  // corresponding rate-limits enforced by the Telegram servers
+  // are too strict! During our initial tests, we were required
+  // to retry after ~72000 secs (1200 mins / 20 hrs).
+  // We surely can NOT wait for that much time during testing
+  // (or in most practical cases for that matter!)
+  describe.skip('#sendContact', function sendContactSuite() {
+    before(function before() {
+      utils.handleRatelimit(bot, 'sendContact', this);
+    });
+    it('should send a contact', function test() {
+      const phoneNumber = '+1(000)000-000';
+      const firstName = 'John Doe';
+      return bot.sendContact(USERID, phoneNumber, firstName).then(resp => {
+        assert.ok(is.object(resp));
+        assert.ok(is.object(resp.contact));
+        assert.ok(is.string(resp.contact.phone_number));
+        assert.ok(is.string(resp.contact.first_name));
+      });
+    });
+  });
+
+  describe('#sendPoll', function sendPollSuite() {
+    it('should send a Poll', function test() {
+      const question = '¿Are you okey?';
+      const answers = ['Yes', 'No'];
+      const opts = { is_anonymous: true };
+      return bot.sendPoll(GROUPID, question, answers, opts).then(resp => {
+        assert.ok(is.object(resp));
+      });
+    });
+    it('should send a Quiz', function test() {
+      const question = '¿Are you okey?';
+      const answers = ['Yes', 'No'];
+      const opts = {
+        is_anonymous: true,
+        type: 'quiz',
+        correct_option_id: 0
+      };
+      return bot.sendPoll(GROUPID, question, answers, opts).then(resp => {
+        assert.ok(is.object(resp));
+      });
+    });
+  });
+
+  describe('#sendDice', function sendDiceSuite() {
+    it('should send a Dice', function test() {
+      return bot.sendDice(GROUPID).then(resp => {
+        assert.ok(is.object(resp));
+      });
+    });
+    it('should send a Dart', function test() {
+      const opts = { emoji: '🎯' };
+      return bot.sendDice(GROUPID, opts).then(resp => {
+        assert.ok(is.object(resp));
+      });
+    });
+  });
+
   describe('#sendChatAction', function sendChatActionSuite() {
     before(function before() {
       utils.handleRatelimit(bot, 'sendChatAction', this);
@@ -840,6 +1096,44 @@ describe('TelegramBot', function telegramSuite() {
     });
   });
 
+  describe('#getUserProfilePhotos', function getUserProfilePhotosSuite() {
+    const opts = {
+      offset: 0,
+      limit: 1,
+    };
+    before(function before() {
+      utils.handleRatelimit(bot, 'getUserProfilePhotos', this);
+    });
+    it('should get user profile photos', function test() {
+      return bot.getUserProfilePhotos(USERID, opts).then(resp => {
+        assert.ok(is.object(resp));
+        assert.ok(is.number(resp.total_count));
+        assert.ok(is.array(resp.photos));
+      });
+    });
+    it('(v0.25.0 and lower) should get user profile photos', function test() {
+      return bot.getUserProfilePhotos(USERID, opts.offset, opts.limit).then(resp => {
+        assert.ok(is.object(resp));
+        assert.ok(is.number(resp.total_count));
+        assert.ok(is.array(resp.photos));
+      });
+    });
+  });
+
+  describe('#getFile', function getFileSuite() {
+    this.timeout(timeout);
+    before(function before() {
+      utils.handleRatelimit(bot, 'getFile', this);
+    });
+    it('should get a file', function test() {
+      return bot.getFile(FILE_ID)
+        .then(resp => {
+          assert.ok(is.object(resp));
+          assert.ok(is.string(resp.file_path));
+        });
+    });
+  });
+
   describe.skip('#banChatMember', function banChatMemberSuite() { });
 
   describe.skip('#unbanChatMember', function unbanChatMemberSuite() { });
@@ -847,102 +1141,6 @@ describe('TelegramBot', function telegramSuite() {
   describe.skip('#restrictChatMember', function restrictChatMemberSuite() { });
 
   describe.skip('#promoteChatMember', function promoteChatMemberSuite() { });
-
-  describe.skip('#answerCallbackQuery', function answerCallbackQuerySuite() { });
-
-  describe('#setMyCommands', function setMyCommandsSuite() {
-    it('should set bot commands', function test() {
-      const opts = [
-        { command: 'eat', description: 'Command for eat' },
-        { command: 'run', description: 'Command for run' }
-      ];
-      return bot.setMyCommands(opts).then(resp => {
-        assert.ok(is.boolean(resp));
-      });
-    });
-  });
-
-  describe('#getMyCommands ', function getMyCommandsSuite() {
-    it('should get bot commands', function test() {
-      return bot.getMyCommands().then(resp => {
-        assert.ok(is.array(resp));
-      });
-    });
-  });
-
-
-  describe('#setChatMenuButton', function setChatMenuButtonSuite() {
-    it('should set chat menu button', function test() {
-      return bot.setChatMenuButton({
-        chat_id: USERID,
-        menu_button: JSON.stringify({ type: 'web_app', text: 'Hello', web_app: { url: 'https://webappcontent.telegram.org/cafe' } }),
-      })
-        .then(resp => {
-          assert.ok(is.boolean(resp));
-        });
-    });
-  });
-
-  describe('#getChatMenuButton', function getChatMenuButtonSuite() {
-    it('should get chat menu button', function test() {
-      return bot.getChatMenuButton({ chat_id: USERID }).then(resp => {
-        assert.ok(is.equal(resp, {
-          type: 'web_app',
-          text: 'Hello',
-          web_app: { url: 'https://webappcontent.telegram.org/cafe' }
-        }));
-      });
-    });
-  });
-
-  describe('#setMyDefaultAdministratorRights', function setMyDefaultAdministratorRightsSuite() {
-    it('should set default administrator rights', function test() {
-      return bot.setMyDefaultAdministratorRights({
-        rights: JSON.stringify({
-          can_manage_chat: true,
-          can_change_info: true,
-          can_delete_messages: false,
-          can_invite_users: true,
-          can_restrict_members: false,
-          can_pin_messages: true,
-          can_promote_members: false,
-          can_manage_video_chats: false,
-          is_anonymous: false
-        }),
-        for_channels: false
-      }).then(resp => {
-        assert.ok(is.boolean(resp));
-      });
-    });
-  });
-
-  describe('#getMyDefaultAdministratorRights ', function getMyDefaultAdministratorRightsSuite() {
-    it('should get my default administrator rights', function test() {
-      return bot.getMyDefaultAdministratorRights({
-        for_channels: false
-      }).then(resp => {
-        assert.ok(is.equal(resp, {
-          can_manage_chat: true,
-          can_change_info: true,
-          can_delete_messages: false,
-          can_invite_users: true,
-          can_restrict_members: false,
-          can_pin_messages: true,
-          can_promote_members: false,
-          can_manage_video_chats: false,
-          is_anonymous: false
-        }));
-      });
-    });
-  });
-
-  describe('#deleteMyCommands', function deleteMyCommandsSuite() {
-    it('should delete bot commands', function test() {
-      return bot.deleteMyCommands().then(resp => {
-        assert.ok(is.boolean(resp));
-      });
-    });
-  });
 
   describe.skip('#setChatAdministratorCustomTitle ', function setChatAdministratorCustomTitleSuite() {
     it('should set chat permissions', function test() {
@@ -1011,6 +1209,10 @@ describe('TelegramBot', function telegramSuite() {
       });
     });
   });
+
+  describe.skip('#approveChatJoinRequest', function approveChatJoinRequestSuite() { });
+
+  describe.skip('#declineChatJoinRequest', function declineChatJoinRequestSuite() { });
 
   describe('#setChatPhoto', function setChatPhotoSuite() {
     this.timeout(timeout);
@@ -1116,369 +1318,7 @@ describe('TelegramBot', function telegramSuite() {
     });
   });
 
-  describe('#editMessageText', function editMessageTextSuite() {
-    before(function before() {
-      utils.handleRatelimit(bot, 'sendMessage', this);
-      utils.handleRatelimit(bot, 'editMessageText', this);
-    });
-    it('should edit a message sent by the bot', function test() {
-      return bot.sendMessage(USERID, 'test').then(resp => {
-        assert.strictEqual(resp.text, 'test');
-        const opts = {
-          chat_id: USERID,
-          message_id: resp.message_id
-        };
-        return bot.editMessageText('edit test', opts).then(msg => {
-          assert.strictEqual(msg.text, 'edit test');
-        });
-      });
-    });
-  });
-
-  describe('#editMessageCaption', function editMessageCaptionSuite() {
-    this.timeout(timeout);
-    before(function before() {
-      utils.handleRatelimit(bot, 'sendPhoto', this);
-      utils.handleRatelimit(bot, 'editMessageCaption', this);
-    });
-    it('should edit a caption sent by the bot', function test() {
-      const photo = `${__dirname}/data/photo.png`;
-      const options = { caption: 'test caption' };
-      return bot.sendPhoto(USERID, photo, options).then(resp => {
-        assert.strictEqual(resp.caption, 'test caption');
-        const opts = {
-          chat_id: USERID,
-          message_id: resp.message_id
-        };
-        return bot.editMessageCaption('new test caption', opts).then(msg => {
-          assert.strictEqual(msg.caption, 'new test caption');
-        });
-      });
-    });
-  });
-
-  describe('#editMessageReplyMarkup', function editMessageReplyMarkupSuite() {
-    before(function before() {
-      utils.handleRatelimit(bot, 'sendMessage', this);
-      utils.handleRatelimit(bot, 'editMessageReplyMarkup', this);
-    });
-    it('should edit previously-set reply markup', function test() {
-      return bot.sendMessage(USERID, 'test').then(resp => {
-        const replyMarkup = JSON.stringify({
-          inline_keyboard: [[{
-            text: 'Test button',
-            callback_data: 'test'
-          }]]
-        });
-        const opts = {
-          chat_id: USERID,
-          message_id: resp.message_id
-        };
-        return bot.editMessageReplyMarkup(replyMarkup, opts).then(msg => {
-          // Keyboard markup is not returned, do a simple object check
-          assert.ok(is.object(msg));
-        });
-      });
-    });
-  });
-
-  describe('#deleteMessage', function deleteMessageSuite() {
-    let messageId;
-    before(function before() {
-      utils.handleRatelimit(bot, 'deleteMessage', this);
-      return bot.sendMessage(USERID, 'To be deleted').then(resp => {
-        messageId = resp.message_id;
-      });
-    });
-    it('should delete message', function test() {
-      return bot.deleteMessage(USERID, messageId).then(resp => {
-        assert.strictEqual(resp, true);
-      });
-    });
-  });
-
-  describe('#getUserProfilePhotos', function getUserProfilePhotosSuite() {
-    const opts = {
-      offset: 0,
-      limit: 1,
-    };
-    before(function before() {
-      utils.handleRatelimit(bot, 'getUserProfilePhotos', this);
-    });
-    it('should get user profile photos', function test() {
-      return bot.getUserProfilePhotos(USERID, opts).then(resp => {
-        assert.ok(is.object(resp));
-        assert.ok(is.number(resp.total_count));
-        assert.ok(is.array(resp.photos));
-      });
-    });
-    it('(v0.25.0 and lower) should get user profile photos', function test() {
-      return bot.getUserProfilePhotos(USERID, opts.offset, opts.limit).then(resp => {
-        assert.ok(is.object(resp));
-        assert.ok(is.number(resp.total_count));
-        assert.ok(is.array(resp.photos));
-      });
-    });
-  });
-
-  describe('#sendLocation', function sendLocationSuite() {
-    before(function before() {
-      utils.handleRatelimit(bot, 'sendLocation', this);
-    });
-    it('should send a location', function test() {
-      return bot.sendLocation(USERID, lat, long).then(resp => {
-        assert.ok(is.object(resp));
-        assert.ok(is.object(resp.location));
-        assert.ok(is.number(resp.location.latitude));
-        assert.ok(is.number(resp.location.longitude));
-      });
-    });
-  });
-
-  describe('#editMessageLiveLocation', function editMessageLiveLocationSuite() {
-    let message;
-    before(function before() {
-      utils.handleRatelimit(bot, 'editMessageLiveLocation', this);
-      const opts = { live_period: 86400 };
-      return bot.sendLocation(USERID, lat, long, opts).then(resp => { message = resp; });
-    });
-    it('edits live location', function test() {
-      const opts = { chat_id: USERID, message_id: message.message_id };
-      return bot.editMessageLiveLocation(lat + 1, long + 1, opts).then(resp => {
-        assert.ok(is.object(resp));
-        assert.ok(is.object(resp.location));
-        assert.ok(is.number(resp.location.latitude));
-        assert.ok(is.number(resp.location.longitude));
-      });
-    });
-  });
-
-  describe.skip('#stopMessageLiveLocation', function editMessageLiveLocationSuite() {
-    let message;
-    before(function before() {
-      utils.handleRatelimit(bot, 'stopMessageLiveLocation', this);
-      return bot.sendLocation(USERID, lat, long, { live_period: 86400 })
-        .then((resp) => {
-          message = resp;
-        });
-    });
-    it('stops location updates', function test() {
-      const opts = { chat_id: USERID, message_id: message.message_id };
-      return bot.stopMessageLiveLocation(opts).then(resp => {
-        assert.ok(is.object(resp));
-        assert.ok(is.object(resp.location));
-        assert.ok(is.number(resp.location.latitude));
-        assert.ok(is.number(resp.location.longitude));
-      });
-    });
-  });
-
-  describe('#sendVenue', function sendVenueSuite() {
-    before(function before() {
-      utils.handleRatelimit(bot, 'sendVenue', this);
-    });
-    it('should send a venue', function test() {
-      const title = 'The Village Shopping Centre';
-      const address = '430 Topsail Rd,St. John\'s, NL A1E 4N1, Canada';
-      return bot.sendVenue(USERID, lat, long, title, address).then(resp => {
-        assert.ok(is.object(resp));
-        assert.ok(is.object(resp.venue));
-        assert.ok(is.object(resp.venue.location));
-        assert.ok(is.number(resp.venue.location.latitude));
-        assert.ok(is.number(resp.venue.location.longitude));
-        assert.ok(is.string(resp.venue.title));
-        assert.ok(is.string(resp.venue.address));
-      });
-    });
-  });
-
-  // NOTE: We are skipping TelegramBot#sendContact() as the
-  // corresponding rate-limits enforced by the Telegram servers
-  // are too strict! During our initial tests, we were required
-  // to retry after ~72000 secs (1200 mins / 20 hrs).
-  // We surely can NOT wait for that much time during testing
-  // (or in most practical cases for that matter!)
-  describe.skip('#sendContact', function sendContactSuite() {
-    before(function before() {
-      utils.handleRatelimit(bot, 'sendContact', this);
-    });
-    it('should send a contact', function test() {
-      const phoneNumber = '+1(000)000-000';
-      const firstName = 'John Doe';
-      return bot.sendContact(USERID, phoneNumber, firstName).then(resp => {
-        assert.ok(is.object(resp));
-        assert.ok(is.object(resp.contact));
-        assert.ok(is.string(resp.contact.phone_number));
-        assert.ok(is.string(resp.contact.first_name));
-      });
-    });
-  });
-
-  describe('#sendPoll', function sendPollSuite() {
-    it('should send a Poll', function test() {
-      const question = '¿Are you okey?';
-      const answers = ['Yes', 'No'];
-      const opts = { is_anonymous: true };
-      return bot.sendPoll(GROUPID, question, answers, opts).then(resp => {
-        assert.ok(is.object(resp));
-      });
-    });
-    it('should send a Quiz', function test() {
-      const question = '¿Are you okey?';
-      const answers = ['Yes', 'No'];
-      const opts = {
-        is_anonymous: true,
-        type: 'quiz',
-        correct_option_id: 0
-      };
-      return bot.sendPoll(GROUPID, question, answers, opts).then(resp => {
-        assert.ok(is.object(resp));
-      });
-    });
-  });
-
-  describe('#sendDice', function sendDiceSuite() {
-    it('should send a Dice', function test() {
-      return bot.sendDice(GROUPID).then(resp => {
-        assert.ok(is.object(resp));
-      });
-    });
-    it('should send a Dart', function test() {
-      const opts = { emoji: '🎯' };
-      return bot.sendDice(GROUPID, opts).then(resp => {
-        assert.ok(is.object(resp));
-      });
-    });
-  });
-
-  describe('#getFile', function getFileSuite() {
-    this.timeout(timeout);
-    before(function before() {
-      utils.handleRatelimit(bot, 'getFile', this);
-    });
-    it('should get a file', function test() {
-      return bot.getFile(FILE_ID)
-        .then(resp => {
-          assert.ok(is.object(resp));
-          assert.ok(is.string(resp.file_path));
-        });
-    });
-  });
-
-  describe('#getFileLink', function getFileLinkSuite() {
-    this.timeout(timeout);
-    before(function before() {
-      utils.handleRatelimit(bot, 'getFileLink', this);
-    });
-    it('should get a file link', function test() {
-      return bot.getFileLink(FILE_ID)
-        .then(fileURI => {
-          assert.ok(is.string(fileURI));
-          assert.ok(utils.isTelegramFileURI(fileURI));
-        });
-    });
-  });
-
-  describe('#getFileStream', function getFileStreamSuite() {
-    this.timeout(timeout);
-    before(function before() {
-      // utils.handleRatelimit(bot, 'getFileStream', this);
-    });
-    it('should get a file stream', function test(done) {
-      const fileStream = bot.getFileStream(FILE_ID);
-      assert.ok(fileStream instanceof stream.Readable);
-      assert.strictEqual(fileStream.path, FILE_ID);
-      fileStream.on('info', (info) => {
-        assert.ok(info);
-        assert.ok(utils.isTelegramFileURI(info.uri), `${info.uri} is not a file URI`);
-        fileStream.pipe(concat(function readFile(buffer) {
-          buffer.equals(fs.readFileSync(FILE_PATH)); // sync :(
-          return done();
-        }));
-      });
-    });
-  });
-
-  describe('#downloadFile', function downloadFileSuite() {
-    const downloadPath = os.tmpdir();
-    this.timeout(timeout);
-    before(function before() {
-      utils.handleRatelimit(bot, 'downloadFile', this);
-    });
-    it('should download a file', function test() {
-      return bot.downloadFile(FILE_ID, downloadPath)
-        .then(filePath => {
-          assert.ok(is.string(filePath));
-          assert.strictEqual(path.dirname(filePath), downloadPath);
-          assert.ok(fs.existsSync(filePath));
-          fs.unlinkSync(filePath); // Delete file after test
-        });
-    });
-  });
-
-  describe('#onText', function onTextSuite() {
-    it('should call `onText` callback on match', function test(done) {
-      const regexp = /\/onText (.+)/;
-      botWebHook.onText(regexp, (msg, match) => {
-        assert.strictEqual(match[1], 'ECHO ALOHA');
-        assert.ok(botWebHook.removeTextListener(regexp));
-        return done();
-      });
-      utils.sendWebHookMessage(webHookPort2, TOKEN, {
-        message: { text: '/onText ECHO ALOHA' },
-      });
-    });
-    it('should reset the global regex state with each message', function test(done) {
-      const regexp = /\/onText (.+)/g;
-      botWebHook.onText(regexp, () => {
-        assert.strictEqual(regexp.lastIndex, 0);
-        assert.ok(botWebHook.removeTextListener(regexp));
-        return done();
-      });
-      utils.sendWebHookMessage(webHookPort2, TOKEN, {
-        message: { text: '/onText ECHO ALOHA' },
-      });
-    });
-  });
-
-  describe('#removeTextListener', function removeTextListenerSuite() {
-    const regexp = /\/onText/;
-    const regexp2 = /\/onText/;
-    const callback = function noop() { };
-    after(function after() {
-      bot.removeTextListener(regexp);
-      bot.removeTextListener(regexp2);
-    });
-    it('removes the right text-listener', function test() {
-      bot.onText(regexp, callback);
-      bot.onText(regexp2, callback);
-      const textListener = bot.removeTextListener(regexp);
-      assert.strictEqual(regexp, textListener.regexp);
-    });
-    it('returns `null` if missing', function test() {
-      assert.strictEqual(null, bot.removeTextListener(/404/));
-    });
-  });
-
-  describe.skip('#onReplyToMessage', function onReplyToMessageSuite() { });
-
-  describe('#removeReplyListener', function removeReplyListenerSuite() {
-    const chatId = -1234;
-    const messageId = 1;
-    const callback = function noop() { };
-    it('returns the right reply-listener', function test() {
-      const id = bot.onReplyToMessage(chatId, messageId, callback);
-      const replyListener = bot.removeReplyListener(id);
-      assert.strictEqual(id, replyListener.id);
-      assert.strictEqual(chatId, replyListener.chatId);
-      assert.strictEqual(messageId, replyListener.messageId);
-      assert.strictEqual(callback, replyListener.callback);
-    });
-    it('returns `null` if missing', function test() {
-      // NOTE: '0' is never a valid reply listener ID :)
-      assert.strictEqual(null, bot.removeReplyListener(0));
-    });
-  });
+  describe.skip('#leaveChat', function leaveChatSuite() { });
 
   describe('#getChat', function getChatSuite() {
     before(function before() {
@@ -1526,7 +1366,463 @@ describe('TelegramBot', function telegramSuite() {
     });
   });
 
-  describe.skip('#leaveChat', function leaveChatSuite() { });
+  describe('#setChatStickerSet', function setChatStickerSetSuite() {
+    before(function before() {
+      utils.handleRatelimit(bot, 'setChatStickerSet', this);
+      // Check if the chat can set sticker sets
+      if (!CHAT_INFO.can_set_sticker_set) {
+        this.skip();
+      }
+    });
+    it('should return a Boolean', function test() {
+      return bot.setChatStickerSet(GROUPID, STICKER_SET_NAME).then(resp => {
+        assert.ok(is.boolean(resp));
+      });
+    });
+  });
+
+  describe('#deleteChatStickerSet', function deleteChatStickerSetSuite() {
+    before(function before() {
+      utils.handleRatelimit(bot, 'deleteChatStickerSet', this);
+      // Check if the chat can delete sticker sets
+      if (!CHAT_INFO.can_set_sticker_set) {
+        this.skip();
+      }
+    });
+    it('should return a Boolean', function test() {
+      return bot.deleteChatStickerSet(GROUPID).then(resp => {
+        assert.ok(is.boolean(resp));
+      });
+    });
+  });
+
+  describe.skip('#answerCallbackQuery', function answerCallbackQuerySuite() { });
+
+  describe('#setMyCommands', function setMyCommandsSuite() {
+    it('should set bot commands', function test() {
+      const opts = [
+        { command: 'eat', description: 'Command for eat' },
+        { command: 'run', description: 'Command for run' }
+      ];
+      return bot.setMyCommands(opts).then(resp => {
+        assert.ok(is.boolean(resp));
+      });
+    });
+  });
+
+  describe('#deleteMyCommands', function deleteMyCommandsSuite() {
+    it('should delete bot commands', function test() {
+      return bot.deleteMyCommands().then(resp => {
+        assert.ok(is.boolean(resp));
+      });
+    });
+  });
+
+  describe('#getMyCommands', function getMyCommandsSuite() {
+    it('should get bot commands', function test() {
+      return bot.getMyCommands().then(resp => {
+        assert.ok(is.array(resp));
+      });
+    });
+  });
+
+  describe('#setChatMenuButton', function setChatMenuButtonSuite() {
+    it('should set chat menu button', function test() {
+      return bot.setChatMenuButton({
+        chat_id: USERID,
+        menu_button: JSON.stringify({ type: 'web_app', text: 'Hello', web_app: { url: 'https://webappcontent.telegram.org/cafe' } }),
+      })
+        .then(resp => {
+          assert.ok(is.boolean(resp));
+        });
+    });
+  });
+
+  describe('#getChatMenuButton', function getChatMenuButtonSuite() {
+    it('should get chat menu button', function test() {
+      return bot.getChatMenuButton({ chat_id: USERID }).then(resp => {
+        assert.ok(is.equal(resp, {
+          type: 'web_app',
+          text: 'Hello',
+          web_app: { url: 'https://webappcontent.telegram.org/cafe' }
+        }));
+      });
+    });
+  });
+
+  describe('#setMyDefaultAdministratorRights', function setMyDefaultAdministratorRightsSuite() {
+    it('should set default administrator rights', function test() {
+      return bot.setMyDefaultAdministratorRights({
+        rights: JSON.stringify({
+          can_manage_chat: true,
+          can_change_info: true,
+          can_delete_messages: false,
+          can_invite_users: true,
+          can_restrict_members: false,
+          can_pin_messages: true,
+          can_promote_members: false,
+          can_manage_video_chats: false,
+          is_anonymous: false
+        }),
+        for_channels: false
+      }).then(resp => {
+        assert.ok(is.boolean(resp));
+      });
+    });
+  });
+
+  describe('#getMyDefaultAdministratorRights', function getMyDefaultAdministratorRightsSuite() {
+    it('should get my default administrator rights', function test() {
+      return bot.getMyDefaultAdministratorRights({
+        for_channels: false
+      }).then(resp => {
+        assert.ok(is.equal(resp, {
+          can_manage_chat: true,
+          can_change_info: true,
+          can_delete_messages: false,
+          can_invite_users: true,
+          can_restrict_members: false,
+          can_pin_messages: true,
+          can_promote_members: false,
+          can_manage_video_chats: false,
+          is_anonymous: false
+        }));
+      });
+    });
+  });
+
+  describe('#editMessageText', function editMessageTextSuite() {
+    before(function before() {
+      utils.handleRatelimit(bot, 'sendMessage', this);
+      utils.handleRatelimit(bot, 'editMessageText', this);
+    });
+    it('should edit a message sent by the bot', function test() {
+      return bot.sendMessage(USERID, 'test').then(resp => {
+        assert.strictEqual(resp.text, 'test');
+        const opts = {
+          chat_id: USERID,
+          message_id: resp.message_id
+        };
+        return bot.editMessageText('edit test', opts).then(msg => {
+          assert.strictEqual(msg.text, 'edit test');
+        });
+      });
+    });
+  });
+
+  describe('#editMessageCaption', function editMessageCaptionSuite() {
+    this.timeout(timeout);
+    before(function before() {
+      utils.handleRatelimit(bot, 'sendPhoto', this);
+      utils.handleRatelimit(bot, 'editMessageCaption', this);
+    });
+    it('should edit a caption sent by the bot', function test() {
+      const photo = `${__dirname}/data/photo.png`;
+      const options = { caption: 'test caption' };
+      return bot.sendPhoto(USERID, photo, options).then(resp => {
+        assert.strictEqual(resp.caption, 'test caption');
+        const opts = {
+          chat_id: USERID,
+          message_id: resp.message_id
+        };
+        return bot.editMessageCaption('new test caption', opts).then(msg => {
+          assert.strictEqual(msg.caption, 'new test caption');
+        });
+      });
+    });
+  });
+
+  describe('#editMessageMedia', function editMessageMediaSuite() {
+    let photoId;
+    let messageID;
+    before(function before() {
+      utils.handleRatelimit(bot, 'editMessageMedia', this);
+      const photo = `${__dirname}/data/photo.png`;
+      return bot.sendPhoto(USERID, photo).then(resp => {
+        assert.ok(is.object(resp));
+        assert.ok(is.array(resp.photo));
+        photoId = resp.photo[0].file_id;
+        messageID = resp.message_id;
+      });
+    });
+    it('should edit a media message', function nextTest() {
+      return bot.editMessageMedia({ type: 'photo', media: photoId, caption: 'edited' }, { chat_id: USERID, message_id: messageID }).then(editedResp => {
+        assert.ok(is.object(editedResp));
+        assert.ok(is.string(editedResp.caption));
+      });
+    });
+  });
+
+
+  describe('#editMessageReplyMarkup', function editMessageReplyMarkupSuite() {
+    before(function before() {
+      utils.handleRatelimit(bot, 'sendMessage', this);
+      utils.handleRatelimit(bot, 'editMessageReplyMarkup', this);
+    });
+    it('should edit previously-set reply markup', function test() {
+      return bot.sendMessage(USERID, 'test').then(resp => {
+        const replyMarkup = JSON.stringify({
+          inline_keyboard: [[{
+            text: 'Test button',
+            callback_data: 'test'
+          }]]
+        });
+        const opts = {
+          chat_id: USERID,
+          message_id: resp.message_id
+        };
+        return bot.editMessageReplyMarkup(replyMarkup, opts).then(msg => {
+          // Keyboard markup is not returned, do a simple object check
+          assert.ok(is.object(msg));
+        });
+      });
+    });
+  });
+
+  describe('#stopPoll', function stopPollSuite() {
+    let msg;
+    before(function before() {
+      utils.handleRatelimit(bot, 'stopPoll', this);
+      return bot.sendPoll(GROUPID, '¿Poll for stop before?', ['Yes', 'No']).then(resp => {
+        msg = resp;
+      });
+    });
+    it('should stop a Poll', function test() {
+      return bot.stopPoll(GROUPID, msg.message_id).then(resp => {
+        assert.ok(is.boolean(resp.is_closed) && resp.is_closed === true);
+      });
+    }
+    );
+  });
+
+  describe('#deleteMessage', function deleteMessageSuite() {
+    let messageId;
+    before(function before() {
+      utils.handleRatelimit(bot, 'deleteMessage', this);
+      return bot.sendMessage(USERID, 'To be deleted').then(resp => {
+        messageId = resp.message_id;
+      });
+    });
+    it('should delete message', function test() {
+      return bot.deleteMessage(USERID, messageId).then(resp => {
+        assert.strictEqual(resp, true);
+      });
+    });
+  });
+
+  describe('#sendSticker', function sendStickerSuite() {
+    let stickerId;
+    this.timeout(timeout);
+    before(function before() {
+      utils.handleRatelimit(bot, 'sendSticker', this);
+    });
+    it('should send a sticker from file', function test() {
+      const sticker = `${__dirname}/data/sticker.webp`;
+      return bot.sendSticker(USERID, sticker).then(resp => {
+        assert.ok(is.object(resp));
+        assert.ok(is.object(resp.sticker));
+        stickerId = resp.sticker.file_id;
+      });
+    });
+    it('should send a sticker from id', function test() {
+      // Send the same photo as before
+      return bot.sendSticker(USERID, stickerId).then(resp => {
+        assert.ok(is.object(resp));
+        assert.ok(is.object(resp.sticker));
+      });
+    });
+    it('should send a sticker from fs.readStream', function test() {
+      const sticker = fs.createReadStream(`${__dirname}/data/sticker.webp`);
+      return bot.sendSticker(USERID, sticker).then(resp => {
+        assert.ok(is.object(resp));
+        assert.ok(is.object(resp.sticker));
+      });
+    });
+    it('should send a sticker from request Stream', function test() {
+      const sticker = request(`${staticUrl}/sticker.webp`);
+      return bot.sendSticker(USERID, sticker).then(resp => {
+        assert.ok(is.object(resp));
+        assert.ok(is.object(resp.sticker));
+      });
+    });
+    it('should send a sticker from a Buffer', function test() {
+      const sticker = fs.readFileSync(`${__dirname}/data/sticker.webp`);
+      return bot.sendSticker(USERID, sticker).then(resp => {
+        assert.ok(is.object(resp));
+        assert.ok(is.object(resp.sticker));
+      });
+    });
+  });
+
+  describe('#uploadStickerFile', function sendPhotoSuite() {
+    before(function before() {
+      utils.handleRatelimit(bot, 'uploadStickerFile', this);
+    });
+    it('should upload a sticker from file', function test() {
+      const sticker = `${__dirname}/data/sticker.png`;
+
+      bot.uploadStickerFile(USERID, sticker).then(resp => {
+        assert.ok(is.object(resp));
+        assert.ok(is.string(resp.file_id));
+      });
+    });
+    // Other tests (eg. Buffer, URL) are skipped, because they rely on the same features as sendPhoto.
+  });
+
+  describe('#createNewStickerSet', function createNewStickerSetSuite() {
+    before(function before() {
+      utils.handleRatelimit(bot, 'createNewStickerSet', this);
+    });
+
+    it('should create a new sticker set', function test(done) {
+      const sticker = `${__dirname}/data/sticker.png`;
+      const stickerPackName = `s${CURRENT_TIMESTAMP}_by_${BOT_USERNAME}`;
+
+      bot.createNewStickerSet(USERID, stickerPackName, 'Sticker Pack Title', sticker, '😍').then((resp) => {
+        assert.ok(is.boolean(resp));
+      });
+      setTimeout(() => done(), 2000);
+    });
+  });
+
+  describe('#getStickerSet', function getStickerSetSuite() {
+    before(function before() {
+      utils.handleRatelimit(bot, 'getStickerSet', this);
+    });
+    it('should get the sticker set given the name of the set', function test() {
+      return bot.getStickerSet(STICKER_SET_NAME).then(resp => {
+        assert.ok(is.object(resp));
+        assert.strictEqual(resp.name.toLowerCase(), STICKER_SET_NAME);
+        assert.ok(is.string(resp.title));
+        assert.ok(is.boolean(resp.contains_masks));
+        assert.ok(is.array(resp.stickers));
+      });
+    });
+    // This test depends on the previous test createNewStickerSet
+    it('should get the recent sticker set created given the name of the set', function test() {
+      const stickerPackName = `s${CURRENT_TIMESTAMP}_by_${BOT_USERNAME}`;
+      return bot.getStickerSet(stickerPackName).then(resp => {
+        STICKER_FILE_ID_FROM_SET = resp.stickers[0].file_id;
+        assert.ok(is.object(resp));
+        assert.strictEqual(resp.name.toLowerCase(), stickerPackName.toLowerCase());
+        assert.ok(is.string(resp.title));
+        assert.ok(is.boolean(resp.contains_masks));
+        assert.ok(is.array(resp.stickers));
+      });
+    });
+  });
+
+
+  describe('#addStickerToSet', function addStickerToSetSuite() {
+    before(function before() {
+      utils.handleRatelimit(bot, 'addStickerToSet', this);
+    });
+
+    it('should add a sticker to a set', function test() {
+      const sticker = `${__dirname}/data/sticker.png`;
+      const stickerPackName = `s${CURRENT_TIMESTAMP}_by_${BOT_USERNAME}`;
+
+      bot.addStickerToSet(USERID, stickerPackName, sticker, '😊😍🤔', 'png_sticker').then((resp) => {
+        assert.ok(is.boolean(resp));
+      });
+    });
+    it('should add a sticker to a set using the file Id', function test(done) {
+      const stickerPackName = `s${CURRENT_TIMESTAMP}_by_${BOT_USERNAME}`;
+
+      bot.addStickerToSet(USERID, stickerPackName, STICKER_FILE_ID_FROM_SET, '😊🤔', 'png_sticker').then((resp) => {
+        assert.ok(is.boolean(resp));
+      });
+      setTimeout(() => done(), 2000);
+    });
+  });
+
+  describe('#setStickerPositionInSet', function setStickerPositionInSet() {
+    before(function before() {
+      utils.handleRatelimit(bot, 'setStickerPositionInSet', this);
+    });
+    it('should set the position of a sticker in a set', function test() {
+      bot.setStickerPositionInSet(STICKER_FILE_ID_FROM_SET, 0).then((resp) => {
+        assert.ok(is.boolean(resp));
+      });
+    });
+  });
+
+  describe('#deleteStickerFromSet', function deleteStickerFromSetSuite() {
+    before(function before() {
+      utils.handleRatelimit(bot, 'deleteStickerFromSet', this);
+    });
+    it('should delete a sticker from a set', function test() {
+      bot.deleteStickerFromSet(STICKER_FILE_ID_FROM_SET).then((resp) => {
+        assert.ok(is.boolean(resp));
+      });
+    });
+  });
+
+  describe('#setStickerSetThumb', function setStickerSetThumbSuite() {
+    before(function before() {
+      utils.handleRatelimit(bot, 'setStickerSetThumb', this);
+    });
+
+    it('should set a sticker set thumb', function test() {
+      const stickerThumb = `${__dirname}/data/sticker_thumb.png`;
+      const stickerPackName = `s${CURRENT_TIMESTAMP}_by_${BOT_USERNAME}`;
+
+      bot.setStickerSetThumb(USERID, stickerPackName, stickerThumb).then((resp) => {
+        assert.ok(is.boolean(resp));
+      });
+    });
+  });
+
+  describe.skip('#answerInlineQuery', function answerInlineQuerySuite() { });
+
+  describe.skip('#answerWebAppQuery', function answerCallbackQuerySuite() { });
+
+  describe('#sendInvoice', function sendInvoiceSuite() {
+    before(function before() {
+      utils.handleRatelimit(bot, 'sendInvoice', this);
+    });
+    it('should send an invoice', function test() {
+      if (isCI) {
+        this.skip(); // Skip test for now
+      }
+      const title = 'Demo product';
+      const description = 'our test product';
+      const payload = 'sku-p001';
+      const providerToken = PROVIDER_TOKEN;
+      const currency = 'USD';
+      const prices = [{ label: 'product', amount: 11000 }, { label: 'tax', amount: 11000 }];
+      return bot.sendInvoice(USERID, title, description, payload, providerToken, currency, prices).then(resp => {
+        assert.ok(is.object(resp));
+        assert.ok(is.object(resp.invoice));
+        assert.ok(is.number(resp.invoice.total_amount));
+      });
+    });
+  });
+
+  describe('#createInvoiceLink', function createInvoiceLinkSuite() {
+    before(function before() {
+      utils.handleRatelimit(bot, 'createInvoiceLink', this);
+    });
+    it('should create an invoice link', function test() {
+      if (isCI) {
+        this.skip(); // Skip test for now
+      }
+      const title = 'Invoice link product';
+      const description = 'Our test invoice link product';
+      const payload = 'sku-p002';
+      const providerToken = PROVIDER_TOKEN;
+      const currency = 'EUR';
+      const prices = [{ label: 'NTBA API', amount: 12000 }, { label: 'tax', amount: 10000 }];
+      return bot.createInvoiceLink(title, description, payload, providerToken, currency, prices).then(resp => {
+        assert.ok(is.string(resp));
+      });
+    });
+  });
+
+  describe.skip('#answerShippingQuery', function answerShippingQuerySuite() { });
+
+
+  describe.skip('#answerPreCheckoutQuery', function answerPreCheckoutQuerySuite() { });
 
   describe('#sendGame', function sendGameSuite() {
     before(function before() {
@@ -1568,176 +1864,6 @@ describe('TelegramBot', function telegramSuite() {
       };
       return bot.getGameHighScores(USERID, opts).then(resp => {
         assert.ok(is.array(resp));
-      });
-    });
-  });
-
-  describe('#sendInvoice', function sendInvoiceSuite() {
-    before(function before() {
-      utils.handleRatelimit(bot, 'sendInvoice', this);
-    });
-    it('should send an invoice', function test() {
-      if (isCI) {
-        this.skip(); // Skip test for now
-      }
-      const title = 'Demo product';
-      const description = 'our test product';
-      const payload = 'sku-p001';
-      const providerToken = PROVIDER_TOKEN;
-      const startParameter = 'pay';
-      const currency = 'USD';
-      const prices = [{ label: 'product', amount: 11000 }, { label: 'tax', amount: 11000 }];
-      return bot.sendInvoice(USERID, title, description, payload, providerToken, startParameter, currency, prices).then(resp => {
-        assert.ok(is.object(resp));
-        assert.ok(is.object(resp.invoice));
-        assert.ok(is.number(resp.invoice.total_amount));
-      });
-    });
-  });
-
-  describe('#createInvoiceLink', function createInvoiceLinkSuite() {
-    before(function before() {
-      utils.handleRatelimit(bot, 'createInvoiceLink', this);
-    });
-    it('should create an invoice link', function test() {
-      if (isCI) {
-        this.skip(); // Skip test for now
-      }
-      const title = 'Invoice link product';
-      const description = 'Our test invoice link product';
-      const payload = 'sku-p002';
-      const providerToken = PROVIDER_TOKEN;
-      const currency = 'EUR';
-      const prices = [{ label: 'NTBA API', amount: 12000 }, { label: 'tax', amount: 10000 }];
-      return bot.createInvoiceLink(title, description, payload, providerToken, currency, prices).then(resp => {
-        console.log(resp);
-        assert.ok(is.string(resp));
-      });
-    });
-  });
-
-  describe.skip('#answerShippingQuery', function answerShippingQuerySuite() { });
-
-  describe.skip('#answerPreCheckoutQuery', function answerPreCheckoutQuerySuite() { });
-
-  describe('#createNewStickerSet', function createNewStickerSetSuite() {
-    before(function before() {
-      utils.handleRatelimit(bot, 'createNewStickerSet', this);
-    });
-
-    it('should create a new sticker set', function test(done) {
-      const sticker = `${__dirname}/data/sticker.png`;
-      const stickerPackName = `s${CURRENT_TIMESTAMP}_by_${BOT_USERNAME}`;
-
-      bot.createNewStickerSet(USERID, stickerPackName, 'Sticker Pack Title', sticker, '😍').then((resp) => {
-        assert.ok(is.boolean(resp));
-      });
-      setTimeout(() => done(), 2000);
-    });
-  });
-
-
-  describe('#getStickerSet', function getStickerSetSuite() {
-    before(function before() {
-      utils.handleRatelimit(bot, 'getStickerSet', this);
-    });
-    it('should get the sticker set given the name of the set', function test() {
-      return bot.getStickerSet(STICKER_SET_NAME).then(resp => {
-        assert.ok(is.object(resp));
-        assert.strictEqual(resp.name.toLowerCase(), STICKER_SET_NAME);
-        assert.ok(is.string(resp.title));
-        assert.ok(is.boolean(resp.contains_masks));
-        assert.ok(is.array(resp.stickers));
-      });
-    });
-    it('should get the recent sticker set created given the name of the set', function test() {
-      const stickerPackName = `s${CURRENT_TIMESTAMP}_by_${BOT_USERNAME}`;
-      return bot.getStickerSet(stickerPackName).then(resp => {
-        assert.ok(is.object(resp));
-        assert.strictEqual(resp.name.toLowerCase(), stickerPackName.toLowerCase());
-        assert.ok(is.string(resp.title));
-        assert.ok(is.boolean(resp.contains_masks));
-        assert.ok(is.array(resp.stickers));
-      });
-    });
-  });
-
-  describe('#setStickerSetThumb', function setStickerSetThumbSuite() {
-    before(function before() {
-      utils.handleRatelimit(bot, 'setStickerSetThumb', this);
-    });
-
-    it('should set a sticker set thumb', function test() {
-      const stickerThumb = `${__dirname}/data/sticker_thumb.png`;
-      const stickerPackName = `s${CURRENT_TIMESTAMP}_by_${BOT_USERNAME}`;
-
-      bot.setStickerSetThumb(USERID, stickerPackName, stickerThumb).then((resp) => {
-        assert.ok(is.boolean(resp));
-      });
-    });
-  });
-
-  describe('#uploadStickerFile', function sendPhotoSuite() {
-    before(function before() {
-      utils.handleRatelimit(bot, 'uploadStickerFile', this);
-    });
-    it('should upload a sticker from file', function test() {
-      const sticker = `${__dirname}/data/sticker.png`;
-      return bot.uploadStickerFile(USERID, sticker).then(resp => {
-        assert.ok(is.object(resp));
-        assert.ok(is.string(resp.file_id));
-      });
-    });
-    // Other tests (eg. Buffer, URL) are skipped, because they rely on the same features as sendPhoto.
-  });
-
-  describe('#sendMediaGroup', function sendMediaGroupSuite() {
-    before(function before() {
-      utils.handleRatelimit(bot, 'sendMediaGroup', this);
-    });
-    it('should send group of photos/videos as album', function test() {
-      return bot.sendMediaGroup(USERID, [
-        {
-          type: 'photo',
-          media: `${__dirname}/data/photo.png`,
-        },
-        {
-          type: 'video',
-          media: `${__dirname}/data/video.mp4`,
-        },
-        {
-          type: 'photo',
-          media: FILE_ID,
-        },
-      ], {
-        disable_notification: true,
-      }).then(resp => {
-        assert.ok(is.array(resp));
-        assert.strictEqual(resp.length, 3);
-      });
-    });
-  });
-
-  describe('#sendAnimation', function sendAnimationSuite() {
-    before(function before() {
-      utils.handleRatelimit(bot, 'sendAnimation', this);
-    });
-    it('should send a gif as an animation', function test() {
-      return bot.sendAnimation(USERID, `${__dirname}/data/photo.gif`).then(resp => {
-        assert.ok(is.object(resp));
-        assert.ok(is.object(resp.document));
-
-        describe('#editMessageMedia', function editMessageMediaSuite() {
-          before(function before() {
-            utils.handleRatelimit(bot, 'editMessageMedia', this);
-          });
-          it('should edit a media message', function nextTest() {
-            return bot.editMessageMedia({ type: 'animation', media: resp.document.file_id, caption: 'edited' }, { chat_id: resp.chat.id, message_id: resp.message_id }).then(editedResp => {
-              assert.ok(is.object(editedResp));
-              assert.ok(is.string(editedResp.caption));
-            });
-          });
-        });
       });
     });
   });
