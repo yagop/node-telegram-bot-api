@@ -1,6 +1,6 @@
 {
   "name": "node-telegram-bot-api",
-  "version": "0.58.0",
+  "version": "0.59.0",
   "description": "Telegram Bot API",
   "main": "./index.js",
   "directories": {
@@ -31,7 +31,7 @@
   "dependencies": {
     "array.prototype.findindex": "^2.0.2",
     "bl": "^1.2.3",
-    "debug": "^3.1.0",
+    "debug": "^3.2.7",
     "eventemitter3": "^3.0.0",
     "file-type": "^3.9.0",
     "mime": "^1.6.0",
