@@ -2233,15 +2233,17 @@ class TelegramBot extends EventEmitter {
    *
    * @param  {Number} userId User identifier of sticker set owner
    * @param  {String} name Sticker set name
-   * @param  {String|stream.Stream|Buffer} pngSticker Png image with the sticker, must be up to 512 kilobytes in size,
-   *  dimensions must not exceed 512px, and either width or height must be exactly 512px
+   * @param  {String|stream.Stream|Buffer} sticker Png image with the sticker (must be up to 512 kilobytes in size,
+   * dimensions must not exceed 512px, and either width or height must be exactly 512px), [TGS animation](https://core.telegram.org/stickers#animated-sticker-requirements)
+   * with the sticker or [WEBM video](https://core.telegram.org/stickers#video-sticker-requirements) with the sticker.
    * @param  {String} emojis One or more emoji corresponding to the sticker
+   * @param  {String} stickerType Allow values: `png_sticker`, `tgs_sticker`, or `webm_sticker`.
    * @param  {Object} [options] Additional Telegram query options
    * @param  {Object} [fileOptions] Optional file related meta-data
    * @return {Promise}  True on success
    * @see https://core.telegram.org/bots/api#addstickertoset
    */
-  addStickerToSet(userId, name, pngSticker, emojis, options = {}, fileOptions = {}) {
+  addStickerToSet(userId, name, sticker, emojis, stickerType = 'png_sticker', options = {}, fileOptions = {}) {
     const opts = {
       qs: options,
     };
@@ -2249,10 +2251,15 @@ class TelegramBot extends EventEmitter {
     opts.qs.name = name;
     opts.qs.emojis = emojis;
     opts.qs.mask_position = stringify(options.mask_position);
+
+    if (typeof stickerType !== 'string' || ['png_sticker', 'tgs_sticker', 'webm_sticker'].indexOf(stickerType) === -1) {
+      return Promise.reject(new Error('stickerType must be a string and the allow types is: png_sticker, tgs_sticker, webm_sticker'));
+    }
+
     try {
-      const sendData = this._formatSendData('png_sticker', pngSticker, fileOptions);
+      const sendData = this._formatSendData(stickerType, sticker, fileOptions);
       opts.formData = sendData[0];
-      opts.qs.png_sticker = sendData[1];
+      opts.qs[stickerType] = sendData[1];
     } catch (ex) {
       return Promise.reject(ex);
     }
