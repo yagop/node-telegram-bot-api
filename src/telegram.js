@@ -17,6 +17,7 @@ const URL = require('url');
 const fs = require('fs');
 const pump = require('pump');
 const deprecate = require('./utils').deprecate;
+const sliceIntoChunks = require('./utils').sliceIntoChunks;
 
 const _messageTypes = [
   'text',
@@ -59,6 +60,8 @@ const _messageTypes = [
 const _deprecatedMessageTypes = [
   'new_chat_participant', 'left_chat_participant'
 ];
+
+const MAX_MESSAGE_SIZE = 4096; /* Max telegram message size */
 
 /**
  * JSON-serialize data. If the provided data is already a String,
@@ -865,8 +868,17 @@ class TelegramBot extends EventEmitter {
    */
   sendMessage(chatId, text, form = {}) {
     form.chat_id = chatId;
-    form.text = text;
-    return this._request('sendMessage', { form });
+    
+    const sub_messages = sliceIntoChunks(text, MAX_MESSAGE_SIZE);
+    let respose = null;
+
+    for ( const message in sub_messages ){
+      form.text = message;
+      respose = this._request('sendMessage', { form });
+    }
+    
+    return respose;
+
   }
 
   /**
