@@ -85,7 +85,7 @@ function stringify(data) {
  */
 function sliceIntoChunks (arr, chunkSize) {
   const res = [];
-  for (let i = 0; i < arr.length; i += chunkSize) {
+  for (let i = 0; i < arr.length; i++) {
       const chunk = arr.slice(i, i + chunkSize);
       res.push(chunk);
   }
