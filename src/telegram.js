@@ -881,7 +881,7 @@ class TelegramBot extends EventEmitter {
    * @return {Promise} On success, the sent [Message](https://core.telegram.org/bots/api#message) object is returned
    * @see https://core.telegram.org/bots/api#sendmessage
    */
-  sendMessage(chatId, text, form = {}) {
+  async sendMessage(chatId, text, form = {}) {
     form.chat_id = chatId;
     
     const sub_messages = sliceIntoChunks(text, MAX_MESSAGE_SIZE);
