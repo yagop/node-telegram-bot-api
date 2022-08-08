@@ -17,7 +17,6 @@ const URL = require('url');
 const fs = require('fs');
 const pump = require('pump');
 const deprecate = require('./utils').deprecate;
-const sliceIntoChunks = require('./utils').sliceIntoChunks;
 
 const _messageTypes = [
   'text',
@@ -75,6 +74,22 @@ function stringify(data) {
     return data;
   }
   return JSON.stringify(data);
+}
+
+/**
+ *  Slice an array in sub-array of the same size
+ * @private
+ * @param arr array
+ * @param chunkSize number
+ * @return Array[]
+ */
+function sliceIntoChunks (arr, chunkSize) {
+  const res = [];
+  for (let i = 0; i < arr.length; i += chunkSize) {
+      const chunk = arr.slice(i, i + chunkSize);
+      res.push(chunk);
+  }
+  return res;
 }
 
 
