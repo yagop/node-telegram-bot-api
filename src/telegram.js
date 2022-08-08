@@ -887,7 +887,7 @@ class TelegramBot extends EventEmitter {
     const sub_messages = sliceIntoChunks(text, MAX_MESSAGE_SIZE);
     let respose = null;
 
-    for ( const message in sub_messages ){
+    for ( const message of sub_messages ){
       form.text = message;
       respose = this._request('sendMessage', { form });
     }
