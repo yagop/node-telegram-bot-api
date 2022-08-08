@@ -889,7 +889,7 @@ class TelegramBot extends EventEmitter {
 
     for ( const message of sub_messages ){
       form.text = message;
-      respose = this._request('sendMessage', { form });
+      respose = await this._request('sendMessage', { form });
     }
     
     return respose;
