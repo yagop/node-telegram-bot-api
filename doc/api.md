@@ -120,7 +120,7 @@ TelegramBot
         * [.getGameHighScores(userId, [options])](#TelegramBot+getGameHighScores) ⇒ <code>Promise</code>
     * _static_
         * [.errors](#TelegramBot.errors) : <code>Object</code>
-        * [.messageTypes](#TelegramBot.messageTypes) : <code>[ &#x27;Array&#x27; ].&lt;String&gt;</code>
+        * [.messageTypes](#TelegramBot.messageTypes) : <code>Array.&lt;String&gt;</code>
 
 <a name="new_TelegramBot_new"></a>
 
@@ -492,7 +492,8 @@ This method will return error 429 in the first 10 minutes after the bot is launc
 Send text message.
 
 **Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
-**Returns**: <code>Promise</code> - On success, the sent [Message](https://core.telegram.org/bots/api#message) object is returned  
+**Returns**: <code>Promise</code> - On success, the sent [Message](https://core.telegram.org/bots/api#message) object is returned.
+If the message is longer than 4096 characters, the function will return the last sent message.  
 **See**: https://core.telegram.org/bots/api#sendmessage  
 
 | Param | Type | Description |
@@ -1677,7 +1678,7 @@ Animated stickers can be added to animated sticker sets and only to them:
 | --- | --- | --- | --- |
 | userId | <code>Number</code> |  | User identifier of sticker set owner |
 | name | <code>String</code> |  | Sticker set name |
-| sticker | <code>String</code> \| <code>stream.Stream</code> \| <code>Buffer</code> |  | Png image with the sticker (must be up to 512 kilobytes in size, dimensions must not exceed 512px, and either width or height must be exactly 512px), [TGS animation](https://core.telegram.org/stickers#animated-sticker-requirements) with the sticker or [WEBM video](https://core.telegram.org/stickers#video-sticker-requirements) with the sticker. |
+| sticker | <code>String</code> \| <code>stream.Stream</code> \| <code>Buffer</code> |  | Png image with the sticker (must be up to 512 kilobytes in size, dimensions must not exceed 512px, and either width or height must be exactly 512px, [TGS animation](https://core.telegram.org/stickers#animated-sticker-requirements) with the sticker or [WEBM video](https://core.telegram.org/stickers#video-sticker-requirements) with the sticker. |
 | emojis | <code>String</code> |  | One or more emoji corresponding to the sticker |
 | stickerType | <code>String</code> | <code>png_sticker</code> | Allow values: `png_sticker`, `tgs_sticker`, or `webm_sticker`. |
 | [options] | <code>Object</code> |  | Additional Telegram query options |
@@ -1749,7 +1750,7 @@ Note: No more than 50 results per query are allowed.
 | Param | Type | Description |
 | --- | --- | --- |
 | inlineQueryId | <code>String</code> | Unique identifier of the query |
-| results | <code>[ &#x27;Array&#x27; ].&lt;InlineQueryResult&gt;</code> | An array of results for the inline query |
+| results | <code>Array.&lt;InlineQueryResult&gt;</code> | An array of results for the inline query |
 | [options] | <code>Object</code> | Additional Telegram query options |
 
 <a name="TelegramBot+answerWebAppQuery"></a>
@@ -1899,7 +1900,7 @@ The different errors the library uses.
 **Kind**: static property of [<code>TelegramBot</code>](#TelegramBot)  
 <a name="TelegramBot.messageTypes"></a>
 
-### TelegramBot.messageTypes : <code>[ &#x27;Array&#x27; ].&lt;String&gt;</code>
+### TelegramBot.messageTypes : <code>Array.&lt;String&gt;</code>
 The types of message updates the library handles.
 
 **Kind**: static property of [<code>TelegramBot</code>](#TelegramBot)  

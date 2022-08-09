@@ -878,7 +878,8 @@ class TelegramBot extends EventEmitter {
    * @param  {Number|String} chatId Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
    * @param  {String} text Text of the message to be sent
    * @param  {Object} [options] Additional Telegram query options
-   * @return {Promise} On success, the sent [Message](https://core.telegram.org/bots/api#message) object is returned
+   * @return {Promise}  On success, the sent [Message](https://core.telegram.org/bots/api#message) object is returned.
+   * If the message is longer than 4096 characters, the function will return the last sent message.
    * @see https://core.telegram.org/bots/api#sendmessage
    */
   async sendMessage(chatId, text, form = {}) {
