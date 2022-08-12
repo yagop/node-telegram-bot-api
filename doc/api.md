@@ -39,6 +39,7 @@ TelegramBot
         * [.logOut([options])](#TelegramBot+logOut) ⇒ <code>Promise</code>
         * [.close([options])](#TelegramBot+close) ⇒ <code>Promise</code>
         * [.sendMessage(chatId, text, [options])](#TelegramBot+sendMessage) ⇒ <code>Promise</code>
+        * [.sendLargeMessage(chatId, text, form)](#TelegramBot+sendLargeMessage) ⇒ <code>Promise</code>
         * [.forwardMessage(chatId, fromChatId, messageId, [options])](#TelegramBot+forwardMessage) ⇒ <code>Promise</code>
         * [.copyMessage(chatId, fromChatId, messageId, [options])](#TelegramBot+copyMessage) ⇒ <code>Promise</code>
         * [.sendPhoto(chatId, photo, [options], [fileOptions])](#TelegramBot+sendPhoto) ⇒ <code>Promise</code>
@@ -120,7 +121,7 @@ TelegramBot
         * [.getGameHighScores(userId, [options])](#TelegramBot+getGameHighScores) ⇒ <code>Promise</code>
     * _static_
         * [.errors](#TelegramBot.errors) : <code>Object</code>
-        * [.messageTypes](#TelegramBot.messageTypes) : <code>[ &#x27;Array&#x27; ].&lt;String&gt;</code>
+        * [.messageTypes](#TelegramBot.messageTypes) : <code>Array.&lt;String&gt;</code>
 
 <a name="new_TelegramBot_new"></a>
 
@@ -500,6 +501,20 @@ Send text message.
 | chatId | <code>Number</code> \| <code>String</code> | Unique identifier for the target chat or username of the target channel (in the format `@channelusername`) |
 | text | <code>String</code> | Text of the message to be sent |
 | [options] | <code>Object</code> | Additional Telegram query options |
+
+<a name="TelegramBot+sendLargeMessage"></a>
+
+### telegramBot.sendLargeMessage(chatId, text, form) ⇒ <code>Promise</code>
+Send text message larger than 4096 characters.
+
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
+**Returns**: <code>Promise</code> - On success all the sent messages are returned as an array  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| chatId | <code>Number</code> \| <code>String</code> | Unique identifier for the target chat or username of the target channel (in the format `@channelusername`) |
+| text | <code>String</code> | Text of the message to be sent |
+| form | <code>Object</code> | Additional Telegram query options |
 
 <a name="TelegramBot+forwardMessage"></a>
 
@@ -1677,7 +1692,7 @@ Animated stickers can be added to animated sticker sets and only to them:
 | --- | --- | --- | --- |
 | userId | <code>Number</code> |  | User identifier of sticker set owner |
 | name | <code>String</code> |  | Sticker set name |
-| sticker | <code>String</code> \| <code>stream.Stream</code> \| <code>Buffer</code> |  | Png image with the sticker (must be up to 512 kilobytes in size, dimensions must not exceed 512px, and either width or height must be exactly 512px), [TGS animation](https://core.telegram.org/stickers#animated-sticker-requirements) with the sticker or [WEBM video](https://core.telegram.org/stickers#video-sticker-requirements) with the sticker. |
+| sticker | <code>String</code> \| <code>stream.Stream</code> \| <code>Buffer</code> |  | Png image with the sticker (must be up to 512 kilobytes in size, dimensions must not exceed 512px, and either width or height must be exactly 512px, [TGS animation](https://core.telegram.org/stickers#animated-sticker-requirements) with the sticker or [WEBM video](https://core.telegram.org/stickers#video-sticker-requirements) with the sticker. |
 | emojis | <code>String</code> |  | One or more emoji corresponding to the sticker |
 | stickerType | <code>String</code> | <code>png_sticker</code> | Allow values: `png_sticker`, `tgs_sticker`, or `webm_sticker`. |
 | [options] | <code>Object</code> |  | Additional Telegram query options |
@@ -1749,7 +1764,7 @@ Note: No more than 50 results per query are allowed.
 | Param | Type | Description |
 | --- | --- | --- |
 | inlineQueryId | <code>String</code> | Unique identifier of the query |
-| results | <code>[ &#x27;Array&#x27; ].&lt;InlineQueryResult&gt;</code> | An array of results for the inline query |
+| results | <code>Array.&lt;InlineQueryResult&gt;</code> | An array of results for the inline query |
 | [options] | <code>Object</code> | Additional Telegram query options |
 
 <a name="TelegramBot+answerWebAppQuery"></a>
@@ -1899,7 +1914,7 @@ The different errors the library uses.
 **Kind**: static property of [<code>TelegramBot</code>](#TelegramBot)  
 <a name="TelegramBot.messageTypes"></a>
 
-### TelegramBot.messageTypes : <code>[ &#x27;Array&#x27; ].&lt;String&gt;</code>
+### TelegramBot.messageTypes : <code>Array.&lt;String&gt;</code>
 The types of message updates the library handles.
 
 **Kind**: static property of [<code>TelegramBot</code>](#TelegramBot)  
