@@ -192,7 +192,7 @@ class TelegramBot extends EventEmitter {
    * @see https://core.telegram.org/bots/api#making-requests
    */
   _buildURL(_path) {
-    return `${this.options.baseApiUrl}/bot${this.token}/${_path}`;
+    return `${this.options.baseApiUrl}/bot${this.token}${this.options.testing?"/test":""}/${_path}`;
   }
 
   /**
