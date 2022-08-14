@@ -137,6 +137,7 @@ Emits `message` when a message arrives.
 | [options.polling] | <code>Boolean</code> \| <code>Object</code> | <code>false</code> | Set true to enable polling or set options.  If a WebHook has been set, it will be deleted automatically. |
 | [options.testing] | <code>Boolean</code> | <code>false</code> | Set true to  work with testing enviroment. When working with the test environment, you may use HTTP links without TLS to test your Web App. |
 | [options.polling.timeout] | <code>String</code> \| <code>Number</code> | <code>10</code> | *Deprecated. Use `options.polling.params` instead*.  Timeout in seconds for long polling. |
+| [options.testEnvironment] | <code>Boolean</code> | <code>false</code> | Set true to  work with test enviroment. When working with the test environment, you may use HTTP links without TLS to test your Web App. |
 | [options.polling.interval] | <code>String</code> \| <code>Number</code> | <code>300</code> | Interval between requests in miliseconds |
 | [options.polling.autoStart] | <code>Boolean</code> | <code>true</code> | Start polling immediately |
 | [options.polling.params] | <code>Object</code> |  | Parameters to be used in polling API requests.  See https://core.telegram.org/bots/api#getupdates for more information. |
