@@ -135,7 +135,7 @@ Emits `message` when a message arrives.
 | token | <code>String</code> |  | Bot Token |
 | [options] | <code>Object</code> |  |  |
 | [options.polling] | <code>Boolean</code> \| <code>Object</code> | <code>false</code> | Set true to enable polling or set options.  If a WebHook has been set, it will be deleted automatically. |
-| [options.testing] | <code>Boolean</code> \| <code>Object</code> | <code>false</code> | Set true to enable to work with webapp testing server. When working with the test environment, you may use HTTP links without TLS to test your Web App. |
+| [options.testing] | <code>Boolean</code> | <code>false</code> | Set true to  work with testing enviroment. When working with the test environment, you may use HTTP links without TLS to test your Web App. |
 | [options.polling.timeout] | <code>String</code> \| <code>Number</code> | <code>10</code> | *Deprecated. Use `options.polling.params` instead*.  Timeout in seconds for long polling. |
 | [options.polling.interval] | <code>String</code> \| <code>Number</code> | <code>300</code> | Interval between requests in miliseconds |
 | [options.polling.autoStart] | <code>Boolean</code> | <code>true</code> | Start polling immediately |
