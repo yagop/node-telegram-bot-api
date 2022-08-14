@@ -119,8 +119,6 @@ class TelegramBot extends EventEmitter {
    * @param {Object} [options]
    * @param {Boolean|Object} [options.polling=false] Set true to enable polling or set options.
    *  If a WebHook has been set, it will be deleted automatically.
-   * @param {Boolean} [options.testing=false] Set true to  work with testing enviroment.
-   * When working with the test environment, you may use HTTP links without TLS to test your Web App.
    * @param {String|Number} [options.polling.timeout=10] *Deprecated. Use `options.polling.params` instead*.
    *  Timeout in seconds for long polling.
    * @param {Boolean} [options.testEnvironment=false] Set true to  work with test enviroment.
@@ -195,8 +193,8 @@ class TelegramBot extends EventEmitter {
    * @private
    * @see https://core.telegram.org/bots/api#making-requests
    */
-  _buildURL(_path) {  
-    return `${this.options.baseApiUrl}/bot${this.token}${ this.options.testEnvironment ? '/test' : ''  }/${_path}`;
+  _buildURL(_path) {
+    return `${this.options.baseApiUrl}/bot${this.token}${this.options.testEnvironment ? '/test' : ''}/${_path}`;
   }
 
   /**
