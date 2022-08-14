@@ -119,7 +119,7 @@ class TelegramBot extends EventEmitter {
    * @param {Object} [options]
    * @param {Boolean|Object} [options.polling=false] Set true to enable polling or set options.
    *  If a WebHook has been set, it will be deleted automatically.
-   * @param {Boolean|Object} [options.testing=false] Set true to enable work with testing enviroment.
+   * @param {Boolean} [options.testing=false] Set true to enable work with testing enviroment.
    * When working with the test environment, you may use HTTP links without TLS to test your Web App.
    * @param {String|Number} [options.polling.timeout=10] *Deprecated. Use `options.polling.params` instead*.
    *  Timeout in seconds for long polling.
