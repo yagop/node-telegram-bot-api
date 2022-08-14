@@ -136,6 +136,7 @@ Emits `message` when a message arrives.
 | [options] | <code>Object</code> |  |  |
 | [options.polling] | <code>Boolean</code> \| <code>Object</code> | <code>false</code> | Set true to enable polling or set options.  If a WebHook has been set, it will be deleted automatically. |
 | [options.polling.timeout] | <code>String</code> \| <code>Number</code> | <code>10</code> | *Deprecated. Use `options.polling.params` instead*.  Timeout in seconds for long polling. |
+| [options.testEnvironment] | <code>Boolean</code> | <code>false</code> | Set true to  work with test enviroment. When working with the test environment, you may use HTTP links without TLS to test your Web App. |
 | [options.polling.interval] | <code>String</code> \| <code>Number</code> | <code>300</code> | Interval between requests in miliseconds |
 | [options.polling.autoStart] | <code>Boolean</code> | <code>true</code> | Start polling immediately |
 | [options.polling.params] | <code>Object</code> |  | Parameters to be used in polling API requests.  See https://core.telegram.org/bots/api#getupdates for more information. |
@@ -1677,7 +1678,7 @@ Animated stickers can be added to animated sticker sets and only to them:
 | --- | --- | --- | --- |
 | userId | <code>Number</code> |  | User identifier of sticker set owner |
 | name | <code>String</code> |  | Sticker set name |
-| sticker | <code>String</code> \| <code>stream.Stream</code> \| <code>Buffer</code> |  | Png image with the sticker (must be up to 512 kilobytes in size, dimensions must not exceed 512px, and either width or height must be exactly 512px), [TGS animation](https://core.telegram.org/stickers#animated-sticker-requirements) with the sticker or [WEBM video](https://core.telegram.org/stickers#video-sticker-requirements) with the sticker. |
+| sticker | <code>String</code> \| <code>stream.Stream</code> \| <code>Buffer</code> |  | Png image with the sticker (must be up to 512 kilobytes in size, dimensions must not exceed 512px, and either width or height must be exactly 512px, [TGS animation](https://core.telegram.org/stickers#animated-sticker-requirements) with the sticker or [WEBM video](https://core.telegram.org/stickers#video-sticker-requirements) with the sticker. |
 | emojis | <code>String</code> |  | One or more emoji corresponding to the sticker |
 | stickerType | <code>String</code> | <code>png_sticker</code> | Allow values: `png_sticker`, `tgs_sticker`, or `webm_sticker`. |
 | [options] | <code>Object</code> |  | Additional Telegram query options |
