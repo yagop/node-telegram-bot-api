@@ -1694,7 +1694,7 @@ describe('TelegramBot', function telegramSuite() {
         assert.ok(is.object(resp));
         assert.strictEqual(resp.name.toLowerCase(), STICKER_SET_NAME);
         assert.ok(is.string(resp.title));
-        assert.ok(is.boolean(resp.contains_masks));
+        assert.ok(is.string(resp.sticker_type));
         assert.ok(is.array(resp.stickers));
       });
     });
@@ -1706,8 +1706,30 @@ describe('TelegramBot', function telegramSuite() {
         assert.ok(is.object(resp));
         assert.strictEqual(resp.name.toLowerCase(), stickerPackName.toLowerCase());
         assert.ok(is.string(resp.title));
-        assert.ok(is.boolean(resp.contains_masks));
+        assert.ok(is.string(resp.sticker_type));
         assert.ok(is.array(resp.stickers));
+      });
+    });
+  });
+
+  describe('#getCustomEmojiStickers', function getCustomEmojiStickersSuite() {
+    const CHERRY_EMOJI_STICKERS_ID = ['5380109565226391871', '5431711346724968789'];
+    const STICKER_EMOJI_SET_NAME = 'CherryEmoji';
+
+    it('should get the custom emoji stickers', function test() {
+      return bot.getCustomEmojiStickers([CHERRY_EMOJI_STICKERS_ID[0]]).then(resp => {
+        assert.ok(is.array(resp));
+        assert.ok(is.object(resp[0]));
+        assert.ok(is.string(resp[0].set_name) && resp[0].set_name === STICKER_EMOJI_SET_NAME);
+        assert.ok(resp[0].custom_emoji_id === CHERRY_EMOJI_STICKERS_ID[0]);
+      });
+    });
+    it('should get 2 custom emoji stickers', function test() {
+      return bot.getCustomEmojiStickers(CHERRY_EMOJI_STICKERS_ID).then(resp => {
+        assert.ok(is.array(resp) && resp.length === 2);
+        assert.ok(is.object(resp[1]));
+        assert.ok(is.string(resp[1].set_name) && resp[1].set_name === STICKER_EMOJI_SET_NAME);
+        assert.ok(resp[1].custom_emoji_id === CHERRY_EMOJI_STICKERS_ID[1]);
       });
     });
   });
