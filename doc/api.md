@@ -103,6 +103,7 @@ TelegramBot
         * [.deleteMessage(chatId, messageId, [options])](#TelegramBot+deleteMessage) ⇒ <code>Promise</code>
         * [.sendSticker(chatId, sticker, [options], [fileOptions])](#TelegramBot+sendSticker) ⇒ <code>Promise</code>
         * [.getStickerSet(name, [options])](#TelegramBot+getStickerSet) ⇒ <code>Promise</code>
+        * [.getCustomEmojiStickers(custom_emoji_ids, [options])](#TelegramBot+getCustomEmojiStickers) ⇒ <code>Promise</code>
         * [.uploadStickerFile(userId, pngSticker, [options], [fileOptions])](#TelegramBot+uploadStickerFile) ⇒ <code>Promise</code>
         * [.createNewStickerSet(userId, name, title, pngSticker, emojis, [options], [fileOptions])](#TelegramBot+createNewStickerSet) ⇒ <code>Promise</code>
         * [.addStickerToSet(userId, name, sticker, emojis, stickerType, [options], [fileOptions])](#TelegramBot+addStickerToSet) ⇒ <code>Promise</code>
@@ -1619,10 +1620,24 @@ Use this method to get a sticker set.
 | name | <code>String</code> | Name of the sticker set |
 | [options] | <code>Object</code> | Additional Telegram query options |
 
+<a name="TelegramBot+getCustomEmojiStickers"></a>
+
+### telegramBot.getCustomEmojiStickers(custom_emoji_ids, [options]) ⇒ <code>Promise</code>
+Use this method to get information about custom emoji stickers by their identifiers.
+
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
+**Returns**: <code>Promise</code> - Array of [Sticker](https://core.telegram.org/bots/api#sticker) objects.  
+**See**: https://core.telegram.org/bots/api#getcustomemojistickers  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| custom_emoji_ids | <code>Array</code> | List of custom emoji identifiers. At most 200 custom emoji identifiers can be specified. |
+| [options] | <code>Object</code> | Additional Telegram query options |
+
 <a name="TelegramBot+uploadStickerFile"></a>
 
 ### telegramBot.uploadStickerFile(userId, pngSticker, [options], [fileOptions]) ⇒ <code>Promise</code>
-Use this method to upload a .png file with a sticker for later use in   *createNewStickerSet* and   *addStickerToSet* methods (can be used multiple
+Use this method to upload a .png file with a sticker for later use in *createNewStickerSet* and *addStickerToSet* methods (can be used multiple
 times).
 
 **Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
