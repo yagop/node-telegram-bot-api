@@ -2160,7 +2160,20 @@ class TelegramBot extends EventEmitter {
   }
 
   /**
-   * Use this method to upload a .png file with a sticker for later use in   *createNewStickerSet* and   *addStickerToSet* methods (can be used multiple
+   * Use this method to get information about custom emoji stickers by their identifiers.
+   *
+   * @param  {Array} custom_emoji_ids List of custom emoji identifiers. At most 200 custom emoji identifiers can be specified.
+   * @param  {Object} [options] Additional Telegram query options
+   * @return {Promise} Array of [Sticker](https://core.telegram.org/bots/api#sticker) objects.
+   * @see https://core.telegram.org/bots/api#getcustomemojistickers
+   */
+  getCustomEmojiStickers(customEmojiIds, form = {}) {
+    form.custom_emoji_ids = stringify(customEmojiIds);
+    return this._request('getCustomEmojiStickers', { form });
+  }
+
+  /**
+   * Use this method to upload a .png file with a sticker for later use in *createNewStickerSet* and *addStickerToSet* methods (can be used multiple
    * times).
    *
    * @param  {Number} userId User identifier of sticker file owner

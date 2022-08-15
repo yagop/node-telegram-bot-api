@@ -3,30 +3,37 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [0.59.0][0.59.0] - 2022-07-19
+## [0.59.0][0.59.0] - 2022-08-15
 
-1. Remove dependencies: (@danielperez9430)
+1. Support Telegrm Bot API v6.3 (@danielperez9430)
+ * getCustomEmojiStickers
+
+2. Support test enviroment (@tinsaeDev & @kamikazechaser)
+
+3. Remove dependencies: (@danielperez9430)
    * Remove *bluebird* => Use NodeJS Native Promises
    * Remove *depd* => Use node native deprecate util for warnings
    * Remove contributor dev dependency and add list of contributors in the readme
 
-2. Remove legacy methods: (@danielperez9430)
+4. Remove legacy methods: (@danielperez9430)
   * getChatMembersCount
   * kickChatMember
 
-3. Docs: (@danielperez9430)
- * Update the docs of functions
- * Order functions follow the Telegram bot API docs in src/telegram.js
+5. Docs: (@danielperez9430)
+ * Update the docs of the methods
+ * Order methods follow the Telegram bot API docs in src/telegram.js
+ * Update README
 
-4. Fix: (@danielperez9430)
+6. Fix: (@danielperez9430)
  * addStickerToSet() -> Allow to send tgs_sticker + webm_sticker
  * Remove mandatory param “start_parameter” from sendInvoice, because in the docs is a optional param
- * Fix some tests
+ * getStickerSet test fix deprecated response value "contains_masks" change to "sticker_type"
+ * Fix some other tests
 
-5. New Test: (@danielperez9430)
+7. New Test: (@danielperez9430)
  * deleteStickerFromSet
  * setStickerPositionInSet
-
+ * getCustomEmojiStickers
 
 ## [0.58.0][0.58.0] - 2022-06-22
 
