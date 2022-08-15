@@ -5,7 +5,7 @@
 Node.js module to interact with the official [Telegram Bot API](https://core.telegram.org/bots/api).
 
 
-[![Bot API](https://img.shields.io/badge/Bot%20API-v.6.1-00aced.svg?style=flat-square&logo=telegram)](https://core.telegram.org/bots/api)
+[![Bot API](https://img.shields.io/badge/Bot%20API-v.6.2-00aced.svg?style=flat-square&logo=telegram)](https://core.telegram.org/bots/api)
 [![npm package](https://img.shields.io/npm/v/node-telegram-bot-api?logo=npm&style=flat-square)](https://www.npmjs.org/package/node-telegram-bot-api)
 [![Build Status](https://img.shields.io/travis/yagop/node-telegram-bot-api/master?style=flat-square&logo=travis)](https://travis-ci.org/yagop/node-telegram-bot-api)
 [![Coverage Status](https://img.shields.io/codecov/c/github/yagop/node-telegram-bot-api?style=flat-square&logo=codecov)](https://codecov.io/gh/yagop/node-telegram-bot-api)
@@ -16,13 +16,20 @@ Node.js module to interact with the official [Telegram Bot API](https://core.tel
 
 </div>
 
-## Install
+## 📦 Install
 
 ```sh
 npm i node-telegram-bot-api
 ```
 
-## Usage
+<br/>
+
+> ✍️ **Note:** If you use Typescript you can install this package that contains type definitions for this library
+>```sh
+>npm install --save @types/node-telegram-bot-api
+>```
+
+## 🚀 Usage
 
 ```js
 const TelegramBot = require('node-telegram-bot-api');
@@ -56,7 +63,7 @@ bot.on('message', (msg) => {
 });
 ```
 
-## Documentation
+## 📚 Documentation
 
 * [Usage][usage]
 * [Examples][examples]
@@ -71,7 +78,7 @@ Code for the latest release resides on the **release** branch.
 Experimental features reside on the **experimental** branch._
 
 
-## Community
+## 💭 Community
 
 We thank all the developers in the Open-Source community who continuously
 take their time and effort in advancing this project.
@@ -93,7 +100,7 @@ Some things built using this library that might interest you:
 * [beetube-bot](https://github.com/kodjunkie/beetube-bot): A telegram bot for music, videos, movies, EDM tracks, torrent downloads, files and more.
 
 
-## Contributors
+## 👥 Contributors
 
 <p align="center">
   <a href="https://github.com/yagop/node-telegram-bot-api/graphs/contributors">
