@@ -82,11 +82,11 @@ function stringify(data) {
  * @param chunkSize number
  * @return Array[]
  */
- function sliceIntoChunks (arr, chunkSize) {
+function sliceIntoChunks(arr, chunkSize) {
   const res = [];
   for (let i = 0; i < arr.length; i += chunkSize) {
-      const chunk = arr.slice(i, i + chunkSize);
-      res.push(chunk);
+    const chunk = arr.slice(i, i + chunkSize);
+    res.push(chunk);
   }
   return res;
 }
@@ -892,18 +892,18 @@ class TelegramBot extends EventEmitter {
    * @param  {Object} form Additional Telegram query options
    * @return {Promise} On success all the sent messages are returned as an array
    */
-  sendLargeMessage(chatId, text, form = {}){
+  sendLargeMessage(chatId, text, form = {}) {
     form.chat_id = chatId;
 
-    const sub_messages = sliceIntoChunks(text, MAX_MESSAGE_SIZE);
-    let responses = [];
+    const subMessages = sliceIntoChunks(text, MAX_MESSAGE_SIZE);
+    const responses = [];
 
-    for ( const message of sub_messages ){
+    for (const message of subMessages) {
       form.text = message;
-      const response_promise = this._request('sendMessage', { form });
-      responses.push(response_promise);
+      const resPromise = this._request('sendMessage', { form });
+      responses.push(resPromise);
     }
-    
+
     return Promise.all(responses);
   }
 
