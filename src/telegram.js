@@ -887,10 +887,10 @@ class TelegramBot extends EventEmitter {
 
   /**
    * Send text message larger than 4096 characters.
-   * @param {Number|String} chatId Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
-   * @param {String} text Text of the message to be sent
-   * @param {Object} form Additional Telegram query options
-   * @returns {Promise} On success all the sent messages are returned as an array
+   * @param  {Number|String} chatId Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
+   * @param  {String} text Text of the message to be sent
+   * @param  {Object} form Additional Telegram query options
+   * @return {Promise} On success all the sent messages are returned as an array
    */
   sendLargeMessage(chatId, text, form = {}){
     form.chat_id = chatId;
