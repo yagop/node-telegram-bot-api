@@ -26,7 +26,7 @@ npm i node-telegram-bot-api
 
 > ✍️ **Note:** If you use Typescript you can install this package that contains type definitions for this library
 >```sh
->npm install --save @types/node-telegram-bot-api
+>npm install --save-dev @types/node-telegram-bot-api
 >```
 
 ## 🚀 Usage
