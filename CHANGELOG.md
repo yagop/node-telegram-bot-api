@@ -5,7 +5,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [0.59.0][0.59.0] - 2022-08-15
 
-1. Support Telegrm Bot API v6.3 (@danielperez9430)
+1. Support Telegram Bot API v6.2 (@danielperez9430)
  * getCustomEmojiStickers
 
 2. Support test enviroment (@tinsaeDev & @kamikazechaser)
