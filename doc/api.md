@@ -1137,7 +1137,6 @@ Use this method to send an invoice.
 | description | <code>String</code> | product description |
 | payload | <code>String</code> | Bot defined invoice payload |
 | providerToken | <code>String</code> | Payments provider token |
-| startParameter | <code>String</code> | Deep-linking parameter |
 | currency | <code>String</code> | Three-letter ISO 4217 currency code |
 | prices | <code>Array</code> | Breakdown of prices |
 | [options] | <code>Object</code> | Additional Telegram query options |
