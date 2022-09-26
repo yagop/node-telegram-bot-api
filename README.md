@@ -69,12 +69,12 @@ bot.on('message', (msg) => {
 * [Examples][examples]
 * [Tutorials][tutorials]
 * [Help Information][help]
-* API Reference [api-release] / [development][api-dev] / [experimental][api-experimental])
+* API Reference: ([api-release](../master/doc/api.md) / [development][api-dev] / [experimental][api-experimental])
 * [Contributing to the Project][contributing]
 * [Experimental Features][experimental]
 
-_**Note**: Development is done against the **master** branch.
-Code for the latest release resides on the **release** branch.
+_**Note**: Development is done against the **development** branch.
+Code for the latest release resides on the **master** branch.
 Experimental features reside on the **experimental** branch._
 
 
