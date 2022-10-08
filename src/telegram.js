@@ -212,6 +212,32 @@ class TelegramBot extends EventEmitter {
   }
 
   /**
+   * Fix 'entities' or 'caption_entities' or 'explanation_entities' parameter by making it JSON-serialized, as
+   * required by the Telegram Bot API
+   * @param {Object} obj Object;
+   * @private
+   * @see https://core.telegram.org/bots/api#sendmessage
+   * @see https://core.telegram.org/bots/api#copymessage
+   * @see https://core.telegram.org/bots/api#sendpoll
+   */
+  _fixEntitiesField(obj) {
+    const entities = obj.entities;
+    const captionEntities = obj.caption_entities;
+    const explanationEntities = obj.explanation_entities;
+    if (entities && typeof entities !== 'string') {
+      obj.entities = stringify(entities);
+    }
+
+    if (captionEntities && typeof captionEntities !== 'string') {
+      obj.caption_entities = stringify(captionEntities);
+    }
+
+    if (explanationEntities && typeof explanationEntities !== 'string') {
+      obj.explanation_entities = stringify(explanationEntities);
+    }
+  }
+
+  /**
    * Make request against the API
    * @param  {String} _path API endpoint
    * @param  {Object} [options]
@@ -229,6 +255,7 @@ class TelegramBot extends EventEmitter {
 
     if (options.form) {
       this._fixReplyMarkup(options.form);
+      this._fixEntitiesField(options.form);
     }
     if (options.qs) {
       this._fixReplyMarkup(options.qs);
