@@ -1917,7 +1917,7 @@ class TelegramBot extends EventEmitter {
    * @param {Number|String} chatId Unique identifier for the target group or username of the target supergroup (in the format @supergroupusername)
    * @param {Number} messageThreadId Unique identifier for the target message thread of the forum topic
    * @param {String} name New topic name, 1-128 characters
-   * @param {String} iconCustomEmojiId New unique identifier of the custom emoji shown as the topic icon. Use [getForumTopicIconStickers](https://core.telegram.org/bots/api#getforumtopiciconstickers) to get all allowed custom emoji identifiers
+   * @param {String} iconCustomEmojiId New unique identifier of the custom emoji shown as the topic icon. Use getForumTopicIconStickers to get all allowed custom emoji identifiers
    * @param {Object} [options] Additional Telegram query options
    * @return {Promise} True on success
    * @see https://core.telegram.org/bots/api#editforumtopic

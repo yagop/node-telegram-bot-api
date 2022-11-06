@@ -1485,7 +1485,8 @@ describe('TelegramBot', function telegramSuite() {
           can_pin_messages: true,
           can_promote_members: false,
           can_manage_video_chats: false,
-          is_anonymous: false
+          is_anonymous: false,
+          can_manage_topics: false,
         }));
       });
     });
