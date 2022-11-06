@@ -87,6 +87,13 @@ TelegramBot
         * [.getChatMember(chatId, userId, [options])](#TelegramBot+getChatMember) ⇒ <code>Promise</code>
         * [.setChatStickerSet(chatId, stickerSetName, [options])](#TelegramBot+setChatStickerSet) ⇒ <code>Promise</code>
         * [.deleteChatStickerSet(chatId, [options])](#TelegramBot+deleteChatStickerSet) ⇒ <code>Promise</code>
+        * [.getForumTopicIconStickers(chatId, [options])](#TelegramBot+getForumTopicIconStickers) ⇒ <code>Promise</code>
+        * [.createForumTopic(chatId, name, [options])](#TelegramBot+createForumTopic)
+        * [.editForumTopic(chatId, messageThreadId, name, iconCustomEmojiId, [options])](#TelegramBot+editForumTopic) ⇒ <code>Promise</code>
+        * [.closeForumTopic(chatId, messageThreadId, [options])](#TelegramBot+closeForumTopic) ⇒ <code>Promise</code>
+        * [.reopenForumTopic(chatId, messageThreadId, [options])](#TelegramBot+reopenForumTopic) ⇒ <code>Promise</code>
+        * [.deleteForumTopic(chatId, messageThreadId, [options])](#TelegramBot+deleteForumTopic) ⇒ <code>Promise</code>
+        * [.unpinAllForumTopicMessages(chatId, messageThreadId, [options])](#TelegramBot+unpinAllForumTopicMessages) ⇒ <code>Promise</code>
         * [.answerCallbackQuery(callbackQueryId, [options])](#TelegramBot+answerCallbackQuery) ⇒ <code>Promise</code>
         * [.setMyCommands(commands, [options])](#TelegramBot+setMyCommands) ⇒ <code>Promise</code>
         * [.deleteMyCommands([options])](#TelegramBot+deleteMyCommands) ⇒ <code>Promise</code>
@@ -1363,6 +1370,119 @@ Use the field `can_set_sticker_set` optionally returned in [getChat](https://cor
 | Param | Type | Description |
 | --- | --- | --- |
 | chatId | <code>Number</code> \| <code>String</code> | Unique identifier for the target group or username of the target supergroup (in the format @supergroupusername) |
+| [options] | <code>Object</code> | Additional Telegram query options |
+
+<a name="TelegramBot+getForumTopicIconStickers"></a>
+
+### telegramBot.getForumTopicIconStickers(chatId, [options]) ⇒ <code>Promise</code>
+Use this method to get custom emoji stickers, which can be used as a forum topic icon by any user.
+
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
+**Returns**: <code>Promise</code> - Array of [Sticker](https://core.telegram.org/bots/api#sticker) objects  
+**See**: https://core.telegram.org/bots/api#getforumtopiciconstickers  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| chatId | <code>Number</code> \| <code>String</code> | Unique identifier for the target group or username of the target supergroup (in the format @supergroupusername) |
+| [options] | <code>Object</code> | Additional Telegram query options |
+
+<a name="TelegramBot+createForumTopic"></a>
+
+### telegramBot.createForumTopic(chatId, name, [options])
+Use this method to create a topic in a forum supergroup chat.
+The bot must be an administrator in the chat for this to work and must have the can_manage_topics administrator rights.
+
+Returns information about the created topic as a [ForumTopic](https://core.telegram.org/bots/api#forumtopic) object.
+
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
+**See**: https://core.telegram.org/bots/api#createforumtopic  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| chatId | <code>Number</code> \| <code>String</code> | Unique identifier for the target group or username of the target supergroup (in the format @supergroupusername) |
+| name | <code>String</code> | Topic name, 1-128 characters |
+| [options] | <code>Object</code> | Additional Telegram query options |
+
+<a name="TelegramBot+editForumTopic"></a>
+
+### telegramBot.editForumTopic(chatId, messageThreadId, name, iconCustomEmojiId, [options]) ⇒ <code>Promise</code>
+Use this method to edit name and icon of a topic in a forum supergroup chat.
+The bot must be an administrator in the chat for this to work and must have can_manage_topics administrator rights, unless it is the creator of the topic.
+
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
+**Returns**: <code>Promise</code> - True on success  
+**See**: https://core.telegram.org/bots/api#editforumtopic  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| chatId | <code>Number</code> \| <code>String</code> | Unique identifier for the target group or username of the target supergroup (in the format @supergroupusername) |
+| messageThreadId | <code>Number</code> | Unique identifier for the target message thread of the forum topic |
+| name | <code>String</code> | New topic name, 1-128 characters |
+| iconCustomEmojiId | <code>String</code> | New unique identifier of the custom emoji shown as the topic icon. Use [getForumTopicIconStickers](https://core.telegram.org/bots/api#getforumtopiciconstickers) to get all allowed custom emoji identifiers |
+| [options] | <code>Object</code> | Additional Telegram query options |
+
+<a name="TelegramBot+closeForumTopic"></a>
+
+### telegramBot.closeForumTopic(chatId, messageThreadId, [options]) ⇒ <code>Promise</code>
+Use this method to close an open topic in a forum supergroup chat.
+The bot must be an administrator in the chat for this to work and must have the can_manage_topics administrator rights, unless it is the creator of the topic.
+
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
+**Returns**: <code>Promise</code> - True on success  
+**See**: https://core.telegram.org/bots/api#closeforumtopic  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| chatId | <code>Number</code> \| <code>String</code> | Unique identifier for the target group or username of the target supergroup (in the format @supergroupusername) |
+| messageThreadId | <code>Number</code> | Unique identifier for the target message thread of the forum topic |
+| [options] | <code>Object</code> | Additional Telegram query options |
+
+<a name="TelegramBot+reopenForumTopic"></a>
+
+### telegramBot.reopenForumTopic(chatId, messageThreadId, [options]) ⇒ <code>Promise</code>
+Use this method to reopen a closed topic in a forum supergroup chat.
+The bot must be an administrator in the chat for this to work and must have the can_manage_topics administrator rights, unless it is the creator of the topic.
+
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
+**Returns**: <code>Promise</code> - True on success  
+**See**: https://core.telegram.org/bots/api#reopenforumtopic  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| chatId | <code>Number</code> \| <code>String</code> | Unique identifier for the target group or username of the target supergroup (in the format @supergroupusername) |
+| messageThreadId | <code>Number</code> | Unique identifier for the target message thread of the forum topic |
+| [options] | <code>Object</code> | Additional Telegram query options |
+
+<a name="TelegramBot+deleteForumTopic"></a>
+
+### telegramBot.deleteForumTopic(chatId, messageThreadId, [options]) ⇒ <code>Promise</code>
+Use this method to delete a forum topic along with all its messages in a forum supergroup chat.
+The bot must be an administrator in the chat for this to work and must have the can_delete_messages administrator rights.
+
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
+**Returns**: <code>Promise</code> - True on success  
+**See**: https://core.telegram.org/bots/api#deleteforumtopic  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| chatId | <code>Number</code> \| <code>String</code> | Unique identifier for the target group or username of the target supergroup (in the format @supergroupusername) |
+| messageThreadId | <code>Number</code> | Unique identifier for the target message thread of the forum topic |
+| [options] | <code>Object</code> | Additional Telegram query options |
+
+<a name="TelegramBot+unpinAllForumTopicMessages"></a>
+
+### telegramBot.unpinAllForumTopicMessages(chatId, messageThreadId, [options]) ⇒ <code>Promise</code>
+Use this method to clear the list of pinned messages in a forum topic.
+The bot must be an administrator in the chat for this to work and must have the can_pin_messages administrator right in the supergroup.
+
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
+**Returns**: <code>Promise</code> - True on success  
+**See**: https://core.telegram.org/bots/api#unpinallforumtopicmessages  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| chatId | <code>Number</code> \| <code>String</code> | Unique identifier for the target group or username of the target supergroup (in the format @supergroupusername) |
+| messageThreadId | <code>Number</code> | Unique identifier for the target message thread of the forum topic |
 | [options] | <code>Object</code> | Additional Telegram query options |
 
 <a name="TelegramBot+answerCallbackQuery"></a>
