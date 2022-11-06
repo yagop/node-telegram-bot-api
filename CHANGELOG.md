@@ -3,6 +3,20 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [0.60.0][0.60.0] - 2022-10-06
+
+1. Support Telegram Bot API v6.3 (@danielperez9430)
+ * createForumTopic
+ * closeForumTopic
+ * reopenForumTopic
+ * deleteForumTopic
+ * unpinAllForumTopicMessages
+ * getForumTopicIconStickers
+
+2. Fix test getMyDefaultAdministratorRights (@danielperez9430)
+
+3. Fix parse entities - (@toniop99)
+
 ## [0.59.0][0.59.0] - 2022-08-15
 
 1. Support Telegram Bot API v6.2 (@danielperez9430)

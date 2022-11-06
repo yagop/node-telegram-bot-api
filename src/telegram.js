@@ -1881,6 +1881,121 @@ class TelegramBot extends EventEmitter {
   }
 
   /**
+   * Use this method to get custom emoji stickers, which can be used as a forum topic icon by any user.
+   *
+   * @param  {Number|String} chatId Unique identifier for the target group or username of the target supergroup (in the format @supergroupusername)
+   * @param  {Object} [options] Additional Telegram query options
+   * @return {Promise} Array of [Sticker](https://core.telegram.org/bots/api#sticker) objects
+   * @see https://core.telegram.org/bots/api#getforumtopiciconstickers
+   */
+  getForumTopicIconStickers(chatId, form = {}) {
+    form.chat_id = chatId;
+    return this._request('getForumTopicIconStickers', { form });
+  }
+
+  /**
+   * Use this method to create a topic in a forum supergroup chat.
+   * The bot must be an administrator in the chat for this to work and must have the can_manage_topics administrator rights.
+   *
+   * Returns information about the created topic as a [ForumTopic](https://core.telegram.org/bots/api#forumtopic) object.
+   *
+   * @param  {Number|String} chatId Unique identifier for the target group or username of the target supergroup (in the format @supergroupusername)
+   * @param  {String} name Topic name, 1-128 characters
+   * @param  {Object} [options] Additional Telegram query options
+   * @see https://core.telegram.org/bots/api#createforumtopic
+   */
+  createForumTopic(chatId, name, form = {}) {
+    form.chat_id = chatId;
+    form.name = name;
+    return this._request('createForumTopic', { form });
+  }
+
+  /**
+   * Use this method to edit name and icon of a topic in a forum supergroup chat.
+   * The bot must be an administrator in the chat for this to work and must have can_manage_topics administrator rights, unless it is the creator of the topic.
+   *
+   * @param {Number|String} chatId Unique identifier for the target group or username of the target supergroup (in the format @supergroupusername)
+   * @param {Number} messageThreadId Unique identifier for the target message thread of the forum topic
+   * @param {String} name New topic name, 1-128 characters
+   * @param {String} iconCustomEmojiId New unique identifier of the custom emoji shown as the topic icon. Use getForumTopicIconStickers to get all allowed custom emoji identifiers
+   * @param {Object} [options] Additional Telegram query options
+   * @return {Promise} True on success
+   * @see https://core.telegram.org/bots/api#editforumtopic
+   */
+  editForumTopic(chatId, messageThreadId, name, iconCustomEmojiId, form = {}) {
+    form.chat_id = chatId;
+    form.message_thread_id = messageThreadId;
+    form.name = name;
+    form.icon_custom_emoji_id = iconCustomEmojiId;
+    return this._request('editForumTopic', { form });
+  }
+
+  /**
+   * Use this method to close an open topic in a forum supergroup chat.
+   * The bot must be an administrator in the chat for this to work and must have the can_manage_topics administrator rights, unless it is the creator of the topic.
+   *
+   * @param {Number|String} chatId Unique identifier for the target group or username of the target supergroup (in the format @supergroupusername)
+   * @param {Number} messageThreadId Unique identifier for the target message thread of the forum topic
+   * @param {Object} [options] Additional Telegram query options
+   * @return {Promise} True on success
+   * @see https://core.telegram.org/bots/api#closeforumtopic
+   */
+  closeForumTopic(chatId, messageThreadId, form = {}) {
+    form.chat_id = chatId;
+    form.message_thread_id = messageThreadId;
+    return this._request('closeForumTopic', { form });
+  }
+
+  /**
+   * Use this method to reopen a closed topic in a forum supergroup chat.
+   * The bot must be an administrator in the chat for this to work and must have the can_manage_topics administrator rights, unless it is the creator of the topic.
+   *
+   * @param {Number|String} chatId Unique identifier for the target group or username of the target supergroup (in the format @supergroupusername)
+   * @param {Number} messageThreadId Unique identifier for the target message thread of the forum topic
+   * @param {Object} [options] Additional Telegram query options
+   * @return {Promise} True on success
+   * @see https://core.telegram.org/bots/api#reopenforumtopic
+   */
+  reopenForumTopic(chatId, messageThreadId, form = {}) {
+    form.chat_id = chatId;
+    form.message_thread_id = messageThreadId;
+    return this._request('reopenForumTopic', { form });
+  }
+
+  /**
+   * Use this method to delete a forum topic along with all its messages in a forum supergroup chat.
+   * The bot must be an administrator in the chat for this to work and must have the can_delete_messages administrator rights.
+   *
+   * @param {Number|String} chatId Unique identifier for the target group or username of the target supergroup (in the format @supergroupusername)
+   * @param {Number} messageThreadId Unique identifier for the target message thread of the forum topic
+   * @param {Object} [options] Additional Telegram query options
+   * @return {Promise} True on success
+   * @see https://core.telegram.org/bots/api#deleteforumtopic
+   */
+  deleteForumTopic(chatId, messageThreadId, form = {}) {
+    form.chat_id = chatId;
+    form.message_thread_id = messageThreadId;
+    return this._request('deleteForumTopic', { form });
+  }
+
+  /**
+   * Use this method to clear the list of pinned messages in a forum topic.
+   * The bot must be an administrator in the chat for this to work and must have the can_pin_messages administrator right in the supergroup.
+   *
+   * @param {Number|String} chatId Unique identifier for the target group or username of the target supergroup (in the format @supergroupusername)
+   * @param {Number} messageThreadId Unique identifier for the target message thread of the forum topic
+   * @param {Object} [options] Additional Telegram query options
+   * @return {Promise} True on success
+   * @see https://core.telegram.org/bots/api#unpinallforumtopicmessages
+   */
+  unpinAllForumTopicMessages(chatId, messageThreadId, form = {}) {
+    form.chat_id = chatId;
+    form.message_thread_id = messageThreadId;
+    return this._request('unpinAllForumTopicMessages', { form });
+  }
+
+
+  /**
    * Use this method to send answers to callback queries sent from
    * [inline keyboards](https://core.telegram.org/bots#inline-keyboards-and-on-the-fly-updating).
    *
