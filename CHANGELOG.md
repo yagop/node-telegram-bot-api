@@ -14,7 +14,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 2. Minor changes:
  * The parameters `name` and `icon_custom_emoji_id` of the method `editForumTopic` are now optional.
- 
+ * Fix add thumb in sendAudio, sendVideo and sendVideoNote
 ## [0.60.0][0.60.0] - 2022-10-06
 
 1. Support Telegram Bot API v6.3 (@danielperez9430)

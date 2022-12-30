@@ -237,6 +237,26 @@ class TelegramBot extends EventEmitter {
     }
   }
 
+  _fixAddFileThumb(options, opts) {
+    if (options.thumb) {
+      if (opts.formData === null) {
+        opts.formData = {};
+      }
+
+      try {
+        const attachName = 'photo';
+        const [formData] = this._formatSendData(attachName, options.thumb.replace('attach://', ''));
+
+        if (formData) {
+          opts.formData[attachName] = formData[attachName];
+          opts.qs.thumb = `attach://${attachName}`;
+        }
+      } catch (ex) {
+        throw Promise.reject(ex);
+      }
+    }
+  }
+
   /**
    * Make request against the API
    * @param  {String} _path API endpoint
@@ -987,26 +1007,9 @@ class TelegramBot extends EventEmitter {
       const sendData = this._formatSendData('audio', audio, fileOptions);
       opts.formData = sendData[0];
       opts.qs.audio = sendData[1];
+      this._fixAddFileThumb(options, opts);
     } catch (ex) {
       return Promise.reject(ex);
-    }
-
-    if (options.thumb) {
-      if (opts.formData === null) {
-        opts.formData = {};
-      }
-
-      try {
-        const attachName = 'photo';
-        const [formData] = this._formatSendData(attachName, options.thumb.replace('attach://', ''));
-
-        if (formData) {
-          opts.formData[attachName] = formData[attachName];
-          opts.qs.thumb = `attach://${attachName}`;
-        }
-      } catch (ex) {
-        return Promise.reject(ex);
-      }
     }
 
     return this._request('sendAudio', opts);
@@ -1032,9 +1035,11 @@ class TelegramBot extends EventEmitter {
       const sendData = this._formatSendData('document', doc, fileOptions);
       opts.formData = sendData[0];
       opts.qs.document = sendData[1];
+      this._fixAddFileThumb(options, opts);
     } catch (ex) {
       return Promise.reject(ex);
     }
+
     return this._request('sendDocument', opts);
   }
 
@@ -1059,6 +1064,7 @@ class TelegramBot extends EventEmitter {
       const sendData = this._formatSendData('video', video, fileOptions);
       opts.formData = sendData[0];
       opts.qs.video = sendData[1];
+      this._fixAddFileThumb(options, opts);
     } catch (ex) {
       return Promise.reject(ex);
     }
@@ -1141,6 +1147,7 @@ class TelegramBot extends EventEmitter {
       const sendData = this._formatSendData('video_note', videoNote, fileOptions);
       opts.formData = sendData[0];
       opts.qs.video_note = sendData[1];
+      this._fixAddFileThumb(options, opts);
     } catch (ex) {
       return Promise.reject(ex);
     }
