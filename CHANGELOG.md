@@ -3,6 +3,20 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [0.61.0][0.61.0] - 2022-12-30
+
+1. Support Telegram Bot API v6.4 (@danielperez9430)
+ * editGeneralForumTopic
+ * closeGeneralForumTopic
+ * reopenGeneralForumTopic
+ * hideGeneralForumTopic
+ * unhideGeneralForumTopic
+
+2. Minor changes: (@danielperez9430)
+ * The parameters `name` and `icon_custom_emoji_id` of the method `editForumTopic` are now optional.
+ * Fix add thumb in sendAudio, sendVideo and sendVideoNote
+ * Fix getMyCommands and setMyCommands
+ * Suggested tip amounts stringify in sendInvoice
 ## [0.60.0][0.60.0] - 2022-10-06
 
 1. Support Telegram Bot API v6.3 (@danielperez9430)

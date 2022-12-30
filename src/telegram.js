@@ -237,6 +237,26 @@ class TelegramBot extends EventEmitter {
     }
   }
 
+  _fixAddFileThumb(options, opts) {
+    if (options.thumb) {
+      if (opts.formData === null) {
+        opts.formData = {};
+      }
+
+      try {
+        const attachName = 'photo';
+        const [formData] = this._formatSendData(attachName, options.thumb.replace('attach://', ''));
+
+        if (formData) {
+          opts.formData[attachName] = formData[attachName];
+          opts.qs.thumb = `attach://${attachName}`;
+        }
+      } catch (ex) {
+        throw Promise.reject(ex);
+      }
+    }
+  }
+
   /**
    * Make request against the API
    * @param  {String} _path API endpoint
@@ -987,26 +1007,9 @@ class TelegramBot extends EventEmitter {
       const sendData = this._formatSendData('audio', audio, fileOptions);
       opts.formData = sendData[0];
       opts.qs.audio = sendData[1];
+      this._fixAddFileThumb(options, opts);
     } catch (ex) {
       return Promise.reject(ex);
-    }
-
-    if (options.thumb) {
-      if (opts.formData === null) {
-        opts.formData = {};
-      }
-
-      try {
-        const attachName = 'photo';
-        const [formData] = this._formatSendData(attachName, options.thumb.replace('attach://', ''));
-
-        if (formData) {
-          opts.formData[attachName] = formData[attachName];
-          opts.qs.thumb = `attach://${attachName}`;
-        }
-      } catch (ex) {
-        return Promise.reject(ex);
-      }
     }
 
     return this._request('sendAudio', opts);
@@ -1032,9 +1035,11 @@ class TelegramBot extends EventEmitter {
       const sendData = this._formatSendData('document', doc, fileOptions);
       opts.formData = sendData[0];
       opts.qs.document = sendData[1];
+      this._fixAddFileThumb(options, opts);
     } catch (ex) {
       return Promise.reject(ex);
     }
+
     return this._request('sendDocument', opts);
   }
 
@@ -1059,6 +1064,7 @@ class TelegramBot extends EventEmitter {
       const sendData = this._formatSendData('video', video, fileOptions);
       opts.formData = sendData[0];
       opts.qs.video = sendData[1];
+      this._fixAddFileThumb(options, opts);
     } catch (ex) {
       return Promise.reject(ex);
     }
@@ -1141,6 +1147,7 @@ class TelegramBot extends EventEmitter {
       const sendData = this._formatSendData('video_note', videoNote, fileOptions);
       opts.formData = sendData[0];
       opts.qs.video_note = sendData[1];
+      this._fixAddFileThumb(options, opts);
     } catch (ex) {
       return Promise.reject(ex);
     }
@@ -1916,17 +1923,13 @@ class TelegramBot extends EventEmitter {
    *
    * @param {Number|String} chatId Unique identifier for the target group or username of the target supergroup (in the format @supergroupusername)
    * @param {Number} messageThreadId Unique identifier for the target message thread of the forum topic
-   * @param {String} name New topic name, 1-128 characters
-   * @param {String} iconCustomEmojiId New unique identifier of the custom emoji shown as the topic icon. Use getForumTopicIconStickers to get all allowed custom emoji identifiers
    * @param {Object} [options] Additional Telegram query options
    * @return {Promise} True on success
    * @see https://core.telegram.org/bots/api#editforumtopic
    */
-  editForumTopic(chatId, messageThreadId, name, iconCustomEmojiId, form = {}) {
+  editForumTopic(chatId, messageThreadId, form = {}) {
     form.chat_id = chatId;
     form.message_thread_id = messageThreadId;
-    form.name = name;
-    form.icon_custom_emoji_id = iconCustomEmojiId;
     return this._request('editForumTopic', { form });
   }
 
@@ -1994,6 +1997,81 @@ class TelegramBot extends EventEmitter {
     return this._request('unpinAllForumTopicMessages', { form });
   }
 
+  /**
+  * Use this method to edit the name of the 'General' topic in a forum supergroup chat.
+  * The bot must be an administrator in the chat for this to work and must have the can_manage_topics administrator rights.
+  * The topic will be automatically unhidden if it was hidden.
+  *
+  * @param {Number|String} chatId Unique identifier for the target group or username of the target supergroup (in the format @supergroupusername)
+  * @param {String} name New topic name, 1-128 characters
+  * @param {Object} [options] Additional Telegram query options
+  * @return {Promise} True on success
+  * @see https://core.telegram.org/bots/api#editgeneralforumtopic
+  */
+  editGeneralForumTopic(chatId, name, form = {}) {
+    form.chat_id = chatId;
+    form.name = name;
+    return this._request('editGeneralForumTopic', { form });
+  }
+
+  /**
+  * Use this method to close an open 'General' topic in a forum supergroup chat.
+  * The bot must be an administrator in the chat for this to work and must have the can_manage_topics administrator rights.
+  * The topic will be automatically unhidden if it was hidden.
+  *
+  * @param {Number|String} chatId Unique identifier for the target group or username of the target supergroup (in the format @supergroupusername)
+  * @param {Object} [options] Additional Telegram query options
+  * @return {Promise} True on success
+  * @see https://core.telegram.org/bots/api#closegeneralforumtopic
+  */
+  closeGeneralForumTopic(chatId, form = {}) {
+    form.chat_id = chatId;
+    return this._request('closeGeneralForumTopic', { form });
+  }
+
+  /**
+  * Use this method to reopen a closed 'General' topic in a forum supergroup chat.
+  * The bot must be an administrator in the chat for this to work and must have the can_manage_topics administrator rights.
+  * The topic will be automatically unhidden if it was hidden.
+  *
+  * @param {Number|String} chatId Unique identifier for the target group or username of the target supergroup (in the format @supergroupusername)
+  * @param {Object} [options] Additional Telegram query options
+  * @return {Promise} True on success
+  * @see https://core.telegram.org/bots/api#reopengeneralforumtopic
+  */
+  reopenGeneralForumTopic(chatId, form = {}) {
+    form.chat_id = chatId;
+    return this._request('reopenGeneralForumTopic', { form });
+  }
+
+  /**
+  * Use this method to hide the 'General' topic in a forum supergroup chat.
+  * The bot must be an administrator in the chat for this to work and must have the can_manage_topics administrator rights.
+  * The topic will be automatically closed if it was open.
+  *
+  * @param {Number|String} chatId Unique identifier for the target group or username of the target supergroup (in the format @supergroupusername)
+  * @param {Object} [options] Additional Telegram query options
+  * @return {Promise} True on success
+  * @see https://core.telegram.org/bots/api#hidegeneralforumtopic
+  */
+  hideGeneralForumTopic(chatId, form = {}) {
+    form.chat_id = chatId;
+    return this._request('hideGeneralForumTopic', { form });
+  }
+
+  /**
+   * Use this method to unhide the 'General' topic in a forum supergroup chat.
+   * The bot must be an administrator in the chat for this to work and must have the can_manage_topics administrator rights
+   *
+   * @param {Number|String} chatId Unique identifier for the target group or username of the target supergroup (in the format @supergroupusername)
+   * @param {Object} [options] Additional Telegram query options
+   * @return {Promise} True on success
+   * @see https://core.telegram.org/bots/api#unhidegeneralforumtopic
+   */
+  unhideGeneralForumTopic(chatId, form = {}) {
+    form.chat_id = chatId;
+    return this._request('unhideGeneralForumTopic', { form });
+  }
 
   /**
    * Use this method to send answers to callback queries sent from
@@ -2049,6 +2127,11 @@ class TelegramBot extends EventEmitter {
    */
   setMyCommands(commands, form = {}) {
     form.commands = stringify(commands);
+
+    if (form.scope) {
+      form.scope = stringify(form.scope);
+    }
+
     return this._request('setMyCommands', { form });
   }
 
@@ -2074,6 +2157,9 @@ class TelegramBot extends EventEmitter {
    * @see https://core.telegram.org/bots/api#getmycommands
    */
   getMyCommands(form = {}) {
+    if (form.scope) {
+      form.scope = stringify(form.scope);
+    }
     return this._request('getMyCommands', { form });
   }
 
@@ -2544,6 +2630,9 @@ class TelegramBot extends EventEmitter {
     form.currency = currency;
     form.prices = stringify(prices);
     form.provider_data = stringify(form.provider_data);
+    if (form.suggested_tip_amounts) {
+      form.suggested_tip_amounts = stringify(form.suggested_tip_amounts);
+    }
     return this._request('sendInvoice', { form });
   }
 

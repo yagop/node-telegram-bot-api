@@ -89,11 +89,16 @@ TelegramBot
         * [.deleteChatStickerSet(chatId, [options])](#TelegramBot+deleteChatStickerSet) ⇒ <code>Promise</code>
         * [.getForumTopicIconStickers(chatId, [options])](#TelegramBot+getForumTopicIconStickers) ⇒ <code>Promise</code>
         * [.createForumTopic(chatId, name, [options])](#TelegramBot+createForumTopic)
-        * [.editForumTopic(chatId, messageThreadId, name, iconCustomEmojiId, [options])](#TelegramBot+editForumTopic) ⇒ <code>Promise</code>
+        * [.editForumTopic(chatId, messageThreadId, [options])](#TelegramBot+editForumTopic) ⇒ <code>Promise</code>
         * [.closeForumTopic(chatId, messageThreadId, [options])](#TelegramBot+closeForumTopic) ⇒ <code>Promise</code>
         * [.reopenForumTopic(chatId, messageThreadId, [options])](#TelegramBot+reopenForumTopic) ⇒ <code>Promise</code>
         * [.deleteForumTopic(chatId, messageThreadId, [options])](#TelegramBot+deleteForumTopic) ⇒ <code>Promise</code>
         * [.unpinAllForumTopicMessages(chatId, messageThreadId, [options])](#TelegramBot+unpinAllForumTopicMessages) ⇒ <code>Promise</code>
+        * [.editGeneralForumTopic(chatId, name, [options])](#TelegramBot+editGeneralForumTopic) ⇒ <code>Promise</code>
+        * [.closeGeneralForumTopic(chatId, [options])](#TelegramBot+closeGeneralForumTopic) ⇒ <code>Promise</code>
+        * [.reopenGeneralForumTopic(chatId, [options])](#TelegramBot+reopenGeneralForumTopic) ⇒ <code>Promise</code>
+        * [.hideGeneralForumTopic(chatId, [options])](#TelegramBot+hideGeneralForumTopic) ⇒ <code>Promise</code>
+        * [.unhideGeneralForumTopic(chatId, [options])](#TelegramBot+unhideGeneralForumTopic) ⇒ <code>Promise</code>
         * [.answerCallbackQuery(callbackQueryId, [options])](#TelegramBot+answerCallbackQuery) ⇒ <code>Promise</code>
         * [.setMyCommands(commands, [options])](#TelegramBot+setMyCommands) ⇒ <code>Promise</code>
         * [.deleteMyCommands([options])](#TelegramBot+deleteMyCommands) ⇒ <code>Promise</code>
@@ -1405,7 +1410,7 @@ Returns information about the created topic as a [ForumTopic](https://core.teleg
 
 <a name="TelegramBot+editForumTopic"></a>
 
-### telegramBot.editForumTopic(chatId, messageThreadId, name, iconCustomEmojiId, [options]) ⇒ <code>Promise</code>
+### telegramBot.editForumTopic(chatId, messageThreadId, [options]) ⇒ <code>Promise</code>
 Use this method to edit name and icon of a topic in a forum supergroup chat.
 The bot must be an administrator in the chat for this to work and must have can_manage_topics administrator rights, unless it is the creator of the topic.
 
@@ -1417,8 +1422,6 @@ The bot must be an administrator in the chat for this to work and must have can_
 | --- | --- | --- |
 | chatId | <code>Number</code> \| <code>String</code> | Unique identifier for the target group or username of the target supergroup (in the format @supergroupusername) |
 | messageThreadId | <code>Number</code> | Unique identifier for the target message thread of the forum topic |
-| name | <code>String</code> | New topic name, 1-128 characters |
-| iconCustomEmojiId | <code>String</code> | New unique identifier of the custom emoji shown as the topic icon. Use [getForumTopicIconStickers](https://core.telegram.org/bots/api#getforumtopiciconstickers) to get all allowed custom emoji identifiers |
 | [options] | <code>Object</code> | Additional Telegram query options |
 
 <a name="TelegramBot+closeForumTopic"></a>
@@ -1483,6 +1486,86 @@ The bot must be an administrator in the chat for this to work and must have the 
 | --- | --- | --- |
 | chatId | <code>Number</code> \| <code>String</code> | Unique identifier for the target group or username of the target supergroup (in the format @supergroupusername) |
 | messageThreadId | <code>Number</code> | Unique identifier for the target message thread of the forum topic |
+| [options] | <code>Object</code> | Additional Telegram query options |
+
+<a name="TelegramBot+editGeneralForumTopic"></a>
+
+### telegramBot.editGeneralForumTopic(chatId, name, [options]) ⇒ <code>Promise</code>
+Use this method to edit the name of the 'General' topic in a forum supergroup chat.
+The bot must be an administrator in the chat for this to work and must have the can_manage_topics administrator rights.
+The topic will be automatically unhidden if it was hidden.
+
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
+**Returns**: <code>Promise</code> - True on success  
+**See**: https://core.telegram.org/bots/api#editgeneralforumtopic  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| chatId | <code>Number</code> \| <code>String</code> | Unique identifier for the target group or username of the target supergroup (in the format @supergroupusername) |
+| name | <code>String</code> | New topic name, 1-128 characters |
+| [options] | <code>Object</code> | Additional Telegram query options |
+
+<a name="TelegramBot+closeGeneralForumTopic"></a>
+
+### telegramBot.closeGeneralForumTopic(chatId, [options]) ⇒ <code>Promise</code>
+Use this method to close an open 'General' topic in a forum supergroup chat.
+The bot must be an administrator in the chat for this to work and must have the can_manage_topics administrator rights.
+The topic will be automatically unhidden if it was hidden.
+
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
+**Returns**: <code>Promise</code> - True on success  
+**See**: https://core.telegram.org/bots/api#closegeneralforumtopic  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| chatId | <code>Number</code> \| <code>String</code> | Unique identifier for the target group or username of the target supergroup (in the format @supergroupusername) |
+| [options] | <code>Object</code> | Additional Telegram query options |
+
+<a name="TelegramBot+reopenGeneralForumTopic"></a>
+
+### telegramBot.reopenGeneralForumTopic(chatId, [options]) ⇒ <code>Promise</code>
+Use this method to reopen a closed 'General' topic in a forum supergroup chat.
+The bot must be an administrator in the chat for this to work and must have the can_manage_topics administrator rights.
+The topic will be automatically unhidden if it was hidden.
+
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
+**Returns**: <code>Promise</code> - True on success  
+**See**: https://core.telegram.org/bots/api#reopengeneralforumtopic  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| chatId | <code>Number</code> \| <code>String</code> | Unique identifier for the target group or username of the target supergroup (in the format @supergroupusername) |
+| [options] | <code>Object</code> | Additional Telegram query options |
+
+<a name="TelegramBot+hideGeneralForumTopic"></a>
+
+### telegramBot.hideGeneralForumTopic(chatId, [options]) ⇒ <code>Promise</code>
+Use this method to hide the 'General' topic in a forum supergroup chat.
+The bot must be an administrator in the chat for this to work and must have the can_manage_topics administrator rights.
+The topic will be automatically closed if it was open.
+
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
+**Returns**: <code>Promise</code> - True on success  
+**See**: https://core.telegram.org/bots/api#hidegeneralforumtopic  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| chatId | <code>Number</code> \| <code>String</code> | Unique identifier for the target group or username of the target supergroup (in the format @supergroupusername) |
+| [options] | <code>Object</code> | Additional Telegram query options |
+
+<a name="TelegramBot+unhideGeneralForumTopic"></a>
+
+### telegramBot.unhideGeneralForumTopic(chatId, [options]) ⇒ <code>Promise</code>
+Use this method to unhide the 'General' topic in a forum supergroup chat.
+The bot must be an administrator in the chat for this to work and must have the can_manage_topics administrator rights
+
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
+**Returns**: <code>Promise</code> - True on success  
+**See**: https://core.telegram.org/bots/api#unhidegeneralforumtopic  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| chatId | <code>Number</code> \| <code>String</code> | Unique identifier for the target group or username of the target supergroup (in the format @supergroupusername) |
 | [options] | <code>Object</code> | Additional Telegram query options |
 
 <a name="TelegramBot+answerCallbackQuery"></a>
