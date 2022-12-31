@@ -243,16 +243,12 @@ class TelegramBot extends EventEmitter {
         opts.formData = {};
       }
 
-      try {
-        const attachName = 'photo';
-        const [formData] = this._formatSendData(attachName, options.thumb.replace('attach://', ''));
+      const attachName = 'photo';
+      const [formData] = this._formatSendData(attachName, options.thumb.replace('attach://', ''));
 
-        if (formData) {
-          opts.formData[attachName] = formData[attachName];
-          opts.qs.thumb = `attach://${attachName}`;
-        }
-      } catch (ex) {
-        throw Promise.reject(ex);
+      if (formData) {
+        opts.formData[attachName] = formData[attachName];
+        opts.qs.thumb = `attach://${attachName}`;
       }
     }
   }
