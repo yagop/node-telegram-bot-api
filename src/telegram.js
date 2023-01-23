@@ -2432,7 +2432,8 @@ class TelegramBot extends EventEmitter {
    *
    * @param  {Number} userId User identifier of created sticker set owner
    * @param  {String} name Short name of sticker set, to be used in `t.me/addstickers/` URLs (e.g.,   *"animals"*). Can contain only english letters, digits and underscores.
-   *  Must begin with a letter, can't contain consecutive underscores and must end in `.` is case insensitive. 1-64 characters.
+   *  Must begin with a letter, can't contain consecutive underscores and must end in `"_by_<bot_username>"`. `<bot_username>` is case insensitive. 1-64 characters.
+
    * @param  {String} title Sticker set title, 1-64 characters
    * @param  {String|stream.Stream|Buffer} pngSticker Png image with the sticker, must be up to 512 kilobytes in size,
    *  dimensions must not exceed 512px, and either width or height must be exactly 512px.
