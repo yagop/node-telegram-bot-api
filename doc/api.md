@@ -1870,7 +1870,7 @@ You must use exactly one of the fields *png_sticker*, *tgs_sticker*, or *webm_st
 | Param | Type | Description |
 | --- | --- | --- |
 | userId | <code>Number</code> | User identifier of created sticker set owner |
-| name | <code>String</code> | Short name of sticker set, to be used in `t.me/addstickers/` URLs (e.g.,   *"animals"*). Can contain only english letters, digits and underscores.  Must begin with a letter, can't contain consecutive underscores and must end in `.` is case insensitive. 1-64 characters. |
+| name | <code>String</code> | Short name of sticker set, to be used in `t.me/addstickers/` URLs (e.g.,   *"animals"*). Can contain only english letters, digits and underscores.  Must begin with a letter, can't contain consecutive underscores and must end in `"_by_<bot_username>"`. `<bot_username>` is case insensitive. 1-64 characters. |
 | title | <code>String</code> | Sticker set title, 1-64 characters |
 | pngSticker | <code>String</code> \| <code>stream.Stream</code> \| <code>Buffer</code> | Png image with the sticker, must be up to 512 kilobytes in size,  dimensions must not exceed 512px, and either width or height must be exactly 512px. |
 | emojis | <code>String</code> | One or more emoji corresponding to the sticker |
