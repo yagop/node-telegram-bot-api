@@ -47,7 +47,7 @@ app.get('/', function requestListener(req, res) {
   res.sendFile(path.join(__dirname, 'game.html'));
 });
 
-// Bind server to port
+// Binding server to port
 app.listen(port, function listen() {
   console.log(`Server is listening at http://localhost:${port}`);
 });
