@@ -2443,27 +2443,28 @@ class TelegramBot extends EventEmitter {
   }
 
   /**
-   * Use this method to upload a .png file with a sticker for later use in *createNewStickerSet* and *addStickerToSet* methods (can be used multiple
+   * Use this method to upload a file with a sticker for later use in *createNewStickerSet* and *addStickerToSet* methods (can be used multiple
    * times).
    *
    * @param  {Number} userId User identifier of sticker file owner
-   * @param  {String|stream.Stream|Buffer} pngSticker A file path or a Stream. Can also be a `file_id` previously uploaded. **Png** image with the
-   *  sticker, must be up to 512 kilobytes in size, dimensions must not exceed 512px, and either width or height must be exactly 512px.
+   * @param  {String|stream.Stream|Buffer} sticker A file path or a Stream with the sticker in .WEBP, .PNG, .TGS, or .WEBM format. Can also be a `file_id` previously uploaded.
    * @param {String} stickerFormat Allow values:  `static`, `animated` or `video`
    * @param  {Object} [options] Additional Telegram query options
    * @param  {Object} [fileOptions] Optional file related meta-data
    * @return {Promise} On success, a [File](https://core.telegram.org/bots/api#file) object is returned
    * @see https://core.telegram.org/bots/api#uploadstickerfile
    */
-  uploadStickerFile(userId, sticker, stickerFormat, options = {}, fileOptions = {}) {
+  uploadStickerFile(userId, sticker, stickerFormat = 'static', options = {}, fileOptions = {}) {
     const opts = {
       qs: options,
     };
     opts.qs.user_id = userId;
+    opts.qs.sticker_format = stickerFormat;
+
     try {
-      const sendData = this._formatSendData('png_sticker', sticker, fileOptions);
+      const sendData = this._formatSendData('sticker', sticker, fileOptions);
       opts.formData = sendData[0];
-      opts.qs.png_sticker = sendData[1];
+      opts.qs.sticker = sendData[1];
     } catch (ex) {
       return Promise.reject(ex);
     }
