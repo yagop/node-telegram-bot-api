@@ -50,6 +50,7 @@ let GAME_MSG_ID;
 let BOT_USERNAME;
 let CHAT_INFO;
 let STICKER_FILE_ID_FROM_SET;
+let STICKERS_FROM_BOT_SET;
 
 before(function beforeAll() {
   utils.startStaticServer(staticPort);
@@ -1418,6 +1419,58 @@ describe('TelegramBot', function telegramSuite() {
     });
   });
 
+  describe('#setMyDescription', function getMyCommandsSuite() {
+    it('should set bot description for users with a specific lang code', function test() {
+      return bot.setMyDescription({ description: 'Bot description' }).then(resp => {
+        assert.ok(is.boolean(resp));
+      });
+    });
+    it('should set bot description for Spanish users', function test() {
+      return bot.setMyDescription({ description: 'Spanish bot description', language_code: 'es' }).then(resp => {
+        assert.ok(is.boolean(resp));
+      });
+    });
+  });
+
+  describe('#getMyDescription', function getMyDescriptionSuite() {
+    it('should get bot description for a user without lang code', function test() {
+      return bot.getMyDescription().then(resp => {
+        assert.ok(is.equal(resp.description, 'Bot description'));
+      });
+    });
+    it('should get bot description for Spanish users', function test() {
+      return bot.getMyDescription({ language_code: 'es' }).then(resp => {
+        assert.ok(is.equal(resp.description, 'Spanish bot description'));
+      });
+    });
+  });
+
+  describe('#setMyShortDescription', function setMyShortDescriptionSuite() {
+    it('should set sort bot description for a user without lang code', function test() {
+      return bot.setMyShortDescription({ short_description: 'Bot sort description' }).then(resp => {
+        assert.ok(is.boolean(resp));
+      });
+    });
+    it('should set sort description for Spanish users', function test() {
+      return bot.setMyShortDescription({ short_description: 'Spanish bot sort description', language_code: 'es' }).then(resp => {
+        assert.ok(is.boolean(resp));
+      });
+    });
+  });
+
+  describe('#getMyShortDescription', function getMyShortDescriptionSuite() {
+    it('should get bot sort description for a user without lang code', function test() {
+      return bot.getMyShortDescription().then(resp => {
+        assert.ok(is.equal(resp.short_description, 'Bot sort description'));
+      });
+    });
+    it('should get bot sort description for Spanish users', function test() {
+      return bot.getMyShortDescription({ language_code: 'es' }).then(resp => {
+        assert.ok(is.equal(resp.short_description, 'Spanish bot sort description'));
+      });
+    });
+  });
+
   describe('#getMyCommands', function getMyCommandsSuite() {
     it('should get bot commands', function test() {
       return bot.getMyCommands().then(resp => {
@@ -1781,16 +1834,61 @@ describe('TelegramBot', function telegramSuite() {
     });
   });
 
-  describe('#setStickerSetThumb', function setStickerSetThumbSuite() {
+  describe('#setStickerEmojiList', function setStickerEmojiListSuite() {
     before(function before() {
-      utils.handleRatelimit(bot, 'setStickerSetThumb', this);
+      utils.handleRatelimit(bot, 'setStickerEmojiList', this);
+    });
+
+    it('should get the list for the given sticker of the bot sticker pack', function test() {
+      const stickerPackName = `s${CURRENT_TIMESTAMP}_by_${BOT_USERNAME}`;
+
+      bot.getStickerSet(stickerPackName).then(resp => {
+        STICKERS_FROM_BOT_SET = resp.stickers;
+        assert.ok(is.array(STICKERS_FROM_BOT_SET));
+      });
+    });
+    it('should set a emoji list for the given sticker', function test() {
+      assert.ok(is.isEqual(STICKERS_FROM_BOT_SET[0].type, 'regular'));
+
+      bot.setStickerEmojiList(STICKERS_FROM_BOT_SET[0].file_id, ['🥳', '😀', '😇']).then((resp) => {
+        assert.ok(is.boolean(resp));
+      });
+    });
+  });
+
+  describe('#setStickerKeywords', function setStickerKeywordsSuite() {
+    before(function before() {
+      utils.handleRatelimit(bot, 'setStickerKeywords', this);
+    });
+    it('should set a keywords list for the given sticker', function test() {
+      assert.ok(is.isEqual(STICKERS_FROM_BOT_SET[0].type, 'regular'));
+      bot.setStickerKeywords(STICKERS_FROM_BOT_SET[0].file_id, { keywords: ['house', 'cat'] }).then((resp) => {
+        assert.ok(is.boolean(resp));
+      });
+    });
+  });
+
+  describe.skip('#setStickerMaskPosition', function setStickerKeywordsSuite() {
+    before(function before() {
+      utils.handleRatelimit(bot, 'setStickerMaskPosition', this);
+    });
+    it('should delete a sticker from a set', function test() {
+      bot.setStickerMaskPosition(STICKER_FILE_ID_FROM_SET, { point: 'eyes', scale: 2, x_shift: 1, y_shift: 1 }).then((resp) => {
+        assert.ok(is.boolean(resp));
+      });
+    });
+  });
+
+  describe('#setStickerSetThumbnail', function setStickerSetThumbnailSuite() {
+    before(function before() {
+      utils.handleRatelimit(bot, 'setStickerSetThumbnail', this);
     });
 
     it('should set a sticker set thumb', function test() {
       const stickerThumb = `${__dirname}/data/sticker_thumb.png`;
       const stickerPackName = `s${CURRENT_TIMESTAMP}_by_${BOT_USERNAME}`;
 
-      bot.setStickerSetThumb(USERID, stickerPackName, stickerThumb).then((resp) => {
+      bot.setStickerSetThumbnail(USERID, stickerPackName, stickerThumb).then((resp) => {
         assert.ok(is.boolean(resp));
       });
     });

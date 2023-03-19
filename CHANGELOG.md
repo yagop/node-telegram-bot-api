@@ -3,6 +3,20 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [0.62.0][0.62.0] - 2023-03-19
+
+1. Support Telegram Bot API v6.6 (@danielperez9430)
+ * setMyDescription
+ * getMyDescription
+ * setMyShortDescription
+ * getMyShortDescription
+ * setCustomEmojiStickerSetThumbnail
+ * setStickerSetTitle
+ * deleteStickerSet 
+ * setStickerEmojiList 
+ * setStickerKeywords 
+ * setStickerMaskPosition 
+
 ## [0.61.0][0.61.0] - 2022-12-30
 
 1. Support Telegram Bot API v6.4 (@danielperez9430)
