@@ -45,16 +45,20 @@ class TelegramBotWebHook {
   /**
    * Open WebHook by listening on the port
    * @return {Promise}
-   */
+   */  
   open() {
     if (this.isOpen()) {
       return Promise.resolve();
     }
-    return new Promise(resolve => {
+    return new Promise((resolve, reject) => {
       this._webServer.listen(this.options.port, this.options.host, () => {
         debug('WebHook listening on port %s', this.options.port);
         this._open = true;
         return resolve();
+      });
+
+      this._webServer.once('error', (err) => {
+        reject(err);
       });
     });
   }
