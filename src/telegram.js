@@ -803,6 +803,7 @@ class TelegramBot extends EventEmitter {
    * delete webHook.
    * @param  {Object} [options] Additional Telegram query options
    * @param  {String|stream.Stream} [options.certificate] PEM certificate key (public).
+   * @param  {String} [options.secret_token] Optional secret token to be sent in a header `X-Telegram-Bot-Api-Secret-Token` in every webhook request.
    * @param  {Object} [fileOptions] Optional file related meta-data
    * @return {Promise}
    * @see https://core.telegram.org/bots/api#setwebhook
