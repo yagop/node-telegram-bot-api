@@ -1432,6 +1432,22 @@ describe('TelegramBot', function telegramSuite() {
     });
   });
 
+  describe('#setMyName', function setMyNameSuite() {
+    it('should set bot name for Spanish users', function test() {
+      return bot.setMyName({ name: 'Spanish Bot', language_code: 'es' }).then(resp => {
+        assert.ok(is.boolean(resp));
+      });
+    });
+  });
+
+  describe('#getMyName', function setMyNameSuite() {
+    it('should get bot name for Spanish users', function test() {
+      return bot.getMyName({ language_code: 'es' }).then(resp => {
+        assert.ok(is.equal(resp.name, 'Spanish Bot'));
+      });
+    });
+  });
+
   describe('#getMyDescription', function getMyDescriptionSuite() {
     it('should get bot description for a user without lang code', function test() {
       return bot.getMyDescription().then(resp => {

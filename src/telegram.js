@@ -2159,6 +2159,28 @@ class TelegramBot extends EventEmitter {
   }
 
   /**
+   * Use this method to change the bot's name.
+   *
+   * @param  {Object} [options] Additional Telegram query options
+   * @return {Promise} True on success
+   * @see https://core.telegram.org/bots/api#setmyname
+   */
+  setMyName(form = {}) {
+    return this._request('setMyName', { form });
+  }
+
+  /**
+   * Use this method to get the current bot name for the given user language.
+   *
+   * @param  {Object} [options] Additional Telegram query options
+   * @return {Promise} [BotName](https://core.telegram.org/bots/api#botname) on success
+   * @see https://core.telegram.org/bots/api#getmyname
+   */
+  getMyName(form = {}) {
+    return this._request('getMyName', { form });
+  }
+
+  /**
    * Use this method to change the bot's description, which is shown in the chat with the bot if the chat is empty.
    *
    * Returns True on success.
