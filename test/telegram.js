@@ -1855,16 +1855,19 @@ describe('TelegramBot', function telegramSuite() {
       utils.handleRatelimit(bot, 'setStickerEmojiList', this);
     });
 
-    it('should get the list for the given sticker of the bot sticker pack', function test() {
+    it('should get the list for the given sticker of the bot sticker pack', function test(done) {
       const stickerPackName = `s${CURRENT_TIMESTAMP}_by_${BOT_USERNAME}`;
 
       bot.getStickerSet(stickerPackName).then(resp => {
         STICKERS_FROM_BOT_SET = resp.stickers;
         assert.ok(is.array(STICKERS_FROM_BOT_SET));
       });
+
+      setTimeout(() => done(), 2000);
     });
+
     it('should set a emoji list for the given sticker', function test() {
-      assert.ok(is.isEqual(STICKERS_FROM_BOT_SET[0].type, 'regular'));
+      assert.ok(is.equal(STICKERS_FROM_BOT_SET[0].type, 'regular'));
 
       bot.setStickerEmojiList(STICKERS_FROM_BOT_SET[0].file_id, ['🥳', '😀', '😇']).then((resp) => {
         assert.ok(is.boolean(resp));
@@ -1877,7 +1880,7 @@ describe('TelegramBot', function telegramSuite() {
       utils.handleRatelimit(bot, 'setStickerKeywords', this);
     });
     it('should set a keywords list for the given sticker', function test() {
-      assert.ok(is.isEqual(STICKERS_FROM_BOT_SET[0].type, 'regular'));
+      assert.ok(is.equal(STICKERS_FROM_BOT_SET[0].type, 'regular'));
       bot.setStickerKeywords(STICKERS_FROM_BOT_SET[0].file_id, { keywords: ['house', 'cat'] }).then((resp) => {
         assert.ok(is.boolean(resp));
       });
@@ -1895,6 +1898,19 @@ describe('TelegramBot', function telegramSuite() {
     });
   });
 
+  describe('#setStickerSetTitle', function setStickerSetTitleSuite() {
+    before(function before() {
+      utils.handleRatelimit(bot, 'setStickerSetTitle', this);
+    });
+    it('should set a new sticker set title', function test() {
+      const stickerPackName = `s${CURRENT_TIMESTAMP}_by_${BOT_USERNAME}`;
+
+      bot.setStickerSetTitle(stickerPackName, 'New title').then((resp) => {
+        assert.ok(is.boolean(resp));
+      });
+    });
+  });
+
   describe('#setStickerSetThumbnail', function setStickerSetThumbnailSuite() {
     before(function before() {
       utils.handleRatelimit(bot, 'setStickerSetThumbnail', this);
@@ -1905,6 +1921,20 @@ describe('TelegramBot', function telegramSuite() {
       const stickerPackName = `s${CURRENT_TIMESTAMP}_by_${BOT_USERNAME}`;
 
       bot.setStickerSetThumbnail(USERID, stickerPackName, stickerThumb).then((resp) => {
+        assert.ok(is.boolean(resp));
+      });
+    });
+  });
+
+  describe.skip('#setCustomEmojiStickerSetThumbnail', function setCustomEmojiStickerSetThumbnailSuite() {
+    before(function before() {
+      utils.handleRatelimit(bot, 'setCustomEmojiStickerSetThumbnail', this);
+    });
+
+    it('should set a custom emoji sticjer set as thumbnail', function test() {
+      const stickerPackName = `s${CURRENT_TIMESTAMP}_by_${BOT_USERNAME}`;
+
+      bot.setCustomEmojiStickerSetThumbnail(stickerPackName, { custom_emoji_id: null }).then((resp) => {
         assert.ok(is.boolean(resp));
       });
     });
