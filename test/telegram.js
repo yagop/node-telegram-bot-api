@@ -1940,6 +1940,20 @@ describe('TelegramBot', function telegramSuite() {
     });
   });
 
+  describe.skip('#deleteStickerSet', function deleteStickerSetSuite() {
+    before(function before() {
+      utils.handleRatelimit(bot, 'deleteStickerSet', this);
+    });
+
+    it('should delete sticker set', function test() {
+      const stickerPackName = `s${CURRENT_TIMESTAMP}_by_${BOT_USERNAME}`;
+
+      bot.deleteStickerSet(stickerPackName).then((resp) => {
+        assert.ok(is.boolean(resp));
+      });
+    });
+  });
+
   describe.skip('#answerInlineQuery', function answerInlineQuerySuite() { });
 
   describe.skip('#answerWebAppQuery', function answerCallbackQuerySuite() { });
