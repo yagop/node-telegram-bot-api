@@ -127,4 +127,4 @@ Copyright © 2019 Yago
 [contributors]:https://github.com/yagop/node-telegram-bot-api/graphs/contributors
 [experimental]:https://github.com/yagop/node-telegram-bot-api/tree/master/doc/experimental.md
 [tg-channel]:https://telegram.me/node_telegram_bot_api
-[tg-group]:https://telegram.me/ntbasupport
+[tg-group]:https://t.me/+nc3A9Hs1S81mYzdk
