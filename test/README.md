@@ -2,13 +2,13 @@ Running the tests:
 
 ```bash
 # Token to be used
-export TEST_TELEGRAM_TOKEN=<YOUR_BOT_TOKEN>
+export TEST_TELEGRAM_TOKEN='5919747862:AAH9HvgGwQpj5yAGGJh8mZ4161DqHVzhQAE'
 
 # User Id which you want to send the messages.
-export TEST_USER_ID=<USER_ID>
+export TEST_USER_ID=5668418433
 
 # Group Id which to use in some of the tests, e.g. for TelegramBot#getChat()
-export TEST_GROUP_ID=<GROUP_ID>
+export TEST_GROUP_ID='-992795244'
 
 # Game short name to use in some tests, e.g. TelegramBot#sendGame()
 # Defaults to "medusalab_test".

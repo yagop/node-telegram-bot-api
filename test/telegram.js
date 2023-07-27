@@ -1301,7 +1301,10 @@ describe('TelegramBot', function telegramSuite() {
     before(function before() {
       utils.handleRatelimit(bot, 'unpinChatMessage', this);
       return bot.sendMessage(GROUPID, 'To be pinned').then(resp => {
-        messageId = resp.message_id;
+        bot.pinChatMessage(GROUPID, resp.message_id);
+        return resp.message_id;
+      }).then(id => {
+        messageId = id;
       });
     });
     it('should unpin chat message', function test() {
