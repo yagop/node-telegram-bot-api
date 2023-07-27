@@ -1297,11 +1297,15 @@ describe('TelegramBot', function telegramSuite() {
   });
 
   describe('#unpinChatMessage', function unpinChatMessageSuite() {
+    let messageId;
     before(function before() {
       utils.handleRatelimit(bot, 'unpinChatMessage', this);
+      return bot.sendMessage(GROUPID, 'To be pinned').then(resp => {
+        messageId = resp.message_id;
+      });
     });
     it('should unpin chat message', function test() {
-      return bot.unpinChatMessage(GROUPID).then(resp => {
+      return bot.unpinChatMessage(GROUPID, messageId).then(resp => {
         assert.strictEqual(resp, true);
       });
     });

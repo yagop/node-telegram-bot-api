@@ -1754,12 +1754,14 @@ class TelegramBot extends EventEmitter {
    * right in a supergroup or `can_edit_messages` administrator right in a channel.
    *
    * @param  {Number|String} chatId  Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
+   * @param  {Number} messageId Identifier of a message to unpin
    * @param  {Object} [options] Additional Telegram query options
    * @return {Promise} True on success
    * @see https://core.telegram.org/bots/api#unpinchatmessage
    */
-  unpinChatMessage(chatId, form = {}) {
+  unpinChatMessage(chatId, messageId, form = {}) {
     form.chat_id = chatId;
+    form.message_id = messageId;
     return this._request('unpinChatMessage', { form });
   }
 

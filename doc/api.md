@@ -78,7 +78,7 @@ TelegramBot
         * [.setChatTitle(chatId, title, [options])](#TelegramBot+setChatTitle) ⇒ <code>Promise</code>
         * [.setChatDescription(chatId, description, [options])](#TelegramBot+setChatDescription) ⇒ <code>Promise</code>
         * [.pinChatMessage(chatId, messageId, [options])](#TelegramBot+pinChatMessage) ⇒ <code>Promise</code>
-        * [.unpinChatMessage(chatId, [options])](#TelegramBot+unpinChatMessage) ⇒ <code>Promise</code>
+        * [.unpinChatMessage(chatId, messageId, [options])](#TelegramBot+unpinChatMessage) ⇒ <code>Promise</code>
         * [.unpinAllChatMessages(chatId, [options])](#TelegramBot+unpinAllChatMessages) ⇒ <code>Promise</code>
         * [.leaveChat(chatId, [options])](#TelegramBot+leaveChat) ⇒ <code>Promise</code>
         * [.getChat(chatId, [options])](#TelegramBot+getChat) ⇒ <code>Promise</code>
@@ -1236,7 +1236,7 @@ right in a supergroup or `can_edit_messages` administrator right in a channel.
 
 <a name="TelegramBot+unpinChatMessage"></a>
 
-### telegramBot.unpinChatMessage(chatId, [options]) ⇒ <code>Promise</code>
+### telegramBot.unpinChatMessage(chatId, messageId, [options]) ⇒ <code>Promise</code>
 Use this method to remove a message from the list of pinned messages in a chat
 
 If the chat is not a private chat, the **bot must be an administrator in the chat** for this to work and must have the `can_pin_messages` administrator
@@ -1249,6 +1249,7 @@ right in a supergroup or `can_edit_messages` administrator right in a channel.
 | Param | Type | Description |
 | --- | --- | --- |
 | chatId | <code>Number</code> \| <code>String</code> | Unique identifier for the target chat or username of the target channel (in the format `@channelusername`) |
+| messageId | <code>Number</code> | Identifier of a message to unpin |
 | [options] | <code>Object</code> | Additional Telegram query options |
 
 <a name="TelegramBot+unpinAllChatMessages"></a>
