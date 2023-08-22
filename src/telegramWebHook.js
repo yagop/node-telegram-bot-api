@@ -45,7 +45,7 @@ class TelegramBotWebHook {
   /**
    * Open WebHook by listening on the port
    * @return {Promise}
-   */  
+   */
   open() {
     if (this.isOpen()) {
       return Promise.resolve();

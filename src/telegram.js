@@ -2070,6 +2070,20 @@ class TelegramBot extends EventEmitter {
   }
 
   /**
+   * Use this method to clear the list of pinned messages in a General forum topic.
+   * The bot must be an administrator in the chat for this to work and must have the can_pin_messages administrator right in the supergroup.
+   *
+   * @param {Number|String} chatId Unique identifier for the target group or username of the target supergroup (in the format @supergroupusername)
+   * @param {Object} [options] Additional Telegram query options
+   * @return {Promise} True on success
+   * @see https://core.telegram.org/bots/api#unpinallgeneralforumtopicmessages
+   */
+  unpinAllGeneralForumTopicMessages(chatId, form = {}) {
+    form.chat_id = chatId;
+    return this._request('unhideGeneralForumTopic', { form });
+  }
+
+  /**
    * Use this method to send answers to callback queries sent from
    * [inline keyboards](https://core.telegram.org/bots#inline-keyboards-and-on-the-fly-updating).
    *
