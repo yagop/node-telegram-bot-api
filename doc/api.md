@@ -99,6 +99,7 @@ TelegramBot
         * [.reopenGeneralForumTopic(chatId, [options])](#TelegramBot+reopenGeneralForumTopic) ⇒ <code>Promise</code>
         * [.hideGeneralForumTopic(chatId, [options])](#TelegramBot+hideGeneralForumTopic) ⇒ <code>Promise</code>
         * [.unhideGeneralForumTopic(chatId, [options])](#TelegramBot+unhideGeneralForumTopic) ⇒ <code>Promise</code>
+        * [.unpinAllGeneralForumTopicMessages(chatId, [options])](#TelegramBot+unpinAllGeneralForumTopicMessages) ⇒ <code>Promise</code>
         * [.answerCallbackQuery(callbackQueryId, [options])](#TelegramBot+answerCallbackQuery) ⇒ <code>Promise</code>
         * [.setMyCommands(commands, [options])](#TelegramBot+setMyCommands) ⇒ <code>Promise</code>
         * [.deleteMyCommands([options])](#TelegramBot+deleteMyCommands) ⇒ <code>Promise</code>
@@ -440,7 +441,7 @@ that is being deprecated.
 | url | <code>String</code> | URL where Telegram will make HTTP Post. Leave empty to delete webHook. |
 | [options] | <code>Object</code> | Additional Telegram query options |
 | [options.certificate] | <code>String</code> \| <code>stream.Stream</code> | PEM certificate key (public). |
-| [options.secret_token] | <code>String</code> | A secret token to be sent in a header `X-Telegram-Bot-Api-Secret-Token` in every webhook request. |
+| [options.secret_token] | <code>String</code> | Optional secret token to be sent in a header `X-Telegram-Bot-Api-Secret-Token` in every webhook request. |
 | [fileOptions] | <code>Object</code> | Optional file related meta-data |
 
 <a name="TelegramBot+deleteWebHook"></a>
@@ -1575,6 +1576,21 @@ The bot must be an administrator in the chat for this to work and must have the 
 **Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
 **Returns**: <code>Promise</code> - True on success  
 **See**: https://core.telegram.org/bots/api#unhidegeneralforumtopic  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| chatId | <code>Number</code> \| <code>String</code> | Unique identifier for the target group or username of the target supergroup (in the format @supergroupusername) |
+| [options] | <code>Object</code> | Additional Telegram query options |
+
+<a name="TelegramBot+unpinAllGeneralForumTopicMessages"></a>
+
+### telegramBot.unpinAllGeneralForumTopicMessages(chatId, [options]) ⇒ <code>Promise</code>
+Use this method to clear the list of pinned messages in a General forum topic.
+The bot must be an administrator in the chat for this to work and must have the can_pin_messages administrator right in the supergroup.
+
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
+**Returns**: <code>Promise</code> - True on success  
+**See**: https://core.telegram.org/bots/api#unpinallgeneralforumtopicmessages  
 
 | Param | Type | Description |
 | --- | --- | --- |
