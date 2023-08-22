@@ -440,6 +440,7 @@ that is being deprecated.
 | url | <code>String</code> | URL where Telegram will make HTTP Post. Leave empty to delete webHook. |
 | [options] | <code>Object</code> | Additional Telegram query options |
 | [options.certificate] | <code>String</code> \| <code>stream.Stream</code> | PEM certificate key (public). |
+| [options.secret_token] | <code>String</code> | A secret token to be sent in a header `X-Telegram-Bot-Api-Secret-Token` in every webhook request. |
 | [fileOptions] | <code>Object</code> | Optional file related meta-data |
 
 <a name="TelegramBot+deleteWebHook"></a>
