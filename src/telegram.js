@@ -237,7 +237,7 @@ class TelegramBot extends EventEmitter {
     }
   }
 
-  _fixAddFileThumb(options, opts) {
+  _fixAddFileThumbnail(options, opts) {
     if (options.thumb) {
       if (opts.formData === null) {
         opts.formData = {};
@@ -248,7 +248,7 @@ class TelegramBot extends EventEmitter {
 
       if (formData) {
         opts.formData[attachName] = formData[attachName];
-        opts.qs.thumb = `attach://${attachName}`;
+        opts.qs.thumbnail = `attach://${attachName}`;
       }
     }
   }
@@ -1003,7 +1003,7 @@ class TelegramBot extends EventEmitter {
       const sendData = this._formatSendData('audio', audio, fileOptions);
       opts.formData = sendData[0];
       opts.qs.audio = sendData[1];
-      this._fixAddFileThumb(options, opts);
+      this._fixAddFileThumbnail(options, opts);
     } catch (ex) {
       return Promise.reject(ex);
     }
@@ -1031,7 +1031,7 @@ class TelegramBot extends EventEmitter {
       const sendData = this._formatSendData('document', doc, fileOptions);
       opts.formData = sendData[0];
       opts.qs.document = sendData[1];
-      this._fixAddFileThumb(options, opts);
+      this._fixAddFileThumbnail(options, opts);
     } catch (ex) {
       return Promise.reject(ex);
     }
@@ -1060,7 +1060,7 @@ class TelegramBot extends EventEmitter {
       const sendData = this._formatSendData('video', video, fileOptions);
       opts.formData = sendData[0];
       opts.qs.video = sendData[1];
-      this._fixAddFileThumb(options, opts);
+      this._fixAddFileThumbnail(options, opts);
     } catch (ex) {
       return Promise.reject(ex);
     }
@@ -1143,7 +1143,7 @@ class TelegramBot extends EventEmitter {
       const sendData = this._formatSendData('video_note', videoNote, fileOptions);
       opts.formData = sendData[0];
       opts.qs.video_note = sendData[1];
-      this._fixAddFileThumb(options, opts);
+      this._fixAddFileThumbnail(options, opts);
     } catch (ex) {
       return Promise.reject(ex);
     }
@@ -1468,7 +1468,6 @@ class TelegramBot extends EventEmitter {
    * Use this method to promote or demote a user in a supergroup or a channel.
    * The bot **must be an administrator** in the chat for this to work
    * and must have the appropriate admin rights. Pass False for all boolean parameters to demote a user.
-   *
    *
    * @param  {Number|String} chatId  Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
    * @param  {Number} userId
@@ -2160,6 +2159,75 @@ class TelegramBot extends EventEmitter {
   }
 
   /**
+   * Use this method to change the bot's name.
+   *
+   * @param  {Object} [options] Additional Telegram query options
+   * @return {Promise} True on success
+   * @see https://core.telegram.org/bots/api#setmyname
+   */
+  setMyName(form = {}) {
+    return this._request('setMyName', { form });
+  }
+
+  /**
+   * Use this method to get the current bot name for the given user language.
+   *
+   * @param  {Object} [options] Additional Telegram query options
+   * @return {Promise} [BotName](https://core.telegram.org/bots/api#botname) on success
+   * @see https://core.telegram.org/bots/api#getmyname
+   */
+  getMyName(form = {}) {
+    return this._request('getMyName', { form });
+  }
+
+  /**
+   * Use this method to change the bot's description, which is shown in the chat with the bot if the chat is empty.
+   *
+   * Returns True on success.
+   *
+   * @param  {Object} [options] Additional Telegram query options
+   * @return {Promise} True on success
+   * @see https://core.telegram.org/bots/api#setmydescription
+   */
+  setMyDescription(form = {}) {
+    return this._request('setMyDescription', { form });
+  }
+
+  /**
+   * Use this method to get the current bot description for the given user language.
+   *
+   * @param  {Object} [options] Additional Telegram query options
+   * @return {Promise} Returns [BotDescription](https://core.telegram.org/bots/api#botdescription) on success.
+   * @see https://core.telegram.org/bots/api#getmydescription
+   */
+  getMyDescription(form = {}) {
+    return this._request('getMyDescription', { form });
+  }
+
+  /**
+   * Use this method to change the bot's short description, which is shown on the bot's profile page
+   * and is sent together with the link when users share the bot.
+   *
+   * @param  {Object} [options] Additional Telegram query options
+   * @return {Promise} Returns True on success.
+   * @see https://core.telegram.org/bots/api#setmyshortdescription
+   */
+  setMyShortDescription(form = {}) {
+    return this._request('setMyShortDescription', { form });
+  }
+
+  /**
+   * Use this method to get the current bot short description for the given user language.
+   *
+   * @param  {Object} [options] Additional Telegram query options
+   * @return {Promise} Returns [BotShortDescription](https://core.telegram.org/bots/api#botshortdescription) on success.
+   * @see https://core.telegram.org/bots/api#getmyshortdescription
+   */
+  getMyShortDescription(form = {}) {
+    return this._request('getMyShortDescription', { form });
+  }
+
+  /**
    * Use this method to change the bot's menu button in a private chat, or the default menu button.
    *
    * @param  {Object} [options] Additional Telegram query options
@@ -2397,26 +2465,28 @@ class TelegramBot extends EventEmitter {
   }
 
   /**
-   * Use this method to upload a .png file with a sticker for later use in *createNewStickerSet* and *addStickerToSet* methods (can be used multiple
+   * Use this method to upload a file with a sticker for later use in *createNewStickerSet* and *addStickerToSet* methods (can be used multiple
    * times).
    *
    * @param  {Number} userId User identifier of sticker file owner
-   * @param  {String|stream.Stream|Buffer} pngSticker A file path or a Stream. Can also be a `file_id` previously uploaded. **Png** image with the
-   *  sticker, must be up to 512 kilobytes in size, dimensions must not exceed 512px, and either width or height must be exactly 512px.
+   * @param  {String|stream.Stream|Buffer} sticker A file path or a Stream with the sticker in .WEBP, .PNG, .TGS, or .WEBM format. Can also be a `file_id` previously uploaded.
+   * @param {String} stickerFormat Allow values:  `static`, `animated` or `video`
    * @param  {Object} [options] Additional Telegram query options
    * @param  {Object} [fileOptions] Optional file related meta-data
    * @return {Promise} On success, a [File](https://core.telegram.org/bots/api#file) object is returned
    * @see https://core.telegram.org/bots/api#uploadstickerfile
    */
-  uploadStickerFile(userId, pngSticker, options = {}, fileOptions = {}) {
+  uploadStickerFile(userId, sticker, stickerFormat = 'static', options = {}, fileOptions = {}) {
     const opts = {
       qs: options,
     };
     opts.qs.user_id = userId;
+    opts.qs.sticker_format = stickerFormat;
+
     try {
-      const sendData = this._formatSendData('png_sticker', pngSticker, fileOptions);
+      const sendData = this._formatSendData('sticker', sticker, fileOptions);
       opts.formData = sendData[0];
-      opts.qs.png_sticker = sendData[1];
+      opts.qs.sticker = sendData[1];
     } catch (ex) {
       return Promise.reject(ex);
     }
@@ -2537,13 +2607,83 @@ class TelegramBot extends EventEmitter {
 
 
   /**
+   * Use this method to change the list of emoji assigned to a regular or custom emoji sticker.
+   *
+   * The sticker must belong to a sticker set created by the bot.
+   *
+   * @param  {String} sticker File identifier of the sticker
+   * @param { Array } emojiList A JSON-serialized list of 1-20 emoji associated with the sticker
+   * @param  {Object} [options] Additional Telegram query options
+   * @return {Promise} True on success
+   * @see https://core.telegram.org/bots/api#setstickeremojilist
+   */
+  setStickerEmojiList(sticker, emojiList, form = {}) {
+    form.sticker = sticker;
+    form.emoji_list = stringify(emojiList);
+    return this._request('setStickerEmojiList', { form });
+  }
+
+  /**
+   * Use this method to change the list of emoji assigned to a `regular` or `custom emoji` sticker.
+   *
+   * The sticker must belong to a sticker set created by the bot.
+   *
+   * @param  {String} sticker File identifier of the sticker
+   * @param  {Object} [options] Additional Telegram query options
+   * @return {Promise} True on success
+   * @see https://core.telegram.org/bots/api#setstickerkeywords
+   */
+  setStickerKeywords(sticker, form = {}) {
+    form.sticker = sticker;
+    if (form.keywords) {
+      form.keywords = stringify(form.keywords);
+    }
+    return this._request('setStickerKeywords', { form });
+  }
+
+  /**
+   * Use this method to change the [mask position](https://core.telegram.org/bots/api#maskposition) of a mask sticker.
+   *
+   * The sticker must belong to a sticker set created by the bot.
+   *
+   * @param  {String} sticker File identifier of the sticker
+   * @param  {Object} [options] Additional Telegram query options
+   * @return {Promise} True on success
+   * @see https://core.telegram.org/bots/api#setstickermaskposition
+   */
+  setStickerMaskPosition(sticker, form = {}) {
+    form.sticker = sticker;
+    if (form.mask_position) {
+      form.mask_position = stringify(form.mask_position);
+    }
+    return this._request('setStickerMaskPosition', { form });
+  }
+
+  /**
+   * Use this method to set the title of a created sticker set.
+   *
+   * The sticker must belong to a sticker set created by the bot.
+   *
+   * @param  {String} name Sticker set name
+   * @param  {String} title Sticker set title, 1-64 characters
+   * @param  {Object} [options] Additional Telegram query options
+   * @return {Promise} True on success
+   * @see https://core.telegram.org/bots/api#setstickersettitle
+   */
+  setStickerSetTitle(name, title, form = {}) {
+    form.name = name;
+    form.title = title;
+    return this._request('setStickerSetTitle', { form });
+  }
+
+  /**
    * Use this method to add a thumb to a set created by the bot.
    *
    * Animated thumbnails can be set for animated sticker sets only. Video thumbnails can be set only for video sticker sets only
    *
    * @param  {Number} userId User identifier of sticker set owner
    * @param  {String} name Sticker set name
-   * @param  {String|stream.Stream|Buffer} pngThumb A PNG image with the thumbnail,
+   * @param  {String|stream.Stream|Buffer} thumbnail A .WEBP or .PNG image with the thumbnail,
    * must be up to 128 kilobytes in size and have width and height exactly 100px,
    * a TGS animation with the thumbnail up to 32 kilobytes in size or a WEBM video with the thumbnail up to 32 kilobytes in size.
    *
@@ -2552,9 +2692,9 @@ class TelegramBot extends EventEmitter {
    * @param  {Object} [options] Additional Telegram query options
    * @param  {Object} [fileOptions] Optional file related meta-data
    * @return {Promise} True on success
-   * @see https://core.telegram.org/bots/api#setstickersetthumb
+   * @see https://core.telegram.org/bots/api#setstickersetthumbnail
    */
-  setStickerSetThumb(userId, name, pngThumb, options = {}, fileOptions = {}) {
+  setStickerSetThumbnail(userId, name, thumbnail, options = {}, fileOptions = {}) {
     const opts = {
       qs: options,
     };
@@ -2562,13 +2702,44 @@ class TelegramBot extends EventEmitter {
     opts.qs.name = name;
     opts.qs.mask_position = stringify(options.mask_position);
     try {
-      const sendData = this._formatSendData('thumb', pngThumb, fileOptions);
+      const sendData = this._formatSendData('thumbnail', thumbnail, fileOptions);
       opts.formData = sendData[0];
-      opts.qs.thumb = sendData[1];
+      opts.qs.thumbnail = sendData[1];
     } catch (ex) {
       return Promise.reject(ex);
     }
-    return this._request('setStickerSetThumb', opts);
+    return this._request('setStickerSetThumbnail', opts);
+  }
+
+
+  /**
+   * Use this method to set the thumbnail of a custom emoji sticker set.
+   *
+   * The sticker must belong to a sticker set created by the bot.
+   *
+   * @param  {String} name Sticker set name
+   * @param  {Object} [options] Additional Telegram query options
+   * @return {Promise} True on success
+   * @see https://core.telegram.org/bots/api#setcustomemojistickersetthumbnail
+   */
+  setCustomEmojiStickerSetThumbnail(name, form = {}) {
+    form.name = name;
+    return this._request('setCustomEmojiStickerSetThumbnail', { form });
+  }
+
+  /**
+   * Use this method to delete a sticker set that was created by the bot.
+   *
+   * The sticker must belong to a sticker set created by the bot.
+   *
+   * @param  {String} name Sticker set name
+   * @param  {Object} [options] Additional Telegram query options
+   * @return {Promise} True on success
+   * @see https://core.telegram.org/bots/api#deletestickerset
+   */
+  deleteStickerSet(name, form = {}) {
+    form.name = name;
+    return this._request('deleteStickerSet', { form });
   }
 
   /**

@@ -103,6 +103,12 @@ TelegramBot
         * [.setMyCommands(commands, [options])](#TelegramBot+setMyCommands) ⇒ <code>Promise</code>
         * [.deleteMyCommands([options])](#TelegramBot+deleteMyCommands) ⇒ <code>Promise</code>
         * [.getMyCommands([options])](#TelegramBot+getMyCommands) ⇒ <code>Promise</code>
+        * [.setMyName([options])](#TelegramBot+setMyName) ⇒ <code>Promise</code>
+        * [.getMyName([options])](#TelegramBot+getMyName) ⇒ <code>Promise</code>
+        * [.setMyDescription([options])](#TelegramBot+setMyDescription) ⇒ <code>Promise</code>
+        * [.getMyDescription([options])](#TelegramBot+getMyDescription) ⇒ <code>Promise</code>
+        * [.setMyShortDescription([options])](#TelegramBot+setMyShortDescription) ⇒ <code>Promise</code>
+        * [.getMyShortDescription([options])](#TelegramBot+getMyShortDescription) ⇒ <code>Promise</code>
         * [.setChatMenuButton([options])](#TelegramBot+setChatMenuButton) ⇒ <code>Promise</code>
         * [.getChatMenuButton([options])](#TelegramBot+getChatMenuButton) ⇒ <code>Promise</code>
         * [.setMyDefaultAdministratorRights([options])](#TelegramBot+setMyDefaultAdministratorRights) ⇒ <code>Promise</code>
@@ -116,12 +122,18 @@ TelegramBot
         * [.sendSticker(chatId, sticker, [options], [fileOptions])](#TelegramBot+sendSticker) ⇒ <code>Promise</code>
         * [.getStickerSet(name, [options])](#TelegramBot+getStickerSet) ⇒ <code>Promise</code>
         * [.getCustomEmojiStickers(custom_emoji_ids, [options])](#TelegramBot+getCustomEmojiStickers) ⇒ <code>Promise</code>
-        * [.uploadStickerFile(userId, pngSticker, [options], [fileOptions])](#TelegramBot+uploadStickerFile) ⇒ <code>Promise</code>
+        * [.uploadStickerFile(userId, sticker, stickerFormat, [options], [fileOptions])](#TelegramBot+uploadStickerFile) ⇒ <code>Promise</code>
         * [.createNewStickerSet(userId, name, title, pngSticker, emojis, [options], [fileOptions])](#TelegramBot+createNewStickerSet) ⇒ <code>Promise</code>
         * [.addStickerToSet(userId, name, sticker, emojis, stickerType, [options], [fileOptions])](#TelegramBot+addStickerToSet) ⇒ <code>Promise</code>
         * [.setStickerPositionInSet(sticker, position, [options])](#TelegramBot+setStickerPositionInSet) ⇒ <code>Promise</code>
         * [.deleteStickerFromSet(sticker, [options])](#TelegramBot+deleteStickerFromSet) ⇒ <code>Promise</code>
-        * [.setStickerSetThumb(userId, name, pngThumb, [options], [fileOptions])](#TelegramBot+setStickerSetThumb) ⇒ <code>Promise</code>
+        * [.setStickerEmojiList(sticker, emojiList, [options])](#TelegramBot+setStickerEmojiList) ⇒ <code>Promise</code>
+        * [.setStickerKeywords(sticker, [options])](#TelegramBot+setStickerKeywords) ⇒ <code>Promise</code>
+        * [.setStickerMaskPosition(sticker, [options])](#TelegramBot+setStickerMaskPosition) ⇒ <code>Promise</code>
+        * [.setStickerSetTitle(name, title, [options])](#TelegramBot+setStickerSetTitle) ⇒ <code>Promise</code>
+        * [.setStickerSetThumbnail(userId, name, thumbnail, [options], [fileOptions])](#TelegramBot+setStickerSetThumbnail) ⇒ <code>Promise</code>
+        * [.setCustomEmojiStickerSetThumbnail(name, [options])](#TelegramBot+setCustomEmojiStickerSetThumbnail) ⇒ <code>Promise</code>
+        * [.deleteStickerSet(name, [options])](#TelegramBot+deleteStickerSet) ⇒ <code>Promise</code>
         * [.answerInlineQuery(inlineQueryId, results, [options])](#TelegramBot+answerInlineQuery) ⇒ <code>Promise</code>
         * [.answerWebAppQuery(webAppQueryId, result, [options])](#TelegramBot+answerWebAppQuery) ⇒ <code>Promise</code>
         * [.sendInvoice(chatId, title, description, payload, providerToken, currency, prices, [options])](#TelegramBot+sendInvoice) ⇒ <code>Promise</code>
@@ -1632,6 +1644,87 @@ Use this method to get the current list of the bot's commands for the given scop
 | --- | --- | --- |
 | [options] | <code>Object</code> | Additional Telegram query options |
 
+<a name="TelegramBot+setMyName"></a>
+
+### telegramBot.setMyName([options]) ⇒ <code>Promise</code>
+Use this method to change the bot's name.
+
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
+**Returns**: <code>Promise</code> - True on success  
+**See**: https://core.telegram.org/bots/api#setmyname  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| [options] | <code>Object</code> | Additional Telegram query options |
+
+<a name="TelegramBot+getMyName"></a>
+
+### telegramBot.getMyName([options]) ⇒ <code>Promise</code>
+Use this method to get the current bot name for the given user language.
+
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
+**Returns**: <code>Promise</code> - [BotName](https://core.telegram.org/bots/api#botname) on success  
+**See**: https://core.telegram.org/bots/api#getmyname  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| [options] | <code>Object</code> | Additional Telegram query options |
+
+<a name="TelegramBot+setMyDescription"></a>
+
+### telegramBot.setMyDescription([options]) ⇒ <code>Promise</code>
+Use this method to change the bot's description, which is shown in the chat with the bot if the chat is empty.
+
+Returns True on success.
+
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
+**Returns**: <code>Promise</code> - True on success  
+**See**: https://core.telegram.org/bots/api#setmydescription  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| [options] | <code>Object</code> | Additional Telegram query options |
+
+<a name="TelegramBot+getMyDescription"></a>
+
+### telegramBot.getMyDescription([options]) ⇒ <code>Promise</code>
+Use this method to get the current bot description for the given user language.
+
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
+**Returns**: <code>Promise</code> - Returns [BotDescription](https://core.telegram.org/bots/api#botdescription) on success.  
+**See**: https://core.telegram.org/bots/api#getmydescription  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| [options] | <code>Object</code> | Additional Telegram query options |
+
+<a name="TelegramBot+setMyShortDescription"></a>
+
+### telegramBot.setMyShortDescription([options]) ⇒ <code>Promise</code>
+Use this method to change the bot's short description, which is shown on the bot's profile page
+and is sent together with the link when users share the bot.
+
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
+**Returns**: <code>Promise</code> - Returns True on success.  
+**See**: https://core.telegram.org/bots/api#setmyshortdescription  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| [options] | <code>Object</code> | Additional Telegram query options |
+
+<a name="TelegramBot+getMyShortDescription"></a>
+
+### telegramBot.getMyShortDescription([options]) ⇒ <code>Promise</code>
+Use this method to get the current bot short description for the given user language.
+
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
+**Returns**: <code>Promise</code> - Returns [BotShortDescription](https://core.telegram.org/bots/api#botshortdescription) on success.  
+**See**: https://core.telegram.org/bots/api#getmyshortdescription  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| [options] | <code>Object</code> | Additional Telegram query options |
+
 <a name="TelegramBot+setChatMenuButton"></a>
 
 ### telegramBot.setChatMenuButton([options]) ⇒ <code>Promise</code>
@@ -1839,20 +1932,21 @@ Use this method to get information about custom emoji stickers by their identifi
 
 <a name="TelegramBot+uploadStickerFile"></a>
 
-### telegramBot.uploadStickerFile(userId, pngSticker, [options], [fileOptions]) ⇒ <code>Promise</code>
-Use this method to upload a .png file with a sticker for later use in *createNewStickerSet* and *addStickerToSet* methods (can be used multiple
+### telegramBot.uploadStickerFile(userId, sticker, stickerFormat, [options], [fileOptions]) ⇒ <code>Promise</code>
+Use this method to upload a file with a sticker for later use in *createNewStickerSet* and *addStickerToSet* methods (can be used multiple
 times).
 
 **Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
 **Returns**: <code>Promise</code> - On success, a [File](https://core.telegram.org/bots/api#file) object is returned  
 **See**: https://core.telegram.org/bots/api#uploadstickerfile  
 
-| Param | Type | Description |
-| --- | --- | --- |
-| userId | <code>Number</code> | User identifier of sticker file owner |
-| pngSticker | <code>String</code> \| <code>stream.Stream</code> \| <code>Buffer</code> | A file path or a Stream. Can also be a `file_id` previously uploaded. **Png** image with the  sticker, must be up to 512 kilobytes in size, dimensions must not exceed 512px, and either width or height must be exactly 512px. |
-| [options] | <code>Object</code> | Additional Telegram query options |
-| [fileOptions] | <code>Object</code> | Optional file related meta-data |
+| Param | Type | Default | Description |
+| --- | --- | --- | --- |
+| userId | <code>Number</code> |  | User identifier of sticker file owner |
+| sticker | <code>String</code> \| <code>stream.Stream</code> \| <code>Buffer</code> |  | A file path or a Stream with the sticker in .WEBP, .PNG, .TGS, or .WEBM format. Can also be a `file_id` previously uploaded. |
+| stickerFormat | <code>String</code> | <code>static</code> | Allow values:  `static`, `animated` or `video` |
+| [options] | <code>Object</code> |  | Additional Telegram query options |
+| [fileOptions] | <code>Object</code> |  | Optional file related meta-data |
 
 <a name="TelegramBot+createNewStickerSet"></a>
 
@@ -1935,24 +2029,122 @@ Use this method to delete a sticker from a set created by the bot.
 | sticker | <code>String</code> | File identifier of the sticker |
 | [options] | <code>Object</code> | Additional Telegram query options |
 
-<a name="TelegramBot+setStickerSetThumb"></a>
+<a name="TelegramBot+setStickerEmojiList"></a>
 
-### telegramBot.setStickerSetThumb(userId, name, pngThumb, [options], [fileOptions]) ⇒ <code>Promise</code>
+### telegramBot.setStickerEmojiList(sticker, emojiList, [options]) ⇒ <code>Promise</code>
+Use this method to change the list of emoji assigned to a regular or custom emoji sticker.
+
+The sticker must belong to a sticker set created by the bot.
+
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
+**Returns**: <code>Promise</code> - True on success  
+**See**: https://core.telegram.org/bots/api#setstickeremojilist  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| sticker | <code>String</code> | File identifier of the sticker |
+| emojiList | <code>Array</code> | A JSON-serialized list of 1-20 emoji associated with the sticker |
+| [options] | <code>Object</code> | Additional Telegram query options |
+
+<a name="TelegramBot+setStickerKeywords"></a>
+
+### telegramBot.setStickerKeywords(sticker, [options]) ⇒ <code>Promise</code>
+Use this method to change the list of emoji assigned to a `regular` or `custom emoji` sticker.
+
+The sticker must belong to a sticker set created by the bot.
+
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
+**Returns**: <code>Promise</code> - True on success  
+**See**: https://core.telegram.org/bots/api#setstickerkeywords  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| sticker | <code>String</code> | File identifier of the sticker |
+| [options] | <code>Object</code> | Additional Telegram query options |
+
+<a name="TelegramBot+setStickerMaskPosition"></a>
+
+### telegramBot.setStickerMaskPosition(sticker, [options]) ⇒ <code>Promise</code>
+Use this method to change the [mask position](https://core.telegram.org/bots/api#maskposition) of a mask sticker.
+
+The sticker must belong to a sticker set created by the bot.
+
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
+**Returns**: <code>Promise</code> - True on success  
+**See**: https://core.telegram.org/bots/api#setstickermaskposition  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| sticker | <code>String</code> | File identifier of the sticker |
+| [options] | <code>Object</code> | Additional Telegram query options |
+
+<a name="TelegramBot+setStickerSetTitle"></a>
+
+### telegramBot.setStickerSetTitle(name, title, [options]) ⇒ <code>Promise</code>
+Use this method to set the title of a created sticker set.
+
+The sticker must belong to a sticker set created by the bot.
+
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
+**Returns**: <code>Promise</code> - True on success  
+**See**: https://core.telegram.org/bots/api#setstickersettitle  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| name | <code>String</code> | Sticker set name |
+| title | <code>String</code> | Sticker set title, 1-64 characters |
+| [options] | <code>Object</code> | Additional Telegram query options |
+
+<a name="TelegramBot+setStickerSetThumbnail"></a>
+
+### telegramBot.setStickerSetThumbnail(userId, name, thumbnail, [options], [fileOptions]) ⇒ <code>Promise</code>
 Use this method to add a thumb to a set created by the bot.
 
 Animated thumbnails can be set for animated sticker sets only. Video thumbnails can be set only for video sticker sets only
 
 **Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
 **Returns**: <code>Promise</code> - True on success  
-**See**: https://core.telegram.org/bots/api#setstickersetthumb  
+**See**: https://core.telegram.org/bots/api#setstickersetthumbnail  
 
 | Param | Type | Description |
 | --- | --- | --- |
 | userId | <code>Number</code> | User identifier of sticker set owner |
 | name | <code>String</code> | Sticker set name |
-| pngThumb | <code>String</code> \| <code>stream.Stream</code> \| <code>Buffer</code> | A PNG image with the thumbnail, must be up to 128 kilobytes in size and have width and height exactly 100px, a TGS animation with the thumbnail up to 32 kilobytes in size or a WEBM video with the thumbnail up to 32 kilobytes in size. Pass a file_id as a String to send a file that already exists on the Telegram servers, pass an HTTP URL as a String for Telegram to get a file from the Internet, or upload a new one. Animated sticker set thumbnails can't be uploaded via HTTP URL. |
+| thumbnail | <code>String</code> \| <code>stream.Stream</code> \| <code>Buffer</code> | A .WEBP or .PNG image with the thumbnail, must be up to 128 kilobytes in size and have width and height exactly 100px, a TGS animation with the thumbnail up to 32 kilobytes in size or a WEBM video with the thumbnail up to 32 kilobytes in size. Pass a file_id as a String to send a file that already exists on the Telegram servers, pass an HTTP URL as a String for Telegram to get a file from the Internet, or upload a new one. Animated sticker set thumbnails can't be uploaded via HTTP URL. |
 | [options] | <code>Object</code> | Additional Telegram query options |
 | [fileOptions] | <code>Object</code> | Optional file related meta-data |
+
+<a name="TelegramBot+setCustomEmojiStickerSetThumbnail"></a>
+
+### telegramBot.setCustomEmojiStickerSetThumbnail(name, [options]) ⇒ <code>Promise</code>
+Use this method to set the thumbnail of a custom emoji sticker set.
+
+The sticker must belong to a sticker set created by the bot.
+
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
+**Returns**: <code>Promise</code> - True on success  
+**See**: https://core.telegram.org/bots/api#setcustomemojistickersetthumbnail  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| name | <code>String</code> | Sticker set name |
+| [options] | <code>Object</code> | Additional Telegram query options |
+
+<a name="TelegramBot+deleteStickerSet"></a>
+
+### telegramBot.deleteStickerSet(name, [options]) ⇒ <code>Promise</code>
+Use this method to delete a sticker set that was created by the bot.
+
+The sticker must belong to a sticker set created by the bot.
+
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
+**Returns**: <code>Promise</code> - True on success  
+**See**: https://core.telegram.org/bots/api#deletestickerset  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| name | <code>String</code> | Sticker set name |
+| [options] | <code>Object</code> | Additional Telegram query options |
 
 <a name="TelegramBot+answerInlineQuery"></a>
 
