@@ -1008,6 +1008,10 @@ class TelegramBot extends EventEmitter {
     } catch (ex) {
       return Promise.reject(ex);
     }
+    if( opts.qs.hasOwnProperty( "caption_entities" ) )
+    {
+      opts.qs.caption_entities = stringify(opts.qs.caption_entities);
+    }
 
     return this._request('sendAudio', opts);
   }
