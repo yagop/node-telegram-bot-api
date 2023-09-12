@@ -252,6 +252,11 @@ class TelegramBot extends EventEmitter {
       }
     }
   }
+  _fixCaptionEntities(opts) {
+    if( opts.qs.hasOwnProperty( "caption_entities" ) && Array.isArray(opts.qs.caption_entities) ){
+      opts.qs.caption_entities = stringify(opts.qs.caption_entities);
+    }
+  }
 
   /**
    * Make request against the API
@@ -973,6 +978,7 @@ class TelegramBot extends EventEmitter {
       const sendData = this._formatSendData('photo', photo, fileOptions);
       opts.formData = sendData[0];
       opts.qs.photo = sendData[1];
+      this._fixCaptionEntities(opts);
     } catch (ex) {
       return Promise.reject(ex);
     }
@@ -1005,6 +1011,7 @@ class TelegramBot extends EventEmitter {
       opts.formData = sendData[0];
       opts.qs.audio = sendData[1];
       this._fixAddFileThumbnail(options, opts);
+      this._fixCaptionEntities(opts);
     } catch (ex) {
       return Promise.reject(ex);
     }
@@ -1033,6 +1040,7 @@ class TelegramBot extends EventEmitter {
       opts.formData = sendData[0];
       opts.qs.document = sendData[1];
       this._fixAddFileThumbnail(options, opts);
+      this._fixCaptionEntities(opts);
     } catch (ex) {
       return Promise.reject(ex);
     }
@@ -1062,6 +1070,7 @@ class TelegramBot extends EventEmitter {
       opts.formData = sendData[0];
       opts.qs.video = sendData[1];
       this._fixAddFileThumbnail(options, opts);
+      this._fixCaptionEntities(opts);
     } catch (ex) {
       return Promise.reject(ex);
     }
@@ -1088,6 +1097,7 @@ class TelegramBot extends EventEmitter {
       const sendData = this._formatSendData('animation', animation, fileOptions);
       opts.formData = sendData[0];
       opts.qs.animation = sendData[1];
+      this._fixCaptionEntities(opts);
     } catch (ex) {
       return Promise.reject(ex);
     }
@@ -1116,6 +1126,7 @@ class TelegramBot extends EventEmitter {
       const sendData = this._formatSendData('voice', voice, fileOptions);
       opts.formData = sendData[0];
       opts.qs.voice = sendData[1];
+      this._fixCaptionEntities(opts);
     } catch (ex) {
       return Promise.reject(ex);
     }
