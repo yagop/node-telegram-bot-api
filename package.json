@@ -35,8 +35,8 @@
     "eventemitter3": "^3.0.0",
     "file-type": "^3.9.0",
     "mime": "^1.6.0",
+    "node-fetch": "2.7.0",
     "pump": "^2.0.0",
-    "request": "^2.83.0",
     "request-promise": "^4.2.2"
   },
   "devDependencies": {

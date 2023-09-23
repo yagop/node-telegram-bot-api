@@ -8,7 +8,8 @@ const debug = require('debug')('node-telegram-bot-api');
 const EventEmitter = require('eventemitter3');
 const fileType = require('file-type');
 const request = require('request-promise');
-const streamedRequest = require('request');
+const fetch = require('node-fetch');
+const { pipeline } = require('node:stream/promises');
 const qs = require('querystring');
 const stream = require('stream');
 const mime = require('mime');
@@ -474,7 +475,9 @@ class TelegramBot extends EventEmitter {
         fileStream.emit('info', {
           uri: fileURI,
         });
-        pump(streamedRequest(Object.assign({ uri: fileURI }, this.options.request)), fileStream);
+        fetch(fileURI)
+          .then((response) => pipeline(response.body, fileStream))
+          .catch((error) => new Error(error));
       })
       .catch((error) => {
         fileStream.emit('error', error);
