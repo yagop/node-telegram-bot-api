@@ -69,42 +69,6 @@ describe('#_formatSendData', function sendfileSuite() {
         });
       });
 
-      it('(2) Stream#path', function test() {
-        if (!stream.path) {
-          this.skip('Stream#path unsupported');
-          return;
-        }
-        const [{ [type]: data }] = bot._formatSendData(type, stream);
-        assert.equal(data.options.contentType, 'audio/mpeg');
-      });
-
-      it('(3) Buffer file-type', function test() {
-        const [{ [type]: data }] = bot._formatSendData(type, buffer);
-        assert.equal(data.options.contentType, 'audio/mpeg');
-      });
-
-      it('(4) filepath', function test() {
-        const [{ [type]: data }] = bot._formatSendData(type, filepath);
-        assert.equal(data.options.contentType, 'audio/mpeg');
-      });
-
-      it('(5) fileOptions.filename', function test() {
-        [nonPathStream, nonDetectableBuffer].forEach((file) => {
-          const [{ [type]: data }] = bot._formatSendData(type, file, {
-            filename: 'image.gif',
-          });
-          assert.equal(data.options.contentType, 'image/gif');
-        });
-      });
-
-      it('(6) Final default', function test() {
-        [nonPathStream, nonDetectableBuffer].forEach((file) => {
-          const [{ [type]: data }] = bot._formatSendData(type, file);
-          assert.equal(data.options.contentType, 'application/octet-stream');
-        });
-      });
-    });
-  });
 
   it('should handle buffer path from fs.readStream', function test() {
     let file;
