@@ -1,357 +1,129 @@
-[![Build Status](https://travis-ci.org/yagop/node-telegram-bot-api.svg?branch=master)](https://travis-ci.org/yagop/node-telegram-bot-api) [![Build status](https://ci.appveyor.com/api/projects/status/ujko6bsum3g5msjh/branch/master?svg=true)](https://ci.appveyor.com/project/yagop/node-telegram-bot-api/branch/master) [![Coverage Status](https://coveralls.io/repos/yagop/node-telegram-bot-api/badge.svg?branch=master)](https://coveralls.io/r/yagop/node-telegram-bot-api?branch=master) [![bitHound Score](https://www.bithound.io/github/yagop/node-telegram-bot-api/badges/score.svg)](https://www.bithound.io/github/yagop/node-telegram-bot-api) [![https://telegram.me/node_telegram_bot_api](https://img.shields.io/badge/💬 Telegram-node__telegram__bot__api-blue.svg)](https://telegram.me/node_telegram_bot_api) [![https://telegram.me/Yago_Perez](https://img.shields.io/badge/💬 Telegram-Yago__Perez-blue.svg)](https://telegram.me/Yago_Perez)
+<h1 align="center">Node.js Telegram Bot API</h1>
 
-Node.js module to interact with official [Telegram Bot API](https://core.telegram.org/bots/api). A bot token is needed, to obtain one, talk to [@botfather](https://telegram.me/BotFather) and create a new bot.
+<div align="center">
+
+Node.js module to interact with the official [Telegram Bot API](https://core.telegram.org/bots/api).
+
+
+[![Bot API](https://img.shields.io/badge/Bot%20API-v.6.3-00aced.svg?style=flat-square&logo=telegram)](https://core.telegram.org/bots/api)
+[![npm package](https://img.shields.io/npm/v/node-telegram-bot-api?logo=npm&style=flat-square)](https://www.npmjs.org/package/node-telegram-bot-api)
+[![Build Status](https://img.shields.io/travis/yagop/node-telegram-bot-api/master?style=flat-square&logo=travis)](https://travis-ci.org/yagop/node-telegram-bot-api)
+[![Coverage Status](https://img.shields.io/codecov/c/github/yagop/node-telegram-bot-api?style=flat-square&logo=codecov)](https://codecov.io/gh/yagop/node-telegram-bot-api)
+
+[![https://telegram.me/node_telegram_bot_api](https://img.shields.io/badge/💬%20Telegram-Channel-blue.svg?style=flat-square)](https://telegram.me/node_telegram_bot_api)
+[![https://telegram.me/ntbasupport](https://img.shields.io/badge/💬%20Telegram-Group-blue.svg?style=flat-square)](https://telegram.me/ntbasupport)
+[![https://telegram.me/Yago_Perez](https://img.shields.io/badge/💬%20Telegram-Yago_Perez-blue.svg?style=flat-square)](https://telegram.me/Yago_Perez)
+
+</div>
+
+## 📦 Install
 
 ```sh
-npm install node-telegram-bot-api
+npm i node-telegram-bot-api
 ```
+
+<br/>
+
+> ✍️ **Note:** If you use Typescript you can install this package that contains type definitions for this library
+>```sh
+>npm install --save-dev @types/node-telegram-bot-api
+>```
+
+## 🚀 Usage
 
 ```js
-var TelegramBot = require('node-telegram-bot-api');
+const TelegramBot = require('node-telegram-bot-api');
 
-var token = 'YOUR_TELEGRAM_BOT_TOKEN';
-// Setup polling way
-var bot = new TelegramBot(token, {polling: true});
+// replace the value below with the Telegram token you receive from @BotFather
+const token = 'YOUR_TELEGRAM_BOT_TOKEN';
 
-// Matches /echo [whatever]
-bot.onText(/\/echo (.+)/, function (msg, match) {
-  var fromId = msg.from.id;
-  var resp = match[1];
-  bot.sendMessage(fromId, resp);
+// Create a bot that uses 'polling' to fetch new updates
+const bot = new TelegramBot(token, {polling: true});
+
+// Matches "/echo [whatever]"
+bot.onText(/\/echo (.+)/, (msg, match) => {
+  // 'msg' is the received Message from Telegram
+  // 'match' is the result of executing the regexp above on the text content
+  // of the message
+
+  const chatId = msg.chat.id;
+  const resp = match[1]; // the captured "whatever"
+
+  // send back the matched "whatever" to the chat
+  bot.sendMessage(chatId, resp);
 });
 
-// Any kind of message
-bot.on('message', function (msg) {
-  var chatId = msg.chat.id;
-  // photo can be: a file path, a stream or a Telegram file_id
-  var photo = 'cats.png';
-  bot.sendPhoto(chatId, photo, {caption: 'Lovely kittens'});
+// Listen for any kind of message. There are different kinds of
+// messages.
+bot.on('message', (msg) => {
+  const chatId = msg.chat.id;
+
+  // send a message to the chat acknowledging receipt of their message
+  bot.sendMessage(chatId, 'Received your message');
 });
 ```
 
-There are some other examples on [examples](https://github.com/yagop/node-telegram-bot-api/tree/master/examples).
-
-### Events
-Every time TelegramBot receives a message, it emits a `message`. Depending on which  [message](https://core.telegram.org/bots/api#message) was received, emits an event from this ones: `text`, `audio`, `document`, `photo`, `sticker`, `video`, `voice`, `contact`, `location`, `new_chat_participant`, `left_chat_participant`, `new_chat_title`, `new_chat_photo`, `delete_chat_photo`, `group_chat_created`. Its much better to listen a specific event rather than a `message` in order to stay safe from the content.
-TelegramBot emits `inline_query` when receives an [https://core.telegram.org/bots/api#inlinequery](Inline Query) and `chosen_inline_result` when receives a [ChosenInlineResult](https://core.telegram.org/bots/api#choseninlineresult). Bot must be enabled on [inline mode](https://core.telegram.org/bots/api#inline-mode)
-* * *
-
-### WebHooks
-
-Telegram only supports HTTPS connections to WebHooks, in order to set a WebHook a private key file and public certificate must be used. Since August 29, 2015 Telegram supports self signed ones, to generate them:
-```bash
-# Our private cert will be key.pem, keep in private this file.
-openssl genrsa -out key.pem 2048
-# Our public certificate will be crt.pem
-openssl req -new -sha256 -key key.pem -out crt.pem
-```
-Once they are generated, the `crt.pem` can be provided to `telegramBot.setWebHook(url, crt)` as `crt`.
-
-## API Reference
-<a name="TelegramBot"></a>
-## TelegramBot
-TelegramBot
-
-**Kind**: global class  
-**See**: https://core.telegram.org/bots/api  
-
-* [TelegramBot](#TelegramBot)
-    * [new TelegramBot(token, [options])](#new_TelegramBot_new)
-    * [.getMe()](#TelegramBot+getMe) ⇒ <code>Promise</code>
-    * [.setWebHook(url, [cert])](#TelegramBot+setWebHook)
-    * [.getUpdates([timeout], [limit], [offset])](#TelegramBot+getUpdates) ⇒ <code>Promise</code>
-    * [.sendMessage(chatId, text, [options])](#TelegramBot+sendMessage) ⇒ <code>Promise</code>
-    * [.answerInlineQuery(inlineQueryId, results, [options])](#TelegramBot+answerInlineQuery) ⇒ <code>Promise</code>
-    * [.forwardMessage(chatId, fromChatId, messageId)](#TelegramBot+forwardMessage) ⇒ <code>Promise</code>
-    * [.sendPhoto(chatId, photo, [options])](#TelegramBot+sendPhoto) ⇒ <code>Promise</code>
-    * [.sendAudio(chatId, audio, [options])](#TelegramBot+sendAudio) ⇒ <code>Promise</code>
-    * [.sendDocument(chatId, doc, [options])](#TelegramBot+sendDocument) ⇒ <code>Promise</code>
-    * [.sendSticker(chatId, sticker, [options])](#TelegramBot+sendSticker) ⇒ <code>Promise</code>
-    * [.sendVideo(chatId, video, [options])](#TelegramBot+sendVideo) ⇒ <code>Promise</code>
-    * [.sendVoice(chatId, voice, [options])](#TelegramBot+sendVoice) ⇒ <code>Promise</code>
-    * [.sendChatAction(chatId, action)](#TelegramBot+sendChatAction) ⇒ <code>Promise</code>
-    * [.getUserProfilePhotos(userId, [offset], [limit])](#TelegramBot+getUserProfilePhotos) ⇒ <code>Promise</code>
-    * [.sendLocation(chatId, latitude, longitude, [options])](#TelegramBot+sendLocation) ⇒ <code>Promise</code>
-    * [.getFile(fileId)](#TelegramBot+getFile) ⇒ <code>Promise</code>
-    * [.getFileLink(fileId)](#TelegramBot+getFileLink) ⇒ <code>Promise</code>
-    * [.downloadFile(fileId, downloadDir)](#TelegramBot+downloadFile) ⇒ <code>Promise</code>
-    * [.onText(regexp, callback)](#TelegramBot+onText)
-    * [.onReplyToMessage(chatId, messageId, callback)](#TelegramBot+onReplyToMessage)
-
-<a name="new_TelegramBot_new"></a>
-### new TelegramBot(token, [options])
-Both request method to obtain messages are implemented. To use standard polling, set `polling: true`
-on `options`. Notice that [webHook](https://core.telegram.org/bots/api#setwebhook) will need a SSL certificate.
-Emits `message` when a message arrives.
-
-
-| Param | Type | Default | Description |
-| --- | --- | --- | --- |
-| token | <code>String</code> |  | Bot Token |
-| [options] | <code>Object</code> |  |  |
-| [options.polling] | <code>Boolean</code> &#124; <code>Object</code> | <code>false</code> | Set true to enable polling or set options |
-| [options.polling.timeout] | <code>String</code> &#124; <code>Number</code> | <code>10</code> | Polling time in seconds |
-| [options.polling.interval] | <code>String</code> &#124; <code>Number</code> | <code>2000</code> | Interval between requests in miliseconds |
-| [options.webHook] | <code>Boolean</code> &#124; <code>Object</code> | <code>false</code> | Set true to enable WebHook or set options |
-| [options.webHook.key] | <code>String</code> |  | PEM private key to webHook server. |
-| [options.webHook.cert] | <code>String</code> |  | PEM certificate (public) to webHook server. |
-
-<a name="TelegramBot+getMe"></a>
-### telegramBot.getMe() ⇒ <code>Promise</code>
-Returns basic information about the bot in form of a `User` object.
-
-**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
-**See**: https://core.telegram.org/bots/api#getme  
-<a name="TelegramBot+setWebHook"></a>
-### telegramBot.setWebHook(url, [cert])
-Specify an url to receive incoming updates via an outgoing webHook.
-
-**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
-**See**: https://core.telegram.org/bots/api#setwebhook  
-
-| Param | Type | Description |
-| --- | --- | --- |
-| url | <code>String</code> | URL where Telegram will make HTTP Post. Leave empty to delete webHook. |
-| [cert] | <code>String</code> &#124; <code>stream.Stream</code> | PEM certificate key (public). |
-
-<a name="TelegramBot+getUpdates"></a>
-### telegramBot.getUpdates([timeout], [limit], [offset]) ⇒ <code>Promise</code>
-Use this method to receive incoming updates using long polling
-
-**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
-**Returns**: <code>Promise</code> - Updates  
-**See**: https://core.telegram.org/bots/api#getupdates  
-
-| Param | Type | Description |
-| --- | --- | --- |
-| [timeout] | <code>Number</code> &#124; <code>String</code> | Timeout in seconds for long polling. |
-| [limit] | <code>Number</code> &#124; <code>String</code> | Limits the number of updates to be retrieved. |
-| [offset] | <code>Number</code> &#124; <code>String</code> | Identifier of the first update to be returned. |
-
-<a name="TelegramBot+sendMessage"></a>
-### telegramBot.sendMessage(chatId, text, [options]) ⇒ <code>Promise</code>
-Send text message.
-
-**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
-**See**: https://core.telegram.org/bots/api#sendmessage  
-
-| Param | Type | Description |
-| --- | --- | --- |
-| chatId | <code>Number</code> &#124; <code>String</code> | Unique identifier for the message recipient |
-| text | <code>String</code> | Text of the message to be sent |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+answerInlineQuery"></a>
-### telegramBot.answerInlineQuery(inlineQueryId, results, [options]) ⇒ <code>Promise</code>
-Send answers to an inline query.
-
-**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
-**See**: https://core.telegram.org/bots/api#answerinlinequery  
-
-| Param | Type | Description |
-| --- | --- | --- |
-| inlineQueryId | <code>String</code> | Unique identifier of the query |
-| results | <code>Array.&lt;InlineQueryResult&gt;</code> | An array of results for the inline query |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+forwardMessage"></a>
-### telegramBot.forwardMessage(chatId, fromChatId, messageId) ⇒ <code>Promise</code>
-Forward messages of any kind.
-
-**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
-
-| Param | Type | Description |
-| --- | --- | --- |
-| chatId | <code>Number</code> &#124; <code>String</code> | Unique identifier for the message recipient |
-| fromChatId | <code>Number</code> &#124; <code>String</code> | Unique identifier for the chat where the original message was sent |
-| messageId | <code>Number</code> &#124; <code>String</code> | Unique message identifier |
-
-<a name="TelegramBot+sendPhoto"></a>
-### telegramBot.sendPhoto(chatId, photo, [options]) ⇒ <code>Promise</code>
-Send photo
-
-**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
-**See**: https://core.telegram.org/bots/api#sendphoto  
-
-| Param | Type | Description |
-| --- | --- | --- |
-| chatId | <code>Number</code> &#124; <code>String</code> | Unique identifier for the message recipient |
-| photo | <code>String</code> &#124; <code>stream.Stream</code> &#124; <code>Buffer</code> | A file path or a Stream. Can also be a `file_id` previously uploaded |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+sendAudio"></a>
-### telegramBot.sendAudio(chatId, audio, [options]) ⇒ <code>Promise</code>
-Send audio
-
-**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
-**See**: https://core.telegram.org/bots/api#sendaudio  
-
-| Param | Type | Description |
-| --- | --- | --- |
-| chatId | <code>Number</code> &#124; <code>String</code> | Unique identifier for the message recipient |
-| audio | <code>String</code> &#124; <code>stream.Stream</code> &#124; <code>Buffer</code> | A file path, Stream or Buffer. Can also be a `file_id` previously uploaded. |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+sendDocument"></a>
-### telegramBot.sendDocument(chatId, doc, [options]) ⇒ <code>Promise</code>
-Send Document
-
-**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
-**See**: https://core.telegram.org/bots/api#sendDocument  
-
-| Param | Type | Description |
-| --- | --- | --- |
-| chatId | <code>Number</code> &#124; <code>String</code> | Unique identifier for the message recipient |
-| doc | <code>String</code> &#124; <code>stream.Stream</code> &#124; <code>Buffer</code> | A file path, Stream or Buffer. Can also be a `file_id` previously uploaded. |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+sendSticker"></a>
-### telegramBot.sendSticker(chatId, sticker, [options]) ⇒ <code>Promise</code>
-Send .webp stickers.
-
-**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
-**See**: https://core.telegram.org/bots/api#sendsticker  
-
-| Param | Type | Description |
-| --- | --- | --- |
-| chatId | <code>Number</code> &#124; <code>String</code> | Unique identifier for the message recipient |
-| sticker | <code>String</code> &#124; <code>stream.Stream</code> &#124; <code>Buffer</code> | A file path, Stream or Buffer. Can also be a `file_id` previously uploaded. Stickers are WebP format files. |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+sendVideo"></a>
-### telegramBot.sendVideo(chatId, video, [options]) ⇒ <code>Promise</code>
-Use this method to send video files, Telegram clients support mp4 videos (other formats may be sent as Document).
-
-**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
-**See**: https://core.telegram.org/bots/api#sendvideo  
-
-| Param | Type | Description |
-| --- | --- | --- |
-| chatId | <code>Number</code> &#124; <code>String</code> | Unique identifier for the message recipient |
-| video | <code>String</code> &#124; <code>stream.Stream</code> &#124; <code>Buffer</code> | A file path or Stream. Can also be a `file_id` previously uploaded. |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+sendVoice"></a>
-### telegramBot.sendVoice(chatId, voice, [options]) ⇒ <code>Promise</code>
-Send voice
-
-**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
-**See**: https://core.telegram.org/bots/api#sendvoice  
-
-| Param | Type | Description |
-| --- | --- | --- |
-| chatId | <code>Number</code> &#124; <code>String</code> | Unique identifier for the message recipient |
-| voice | <code>String</code> &#124; <code>stream.Stream</code> &#124; <code>Buffer</code> | A file path, Stream or Buffer. Can also be a `file_id` previously uploaded. |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+sendChatAction"></a>
-### telegramBot.sendChatAction(chatId, action) ⇒ <code>Promise</code>
-Send chat action.
-`typing` for text messages,
-`upload_photo` for photos, `record_video` or `upload_video` for videos,
-`record_audio` or `upload_audio` for audio files, `upload_document` for general files,
-`find_location` for location data.
-
-**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
-**See**: https://core.telegram.org/bots/api#sendchataction  
-
-| Param | Type | Description |
-| --- | --- | --- |
-| chatId | <code>Number</code> &#124; <code>String</code> | Unique identifier for the message recipient |
-| action | <code>String</code> | Type of action to broadcast. |
-
-<a name="TelegramBot+getUserProfilePhotos"></a>
-### telegramBot.getUserProfilePhotos(userId, [offset], [limit]) ⇒ <code>Promise</code>
-Use this method to get a list of profile pictures for a user.
-Returns a [UserProfilePhotos](https://core.telegram.org/bots/api#userprofilephotos) object.
-
-**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
-**See**: https://core.telegram.org/bots/api#getuserprofilephotos  
-
-| Param | Type | Description |
-| --- | --- | --- |
-| userId | <code>Number</code> &#124; <code>String</code> | Unique identifier of the target user |
-| [offset] | <code>Number</code> | Sequential number of the first photo to be returned. By default, all photos are returned. |
-| [limit] | <code>Number</code> | Limits the number of photos to be retrieved. Values between 1—100 are accepted. Defaults to 100. |
-
-<a name="TelegramBot+sendLocation"></a>
-### telegramBot.sendLocation(chatId, latitude, longitude, [options]) ⇒ <code>Promise</code>
-Send location.
-Use this method to send point on the map.
-
-**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
-**See**: https://core.telegram.org/bots/api#sendlocation  
-
-| Param | Type | Description |
-| --- | --- | --- |
-| chatId | <code>Number</code> &#124; <code>String</code> | Unique identifier for the message recipient |
-| latitude | <code>Float</code> | Latitude of location |
-| longitude | <code>Float</code> | Longitude of location |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+getFile"></a>
-### telegramBot.getFile(fileId) ⇒ <code>Promise</code>
-Get file.
-Use this method to get basic info about a file and prepare it for downloading.
-Attention: link will be valid for 1 hour.
-
-**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
-**See**: https://core.telegram.org/bots/api#getfile  
-
-| Param | Type | Description |
-| --- | --- | --- |
-| fileId | <code>String</code> | File identifier to get info about |
-
-<a name="TelegramBot+getFileLink"></a>
-### telegramBot.getFileLink(fileId) ⇒ <code>Promise</code>
-Get link for file.
-Use this method to get link for file for subsequent use.
-Attention: link will be valid for 1 hour.
-
-This method is a sugar extension of the (getFile)[#getfilefileid] method, which returns just path to file on remote server (you will have to manually build full uri after that).
-
-**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
-**Returns**: <code>Promise</code> - promise Promise which will have *fileURI* in resolve callback  
-**See**: https://core.telegram.org/bots/api#getfile  
-
-| Param | Type | Description |
-| --- | --- | --- |
-| fileId | <code>String</code> | File identifier to get info about |
-
-<a name="TelegramBot+downloadFile"></a>
-### telegramBot.downloadFile(fileId, downloadDir) ⇒ <code>Promise</code>
-Downloads file in the specified folder.
-This is just a sugar for (getFile)[#getfilefiled] method
-
-**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
-**Returns**: <code>Promise</code> - promise Promise, which will have *filePath* of downloaded file in resolve callback  
-
-| Param | Type | Description |
-| --- | --- | --- |
-| fileId | <code>String</code> | File identifier to get info about |
-| downloadDir | <code>String</code> | Absolute path to the folder in which file will be saved |
-
-<a name="TelegramBot+onText"></a>
-### telegramBot.onText(regexp, callback)
-Register a RegExp to test against an incomming text message.
-
-**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
-
-| Param | Type | Description |
-| --- | --- | --- |
-| regexp | <code>RegExp</code> | RegExp to be executed with `exec`. |
-| callback | <code>function</code> | Callback will be called with 2 parameters, the `msg` and the result of executing `regexp.exec` on message text. |
-
-<a name="TelegramBot+onReplyToMessage"></a>
-### telegramBot.onReplyToMessage(chatId, messageId, callback)
-Register a reply to wait for a message response.
-
-**Kind**: instance method of <code>[TelegramBot](#TelegramBot)</code>  
-
-| Param | Type | Description |
-| --- | --- | --- |
-| chatId | <code>Number</code> &#124; <code>String</code> | The chat id where the message cames from. |
-| messageId | <code>Number</code> &#124; <code>String</code> | The message id to be replied. |
-| callback | <code>function</code> | Callback will be called with the reply  message. |
-
-* * *
+## 📚 Documentation
+
+* [Usage][usage]
+* [Examples][examples]
+* [Tutorials][tutorials]
+* [Help Information][help]
+* API Reference: ([api-release](../master/doc/api.md) / [development][api-dev] / [experimental][api-experimental])
+* [Contributing to the Project][contributing]
+* [Experimental Features][experimental]
+
+_**Note**: Development is done against the **development** branch.
+Code for the latest release resides on the **master** branch.
+Experimental features reside on the **experimental** branch._
+
+
+## 💭 Community
+
+We thank all the developers in the Open-Source community who continuously
+take their time and effort in advancing this project.
+See our [list of contributors][contributors].
+
+We have a [Telegram channel][tg-channel] where we post updates on
+the Project. Head over and subscribe!
+
+We also have a [Telegram  group][tg-group] to discuss issues related to this library.
+
+Some things built using this library that might interest you:
+
+* [tgfancy](https://github.com/GochoMugo/tgfancy): A fancy, higher-level wrapper for Telegram Bot API
+* [node-telegram-bot-api-middleware](https://github.com/idchlife/node-telegram-bot-api-middleware): Middleware for node-telegram-bot-api
+* [teleirc](https://github.com/FruitieX/teleirc): A simple Telegram ↔ IRC gateway
+* [bot-brother](https://github.com/SerjoPepper/bot-brother): Node.js library to help you easily create telegram bots
+* [redbot](https://github.com/guidone/node-red-contrib-chatbot): A Node-RED plugin to create telegram bots visually
+* [node-telegram-keyboard-wrapper](https://github.com/alexandercerutti/node-telegram-keyboard-wrapper): A wrapper to improve keyboards structures creation through a more easy-to-see way (supports Inline Keyboards, Reply Keyboard, Remove Keyboard and Force Reply)
+* [beetube-bot](https://github.com/kodjunkie/beetube-bot): A telegram bot for music, videos, movies, EDM tracks, torrent downloads, files and more.
+* [telegram-inline-calendar](https://github.com/VDS13/telegram-inline-calendar): Date and time picker and inline calendar for Node.js telegram bots.
+
+
+## 👥 Contributors
+
+<p align="center">
+  <a href="https://github.com/yagop/node-telegram-bot-api/graphs/contributors">
+    <img src="https://contrib.rocks/image?repo=yagop/node-telegram-bot-api" />
+  </a>
+</p>
+
+## License
+
+**The MIT License (MIT)**
+
+Copyright © 2019 Yago
+
+[usage]:https://github.com/yagop/node-telegram-bot-api/tree/master/doc/usage.md
+[examples]:https://github.com/yagop/node-telegram-bot-api/tree/master/examples
+[help]:https://github.com/yagop/node-telegram-bot-api/tree/master/doc/help.md
+[tutorials]:https://github.com/yagop/node-telegram-bot-api/tree/master/doc/tutorials.md
+[api-dev]:https://github.com/yagop/node-telegram-bot-api/tree/master/doc/api.md
+[api-release]:https://github.com/yagop/node-telegram-bot-api/tree/release/doc/api.md
+[api-experimental]:https://github.com/yagop/node-telegram-bot-api/tree/experimental/doc/api.md
+[contributing]:https://github.com/yagop/node-telegram-bot-api/tree/master/CONTRIBUTING.md
+[contributors]:https://github.com/yagop/node-telegram-bot-api/graphs/contributors
+[experimental]:https://github.com/yagop/node-telegram-bot-api/tree/master/doc/experimental.md
+[tg-channel]:https://telegram.me/node_telegram_bot_api
+[tg-group]:https://telegram.me/ntbasupport

@@ -1,8 +1,8 @@
 {
   "name": "node-telegram-bot-api",
-  "version": "0.21.1",
+  "version": "0.61.0",
   "description": "Telegram Bot API",
-  "main": "./lib/telegram.js",
+  "main": "./index.js",
   "directories": {
     "example": "examples",
     "test": "test"
@@ -14,46 +14,54 @@
     "bot"
   ],
   "scripts": {
-    "prepublish": "./node_modules/.bin/babel -d ./lib src",
-    "test": "./node_modules/.bin/mocha test/index.js",
-    "test-cov": "./node_modules/.bin/istanbul cover ./node_modules/mocha/bin/_mocha --report lcovonly -- -R spec && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js && rm -rf ./coverage",
-    "gen-doc": "./node_modules/.bin/jsdoc2md --src src/telegram.js -t README.hbs > README.md",
-    "eslint": "./node_modules/.bin/eslint ./src"
+    "gen-doc": "echo 'WARNING: `npm run gen-doc` is deprecated. Use `npm run doc` instead.' && npm run doc",
+    "doc": "jsdoc2md --files src/telegram.js --template doc/api.hbs > doc/api.md",
+    "build": "babel -d ./lib src",
+    "prepublishOnly": "npm run build && npm run gen-doc",
+    "eslint": "eslint ./src ./test ./examples",
+    "mocha": "mocha",
+    "pretest": "npm run build",
+    "test": "npm run eslint && istanbul cover ./node_modules/mocha/bin/_mocha"
   },
   "author": "Yago Pérez <yagoperezs@gmail.com>",
   "license": "MIT",
+  "engines": {
+    "node": ">=0.12"
+  },
   "dependencies": {
-    "bl": "^1.1.2",
-    "bluebird": "^3.3.4",
-    "debug": "^2.2.0",
-    "eventemitter3": "^1.2.0",
-    "file-type": "^3.8.0",
-    "mime": "^1.3.4",
-    "pump": "^1.0.1",
-    "request": "^2.69.0",
-    "request-promise": "^2.0.1"
+    "array.prototype.findindex": "^2.0.2",
+    "bl": "^1.2.3",
+    "debug": "^3.2.7",
+    "eventemitter3": "^3.0.0",
+    "file-type": "^3.9.0",
+    "mime": "^1.6.0",
+    "pump": "^2.0.0",
+    "request": "^2.83.0",
+    "request-promise": "^4.2.2"
   },
   "devDependencies": {
-    "babel-cli": "^6.6.5",
-    "babel-eslint": "^5.0.0",
-    "babel-plugin-transform-class-properties": "^6.6.0",
-    "babel-plugin-transform-es2015-destructuring": "^6.6.5",
-    "babel-plugin-transform-es2015-parameters": "^6.7.0",
-    "babel-plugin-transform-es2015-shorthand-properties": "^6.5.0",
-    "babel-plugin-transform-es2015-spread": "^6.6.5",
-    "babel-plugin-transform-object-rest-spread": "^6.6.5",
-    "babel-plugin-transform-strict-mode": "^6.6.5",
-    "babel-register": "^6.7.2",
-    "contributor": "^0.1.25",
-    "coveralls": "^2.11.8",
-    "eslint": "^2.4.0",
-    "eslint-config-airbnb": "^6.1.0",
-    "eslint-plugin-mocha": "^2.0.0",
-    "is": "^3.1.0",
-    "istanbul": "^0.4.2",
-    "jsdoc-to-markdown": "^1.3.3",
-    "mocha": "^2.4.5",
-    "mocha-lcov-reporter": "^1.2.0"
+    "babel-cli": "^6.26.0",
+    "babel-eslint": "^8.0.3",
+    "babel-plugin-transform-class-properties": "^6.24.1",
+    "babel-plugin-transform-es2015-destructuring": "^6.23.0",
+    "babel-plugin-transform-es2015-parameters": "^6.24.1",
+    "babel-plugin-transform-es2015-shorthand-properties": "^6.24.1",
+    "babel-plugin-transform-es2015-spread": "^6.22.0",
+    "babel-plugin-transform-object-rest-spread": "^6.26.0",
+    "babel-plugin-transform-strict-mode": "^6.24.1",
+    "babel-preset-es2015": "^6.24.1",
+    "babel-register": "^6.26.0",
+    "concat-stream": "^1.6.0",
+    "eslint": "^2.13.1",
+    "eslint-config-airbnb": "^6.2.0",
+    "eslint-plugin-mocha": "^4.11.0",
+    "is": "^3.2.1",
+    "is-ci": "^1.0.10",
+    "istanbul": "^1.1.0-alpha.1",
+    "jsdoc-to-markdown": "^3.0.3",
+    "mocha": "^3.5.3",
+    "mocha-lcov-reporter": "^1.3.0",
+    "node-static": "^0.7.10"
   },
   "repository": {
     "type": "git",
@@ -62,124 +70,5 @@
   "bugs": {
     "url": "https://github.com/yagop/node-telegram-bot-api/issues"
   },
-  "homepage": "https://github.com/yagop/node-telegram-bot-api",
-  "contributors": [
-    {
-      "name": "Sebastian Troć",
-      "email": "sebastian.troc@gucman.pl",
-      "url": "https://github.com/SebastianTroc",
-      "contributions": 1,
-      "additions": 1,
-      "deletions": 1,
-      "hireable": null
-    },
-    {
-      "name": "Ivan Skorokhodov",
-      "email": "iskorokhodov@gmail.com",
-      "url": "https://github.com/universome",
-      "contributions": 3,
-      "additions": 219,
-      "deletions": 5,
-      "hireable": null
-    },
-    {
-      "name": "Yago",
-      "email": "yago@yago.me",
-      "url": "https://github.com/yagop",
-      "contributions": 161,
-      "additions": 2543,
-      "deletions": 1004,
-      "hireable": true
-    },
-    {
-      "name": "Matthew Brandly",
-      "email": "matt@brandly.me",
-      "url": "https://github.com/brandly",
-      "contributions": 1,
-      "additions": 1,
-      "deletions": 1,
-      "hireable": null
-    },
-    {
-      "name": "Guido García",
-      "email": "palmerabollo@gmail.com",
-      "url": "https://github.com/palmerabollo",
-      "contributions": 1,
-      "additions": 1,
-      "deletions": 1,
-      "hireable": true
-    },
-    {
-      "name": "Patricio López Juri",
-      "email": "patricio@lopezjuri.com",
-      "url": "https://github.com/mrpatiwi",
-      "contributions": 1,
-      "additions": 49,
-      "deletions": 2,
-      "hireable": true
-    },
-    {
-      "name": "Anton",
-      "email": null,
-      "url": "https://github.com/Feverqwe",
-      "contributions": 1,
-      "additions": 23,
-      "deletions": 5,
-      "hireable": null
-    },
-    {
-      "name": "Cristian Baldi",
-      "email": "bld.cris.96@gmail.com",
-      "url": "https://github.com/crisbal",
-      "contributions": 2,
-      "additions": 26,
-      "deletions": 1,
-      "hireable": true
-    },
-    {
-      "name": "Vítor Augusto da Silva Vasconcellos",
-      "email": "vasvas10@gmail.com",
-      "url": "https://github.com/HeavenVolkoff",
-      "contributions": 2,
-      "additions": 12,
-      "deletions": 0,
-      "hireable": null
-    },
-    {
-      "name": "Rey",
-      "email": null,
-      "url": "https://github.com/reyy",
-      "contributions": 2,
-      "additions": 34,
-      "deletions": 25,
-      "hireable": null
-    },
-    {
-      "name": "Ilias Ismanalijev",
-      "email": "hello@illyism.com",
-      "url": "https://github.com/Illyism",
-      "contributions": 7,
-      "additions": 140,
-      "deletions": 10,
-      "hireable": true
-    },
-    {
-      "name": "Rafael Kr",
-      "email": null,
-      "url": "https://github.com/RafaelKr",
-      "contributions": 3,
-      "additions": 3,
-      "deletions": 2,
-      "hireable": null
-    },
-    {
-      "name": "Riddler",
-      "email": null,
-      "url": "https://github.com/Waterloo",
-      "contributions": 3,
-      "additions": 64,
-      "deletions": 2,
-      "hireable": true
-    }
-  ]
+  "homepage": "https://github.com/yagop/node-telegram-bot-api"
 }
