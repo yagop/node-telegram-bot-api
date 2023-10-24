@@ -81,7 +81,7 @@ exports = module.exports = {
 
 const assert = require('assert');
 const http = require('http');
-const request = require('request-promise');
+const request = require('@cypress/request-promise');
 const statics = require('node-static');
 
 const servers = {};

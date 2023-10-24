@@ -6,7 +6,7 @@
 
 const TOKEN = process.env.TELEGRAM_TOKEN || 'YOUR_TELEGRAM_BOT_TOKEN';
 const TelegramBot = require('..');
-const request = require('request');
+const request = require('@cypress/request');
 const options = {
   polling: true
 };
