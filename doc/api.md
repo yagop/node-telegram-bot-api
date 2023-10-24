@@ -70,7 +70,7 @@ TelegramBot
         * [.exportChatInviteLink(chatId, [options])](#TelegramBot+exportChatInviteLink) ⇒ <code>Promise</code>
         * [.createChatInviteLink(chatId, [options])](#TelegramBot+createChatInviteLink) ⇒ <code>Object</code>
         * [.editChatInviteLink(chatId, inviteLink, [options])](#TelegramBot+editChatInviteLink) ⇒ <code>Promise</code>
-        * [.revokeChatInviteLink(chatId, [options])](#TelegramBot+revokeChatInviteLink) ⇒ <code>Promise</code>
+        * [.revokeChatInviteLink(chatId, inviteLink, [options])](#TelegramBot+revokeChatInviteLink) ⇒ <code>Promise</code>
         * [.approveChatJoinRequest(chatId, userId, [options])](#TelegramBot+approveChatJoinRequest) ⇒ <code>Promise</code>
         * [.declineChatJoinRequest(chatId, userId, [options])](#TelegramBot+declineChatJoinRequest) ⇒ <code>Promise</code>
         * [.setChatPhoto(chatId, photo, [options], [fileOptions])](#TelegramBot+setChatPhoto) ⇒ <code>Promise</code>
@@ -1113,7 +1113,7 @@ The bot **must be an administrator in the chat** for this to work and must have 
 
 <a name="TelegramBot+revokeChatInviteLink"></a>
 
-### telegramBot.revokeChatInviteLink(chatId, [options]) ⇒ <code>Promise</code>
+### telegramBot.revokeChatInviteLink(chatId, inviteLink, [options]) ⇒ <code>Promise</code>
 Use this method to revoke an invite link created by the bot.
 Note: If the primary link is revoked, a new link is automatically generated
 
@@ -1126,6 +1126,7 @@ The bot **must be an administrator in the chat** for this to work and must have 
 | Param | Type | Description |
 | --- | --- | --- |
 | chatId | <code>Number</code> \| <code>String</code> | Unique identifier for the target chat or username of the target channel (in the format `@channelusername`) |
+| inviteLink | <code>String</code> | The invite link to revoke |
 | [options] | <code>Object</code> | Additional Telegram query options |
 
 <a name="TelegramBot+approveChatJoinRequest"></a>

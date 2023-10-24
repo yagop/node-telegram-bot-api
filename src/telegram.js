@@ -1609,6 +1609,7 @@ class TelegramBot extends EventEmitter {
    * The bot **must be an administrator in the chat** for this to work and must have the appropriate admin rights.
    *
    * @param  {Number|String} chatId Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
+   * @param  {String} inviteLink The invite link to revoke
    * @param  {Object} [options] Additional Telegram query options
    * @return {Promise} The revoked invite link as [ChatInviteLink](https://core.telegram.org/bots/api#chatinvitelink) object
    * @see https://core.telegram.org/bots/api#revokechatinvitelink
