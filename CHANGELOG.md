@@ -3,7 +3,14 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [0.63.0][0.61.0] - 2023-08-23
+## [0.64.0][0.64.0] - 2023-10-25
+
+1. Replace `request` with a maintained version (@danielperez9430)
+ * Change `request` to `@cypress/request`
+ * Change `request-promise` to `@cypress/request-promise`
+
+## [0.63.0][0.63.0] - 2023-08-23
+
 1. Support Telegram Bot API v6.8 (@danielperez9430)
  * unpinAllGeneralForumTopicMessages
 
