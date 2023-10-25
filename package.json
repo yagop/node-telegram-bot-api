@@ -29,15 +29,15 @@
     "node": ">=0.12"
   },
   "dependencies": {
+    "@cypress/request": "^3.0.1",
+    "@cypress/request-promise": "^5.0.0",
     "array.prototype.findindex": "^2.0.2",
     "bl": "^1.2.3",
     "debug": "^3.2.7",
     "eventemitter3": "^3.0.0",
     "file-type": "^3.9.0",
     "mime": "^1.6.0",
-    "pump": "^2.0.0",
-    "request": "^2.83.0",
-    "request-promise": "^4.2.2"
+    "pump": "^2.0.0"
   },
   "devDependencies": {
     "babel-cli": "^6.26.0",

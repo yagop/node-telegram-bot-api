@@ -1,5 +1,5 @@
 const TelegramBot = require('..');
-const request = require('request-promise');
+const request = require('@cypress/request-promise');
 const assert = require('assert');
 const fs = require('fs');
 const os = require('os');
