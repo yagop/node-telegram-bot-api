@@ -686,6 +686,11 @@ class TelegramBot extends EventEmitter {
         debug('Text message');
         this._textRegexpCallbacks.some(reg => {
           debug('Matching %s with %s', message.text, reg.regexp);
+
+          if (!(reg.regexp instanceof RegExp)) {
+            reg.regexp = new RegExp(reg.regexp);
+          }
+
           const result = reg.regexp.exec(message.text);
           if (!result) {
             return false;
