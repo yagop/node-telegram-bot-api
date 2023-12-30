@@ -2931,6 +2931,26 @@ class TelegramBot extends EventEmitter {
     form.user_id = userId;
     return this._request('getGameHighScores', { form });
   }
+
+  /**
+   * Use this method to change the chosen reactions on a message.
+   * - Service messages can't be reacted to.
+   * - Automatically forwarded messages from a channel to its discussion group have the same available reactions as messages in the channel.
+   * - In albums, bots must react to the first message.
+   *
+   * @param  {Number|String} chatId  Unique identifier of the target chat
+   * @param  {Number} messageId  Unique identifier of the target message
+   * @param  {Object} [options] Additional Telegram query options
+   * @return {Promise} True on success
+   * @see https://core.telegram.org/bots/api#setMessageReaction
+   */
+  setMessageReaction(chatId, messageId, form = {}) {
+    form.chat_id = chatId;
+    form.message_id = messageId;
+    form.reaction = stringify(form.reaction);
+    return this._request('setMessageReaction', { form });
+  }
+
 }
 
 module.exports = TelegramBot;

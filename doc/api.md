@@ -144,6 +144,7 @@ TelegramBot
         * [.sendGame(chatId, gameShortName, [options])](#TelegramBot+sendGame) ⇒ <code>Promise</code>
         * [.setGameScore(userId, score, [options])](#TelegramBot+setGameScore) ⇒ <code>Promise</code>
         * [.getGameHighScores(userId, [options])](#TelegramBot+getGameHighScores) ⇒ <code>Promise</code>
+        * [.setMessageReaction(chatId, messageId, [options])](#TelegramBot+setMessageReaction) ⇒ <code>Promise</code>
     * _static_
         * [.errors](#TelegramBot.errors) : <code>Object</code>
         * [.messageTypes](#TelegramBot.messageTypes) : <code>[ &#x27;Array&#x27; ].&lt;String&gt;</code>
@@ -2318,6 +2319,24 @@ Will return the score of the specified user and several of their neighbors in a 
 | Param | Type | Description |
 | --- | --- | --- |
 | userId | <code>Number</code> | Unique identifier of the target user |
+| [options] | <code>Object</code> | Additional Telegram query options |
+
+<a name="TelegramBot+setMessageReaction"></a>
+
+### telegramBot.setMessageReaction(chatId, messageId, [options]) ⇒ <code>Promise</code>
+Use this method to change the chosen reactions on a message.
+- Service messages can't be reacted to.
+- Automatically forwarded messages from a channel to its discussion group have the same available reactions as messages in the channel.
+- In albums, bots must react to the first message.
+
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
+**Returns**: <code>Promise</code> - True on success  
+**See**: https://core.telegram.org/bots/api#setMessageReaction  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| chatId | <code>Number</code> \| <code>String</code> | Unique identifier of the target chat |
+| messageId | <code>Number</code> | Unique identifier of the target message |
 | [options] | <code>Object</code> | Additional Telegram query options |
 
 <a name="TelegramBot.errors"></a>
