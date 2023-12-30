@@ -18,10 +18,10 @@ if (!TOKEN) {
   throw new Error('Bot token not provided');
 }
 
-/*const PROVIDER_TOKEN = process.env.TEST_PROVIDER_TOKEN;
+const PROVIDER_TOKEN = process.env.TEST_PROVIDER_TOKEN;
 if (!PROVIDER_TOKEN && !isCI) { // If is not running in Travis / Appveyor
   throw new Error('Provider token not supplied');
-}*/
+}
 
 // Telegram service if not User Id
 const USERID = process.env.TEST_USER_ID || 777000;
@@ -2059,7 +2059,7 @@ describe('TelegramBot', function telegramSuite() {
       });
     });
     it('should add reactions to message', function test() {
-      return bot.setMessageReaction(USERID, messageId, { reaction: Reactions, is_big: true }).then(resp => {
+      return bot.setMessageReaction(USERID, messageId, {reaction: Reactions, is_big: true }).then(resp => {
         assert.strictEqual(resp, true);
       });
     });
