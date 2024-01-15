@@ -965,7 +965,7 @@ class TelegramBot extends EventEmitter {
    * @param  {Number|String} chatId     Unique identifier for the target chat
    * @param  {Number|String} fromChatId Unique identifier for the chat where the
    * original message was sent
-   * @param  {Array} messageIds  Identifiers of 1-100 messages in the chat from_chat_id to copy. 
+   * @param  {Array} messageIds  Identifiers of 1-100 messages in the chat from_chat_id to copy.
    * The identifiers must be specified in a strictly increasing order.
    * @param  {Object} [options] Additional Telegram query options
    * @return {Promise} An array of MessageId of the sent messages
