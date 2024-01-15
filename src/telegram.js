@@ -959,6 +959,26 @@ class TelegramBot extends EventEmitter {
   }
 
   /**
+   * Use this method to copy messages of any kind. If some of the specified messages can't be found or copied, they are skipped.
+   * Service messages, giveaway messages, giveaway winners messages, and invoice messages can't be copied.
+   * Returns the MessageId of the sent message on success.
+   * @param  {Number|String} chatId     Unique identifier for the target chat
+   * @param  {Number|String} fromChatId Unique identifier for the chat where the
+   * original message was sent
+   * @param  {Array} messageIds  Identifiers of 1-100 messages in the chat from_chat_id to copy. 
+   * The identifiers must be specified in a strictly increasing order.
+   * @param  {Object} [options] Additional Telegram query options
+   * @return {Promise} An array of MessageId of the sent messages
+   * @see https://core.telegram.org/bots/api#copymessages
+   */
+  copyMessages(chatId, fromChatId, messageIds, form = {}) {
+    form.chat_id = chatId;
+    form.from_chat_id = fromChatId;
+    form.message_ids = messageIds;
+    return this._request('copyMessages', { form });
+  }
+
+  /**
    * Send photo
    * @param  {Number|String} chatId  Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
    * @param  {String|stream.Stream|Buffer} photo A file path or a Stream. Can

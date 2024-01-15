@@ -41,6 +41,7 @@ TelegramBot
         * [.sendMessage(chatId, text, [options])](#TelegramBot+sendMessage) ⇒ <code>Promise</code>
         * [.forwardMessage(chatId, fromChatId, messageId, [options])](#TelegramBot+forwardMessage) ⇒ <code>Promise</code>
         * [.copyMessage(chatId, fromChatId, messageId, [options])](#TelegramBot+copyMessage) ⇒ <code>Promise</code>
+        * [.copyMessages(chatId, fromChatId, messageIds, [options])](#TelegramBot+copyMessages) ⇒ <code>Promise</code>
         * [.sendPhoto(chatId, photo, [options], [fileOptions])](#TelegramBot+sendPhoto) ⇒ <code>Promise</code>
         * [.sendAudio(chatId, audio, [options], [fileOptions])](#TelegramBot+sendAudio) ⇒ <code>Promise</code>
         * [.sendDocument(chatId, doc, [options], [fileOptions])](#TelegramBot+sendDocument) ⇒ <code>Promise</code>
@@ -561,6 +562,24 @@ Returns the MessageId of the sent message on success.
 | chatId | <code>Number</code> \| <code>String</code> | Unique identifier for the target chat or username of the target channel (in the format `@channelusername`) |
 | fromChatId | <code>Number</code> \| <code>String</code> | Unique identifier for the chat where the original message was sent |
 | messageId | <code>Number</code> \| <code>String</code> | Unique message identifier |
+| [options] | <code>Object</code> | Additional Telegram query options |
+
+<a name="TelegramBot+copyMessages"></a>
+
+### telegramBot.copyMessages(chatId, fromChatId, messageIds, [options]) ⇒ <code>Promise</code>
+Use this method to copy messages of any kind. If some of the specified messages can't be found or copied, they are skipped.
+Service messages, giveaway messages, giveaway winners messages, and invoice messages can't be copied.
+Returns the MessageId of the sent message on success.
+
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
+**Returns**: <code>Promise</code> - An array of MessageId of the sent messages  
+**See**: https://core.telegram.org/bots/api#copymessages  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| chatId | <code>Number</code> \| <code>String</code> | Unique identifier for the target chat |
+| fromChatId | <code>Number</code> \| <code>String</code> | Unique identifier for the chat where the original message was sent |
+| messageIds | <code>Array</code> | Identifiers of 1-100 messages in the chat from_chat_id to copy.  The identifiers must be specified in a strictly increasing order. |
 | [options] | <code>Object</code> | Additional Telegram query options |
 
 <a name="TelegramBot+sendPhoto"></a>
