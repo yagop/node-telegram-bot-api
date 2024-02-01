@@ -51,6 +51,12 @@ bot.onText(/\/love/, function onLoveText(msg) {
 bot.onText(/\/echo (.+)/, function onEchoText(msg, match) {
   const resp = match[1];
   bot.sendMessage(msg.chat.id, resp);
+  bot.setMessageReaction(msg.chat.id, msg.message_id, {
+    reaction: [
+      { type: 'emoji', emoji: '👍' }
+    ],
+    is_big: true
+  });
 });
 
 

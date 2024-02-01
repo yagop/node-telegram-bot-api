@@ -237,6 +237,20 @@ class TelegramBot extends EventEmitter {
     }
   }
 
+
+  /**
+   * Take the reaction parameter from the form object and make it JSON-serialized, as
+   * required by the Telegram Bot API
+   * @param {Object} obj 
+   * @private
+   * @see https://core.telegram.org/bots/api#setmessagereaction
+   */
+  _fixReactionField(obj) {
+    if (obj.reaction) {
+      obj.reaction = JSON.stringify(obj.reaction)
+    }
+  }
+
   _fixAddFileThumbnail(options, opts) {
     if (options.thumb) {
       if (opts.formData === null) {
@@ -272,6 +286,7 @@ class TelegramBot extends EventEmitter {
     if (options.form) {
       this._fixReplyMarkup(options.form);
       this._fixEntitiesField(options.form);
+      this._fixReactionField(options.form)
     }
     if (options.qs) {
       this._fixReplyMarkup(options.qs);
@@ -918,6 +933,19 @@ class TelegramBot extends EventEmitter {
     form.chat_id = chatId;
     form.text = text;
     return this._request('sendMessage', { form });
+  }
+
+  /**
+   * Set a reaction to the specified message
+   * @param {Number|String} chatId Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
+   * @param {String} messageId Unique message identifier in the chat specified in fromChatId
+   * @param {Object} [options] Additional Telegram query options
+   * @return {Promise} On success, returns True
+   */
+  setMessageReaction(chatId, messageId, form = {}) {
+    form.chat_id = chatId;
+    form.message_id = messageId;
+    return this._request('setMessageReaction', { form })
   }
 
   /**
