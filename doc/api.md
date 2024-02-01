@@ -39,6 +39,7 @@ TelegramBot
         * [.logOut([options])](#TelegramBot+logOut) ⇒ <code>Promise</code>
         * [.close([options])](#TelegramBot+close) ⇒ <code>Promise</code>
         * [.sendMessage(chatId, text, [options])](#TelegramBot+sendMessage) ⇒ <code>Promise</code>
+        * [.setMessageReaction(chatId, messageId, [options])](#TelegramBot+setMessageReaction) ⇒ <code>Promise</code>
         * [.forwardMessage(chatId, fromChatId, messageId, [options])](#TelegramBot+forwardMessage) ⇒ <code>Promise</code>
         * [.copyMessage(chatId, fromChatId, messageId, [options])](#TelegramBot+copyMessage) ⇒ <code>Promise</code>
         * [.sendPhoto(chatId, photo, [options], [fileOptions])](#TelegramBot+sendPhoto) ⇒ <code>Promise</code>
@@ -527,6 +528,20 @@ Send text message.
 | --- | --- | --- |
 | chatId | <code>Number</code> \| <code>String</code> | Unique identifier for the target chat or username of the target channel (in the format `@channelusername`) |
 | text | <code>String</code> | Text of the message to be sent |
+| [options] | <code>Object</code> | Additional Telegram query options |
+
+<a name="TelegramBot+setMessageReaction"></a>
+
+### telegramBot.setMessageReaction(chatId, messageId, [options]) ⇒ <code>Promise</code>
+Set a reaction to the specified message
+
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
+**Returns**: <code>Promise</code> - On success, returns True  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| chatId | <code>Number</code> \| <code>String</code> | Unique identifier for the target chat or username of the target channel (in the format `@channelusername`) |
+| messageId | <code>String</code> | Unique message identifier in the chat specified in fromChatId |
 | [options] | <code>Object</code> | Additional Telegram query options |
 
 <a name="TelegramBot+forwardMessage"></a>
