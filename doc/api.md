@@ -121,6 +121,7 @@ TelegramBot
         * [.editMessageReplyMarkup(replyMarkup, [options])](#TelegramBot+editMessageReplyMarkup) ⇒ <code>Promise</code>
         * [.stopPoll(chatId, pollId, [options])](#TelegramBot+stopPoll) ⇒ <code>Promise</code>
         * [.deleteMessage(chatId, messageId, [options])](#TelegramBot+deleteMessage) ⇒ <code>Promise</code>
+        * [.deleteMessages(chatId, messageIds, [options])](#TelegramBot+deleteMessages) ⇒ <code>Promise</code>
         * [.sendSticker(chatId, sticker, [options], [fileOptions])](#TelegramBot+sendSticker) ⇒ <code>Promise</code>
         * [.getStickerSet(name, [options])](#TelegramBot+getStickerSet) ⇒ <code>Promise</code>
         * [.getCustomEmojiStickers(custom_emoji_ids, [options])](#TelegramBot+getCustomEmojiStickers) ⇒ <code>Promise</code>
@@ -579,7 +580,7 @@ Returns the MessageId of the sent message on success.
 | --- | --- | --- |
 | chatId | <code>Number</code> \| <code>String</code> | Unique identifier for the target chat |
 | fromChatId | <code>Number</code> \| <code>String</code> | Unique identifier for the chat where the original message was sent |
-| messageIds | <code>Array</code> | Identifiers of 1-100 messages in the chat from_chat_id to copy.  The identifiers must be specified in a strictly increasing order. |
+| messageIds | <code>Array</code> | Identifiers of 1-100 messages in the chat from_chat_id to copy. The identifiers must be specified in a strictly increasing order. |
 | [options] | <code>Object</code> | Additional Telegram query options |
 
 <a name="TelegramBot+sendPhoto"></a>
@@ -1905,12 +1906,13 @@ Use this method to stop a poll which was sent by the bot.
 ### telegramBot.deleteMessage(chatId, messageId, [options]) ⇒ <code>Promise</code>
 Use this method to delete a message, including service messages, with the following limitations:
 - A message can only be deleted if it was sent less than 48 hours ago.
-- A dice message can only be deleted if it was sent more than 24 hours ago.
-- Bots can delete outgoing messages in groups and supergroups.
-- Bots can delete incoming messages in groups, supergroups and channels.
+- Service messages about a supergroup, channel, or forum topic creation can't be deleted.
+- A dice message in a private chat can only be deleted if it was sent more than 24 hours ago.
+- Bots can delete outgoing messages in private chats, groups, and supergroups.
+- Bots can delete incoming messages in private chats.
 - Bots granted `can_post_messages` permissions can delete outgoing messages in channels.
 - If the bot is an administrator of a group, it can delete any message there.
-- If the bot has `can_delete_messages` permission in a supergroup, it can delete any message there.
+- If the bot has `can_delete_messages` permission in a supergroup or a channel, it can delete any message there.
 
 **Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
 **Returns**: <code>Promise</code> - True on success  
@@ -1918,8 +1920,31 @@ Use this method to delete a message, including service messages, with the follow
 
 | Param | Type | Description |
 | --- | --- | --- |
-| chatId | <code>Number</code> \| <code>String</code> | Unique identifier of the target chat |
-| messageId | <code>Number</code> | Unique identifier of the target message |
+| chatId | <code>Number</code> \| <code>String</code> | Unique identifier for the target chat or username of the target channel |
+| messageId | <code>Number</code> | Identifier of the message to delete |
+| [options] | <code>Object</code> | Additional Telegram query options |
+
+<a name="TelegramBot+deleteMessages"></a>
+
+### telegramBot.deleteMessages(chatId, messageIds, [options]) ⇒ <code>Promise</code>
+Use this method to delete messages, including service messages, with the following limitations:
+- A message can only be deleted if it was sent less than 48 hours ago.
+- Service messages about a supergroup, channel, or forum topic creation can't be deleted.
+- A dice message in a private chat can only be deleted if it was sent more than 24 hours ago.
+- Bots can delete outgoing messages in private chats, groups, and supergroups.
+- Bots can delete incoming messages in private chats.
+- Bots granted `can_post_messages` permissions can delete outgoing messages in channels.
+- If the bot is an administrator of a group, it can delete any message there.
+- If the bot has `can_delete_messages` permission in a supergroup or a channel, it can delete any message there.
+
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
+**Returns**: <code>Promise</code> - True on success  
+**See**: https://core.telegram.org/bots/api#deletemessages  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| chatId | <code>Number</code> \| <code>String</code> | Unique identifier for the target chat or username of the target channel |
+| messageIds | <code>Array</code> | Identifiers of 1-100 messages to delete. |
 | [options] | <code>Object</code> | Additional Telegram query options |
 
 <a name="TelegramBot+sendSticker"></a>

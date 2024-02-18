@@ -1680,6 +1680,21 @@ describe('TelegramBot', function telegramSuite() {
     });
   });
 
+  describe('#deleteMessages', function deleteMessageSuite() {
+    let messageId;
+    before(function before() {
+      utils.handleRatelimit(bot, 'deleteMessages', this);
+      return bot.sendMessage(USERID, 'To be deleted').then(resp => {
+        messageId = resp.message_id;
+      });
+    });
+    it('should delete messages', function test() {
+      return bot.deleteMessages(USERID, [messageId]).then(resp => {
+        assert.strictEqual(resp, true);
+      });
+    });
+  });
+
   describe('#sendSticker', function sendStickerSuite() {
     let stickerId;
     this.timeout(timeout);
