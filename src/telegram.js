@@ -1010,7 +1010,7 @@ class TelegramBot extends EventEmitter {
   copyMessages(chatId, fromChatId, messageIds, form = {}) {
     form.chat_id = chatId;
     form.from_chat_id = fromChatId;
-    form.message_ids = messageIds;
+    form.message_ids = stringify(messageIds);
     return this._request('copyMessages', { form });
   }
 
