@@ -145,6 +145,9 @@ TelegramBot
         * [.sendGame(chatId, gameShortName, [options])](#TelegramBot+sendGame) ⇒ <code>Promise</code>
         * [.setGameScore(userId, score, [options])](#TelegramBot+setGameScore) ⇒ <code>Promise</code>
         * [.getGameHighScores(userId, [options])](#TelegramBot+getGameHighScores) ⇒ <code>Promise</code>
+        * [.setMessageReaction(chatId, messageId, [options])](#TelegramBot+setMessageReaction) ⇒ <code>[ &#x27;Promise&#x27; ].&lt;Boolean&gt;</code>
+        * [.deleteMessages(chatId, messageIds, [options])](#TelegramBot+deleteMessages) ⇒ <code>[ &#x27;Promise&#x27; ].&lt;Boolean&gt;</code>
+        * [.copyMessages(chatId, fromChatId, messageIds, [options])](#TelegramBot+copyMessages) ⇒ <code>[ &#x27;Promise&#x27; ].&lt;Array.&lt;TelegramBot.MessageId&gt;&gt;</code>
     * _static_
         * [.errors](#TelegramBot.errors) : <code>Object</code>
         * [.messageTypes](#TelegramBot.messageTypes) : <code>[ &#x27;Array&#x27; ].&lt;String&gt;</code>
@@ -1918,7 +1921,7 @@ Use this method to delete a message, including service messages, with the follow
 
 | Param | Type | Description |
 | --- | --- | --- |
-| chatId | <code>Number</code> \| <code>String</code> | Unique identifier of the target chat |
+| chatId | <code>Number</code> \| <code>String</code> | Unique identifier for the target chat or username of the target channel (in the format @channelusername) |
 | messageId | <code>Number</code> | Unique identifier of the target message |
 | [options] | <code>Object</code> | Additional Telegram query options |
 
@@ -2337,6 +2340,55 @@ Will return the score of the specified user and several of their neighbors in a 
 | Param | Type | Description |
 | --- | --- | --- |
 | userId | <code>Number</code> | Unique identifier of the target user |
+| [options] | <code>Object</code> | Additional Telegram query options |
+
+<a name="TelegramBot+setMessageReaction"></a>
+
+### telegramBot.setMessageReaction(chatId, messageId, [options]) ⇒ <code>[ &#x27;Promise&#x27; ].&lt;Boolean&gt;</code>
+Use this method to change the chosen reactions on a message.
+- Service messages can't be reacted to.
+- Automatically forwarded messages from a channel to its discussion group have the same available reactions as messages in the channel.
+- In albums, bots must react to the first message.
+
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
+**Returns**: <code>[ &#x27;Promise&#x27; ].&lt;Boolean&gt;</code> - True on success  
+**See**: https://core.telegram.org/bots/api#setMessageReaction  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| chatId | <code>Number</code> \| <code>String</code> | Unique identifier for the target chat or username of the target channel (in the format @channelusername) |
+| messageId | <code>Number</code> | Unique identifier of the target message |
+| [options] | <code>Object</code> | Additional Telegram query options |
+
+<a name="TelegramBot+deleteMessages"></a>
+
+### telegramBot.deleteMessages(chatId, messageIds, [options]) ⇒ <code>[ &#x27;Promise&#x27; ].&lt;Boolean&gt;</code>
+Use this method to delete multiple messages simultaneously. If some of the specified messages can't be found, they are skipped.
+
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
+**Returns**: <code>[ &#x27;Promise&#x27; ].&lt;Boolean&gt;</code> - True on success  
+**See**: https://core.telegram.org/bots/api#deleteMessages  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| chatId | <code>Number</code> \| <code>String</code> | Unique identifier for the target chat or username of the target channel (in the format @channelusername) |
+| messageIds | <code>[ &#x27;Array&#x27; ].&lt;(Number\|String)&gt;</code> | Identifiers of 1-100 messages to delete. See deleteMessage for limitations on which messages can be deleted |
+| [options] | <code>Object</code> | Additional Telegram query options |
+
+<a name="TelegramBot+copyMessages"></a>
+
+### telegramBot.copyMessages(chatId, fromChatId, messageIds, [options]) ⇒ <code>[ &#x27;Promise&#x27; ].&lt;Array.&lt;TelegramBot.MessageId&gt;&gt;</code>
+Use this method to copy messages of any kind. If some of the specified messages can't be found or copied, they are skipped. Service messages, giveaway messages, giveaway winners messages, and invoice messages can't be copied. A quiz poll can be copied only if the value of the field correct_option_id is known to the bot. The method is analogous to the method forwardMessages, but the copied messages don't have a link to the original message. Album grouping is kept for copied messages.
+
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
+**Returns**: <code>[ &#x27;Promise&#x27; ].&lt;Array.&lt;TelegramBot.MessageId&gt;&gt;</code> - On success, an array of MessageId of the sent messages is returned.  
+**See**: https://core.telegram.org/bots/api#copyMessages  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| chatId | <code>Number</code> \| <code>String</code> | Unique identifier for the target chat or username of the target channel (in the format @channelusername) |
+| fromChatId | <code>Number</code> \| <code>String</code> | Unique identifier for the chat where the original message was sent (or channel username in the format `@channelusername`) |
+| messageIds | <code>[ &#x27;Array&#x27; ].&lt;(Number\|String)&gt;</code> | Identifiers of 1-100 messages in the chat from_chat_id to copy. The identifiers must be specified in a strictly increasing order. |
 | [options] | <code>Object</code> | Additional Telegram query options |
 
 <a name="TelegramBot.errors"></a>

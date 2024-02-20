@@ -2048,4 +2048,50 @@ describe('TelegramBot', function telegramSuite() {
       });
     });
   });
+
+  describe('#setMessageReaction', function setMessageReactionSuite() {
+    let messageId;
+    const Reactions = [{ type: 'emoji', emoji: '👍' }];
+    before(function before() {
+      utils.handleRatelimit(bot, 'setMessageReaction', this);
+      return bot.sendMessage(USERID, 'To be reacted').then(resp => {
+        messageId = resp.message_id;
+      });
+    });
+    it('should add reactions to message', function test() {
+      return bot.setMessageReaction(USERID, messageId, {reaction: Reactions, is_big: true }).then(resp => {
+        assert.strictEqual(resp, true);
+      });
+    });
+  });
+
+  describe('#deleteMessages', function setMessageReactionSuite() {
+    let messageId;
+    before(function before() {
+      utils.handleRatelimit(bot, 'deleteMessages', this);
+      return bot.sendMessage(USERID, 'To be deleted').then(resp => {
+        messageId = resp.message_id;
+      });
+    });
+    it('should delete message from array', function test() {
+      return bot.deleteMessages(USERID, [messageId]).then(resp => {
+        assert.strictEqual(resp, true);
+      });
+    });
+  });
+
+  describe('#copyMessages', function setMessageReactionSuite() {
+    let messageId;
+    before(function before() {
+      utils.handleRatelimit(bot, 'copyMessages', this);
+      return bot.sendMessage(USERID, 'To be copyed').then(resp => {
+        messageId = resp.message_id;
+      });
+    });
+    it('should copy messages from array', function test() {
+      return bot.copyMessages(USERID, [messageId]).then(resp => {
+        assert.strictEqual(resp, true);
+      });
+    });
+  });
 }); // End Telegram
