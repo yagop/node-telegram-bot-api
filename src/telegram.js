@@ -954,6 +954,27 @@ class TelegramBot extends EventEmitter {
   }
 
   /**
+   * Use this method to forward multiple messages of any kind.
+   * If some of the specified messages can't be found or forwarded, they are skipped.
+   *
+   * @param  {Number|String} chatId Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
+   * or username of the target channel (in the format `@channelusername`)
+   * @param  {Number|String} fromChatId Unique identifier for the chat where the
+   * original message was sent (or channel username in the format `@channelusername`)
+   * @param  {Array<Number|String>} messageIds Identifiers of 1-100 messages in the chat from_chat_id to forward.
+   * The identifiers must be specified in a strictly increasing order.
+   * @param  {Object} [options] Additional Telegram query options
+   * @return {Promise} An array of MessageId of the sent messages on success
+   * @see https://core.telegram.org/bots/api#forwardmessages
+   */
+  forwardMessages(chatId, fromChatId, messageIds, form = {}) {
+    form.chat_id = chatId;
+    form.from_chat_id = fromChatId;
+    form.message_ids = messageIds;
+    return this._request('forwardMessages', { form });
+  }
+
+  /**
    * Copy messages of any kind. **Service messages and invoice messages can't be copied.**
    * The method is analogous to the method forwardMessages, but the copied message doesn't
    * have a link to the original message.
@@ -2994,7 +3015,7 @@ class TelegramBot extends EventEmitter {
    * @param  {Array<Number|String>} messageIds  Identifiers of 1-100 messages to delete. See deleteMessage for limitations on which messages can be deleted
    * @param  {Object} [options] Additional Telegram query options
    * @return {Promise<Boolean>} True on success
-   * @see https://core.telegram.org/bots/api#deleteMessages
+   * @see https://core.telegram.org/bots/api#deletemessages
    */
   deleteMessages(chatId, messageIds, form = {}) {
     form.chat_id = chatId;
