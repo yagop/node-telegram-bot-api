@@ -1432,12 +1432,14 @@ class TelegramBot extends EventEmitter {
    * @param  {Number} messageId  Unique identifier of the target message
    * @param  {Object} [options] Additional Telegram query options
    * @return {Promise<Boolean>} True on success
-   * @see https://core.telegram.org/bots/api#setMessageReaction
+   * @see https://core.telegram.org/bots/api#setmessagereaction
    */
   setMessageReaction(chatId, messageId, form = {}) {
     form.chat_id = chatId;
     form.message_id = messageId;
-    form.reaction = stringify(form.reaction);
+    if (form.reaction) {
+      form.reaction = stringify(form.reaction);
+    }
     return this._request('setMessageReaction', { form });
   }
 
