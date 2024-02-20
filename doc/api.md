@@ -58,6 +58,7 @@ TelegramBot
         * [.sendPoll(chatId, question, pollOptions, [options])](#TelegramBot+sendPoll) ⇒ <code>Promise</code>
         * [.sendDice(chatId, [options])](#TelegramBot+sendDice) ⇒ <code>Promise</code>
         * [.sendChatAction(chatId, action, [options])](#TelegramBot+sendChatAction) ⇒ <code>Promise</code>
+        * [.setMessageReaction(chatId, messageId, [options])](#TelegramBot+setMessageReaction) ⇒ <code>[ &#x27;Promise&#x27; ].&lt;Boolean&gt;</code>
         * [.getUserProfilePhotos(userId, [options])](#TelegramBot+getUserProfilePhotos) ⇒ <code>Promise</code>
         * [.getFile(fileId, [options])](#TelegramBot+getFile) ⇒ <code>Promise</code>
         * [.banChatMember(chatId, userId, [options])](#TelegramBot+banChatMember) ⇒ <code>Promise</code>
@@ -120,7 +121,6 @@ TelegramBot
         * [.editMessageMedia(media, [options])](#TelegramBot+editMessageMedia) ⇒ <code>Promise</code>
         * [.editMessageReplyMarkup(replyMarkup, [options])](#TelegramBot+editMessageReplyMarkup) ⇒ <code>Promise</code>
         * [.stopPoll(chatId, pollId, [options])](#TelegramBot+stopPoll) ⇒ <code>Promise</code>
-        * [.deleteMessage(chatId, messageId, [options])](#TelegramBot+deleteMessage) ⇒ <code>Promise</code>
         * [.sendSticker(chatId, sticker, [options], [fileOptions])](#TelegramBot+sendSticker) ⇒ <code>Promise</code>
         * [.getStickerSet(name, [options])](#TelegramBot+getStickerSet) ⇒ <code>Promise</code>
         * [.getCustomEmojiStickers(custom_emoji_ids, [options])](#TelegramBot+getCustomEmojiStickers) ⇒ <code>Promise</code>
@@ -145,9 +145,8 @@ TelegramBot
         * [.sendGame(chatId, gameShortName, [options])](#TelegramBot+sendGame) ⇒ <code>Promise</code>
         * [.setGameScore(userId, score, [options])](#TelegramBot+setGameScore) ⇒ <code>Promise</code>
         * [.getGameHighScores(userId, [options])](#TelegramBot+getGameHighScores) ⇒ <code>Promise</code>
-        * [.setMessageReaction(chatId, messageId, [options])](#TelegramBot+setMessageReaction) ⇒ <code>[ &#x27;Promise&#x27; ].&lt;Boolean&gt;</code>
+        * [.deleteMessage(chatId, messageId, [options])](#TelegramBot+deleteMessage) ⇒ <code>Promise</code>
         * [.deleteMessages(chatId, messageIds, [options])](#TelegramBot+deleteMessages) ⇒ <code>[ &#x27;Promise&#x27; ].&lt;Boolean&gt;</code>
-        * [.copyMessages(chatId, fromChatId, messageIds, [options])](#TelegramBot+copyMessages) ⇒ <code>[ &#x27;Promise&#x27; ].&lt;Array.&lt;TelegramBot.MessageId&gt;&gt;</code>
     * _static_
         * [.errors](#TelegramBot.errors) : <code>Object</code>
         * [.messageTypes](#TelegramBot.messageTypes) : <code>[ &#x27;Array&#x27; ].&lt;String&gt;</code>
@@ -582,7 +581,7 @@ Returns the MessageId of the sent message on success.
 | --- | --- | --- |
 | chatId | <code>Number</code> \| <code>String</code> | Unique identifier for the target chat |
 | fromChatId | <code>Number</code> \| <code>String</code> | Unique identifier for the chat where the original message was sent |
-| messageIds | <code>Array</code> | Identifiers of 1-100 messages in the chat from_chat_id to copy.  The identifiers must be specified in a strictly increasing order. |
+| messageIds | <code>Array</code> | Identifiers of 1-100 messages in the chat from_chat_id to copy. The identifiers must be specified in a strictly increasing order. |
 | [options] | <code>Object</code> | Additional Telegram query options |
 
 <a name="TelegramBot+sendPhoto"></a>
@@ -901,6 +900,24 @@ Use this method when you need to tell the user that something is happening on th
 | --- | --- | --- |
 | chatId | <code>Number</code> \| <code>String</code> | Unique identifier for the target chat or username of the target channel (in the format `@channelusername`) |
 | action | <code>String</code> | Type of action to broadcast. |
+| [options] | <code>Object</code> | Additional Telegram query options |
+
+<a name="TelegramBot+setMessageReaction"></a>
+
+### telegramBot.setMessageReaction(chatId, messageId, [options]) ⇒ <code>[ &#x27;Promise&#x27; ].&lt;Boolean&gt;</code>
+Use this method to change the chosen reactions on a message.
+- Service messages can't be reacted to.
+- Automatically forwarded messages from a channel to its discussion group have the same available reactions as messages in the channel.
+- In albums, bots must react to the first message.
+
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
+**Returns**: <code>[ &#x27;Promise&#x27; ].&lt;Boolean&gt;</code> - True on success  
+**See**: https://core.telegram.org/bots/api#setMessageReaction  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| chatId | <code>Number</code> \| <code>String</code> | Unique identifier for the target chat or username of the target channel (in the format @channelusername) |
+| messageId | <code>Number</code> | Unique identifier of the target message |
 | [options] | <code>Object</code> | Additional Telegram query options |
 
 <a name="TelegramBot+getUserProfilePhotos"></a>
@@ -1903,28 +1920,6 @@ Use this method to stop a poll which was sent by the bot.
 | pollId | <code>Number</code> | Identifier of the original message with the poll |
 | [options] | <code>Object</code> | Additional Telegram query options |
 
-<a name="TelegramBot+deleteMessage"></a>
-
-### telegramBot.deleteMessage(chatId, messageId, [options]) ⇒ <code>Promise</code>
-Use this method to delete a message, including service messages, with the following limitations:
-- A message can only be deleted if it was sent less than 48 hours ago.
-- A dice message can only be deleted if it was sent more than 24 hours ago.
-- Bots can delete outgoing messages in groups and supergroups.
-- Bots can delete incoming messages in groups, supergroups and channels.
-- Bots granted `can_post_messages` permissions can delete outgoing messages in channels.
-- If the bot is an administrator of a group, it can delete any message there.
-- If the bot has `can_delete_messages` permission in a supergroup, it can delete any message there.
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
-**Returns**: <code>Promise</code> - True on success  
-**See**: https://core.telegram.org/bots/api#deletemessage  
-
-| Param | Type | Description |
-| --- | --- | --- |
-| chatId | <code>Number</code> \| <code>String</code> | Unique identifier for the target chat or username of the target channel (in the format @channelusername) |
-| messageId | <code>Number</code> | Unique identifier of the target message |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
 <a name="TelegramBot+sendSticker"></a>
 
 ### telegramBot.sendSticker(chatId, sticker, [options], [fileOptions]) ⇒ <code>Promise</code>
@@ -2342,17 +2337,21 @@ Will return the score of the specified user and several of their neighbors in a 
 | userId | <code>Number</code> | Unique identifier of the target user |
 | [options] | <code>Object</code> | Additional Telegram query options |
 
-<a name="TelegramBot+setMessageReaction"></a>
+<a name="TelegramBot+deleteMessage"></a>
 
-### telegramBot.setMessageReaction(chatId, messageId, [options]) ⇒ <code>[ &#x27;Promise&#x27; ].&lt;Boolean&gt;</code>
-Use this method to change the chosen reactions on a message.
-- Service messages can't be reacted to.
-- Automatically forwarded messages from a channel to its discussion group have the same available reactions as messages in the channel.
-- In albums, bots must react to the first message.
+### telegramBot.deleteMessage(chatId, messageId, [options]) ⇒ <code>Promise</code>
+Use this method to delete a message, including service messages, with the following limitations:
+- A message can only be deleted if it was sent less than 48 hours ago.
+- A dice message can only be deleted if it was sent more than 24 hours ago.
+- Bots can delete outgoing messages in groups and supergroups.
+- Bots can delete incoming messages in groups, supergroups and channels.
+- Bots granted `can_post_messages` permissions can delete outgoing messages in channels.
+- If the bot is an administrator of a group, it can delete any message there.
+- If the bot has `can_delete_messages` permission in a supergroup, it can delete any message there.
 
 **Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
-**Returns**: <code>[ &#x27;Promise&#x27; ].&lt;Boolean&gt;</code> - True on success  
-**See**: https://core.telegram.org/bots/api#setMessageReaction  
+**Returns**: <code>Promise</code> - True on success  
+**See**: https://core.telegram.org/bots/api#deletemessage  
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -2373,22 +2372,6 @@ Use this method to delete multiple messages simultaneously. If some of the speci
 | --- | --- | --- |
 | chatId | <code>Number</code> \| <code>String</code> | Unique identifier for the target chat or username of the target channel (in the format @channelusername) |
 | messageIds | <code>[ &#x27;Array&#x27; ].&lt;(Number\|String)&gt;</code> | Identifiers of 1-100 messages to delete. See deleteMessage for limitations on which messages can be deleted |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+copyMessages"></a>
-
-### telegramBot.copyMessages(chatId, fromChatId, messageIds, [options]) ⇒ <code>[ &#x27;Promise&#x27; ].&lt;Array.&lt;TelegramBot.MessageId&gt;&gt;</code>
-Use this method to copy messages of any kind. If some of the specified messages can't be found or copied, they are skipped. Service messages, giveaway messages, giveaway winners messages, and invoice messages can't be copied. A quiz poll can be copied only if the value of the field correct_option_id is known to the bot. The method is analogous to the method forwardMessages, but the copied messages don't have a link to the original message. Album grouping is kept for copied messages.
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
-**Returns**: <code>[ &#x27;Promise&#x27; ].&lt;Array.&lt;TelegramBot.MessageId&gt;&gt;</code> - On success, an array of MessageId of the sent messages is returned.  
-**See**: https://core.telegram.org/bots/api#copyMessages  
-
-| Param | Type | Description |
-| --- | --- | --- |
-| chatId | <code>Number</code> \| <code>String</code> | Unique identifier for the target chat or username of the target channel (in the format @channelusername) |
-| fromChatId | <code>Number</code> \| <code>String</code> | Unique identifier for the chat where the original message was sent (or channel username in the format `@channelusername`) |
-| messageIds | <code>[ &#x27;Array&#x27; ].&lt;(Number\|String)&gt;</code> | Identifiers of 1-100 messages in the chat from_chat_id to copy. The identifiers must be specified in a strictly increasing order. |
 | [options] | <code>Object</code> | Additional Telegram query options |
 
 <a name="TelegramBot.errors"></a>

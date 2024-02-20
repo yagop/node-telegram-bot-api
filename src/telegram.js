@@ -977,7 +977,7 @@ class TelegramBot extends EventEmitter {
    * Use this method to copy messages of any kind. If some of the specified messages can't be found or copied, they are skipped.
    * Service messages, giveaway messages, giveaway winners messages, and invoice messages can't be copied.
    * Returns the MessageId of the sent message on success.
-   * @param  {Number|String} chatId     Unique identifier for the target chat
+   * @param  {Number|String} chatId Unique identifier for the target chat
    * @param  {Number|String} fromChatId Unique identifier for the chat where the
    * original message was sent
    * @param  {Array} messageIds  Identifiers of 1-100 messages in the chat from_chat_id to copy.
@@ -1399,6 +1399,25 @@ class TelegramBot extends EventEmitter {
     form.chat_id = chatId;
     form.action = action;
     return this._request('sendChatAction', { form });
+  }
+
+  /**
+   * Use this method to change the chosen reactions on a message.
+   * - Service messages can't be reacted to.
+   * - Automatically forwarded messages from a channel to its discussion group have the same available reactions as messages in the channel.
+   * - In albums, bots must react to the first message.
+   *
+   * @param  {Number|String} chatId  Unique identifier for the target chat or username of the target channel (in the format @channelusername)
+   * @param  {Number} messageId  Unique identifier of the target message
+   * @param  {Object} [options] Additional Telegram query options
+   * @return {Promise<Boolean>} True on success
+   * @see https://core.telegram.org/bots/api#setMessageReaction
+   */
+  setMessageReaction(chatId, messageId, form = {}) {
+    form.chat_id = chatId;
+    form.message_id = messageId;
+    form.reaction = stringify(form.reaction);
+    return this._request('setMessageReaction', { form });
   }
 
   /**
@@ -2447,28 +2466,6 @@ class TelegramBot extends EventEmitter {
   }
 
   /**
-   * Use this method to delete a message, including service messages, with the following limitations:
-   * - A message can only be deleted if it was sent less than 48 hours ago.
-   * - A dice message can only be deleted if it was sent more than 24 hours ago.
-   * - Bots can delete outgoing messages in groups and supergroups.
-   * - Bots can delete incoming messages in groups, supergroups and channels.
-   * - Bots granted `can_post_messages` permissions can delete outgoing messages in channels.
-   * - If the bot is an administrator of a group, it can delete any message there.
-   * - If the bot has `can_delete_messages` permission in a supergroup, it can delete any message there.
-   *
-   * @param  {Number|String} chatId  Unique identifier for the target chat or username of the target channel (in the format @channelusername)
-   * @param  {Number} messageId  Unique identifier of the target message
-   * @param  {Object} [options] Additional Telegram query options
-   * @return {Promise} True on success
-   * @see https://core.telegram.org/bots/api#deletemessage
-   */
-  deleteMessage(chatId, messageId, form = {}) {
-    form.chat_id = chatId;
-    form.message_id = messageId;
-    return this._request('deleteMessage', { form });
-  }
-
-  /**
    * Use this method to send static .WEBP, [animated](https://telegram.org/blog/animated-stickers) .TGS,
    * or [video](https://telegram.org/blog/video-stickers-better-reactions) .WEBM stickers.
    * @param  {Number|String} chatId  Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
@@ -2967,23 +2964,27 @@ class TelegramBot extends EventEmitter {
     return this._request('getGameHighScores', { form });
   }
 
-  /**
-   * Use this method to change the chosen reactions on a message.
-   * - Service messages can't be reacted to.
-   * - Automatically forwarded messages from a channel to its discussion group have the same available reactions as messages in the channel.
-   * - In albums, bots must react to the first message.
+
+    /**
+   * Use this method to delete a message, including service messages, with the following limitations:
+   * - A message can only be deleted if it was sent less than 48 hours ago.
+   * - A dice message can only be deleted if it was sent more than 24 hours ago.
+   * - Bots can delete outgoing messages in groups and supergroups.
+   * - Bots can delete incoming messages in groups, supergroups and channels.
+   * - Bots granted `can_post_messages` permissions can delete outgoing messages in channels.
+   * - If the bot is an administrator of a group, it can delete any message there.
+   * - If the bot has `can_delete_messages` permission in a supergroup, it can delete any message there.
    *
    * @param  {Number|String} chatId  Unique identifier for the target chat or username of the target channel (in the format @channelusername)
    * @param  {Number} messageId  Unique identifier of the target message
    * @param  {Object} [options] Additional Telegram query options
-   * @return {Promise<Boolean>} True on success
-   * @see https://core.telegram.org/bots/api#setMessageReaction
+   * @return {Promise} True on success
+   * @see https://core.telegram.org/bots/api#deletemessage
    */
-  setMessageReaction(chatId, messageId, form = {}) {
+  deleteMessage(chatId, messageId, form = {}) {
     form.chat_id = chatId;
     form.message_id = messageId;
-    form.reaction = stringify(form.reaction);
-    return this._request('setMessageReaction', { form });
+    return this._request('deleteMessage', { form });
   }
 
   /**
@@ -3001,23 +3002,6 @@ class TelegramBot extends EventEmitter {
     return this._request('deleteMessages', { form });
   }
 
-  /**
-   * Use this method to copy messages of any kind. If some of the specified messages can't be found or copied, they are skipped. Service messages, giveaway messages, giveaway winners messages, and invoice messages can't be copied. A quiz poll can be copied only if the value of the field correct_option_id is known to the bot. The method is analogous to the method forwardMessages, but the copied messages don't have a link to the original message. Album grouping is kept for copied messages.
-   *
-   * @param  {Number|String} chatId  Unique identifier for the target chat or username of the target channel (in the format @channelusername)
-   * @param  {Number|String} fromChatId Unique identifier for the chat where the
-   * original message was sent (or channel username in the format `@channelusername`)
-   * @param  {Array<Number|String>} messageIds  Identifiers of 1-100 messages in the chat from_chat_id to copy. The identifiers must be specified in a strictly increasing order.
-   * @param  {Object} [options] Additional Telegram query options
-   * @return {Promise<Array<TelegramBot.MessageId>>} On success, an array of MessageId of the sent messages is returned.
-   * @see https://core.telegram.org/bots/api#copyMessages
-   */
-  copyMessages(chatId, from_chat_id, messageIds, form = {}) {
-    form.chat_id = chatId;
-    form.from_chat_id = from_chat_id;
-    form.message_ids = stringify(messageIds);
-    return this._request('copyMessages', { form });
-  }
 }
 
 module.exports = TelegramBot;
