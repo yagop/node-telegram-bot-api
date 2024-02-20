@@ -1552,10 +1552,13 @@ describe('TelegramBot', function telegramSuite() {
           can_invite_users: true,
           can_restrict_members: false,
           can_pin_messages: true,
+          can_manage_topics: false,
           can_promote_members: false,
           can_manage_video_chats: false,
-          is_anonymous: false,
-          can_manage_topics: false,
+          can_post_stories: false,
+          can_edit_stories: false,
+          can_delete_stories: false,
+          is_anonymous: false
         }));
       });
     });
@@ -2059,7 +2062,7 @@ describe('TelegramBot', function telegramSuite() {
       });
     });
     it('should add reactions to message', function test() {
-      return bot.setMessageReaction(USERID, messageId, {reaction: Reactions, is_big: true }).then(resp => {
+      return bot.setMessageReaction(USERID, messageId, { reaction: Reactions, is_big: true }).then(resp => {
         assert.strictEqual(resp, true);
       });
     });
@@ -2084,13 +2087,14 @@ describe('TelegramBot', function telegramSuite() {
     let messageId;
     before(function before() {
       utils.handleRatelimit(bot, 'copyMessages', this);
-      return bot.sendMessage(USERID, 'To be copyed').then(resp => {
+      return bot.sendMessage(GROUPID, 'To be copyed').then(resp => {
         messageId = resp.message_id;
       });
     });
     it('should copy messages from array', function test() {
-      return bot.copyMessages(USERID, [messageId]).then(resp => {
-        assert.strictEqual(resp, true);
+      return bot.copyMessages(USERID, GROUPID, [messageId]).then(resp => {
+        assert.ok(is.array(resp));
+        assert.ok(resp && resp.length === 1);
       });
     });
   });
