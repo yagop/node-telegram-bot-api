@@ -10,6 +10,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   * copyMessages (@xjx0106 & @Sp3ricka)
   * setMessageReaction (@Sp3ricka)
   * forwardMessages (@danielperez9430)
+  * getUserChatBoosts (@danielperez9430)
 
 2. Minor changes: (@danielperez9430)
   * Refactor methods order
