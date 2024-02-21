@@ -3,6 +3,20 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [0.65.0][0.65.0] - 2024-02-20
+
+1. Support Telegram Bot API v7.1
+  * deleteMessages (@Sp3ricka)
+  * copyMessages (@xjx0106 & @Sp3ricka)
+  * setMessageReaction (@Sp3ricka)
+  * forwardMessages (@danielperez9430)
+
+2. Minor changes: (@danielperez9430)
+  * Refactor methods order
+  * Fix copyMessages & setMessageReaction methods
+  * Added missing tests 
+  * Fix tests for methods copyMessages & getMyDefaulAdministratorRights
+
 ## [0.64.0][0.64.0] - 2023-10-25
 
 1. Replace `request` with a maintained version (@danielperez9430)
