@@ -8,6 +8,9 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 1. Support for updates (@danielperez9430)
   * message_reaction
+  * message_reaction_count
+  * chat_boost
+  * removed_chat_boost
 
 ## [0.65.0][0.65.0] - 2024-02-20
 

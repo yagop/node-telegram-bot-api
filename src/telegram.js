@@ -57,6 +57,7 @@ const _messageTypes = [
   'web_app_data',
   'message_reaction'
 ];
+
 const _deprecatedMessageTypes = [
   'new_chat_participant', 'left_chat_participant'
 ];
@@ -676,6 +677,8 @@ class TelegramBot extends EventEmitter {
     const editedMessage = update.edited_message;
     const channelPost = update.channel_post;
     const editedChannelPost = update.edited_channel_post;
+    const messageReaction = update.message_reaction;
+    const messageReactionCount = update.message_reaction_count;
     const inlineQuery = update.inline_query;
     const chosenInlineResult = update.chosen_inline_result;
     const callbackQuery = update.callback_query;
@@ -683,10 +686,12 @@ class TelegramBot extends EventEmitter {
     const preCheckoutQuery = update.pre_checkout_query;
     const poll = update.poll;
     const pollAnswer = update.poll_answer;
-    const chatMember = update.chat_member;
     const myChatMember = update.my_chat_member;
+    const chatMember = update.chat_member;
     const chatJoinRequest = update.chat_join_request;
-    const messageReaction = update.message_reaction;
+    const chatBoost = update.chat_boost;
+    const removedChatBoost = update.removed_chat_boost;
+
 
     if (message) {
       debug('Process Update message %j', message);
@@ -754,6 +759,12 @@ class TelegramBot extends EventEmitter {
       if (editedChannelPost.caption) {
         this.emit('edited_channel_post_caption', editedChannelPost);
       }
+    } else if (messageReaction) {
+      debug('Process Update message_reaction %j', messageReaction);
+      this.emit('message_reaction', messageReaction);
+    } else if (messageReactionCount) {
+      debug('Process Update message_reaction_count %j', messageReactionCount);
+      this.emit('message_reaction_count', messageReactionCount);
     } else if (inlineQuery) {
       debug('Process Update inline_query %j', inlineQuery);
       this.emit('inline_query', inlineQuery);
@@ -784,9 +795,12 @@ class TelegramBot extends EventEmitter {
     } else if (chatJoinRequest) {
       debug('Process Update my_chat_member %j', chatJoinRequest);
       this.emit('chat_join_request', chatJoinRequest);
-    } else if (messageReaction) {
-      debug('Process Update message_reaction %j', messageReaction);
-      this.emit('message_reaction', messageReaction);
+    } else if (chatBoost) {
+      debug('Process Update chat_boost %j', chatBoost);
+      this.emit('chat_boost', chatBoost);
+    } else if (removedChatBoost) {
+      debug('Process Update removed_chat_boost %j', removedChatBoost);
+      this.emit('removed_chat_boost', removedChatBoost);
     }
   }
 
