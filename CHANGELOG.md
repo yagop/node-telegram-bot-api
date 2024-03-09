@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+
+## [0.65.1][0.65.1] - 2024-03-09
+
+1. Support for updates (@danielperez9430)
+  * message_reaction
+
 ## [0.65.0][0.65.0] - 2024-02-20
 
 1. Support Telegram Bot API v7.1
