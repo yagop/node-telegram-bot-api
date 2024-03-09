@@ -39,6 +39,7 @@ TelegramBot
         * [.logOut([options])](#TelegramBot+logOut) ⇒ <code>Promise</code>
         * [.close([options])](#TelegramBot+close) ⇒ <code>Promise</code>
         * [.sendMessage(chatId, text, [options])](#TelegramBot+sendMessage) ⇒ <code>Promise</code>
+        * [.sendLargeMessage(chatId, text, form)](#TelegramBot+sendLargeMessage) ⇒ <code>Promise</code>
         * [.forwardMessage(chatId, fromChatId, messageId, [options])](#TelegramBot+forwardMessage) ⇒ <code>Promise</code>
         * [.copyMessage(chatId, fromChatId, messageId, [options])](#TelegramBot+copyMessage) ⇒ <code>Promise</code>
         * [.copyMessages(chatId, fromChatId, messageIds, [options])](#TelegramBot+copyMessages) ⇒ <code>Promise</code>
@@ -149,7 +150,7 @@ TelegramBot
         * [.deleteMessages(chatId, messageIds, [options])](#TelegramBot+deleteMessages) ⇒ <code>[ &#x27;Promise&#x27; ].&lt;Boolean&gt;</code>
     * _static_
         * [.errors](#TelegramBot.errors) : <code>Object</code>
-        * [.messageTypes](#TelegramBot.messageTypes) : <code>[ &#x27;Array&#x27; ].&lt;String&gt;</code>
+        * [.messageTypes](#TelegramBot.messageTypes) : <code>Array.&lt;String&gt;</code>
 
 <a name="new_TelegramBot_new"></a>
 
@@ -531,6 +532,20 @@ Send text message.
 | chatId | <code>Number</code> \| <code>String</code> | Unique identifier for the target chat or username of the target channel (in the format `@channelusername`) |
 | text | <code>String</code> | Text of the message to be sent |
 | [options] | <code>Object</code> | Additional Telegram query options |
+
+<a name="TelegramBot+sendLargeMessage"></a>
+
+### telegramBot.sendLargeMessage(chatId, text, form) ⇒ <code>Promise</code>
+Send text message larger than 4096 characters.
+
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
+**Returns**: <code>Promise</code> - On success all the sent messages are returned as an array  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| chatId | <code>Number</code> \| <code>String</code> | Unique identifier for the target chat or username of the target channel (in the format `@channelusername`) |
+| text | <code>String</code> | Text of the message to be sent |
+| form | <code>Object</code> | Additional Telegram query options |
 
 <a name="TelegramBot+forwardMessage"></a>
 
@@ -2195,7 +2210,7 @@ Note: No more than 50 results per query are allowed.
 | Param | Type | Description |
 | --- | --- | --- |
 | inlineQueryId | <code>String</code> | Unique identifier of the query |
-| results | <code>[ &#x27;Array&#x27; ].&lt;InlineQueryResult&gt;</code> | An array of results for the inline query |
+| results | <code>Array.&lt;InlineQueryResult&gt;</code> | An array of results for the inline query |
 | [options] | <code>Object</code> | Additional Telegram query options |
 
 <a name="TelegramBot+answerWebAppQuery"></a>
@@ -2382,7 +2397,7 @@ The different errors the library uses.
 **Kind**: static property of [<code>TelegramBot</code>](#TelegramBot)  
 <a name="TelegramBot.messageTypes"></a>
 
-### TelegramBot.messageTypes : <code>[ &#x27;Array&#x27; ].&lt;String&gt;</code>
+### TelegramBot.messageTypes : <code>Array.&lt;String&gt;</code>
 The types of message updates the library handles.
 
 **Kind**: static property of [<code>TelegramBot</code>](#TelegramBot)  
