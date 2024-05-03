@@ -677,6 +677,10 @@ class TelegramBot extends EventEmitter {
     const editedMessage = update.edited_message;
     const channelPost = update.channel_post;
     const editedChannelPost = update.edited_channel_post;
+    const businessConnection = update.business_connection;
+    const businesssMessage = update.business_message;
+    const editedBusinessMessage = update.edited_business_message;
+    const deletedBusinessMessage = update.deleted_business_messages;
     const messageReaction = update.message_reaction;
     const messageReactionCount = update.message_reaction_count;
     const inlineQuery = update.inline_query;
@@ -759,6 +763,18 @@ class TelegramBot extends EventEmitter {
       if (editedChannelPost.caption) {
         this.emit('edited_channel_post_caption', editedChannelPost);
       }
+    } else if (businessConnection) {
+      debug('Process Update business_connection %j', businessConnection);
+      this.emit('business_connection', businessConnection);
+    } else if (businesssMessage) {
+      debug('Process Update business_message %j', businesssMessage);
+      this.emit('business_message', businesssMessage);
+    } else if (editedBusinessMessage) {
+      debug('Process Update edited_business_message %j', editedBusinessMessage);
+      this.emit('edited_business_message', editedBusinessMessage);
+    } else if (deletedBusinessMessage) {
+      debug('Process Update deleted_business_messages %j', deletedBusinessMessage);
+      this.emit('deleted_business_messages', deletedBusinessMessage);
     } else if (messageReaction) {
       debug('Process Update message_reaction %j', messageReaction);
       this.emit('message_reaction', messageReaction);
@@ -2240,7 +2256,20 @@ class TelegramBot extends EventEmitter {
   getUserChatBoosts(chatId, pollId, form = {}) {
     form.chat_id = chatId;
     form.message_id = pollId;
-    return this._request('stopPoll', { form });
+    return this._request('getUserChatBoosts', { form });
+  }
+
+  /**
+   * Use this method to get information about the connection of the bot with a business account
+   *
+   * @param  {Number|String} businessConnectionId  Unique identifier for the group/channel
+   * @param  {Object} [options] Additional Telegram query options
+   * @return {Promise} On success, returns [BusinessConnection](https://core.telegram.org/bots/api#businessconnection) object
+   * @see https://core.telegram.org/bots/api#getbusinessconnection
+   */
+  getBusinessConnection(businessConnectionId, form = {}) {
+    form.business_connection_id = businessConnectionId;
+    return this._request('getBusinessConnection', { form });
   }
 
   /**
@@ -2614,7 +2643,6 @@ class TelegramBot extends EventEmitter {
    * @param  {Number} userId User identifier of created sticker set owner
    * @param  {String} name Short name of sticker set, to be used in `t.me/addstickers/` URLs (e.g.,   *"animals"*). Can contain only english letters, digits and underscores.
    *  Must begin with a letter, can't contain consecutive underscores and must end in `"_by_<bot_username>"`. `<bot_username>` is case insensitive. 1-64 characters.
-
    * @param  {String} title Sticker set title, 1-64 characters
    * @param  {String|stream.Stream|Buffer} pngSticker Png image with the sticker, must be up to 512 kilobytes in size,
    *  dimensions must not exceed 512px, and either width or height must be exactly 512px.
@@ -2648,9 +2676,11 @@ class TelegramBot extends EventEmitter {
    *
    * You must use exactly one of the fields *png_sticker*, *tgs_sticker*, or *webm_sticker*
    *
-   * Animated stickers can be added to animated sticker sets and only to them:
-   * - Animated sticker sets can have up to 50 stickers.
-   * - Static sticker sets can have up to 120 stickers
+   * Animated stickers can be added to animated sticker sets and only to them
+   *
+   * Note:
+   * - Emoji sticker sets can have up to 200 sticker
+   * - Static or Animated sticker sets can have up to 120 stickers
    *
    * @param  {Number} userId User identifier of sticker set owner
    * @param  {String} name Sticker set name
@@ -2713,6 +2743,24 @@ class TelegramBot extends EventEmitter {
    */
   deleteStickerFromSet(sticker, form = {}) {
     form.sticker = sticker;
+    return this._request('deleteStickerFromSet', { form });
+  }
+
+  /**
+   * Use this method to replace an existing sticker in a sticker set with a new one
+   *
+   * @param  {Number} user_id User identifier of the sticker set owner
+   * @param  {String} name Sticker set name
+   * @param  {String} sticker File identifier of the sticker
+   * @param  {Object} [options] Additional Telegram query options
+   * @return {Promise} True on success
+   * @see https://core.telegram.org/bots/api#replacestickerinset
+   * @todo Add tests for this method!
+   */
+  replaceStickerInSet(userId, name, oldSticker, form = {}) {
+    form.user_id = userId;
+    form.name = name;
+    form.old_sticker = oldSticker;
     return this._request('deleteStickerFromSet', { form });
   }
 
@@ -3023,22 +3071,22 @@ class TelegramBot extends EventEmitter {
   }
 
 
-    /**
-   * Use this method to delete a message, including service messages, with the following limitations:
-   * - A message can only be deleted if it was sent less than 48 hours ago.
-   * - A dice message can only be deleted if it was sent more than 24 hours ago.
-   * - Bots can delete outgoing messages in groups and supergroups.
-   * - Bots can delete incoming messages in groups, supergroups and channels.
-   * - Bots granted `can_post_messages` permissions can delete outgoing messages in channels.
-   * - If the bot is an administrator of a group, it can delete any message there.
-   * - If the bot has `can_delete_messages` permission in a supergroup, it can delete any message there.
-   *
-   * @param  {Number|String} chatId  Unique identifier for the target chat or username of the target channel (in the format @channelusername)
-   * @param  {Number} messageId  Unique identifier of the target message
-   * @param  {Object} [options] Additional Telegram query options
-   * @return {Promise} True on success
-   * @see https://core.telegram.org/bots/api#deletemessage
-   */
+  /**
+ * Use this method to delete a message, including service messages, with the following limitations:
+ * - A message can only be deleted if it was sent less than 48 hours ago.
+ * - A dice message can only be deleted if it was sent more than 24 hours ago.
+ * - Bots can delete outgoing messages in groups and supergroups.
+ * - Bots can delete incoming messages in groups, supergroups and channels.
+ * - Bots granted `can_post_messages` permissions can delete outgoing messages in channels.
+ * - If the bot is an administrator of a group, it can delete any message there.
+ * - If the bot has `can_delete_messages` permission in a supergroup, it can delete any message there.
+ *
+ * @param  {Number|String} chatId  Unique identifier for the target chat or username of the target channel (in the format @channelusername)
+ * @param  {Number} messageId  Unique identifier of the target message
+ * @param  {Object} [options] Additional Telegram query options
+ * @return {Promise} True on success
+ * @see https://core.telegram.org/bots/api#deletemessage
+ */
   deleteMessage(chatId, messageId, form = {}) {
     form.chat_id = chatId;
     form.message_id = messageId;

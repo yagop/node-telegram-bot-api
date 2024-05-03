@@ -4,6 +4,21 @@ All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
 
+## [0.66.0][0.66.0] - 2024-05-03
+
+1. Support Telegram Bot API 7.2 (@danielperez9430)
+  * getBusinessConnection
+  * replaceStickerInSet
+
+2. Support for updates: (@danielperez9430)
+  * business_connection
+  * business_message
+  * edited_business_message
+  * deleted_business_messages
+
+3. Minor fixes: (@danielperez9430)
+  * getUserChatBoosts
+
 ## [0.65.1][0.65.1] - 2024-03-09
 
 1. Support for updates (@danielperez9430)
@@ -66,6 +81,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
  * Fix add thumb in sendAudio, sendVideo and sendVideoNote
  * Fix getMyCommands and setMyCommands
  * Suggested tip amounts stringify in sendInvoice
+
 ## [0.60.0][0.60.0] - 2022-10-06
 
 1. Support Telegram Bot API v6.3 (@danielperez9430)
