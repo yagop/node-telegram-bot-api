@@ -40,6 +40,7 @@ TelegramBot
         * [.close([options])](#TelegramBot+close) ⇒ <code>Promise</code>
         * [.sendMessage(chatId, text, [options])](#TelegramBot+sendMessage) ⇒ <code>Promise</code>
         * [.forwardMessage(chatId, fromChatId, messageId, [options])](#TelegramBot+forwardMessage) ⇒ <code>Promise</code>
+        * [.forwardMessages(chatId, fromChatId, messageIds, [options])](#TelegramBot+forwardMessages) ⇒ <code>Promise</code>
         * [.copyMessage(chatId, fromChatId, messageId, [options])](#TelegramBot+copyMessage) ⇒ <code>Promise</code>
         * [.copyMessages(chatId, fromChatId, messageIds, [options])](#TelegramBot+copyMessages) ⇒ <code>Promise</code>
         * [.sendPhoto(chatId, photo, [options], [fileOptions])](#TelegramBot+sendPhoto) ⇒ <code>Promise</code>
@@ -103,6 +104,8 @@ TelegramBot
         * [.unhideGeneralForumTopic(chatId, [options])](#TelegramBot+unhideGeneralForumTopic) ⇒ <code>Promise</code>
         * [.unpinAllGeneralForumTopicMessages(chatId, [options])](#TelegramBot+unpinAllGeneralForumTopicMessages) ⇒ <code>Promise</code>
         * [.answerCallbackQuery(callbackQueryId, [options])](#TelegramBot+answerCallbackQuery) ⇒ <code>Promise</code>
+        * [.getUserChatBoosts(chatId, user_id, [options])](#TelegramBot+getUserChatBoosts) ⇒ <code>Promise</code>
+        * [.getBusinessConnection(businessConnectionId, [options])](#TelegramBot+getBusinessConnection) ⇒ <code>Promise</code>
         * [.setMyCommands(commands, [options])](#TelegramBot+setMyCommands) ⇒ <code>Promise</code>
         * [.deleteMyCommands([options])](#TelegramBot+deleteMyCommands) ⇒ <code>Promise</code>
         * [.getMyCommands([options])](#TelegramBot+getMyCommands) ⇒ <code>Promise</code>
@@ -129,6 +132,7 @@ TelegramBot
         * [.addStickerToSet(userId, name, sticker, emojis, stickerType, [options], [fileOptions])](#TelegramBot+addStickerToSet) ⇒ <code>Promise</code>
         * [.setStickerPositionInSet(sticker, position, [options])](#TelegramBot+setStickerPositionInSet) ⇒ <code>Promise</code>
         * [.deleteStickerFromSet(sticker, [options])](#TelegramBot+deleteStickerFromSet) ⇒ <code>Promise</code>
+        * [.replaceStickerInSet(user_id, name, sticker, [options])](#TelegramBot+replaceStickerInSet) ⇒ <code>Promise</code>
         * [.setStickerEmojiList(sticker, emojiList, [options])](#TelegramBot+setStickerEmojiList) ⇒ <code>Promise</code>
         * [.setStickerKeywords(sticker, [options])](#TelegramBot+setStickerKeywords) ⇒ <code>Promise</code>
         * [.setStickerMaskPosition(sticker, [options])](#TelegramBot+setStickerMaskPosition) ⇒ <code>Promise</code>
@@ -547,6 +551,23 @@ Forward messages of any kind.
 | messageId | <code>Number</code> \| <code>String</code> | Unique message identifier in the chat specified in fromChatId |
 | [options] | <code>Object</code> | Additional Telegram query options |
 
+<a name="TelegramBot+forwardMessages"></a>
+
+### telegramBot.forwardMessages(chatId, fromChatId, messageIds, [options]) ⇒ <code>Promise</code>
+Use this method to forward multiple messages of any kind.
+If some of the specified messages can't be found or forwarded, they are skipped.
+
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
+**Returns**: <code>Promise</code> - An array of MessageId of the sent messages on success  
+**See**: https://core.telegram.org/bots/api#forwardmessages  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| chatId | <code>Number</code> \| <code>String</code> | Unique identifier for the target chat or username of the target channel (in the format `@channelusername`) or username of the target channel (in the format `@channelusername`) |
+| fromChatId | <code>Number</code> \| <code>String</code> | Unique identifier for the chat where the original message was sent (or channel username in the format `@channelusername`) |
+| messageIds | <code>[ &#x27;Array&#x27; ].&lt;(Number\|String)&gt;</code> | Identifiers of 1-100 messages in the chat from_chat_id to forward. The identifiers must be specified in a strictly increasing order. |
+| [options] | <code>Object</code> | Additional Telegram query options |
+
 <a name="TelegramBot+copyMessage"></a>
 
 ### telegramBot.copyMessage(chatId, fromChatId, messageId, [options]) ⇒ <code>Promise</code>
@@ -691,7 +712,7 @@ Use this method to send animation files (GIF or H.264/MPEG-4 AVC video without s
 ### telegramBot.sendVoice(chatId, voice, [options], [fileOptions]) ⇒ <code>Promise</code>
 Send voice
 
-**Your audio must be in an .OGG file encoded with OPUS** (other formats may be sent as Audio or Document)
+**Your audio must be in an .OGG file encoded with OPUS**, or in .MP3 format, or in .M4A format (other formats may be sent as Audio or Document)
 
 **Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
 **Returns**: <code>Promise</code> - On success, the sent [Message](https://core.telegram.org/bots/api#message) object is returned  
@@ -912,7 +933,7 @@ Use this method to change the chosen reactions on a message.
 
 **Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
 **Returns**: <code>[ &#x27;Promise&#x27; ].&lt;Boolean&gt;</code> - True on success  
-**See**: https://core.telegram.org/bots/api#setMessageReaction  
+**See**: https://core.telegram.org/bots/api#setmessagereaction  
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -1344,7 +1365,7 @@ Use this method to get up to date information about the chat
 username of a user, group or channel, etc.).
 
 **Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
-**Returns**: <code>Promise</code> - [Chat](https://core.telegram.org/bots/api#chat) object on success  
+**Returns**: <code>Promise</code> - [ChatFullInfo](https://core.telegram.org/bots/api#chatfullinfo) object on success  
 **See**: https://core.telegram.org/bots/api#getchat  
 
 | Param | Type | Description |
@@ -1655,6 +1676,36 @@ that are being deprecated.
 | Param | Type | Description |
 | --- | --- | --- |
 | callbackQueryId | <code>String</code> | Unique identifier for the query to be answered |
+| [options] | <code>Object</code> | Additional Telegram query options |
+
+<a name="TelegramBot+getUserChatBoosts"></a>
+
+### telegramBot.getUserChatBoosts(chatId, user_id, [options]) ⇒ <code>Promise</code>
+Use this method to get the list of boosts added to a chat by a use.
+Requires administrator rights in the chat
+
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
+**Returns**: <code>Promise</code> - On success, returns a [UserChatBoosts](https://core.telegram.org/bots/api#userchatboosts) object  
+**See**: https://core.telegram.org/bots/api#getuserchatboosts  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| chatId | <code>Number</code> \| <code>String</code> | Unique identifier for the group/channel |
+| user_id | <code>Number</code> | Unique identifier of the target user |
+| [options] | <code>Object</code> | Additional Telegram query options |
+
+<a name="TelegramBot+getBusinessConnection"></a>
+
+### telegramBot.getBusinessConnection(businessConnectionId, [options]) ⇒ <code>Promise</code>
+Use this method to get information about the connection of the bot with a business account
+
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
+**Returns**: <code>Promise</code> - On success, returns [BusinessConnection](https://core.telegram.org/bots/api#businessconnection) object  
+**See**: https://core.telegram.org/bots/api#getbusinessconnection  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| businessConnectionId | <code>Number</code> \| <code>String</code> | Unique identifier for the group/channel |
 | [options] | <code>Object</code> | Additional Telegram query options |
 
 <a name="TelegramBot+setMyCommands"></a>
@@ -2013,9 +2064,11 @@ Use this method to add a new sticker to a set created by the bot.
 
 You must use exactly one of the fields *png_sticker*, *tgs_sticker*, or *webm_sticker*
 
-Animated stickers can be added to animated sticker sets and only to them:
-- Animated sticker sets can have up to 50 stickers.
-- Static sticker sets can have up to 120 stickers
+Animated stickers can be added to animated sticker sets and only to them
+
+Note:
+- Emoji sticker sets can have up to 200 sticker
+- Static or Animated sticker sets can have up to 120 stickers
 
 **Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
 **Returns**: <code>Promise</code> - True on success  
@@ -2061,6 +2114,26 @@ Use this method to delete a sticker from a set created by the bot.
 
 | Param | Type | Description |
 | --- | --- | --- |
+| sticker | <code>String</code> | File identifier of the sticker |
+| [options] | <code>Object</code> | Additional Telegram query options |
+
+<a name="TelegramBot+replaceStickerInSet"></a>
+
+### telegramBot.replaceStickerInSet(user_id, name, sticker, [options]) ⇒ <code>Promise</code>
+Use this method to replace an existing sticker in a sticker set with a new one
+
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
+**Returns**: <code>Promise</code> - True on success  
+**See**: https://core.telegram.org/bots/api#replacestickerinset  
+**Todo**
+
+- [ ] Add tests for this method!
+
+
+| Param | Type | Description |
+| --- | --- | --- |
+| user_id | <code>Number</code> | User identifier of the sticker set owner |
+| name | <code>String</code> | Sticker set name |
 | sticker | <code>String</code> | File identifier of the sticker |
 | [options] | <code>Object</code> | Additional Telegram query options |
 
@@ -2366,7 +2439,7 @@ Use this method to delete multiple messages simultaneously. If some of the speci
 
 **Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
 **Returns**: <code>[ &#x27;Promise&#x27; ].&lt;Boolean&gt;</code> - True on success  
-**See**: https://core.telegram.org/bots/api#deleteMessages  
+**See**: https://core.telegram.org/bots/api#deletemessages  
 
 | Param | Type | Description |
 | --- | --- | --- |

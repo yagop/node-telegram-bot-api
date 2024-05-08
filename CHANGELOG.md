@@ -6,7 +6,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [0.66.0][0.66.0] - 2024-05-03
 
-1. Support Telegram Bot API 7.2 (@danielperez9430)
+1. Support Telegram Bot API 7.2 & 7.3 (@danielperez9430)
   * getBusinessConnection
   * replaceStickerInSet
 

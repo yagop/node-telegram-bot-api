@@ -1193,7 +1193,7 @@ class TelegramBot extends EventEmitter {
   /**
    * Send voice
    *
-   * **Your audio must be in an .OGG file encoded with OPUS** (other formats may be sent as Audio or Document)
+   * **Your audio must be in an .OGG file encoded with OPUS**, or in .MP3 format, or in .M4A format (other formats may be sent as Audio or Document)
    * @param  {Number|String} chatId  Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
    * @param  {String|stream.Stream|Buffer} voice A file path, Stream or Buffer.
    * Can also be a `file_id` previously uploaded.
@@ -1916,7 +1916,7 @@ class TelegramBot extends EventEmitter {
    * username of a user, group or channel, etc.).
    * @param  {Number|String} chatId Unique identifier for the target chat or username of the target channel (in the format `@channelusername`) or channel
    * @param  {Object} [options] Additional Telegram query options
-   * @return {Promise} [Chat](https://core.telegram.org/bots/api#chat) object on success
+   * @return {Promise} [ChatFullInfo](https://core.telegram.org/bots/api#chatfullinfo) object on success
    * @see https://core.telegram.org/bots/api#getchat
    */
   getChat(chatId, form = {}) {
