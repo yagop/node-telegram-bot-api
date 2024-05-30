@@ -2253,9 +2253,9 @@ class TelegramBot extends EventEmitter {
    * @return {Promise} On success, returns a [UserChatBoosts](https://core.telegram.org/bots/api#userchatboosts) object
    * @see https://core.telegram.org/bots/api#getuserchatboosts
    */
-  getUserChatBoosts(chatId, pollId, form = {}) {
+  getUserChatBoosts(chatId, userId, form = {}) {
     form.chat_id = chatId;
-    form.message_id = pollId;
+    form.user_id = userId;
     return this._request('getUserChatBoosts', { form });
   }
 
