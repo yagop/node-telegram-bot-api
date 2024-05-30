@@ -146,6 +146,7 @@ TelegramBot
         * [.createInvoiceLink(title, description, payload, providerToken, currency, prices, [options])](#TelegramBot+createInvoiceLink) ⇒ <code>Promise</code>
         * [.answerShippingQuery(shippingQueryId, ok, [options])](#TelegramBot+answerShippingQuery) ⇒ <code>Promise</code>
         * [.answerPreCheckoutQuery(preCheckoutQueryId, ok, [options])](#TelegramBot+answerPreCheckoutQuery) ⇒ <code>Promise</code>
+        * [.refundStarPayment(userId, telegramPaymentChargeId, [options])](#TelegramBot+refundStarPayment) ⇒ <code>Promise</code>
         * [.sendGame(chatId, gameShortName, [options])](#TelegramBot+sendGame) ⇒ <code>Promise</code>
         * [.setGameScore(userId, score, [options])](#TelegramBot+setGameScore) ⇒ <code>Promise</code>
         * [.getGameHighScores(userId, [options])](#TelegramBot+getGameHighScores) ⇒ <code>Promise</code>
@@ -2362,6 +2363,21 @@ an [Update](https://core.telegram.org/bots/api#update) with the field *pre_check
 | --- | --- | --- |
 | preCheckoutQueryId | <code>String</code> | Unique identifier for the query to be answered |
 | ok | <code>Boolean</code> | Specify if every order details are ok |
+| [options] | <code>Object</code> | Additional Telegram query options |
+
+<a name="TelegramBot+refundStarPayment"></a>
+
+### telegramBot.refundStarPayment(userId, telegramPaymentChargeId, [options]) ⇒ <code>Promise</code>
+Use this method for refund a successful payment in [Telegram Stars](https://t.me/BotNews/90)
+
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
+**Returns**: <code>Promise</code> - On success, True is returned  
+**See**: https://core.telegram.org/bots/api#refundstarpayment  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| userId | <code>Number</code> | Unique identifier of the user whose payment will be refunded |
+| telegramPaymentChargeId | <code>String</code> | Telegram payment identifier |
 | [options] | <code>Object</code> | Additional Telegram query options |
 
 <a name="TelegramBot+sendGame"></a>

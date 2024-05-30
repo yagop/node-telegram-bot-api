@@ -3026,6 +3026,21 @@ class TelegramBot extends EventEmitter {
   }
 
   /**
+   * Use this method for refund a successful payment in [Telegram Stars](https://t.me/BotNews/90)
+   *
+   * @param  {Number} userId  Unique identifier of the user whose payment will be refunded
+   * @param  {String} telegramPaymentChargeId Telegram payment identifier
+   * @param  {Object} [options] Additional Telegram query options
+   * @return {Promise} On success, True is returned
+   * @see https://core.telegram.org/bots/api#refundstarpayment
+   */
+  refundStarPayment(userId, telegramPaymentChargeId, form = {}) {
+    form.user_id = userId;
+    form.telegram_payment_charge_id = telegramPaymentChargeId;
+    return this._request('refundStarPayment', { form });
+  }
+
+  /**
    * Use this method to send a game.
    *
    * @param  {Number|String} chatId Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
