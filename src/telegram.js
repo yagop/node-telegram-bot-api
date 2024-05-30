@@ -2248,14 +2248,14 @@ class TelegramBot extends EventEmitter {
    * Requires administrator rights in the chat
    *
    * @param  {Number|String} chatId  Unique identifier for the group/channel
-   * @param  {Number} user_id Unique identifier of the target user
+   * @param  {Number} userId Unique identifier of the target user
    * @param  {Object} [options] Additional Telegram query options
    * @return {Promise} On success, returns a [UserChatBoosts](https://core.telegram.org/bots/api#userchatboosts) object
    * @see https://core.telegram.org/bots/api#getuserchatboosts
    */
-  getUserChatBoosts(chatId, pollId, form = {}) {
+  getUserChatBoosts(chatId, userId, form = {}) {
     form.chat_id = chatId;
-    form.message_id = pollId;
+    form.user_id = userId;
     return this._request('getUserChatBoosts', { form });
   }
 
