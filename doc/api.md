@@ -104,7 +104,7 @@ TelegramBot
         * [.unhideGeneralForumTopic(chatId, [options])](#TelegramBot+unhideGeneralForumTopic) ⇒ <code>Promise</code>
         * [.unpinAllGeneralForumTopicMessages(chatId, [options])](#TelegramBot+unpinAllGeneralForumTopicMessages) ⇒ <code>Promise</code>
         * [.answerCallbackQuery(callbackQueryId, [options])](#TelegramBot+answerCallbackQuery) ⇒ <code>Promise</code>
-        * [.getUserChatBoosts(chatId, user_id, [options])](#TelegramBot+getUserChatBoosts) ⇒ <code>Promise</code>
+        * [.getUserChatBoosts(chatId, userId, [options])](#TelegramBot+getUserChatBoosts) ⇒ <code>Promise</code>
         * [.getBusinessConnection(businessConnectionId, [options])](#TelegramBot+getBusinessConnection) ⇒ <code>Promise</code>
         * [.setMyCommands(commands, [options])](#TelegramBot+setMyCommands) ⇒ <code>Promise</code>
         * [.deleteMyCommands([options])](#TelegramBot+deleteMyCommands) ⇒ <code>Promise</code>
@@ -1680,7 +1680,7 @@ that are being deprecated.
 
 <a name="TelegramBot+getUserChatBoosts"></a>
 
-### telegramBot.getUserChatBoosts(chatId, user_id, [options]) ⇒ <code>Promise</code>
+### telegramBot.getUserChatBoosts(chatId, userId, [options]) ⇒ <code>Promise</code>
 Use this method to get the list of boosts added to a chat by a use.
 Requires administrator rights in the chat
 
@@ -1691,7 +1691,7 @@ Requires administrator rights in the chat
 | Param | Type | Description |
 | --- | --- | --- |
 | chatId | <code>Number</code> \| <code>String</code> | Unique identifier for the group/channel |
-| user_id | <code>Number</code> | Unique identifier of the target user |
+| userId | <code>Number</code> | Unique identifier of the target user |
 | [options] | <code>Object</code> | Additional Telegram query options |
 
 <a name="TelegramBot+getBusinessConnection"></a>
