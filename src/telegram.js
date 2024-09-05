@@ -1720,6 +1720,42 @@ class TelegramBot extends EventEmitter {
   }
 
   /**
+   * Use this method to create a subscription invite link for a channel chat.
+   *
+   * The bot must have the can_invite_users administrator rights
+   *
+   * @param  {Number|String} chatId Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
+   * @param  {Number} subscriptionPeriod The number of seconds the subscription will be active for before the next payment. Currently, it must always be 2592000 (30 days)
+   * @param  {Number} subscriptionPrice The amount of Telegram Stars a user must pay initially and after each subsequent subscription period to be a member of the chat (1-2500)
+   * @param  {Object} [options] Additional Telegram query options
+   * @return {Promise} The new invite link as a [ChatInviteLink](https://core.telegram.org/bots/api#chatinvitelink) object
+   * @see https://core.telegram.org/bots/api#createchatsubscriptioninvitelink
+   */
+  createChatSubscriptionInviteLink(chatId, subscriptionPeriod, subscriptionPrice, form = {}) {
+    form.chat_id = chatId;
+    form.subscription_period = subscriptionPeriod;
+    form.subscription_price = subscriptionPrice;
+    return this._request('createChatSubscriptionInviteLink', { form });
+  }
+
+  /**
+   * Use this method to edit a subscription invite link created by the bot.
+   *
+   * The bot must have the can_invite_users administrator rights
+   *
+   * @param  {Number|String} chatId Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
+   * @param  {String} inviteLink The invite link to edit
+   * @param  {Object} [options] Additional Telegram query options
+   * @return {Promise} The new invite link as a [ChatInviteLink](https://core.telegram.org/bots/api#chatinvitelink) object
+   * @see https://core.telegram.org/bots/api#editchatsubscriptioninvitelink
+   */
+  editChatSubscriptionInviteLink(chatId, inviteLink, form = {}) {
+    form.chat_id = chatId;
+    form.invite_link = inviteLink;
+    return this._request('editChatSubscriptionInviteLink', { form });
+  }
+
+  /**
    * Use this method to revoke an invite link created by the bot.
    * Note: If the primary link is revoked, a new link is automatically generated
    *
@@ -3023,6 +3059,17 @@ class TelegramBot extends EventEmitter {
     form.pre_checkout_query_id = preCheckoutQueryId;
     form.ok = ok;
     return this._request('answerPreCheckoutQuery', { form });
+  }
+
+  /**
+   * Use this method for get the bot's Telegram Star transactions in chronological order
+   *
+   * @param  {Object} [options] Additional Telegram query options
+   * @return {Promise} On success, returns a [StarTransactions](https://core.telegram.org/bots/api#startransactions) object
+   * @see https://core.telegram.org/bots/api#getstartransactions
+   */
+  getStarTransactions(form = {}) {
+    return this._request('getStarTransactions', { form });
   }
 
   /**
