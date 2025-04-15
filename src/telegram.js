@@ -405,6 +405,79 @@ class TelegramBot extends EventEmitter {
     }, null];
   }
 
+
+  /**
+   * Format multiple files to be uploaded; handles file paths, streams, and buffers
+   * @param  {String} type
+   * @param  {Array} files Array of file data objects
+   * @param  {Object} fileOptions File options
+   * @param  {String} [fileOptions.filename] File name
+   * @param  {String} [fileOptions.contentType] Content type (i.e. MIME)
+   * @return {Object} formatted
+   * @return {Object} formatted.formData Form data object with all files
+   * @return {Array} formatted.fileIds Array of fileIds for non-file data
+   * @throws Error if Buffer file type is not supported.
+   * @see https://npmjs.com/package/file-type
+   * @private
+   */
+  _formatSendMultipleData(type, files, fileOptions = {}) {
+    const formData = {};
+    const fileIds = {};
+
+    files.forEach((file, index) => {
+      let filedata = file.media || file.data;
+      let filename = file.filename || fileOptions.filename;
+      let contentType = file.contentType || fileOptions.contentType;
+
+      if (filedata instanceof stream.Stream) {
+        if (!filename && filedata.path) {
+          const url = URL.parse(path.basename(filedata.path.toString()), true);
+          if (url.pathname) {
+            filename = qs.unescape(url.pathname);
+          }
+        }
+      } else if (Buffer.isBuffer(filedata)) {
+        filename = `filename_${index}`;
+
+        if (!contentType) {
+          const filetype = fileType(filedata);
+
+          if (filetype) {
+            contentType = filetype.mime;
+            const ext = filetype.ext;
+
+            if (ext) {
+              filename = `${filename}.${ext}`;
+            }
+          } else {
+            throw new errors.FatalError('Unsupported Buffer file-type');
+          }
+        }
+      } else if (fs.existsSync(filedata)) {
+        filedata = fs.createReadStream(filedata);
+
+        if (!filename) {
+          filename = path.basename(filedata.path);
+        }
+      } else {
+        fileIds[index] = filedata;
+        return;
+      }
+
+      filename = filename || `filename_${index}`;
+      contentType = contentType || 'application/octet-stream';
+
+      formData[`${type}_${index}`] = {
+        value: filedata,
+        options: {
+          filename,
+          contentType,
+        },
+      };
+    });
+
+    return { formData, fileIds };
+  }
   /**
    * Start polling.
    * Rejects returned promise if a WebHook is being used by this instance.
@@ -1245,6 +1318,48 @@ class TelegramBot extends EventEmitter {
       return Promise.reject(ex);
     }
     return this._request('sendVideoNote', opts);
+  }
+
+  /**
+   * Use this method to send paid media.
+   * @param {Number|String} chatId Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
+   * @param {Number} starCount The number of Telegram Stars that must be paid to buy access to the media; 1-10000
+   * @param {String|stream.Stream|Buffer} media A file path or Stream.
+   * @param {Object} [options] Additional Telegram query options
+   * @return {Promise} On success, the sent [Message](https://core.telegram.org/bots/api#message) object is returned
+   * @see https://core.telegram.org/bots/api#sendpaidmedia
+  */
+  sendPaidMedia(chatId, starCount, media, options = {}) {
+    const opts = {
+      qs: options
+    };
+
+    opts.qs.chat_id = chatId;
+    opts.qs.star_count = starCount;
+
+    try {
+      const inputPaidMedia = [];
+      opts.formData = {};
+
+      const { formData, fileIds } = this._formatSendMultipleData('media', media);
+
+      opts.formData = formData;
+
+      inputPaidMedia.push(...media.map((item, index) => {
+        if (fileIds[index]) {
+          item.media = fileIds[index];
+        } else {
+          item.media = `attach://media_${index}`;
+        }
+        return item;
+      }));
+
+      opts.qs.media = stringify(inputPaidMedia);
+    } catch (ex) {
+      return Promise.reject(ex);
+    }
+
+    return this._request('sendPaidMedia', opts);
   }
 
   /**
