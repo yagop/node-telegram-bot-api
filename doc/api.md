@@ -107,6 +107,7 @@ TelegramBot
         * [.unhideGeneralForumTopic(chatId, [options])](#TelegramBot+unhideGeneralForumTopic) ⇒ <code>Promise</code>
         * [.unpinAllGeneralForumTopicMessages(chatId, [options])](#TelegramBot+unpinAllGeneralForumTopicMessages) ⇒ <code>Promise</code>
         * [.answerCallbackQuery(callbackQueryId, [options])](#TelegramBot+answerCallbackQuery) ⇒ <code>Promise</code>
+        * [.savePreparedInlineMessage(userId, result, [form])](#TelegramBot+savePreparedInlineMessage) ⇒ <code>Promise</code>
         * [.getUserChatBoosts(chatId, userId, [options])](#TelegramBot+getUserChatBoosts) ⇒ <code>Promise</code>
         * [.getBusinessConnection(businessConnectionId, [options])](#TelegramBot+getBusinessConnection) ⇒ <code>Promise</code>
         * [.setMyCommands(commands, [options])](#TelegramBot+setMyCommands) ⇒ <code>Promise</code>
@@ -1199,6 +1200,7 @@ Use this method to create a subscription invite link for a channel chat.
 
 The bot must have the can_invite_users administrator rights
 
+
 **Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
 **Returns**: <code>Promise</code> - The new invite link as a [ChatInviteLink](https://core.telegram.org/bots/api#chatinvitelink) object  
 **See**: https://core.telegram.org/bots/api#createchatsubscriptioninvitelink  
@@ -1213,6 +1215,7 @@ The bot must have the can_invite_users administrator rights
 <a name="TelegramBot+editChatSubscriptionInviteLink"></a>
 
 ### telegramBot.editChatSubscriptionInviteLink(chatId, inviteLink, [options]) ⇒ <code>Promise</code>
+
 Use this method to edit a subscription invite link created by the bot.
 
 The bot must have the can_invite_users administrator rights
@@ -1733,6 +1736,21 @@ that are being deprecated.
 | --- | --- | --- |
 | callbackQueryId | <code>String</code> | Unique identifier for the query to be answered |
 | [options] | <code>Object</code> | Additional Telegram query options |
+
+<a name="TelegramBot+savePreparedInlineMessage"></a>
+
+### telegramBot.savePreparedInlineMessage(userId, result, [form]) ⇒ <code>Promise</code>
+Use this method to get the unique identifier of the prepared message and expiration date of the prepared message as an object.
+
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
+**Returns**: <code>Promise</code> - On success, returns a PreparedInlineMessage object  
+**See**: https://core.telegram.org/bots/api#savepreparedinlinemessage  
+
+| Param | Type | Default | Description |
+| --- | --- | --- | --- |
+| userId | <code>Number</code> |  | Unique identifier of the target user |
+| result | <code>Object</code> |  | The prepared inline message result to be saved |
+| [form] | <code>Object</code> | <code>{}</code> | Optional form data to include in the request |
 
 <a name="TelegramBot+getUserChatBoosts"></a>
 
