@@ -761,6 +761,7 @@ class TelegramBot extends EventEmitter {
     const callbackQuery = update.callback_query;
     const shippingQuery = update.shipping_query;
     const preCheckoutQuery = update.pre_checkout_query;
+    const purchasedPaidMedia = update.purchased_paid_media;
     const poll = update.poll;
     const pollAnswer = update.poll_answer;
     const myChatMember = update.my_chat_member;
@@ -869,6 +870,9 @@ class TelegramBot extends EventEmitter {
     } else if (preCheckoutQuery) {
       debug('Process Update pre_checkout_query %j', preCheckoutQuery);
       this.emit('pre_checkout_query', preCheckoutQuery);
+    } else if (purchasedPaidMedia) {
+      debug('Process Update purchased_paid_media %j', purchasedPaidMedia);
+      this.emit('purchased_paid_media', purchasedPaidMedia);
     } else if (poll) {
       debug('Process Update poll %j', poll);
       this.emit('poll', poll);

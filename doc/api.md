@@ -50,6 +50,7 @@ TelegramBot
         * [.sendAnimation(chatId, animation, [options], [fileOptions])](#TelegramBot+sendAnimation) ⇒ <code>Promise</code>
         * [.sendVoice(chatId, voice, [options], [fileOptions])](#TelegramBot+sendVoice) ⇒ <code>Promise</code>
         * [.sendVideoNote(chatId, videoNote, [options], [fileOptions])](#TelegramBot+sendVideoNote) ⇒ <code>Promise</code>
+        * [.sendPaidMedia(chatId, starCount, media, [options])](#TelegramBot+sendPaidMedia) ⇒ <code>Promise</code>
         * [.sendMediaGroup(chatId, media, [options])](#TelegramBot+sendMediaGroup) ⇒ <code>Promise</code>
         * [.sendLocation(chatId, latitude, longitude, [options])](#TelegramBot+sendLocation) ⇒ <code>Promise</code>
         * [.editMessageLiveLocation(latitude, longitude, [options])](#TelegramBot+editMessageLiveLocation) ⇒ <code>Promise</code>
@@ -73,6 +74,8 @@ TelegramBot
         * [.exportChatInviteLink(chatId, [options])](#TelegramBot+exportChatInviteLink) ⇒ <code>Promise</code>
         * [.createChatInviteLink(chatId, [options])](#TelegramBot+createChatInviteLink) ⇒ <code>Object</code>
         * [.editChatInviteLink(chatId, inviteLink, [options])](#TelegramBot+editChatInviteLink) ⇒ <code>Promise</code>
+        * [.createChatSubscriptionInviteLink(chatId, subscriptionPeriod, subscriptionPrice, [options])](#TelegramBot+createChatSubscriptionInviteLink) ⇒ <code>Promise</code>
+        * [.editChatSubscriptionInviteLink(chatId, inviteLink, [options])](#TelegramBot+editChatSubscriptionInviteLink) ⇒ <code>Promise</code>
         * [.revokeChatInviteLink(chatId, inviteLink, [options])](#TelegramBot+revokeChatInviteLink) ⇒ <code>Promise</code>
         * [.approveChatJoinRequest(chatId, userId, [options])](#TelegramBot+approveChatJoinRequest) ⇒ <code>Promise</code>
         * [.declineChatJoinRequest(chatId, userId, [options])](#TelegramBot+declineChatJoinRequest) ⇒ <code>Promise</code>
@@ -146,6 +149,7 @@ TelegramBot
         * [.createInvoiceLink(title, description, payload, providerToken, currency, prices, [options])](#TelegramBot+createInvoiceLink) ⇒ <code>Promise</code>
         * [.answerShippingQuery(shippingQueryId, ok, [options])](#TelegramBot+answerShippingQuery) ⇒ <code>Promise</code>
         * [.answerPreCheckoutQuery(preCheckoutQueryId, ok, [options])](#TelegramBot+answerPreCheckoutQuery) ⇒ <code>Promise</code>
+        * [.getStarTransactions([options])](#TelegramBot+getStarTransactions) ⇒ <code>Promise</code>
         * [.refundStarPayment(userId, telegramPaymentChargeId, [options])](#TelegramBot+refundStarPayment) ⇒ <code>Promise</code>
         * [.sendGame(chatId, gameShortName, [options])](#TelegramBot+sendGame) ⇒ <code>Promise</code>
         * [.setGameScore(userId, score, [options])](#TelegramBot+setGameScore) ⇒ <code>Promise</code>
@@ -752,6 +756,22 @@ Telegram clients support **rounded square MPEG4 videos** of up to 1 minute long.
 | [options] | <code>Object</code> | Additional Telegram query options |
 | [fileOptions] | <code>Object</code> | Optional file related meta-data |
 
+<a name="TelegramBot+sendPaidMedia"></a>
+
+### telegramBot.sendPaidMedia(chatId, starCount, media, [options]) ⇒ <code>Promise</code>
+Use this method to send paid media.
+
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
+**Returns**: <code>Promise</code> - On success, the sent [Message](https://core.telegram.org/bots/api#message) object is returned  
+**See**: https://core.telegram.org/bots/api#sendpaidmedia  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| chatId | <code>Number</code> \| <code>String</code> | Unique identifier for the target chat or username of the target channel (in the format `@channelusername`) |
+| starCount | <code>Number</code> | The number of Telegram Stars that must be paid to buy access to the media; 1-10000 |
+| media | <code>String</code> \| <code>stream.Stream</code> \| <code>Buffer</code> | A file path or Stream. |
+| [options] | <code>Object</code> | Additional Telegram query options |
+
 <a name="TelegramBot+sendMediaGroup"></a>
 
 ### telegramBot.sendMediaGroup(chatId, media, [options]) ⇒ <code>Promise</code>
@@ -1170,6 +1190,41 @@ The bot **must be an administrator in the chat** for this to work and must have 
 | --- | --- | --- |
 | chatId | <code>Number</code> \| <code>String</code> | Unique identifier for the target chat or username of the target channel (in the format `@channelusername`) |
 | inviteLink | <code>String</code> | Text with the invite link to edit |
+| [options] | <code>Object</code> | Additional Telegram query options |
+
+<a name="TelegramBot+createChatSubscriptionInviteLink"></a>
+
+### telegramBot.createChatSubscriptionInviteLink(chatId, subscriptionPeriod, subscriptionPrice, [options]) ⇒ <code>Promise</code>
+Use this method to create a subscription invite link for a channel chat.
+
+The bot must have the can_invite_users administrator rights
+
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
+**Returns**: <code>Promise</code> - The new invite link as a [ChatInviteLink](https://core.telegram.org/bots/api#chatinvitelink) object  
+**See**: https://core.telegram.org/bots/api#createchatsubscriptioninvitelink  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| chatId | <code>Number</code> \| <code>String</code> | Unique identifier for the target chat or username of the target channel (in the format `@channelusername`) |
+| subscriptionPeriod | <code>Number</code> | The number of seconds the subscription will be active for before the next payment. Currently, it must always be 2592000 (30 days) |
+| subscriptionPrice | <code>Number</code> | The amount of Telegram Stars a user must pay initially and after each subsequent subscription period to be a member of the chat (1-2500) |
+| [options] | <code>Object</code> | Additional Telegram query options |
+
+<a name="TelegramBot+editChatSubscriptionInviteLink"></a>
+
+### telegramBot.editChatSubscriptionInviteLink(chatId, inviteLink, [options]) ⇒ <code>Promise</code>
+Use this method to edit a subscription invite link created by the bot.
+
+The bot must have the can_invite_users administrator rights
+
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
+**Returns**: <code>Promise</code> - The new invite link as a [ChatInviteLink](https://core.telegram.org/bots/api#chatinvitelink) object  
+**See**: https://core.telegram.org/bots/api#editchatsubscriptioninvitelink  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| chatId | <code>Number</code> \| <code>String</code> | Unique identifier for the target chat or username of the target channel (in the format `@channelusername`) |
+| inviteLink | <code>String</code> | The invite link to edit |
 | [options] | <code>Object</code> | Additional Telegram query options |
 
 <a name="TelegramBot+revokeChatInviteLink"></a>
@@ -2363,6 +2418,19 @@ an [Update](https://core.telegram.org/bots/api#update) with the field *pre_check
 | --- | --- | --- |
 | preCheckoutQueryId | <code>String</code> | Unique identifier for the query to be answered |
 | ok | <code>Boolean</code> | Specify if every order details are ok |
+| [options] | <code>Object</code> | Additional Telegram query options |
+
+<a name="TelegramBot+getStarTransactions"></a>
+
+### telegramBot.getStarTransactions([options]) ⇒ <code>Promise</code>
+Use this method for get the bot's Telegram Star transactions in chronological order
+
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
+**Returns**: <code>Promise</code> - On success, returns a [StarTransactions](https://core.telegram.org/bots/api#startransactions) object  
+**See**: https://core.telegram.org/bots/api#getstartransactions  
+
+| Param | Type | Description |
+| --- | --- | --- |
 | [options] | <code>Object</code> | Additional Telegram query options |
 
 <a name="TelegramBot+refundStarPayment"></a>
