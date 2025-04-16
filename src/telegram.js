@@ -425,7 +425,7 @@ class TelegramBot extends EventEmitter {
     const fileIds = {};
 
     files.forEach((file, index) => {
-      let filedata = file.media || file.data;
+      let filedata = file.media || file.data || file[type];
       let filename = file.filename || fileOptions.filename;
       let contentType = file.contentType || fileOptions.contentType;
 
@@ -1328,7 +1328,7 @@ class TelegramBot extends EventEmitter {
    * Use this method to send paid media.
    * @param {Number|String} chatId Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
    * @param {Number} starCount The number of Telegram Stars that must be paid to buy access to the media; 1-10000
-   * @param {String|stream.Stream|Buffer} media A file path or Stream.
+   * @param {Array} media Array of [InputPaidMedia](https://core.telegram.org/bots/api#inputpaidmedia). The media property can bea String, Stream or Buffer.
    * @param {Object} [options] Additional Telegram query options
    * @return {Promise} On success, the sent [Message](https://core.telegram.org/bots/api#message) object is returned
    * @see https://core.telegram.org/bots/api#sendpaidmedia
@@ -3338,7 +3338,7 @@ class TelegramBot extends EventEmitter {
   /**
    * Use this method to returns the list of gifts that can be sent by the bot to users and channel chats.
    *
-   * @param {Object} [options] Additional Telegram query options
+   * @param {Object} [options] Additional Telegram query options.
    * @return {Promise} On success, returns a [Gifts](https://core.telegram.org/bots/api#gifts) objects.
    * @see https://core.telegram.org/bots/api#getavailablegifts
    */
@@ -3350,7 +3350,7 @@ class TelegramBot extends EventEmitter {
    * Use this method to sends a gift to the given user or channel chat.
    *
    * @param {String} giftId Unique identifier of the gift
-   * @param {Object} [options] Additional Telegram query options
+   * @param {Object} [options] Additional Telegram query options.
    * @return {Promise} On success, returns true.
    * @see https://core.telegram.org/bots/api#getavailablegifts
    */
@@ -3360,10 +3360,27 @@ class TelegramBot extends EventEmitter {
   }
 
   /**
+   * Use this method to sends a gift to the given user or channel chat.
+   *
+   * @param {Number} userId Unique identifier of the target user who will receive a Telegram Premium subscription.
+   * @param {Number} monthCount Number of months the Telegram Premium subscription will be active for the user; must be one of 3, 6, or 12.
+   * @param {String} starCount Number of Telegram Stars to pay for the Telegram Premium subscription; must be 1000 for 3 months, 1500 for 6 months, and 2500 for 12 months.
+   * @param {Object} [options] Additional Telegram query options.
+   * @return {Promise} On success, returns true.
+   * @see https://core.telegram.org/bots/api#getavailablegifts
+   */
+  giftPremiumSubscription(userId, monthCount, starCount, form = {}) {
+    form.user_id = userId;
+    form.month_count = monthCount;
+    form.star_count = starCount;
+    return this._request('giftPremiumSubscription', { form });
+  }
+
+  /**
    * This method verifies a user [on behalf of the organization](https://telegram.org/verify#third-party-verification) which is represented by the bot.
    *
-   * @param {Number} userId Unique identifier of the target user
-   * @param {Object} [options] Additional Telegram query options
+   * @param {Number} userId Unique identifier of the target user.
+   * @param {Object} [options] Additional Telegram query options.
    * @return {Promise} On success, returns true.
    * @see https://core.telegram.org/bots/api#verifyuser
    */
@@ -3375,9 +3392,9 @@ class TelegramBot extends EventEmitter {
   /**
    * This method verifies a chat [on behalf of the organization](https://telegram.org/verify#third-party-verification) which is represented by the bot.
    *
-   * @param {Number} chatId Unique identifier of the target chat
+   * @param {Number} chatId Unique identifier of the target chat.
    * @return {Promise} On success, returns true.
-   * @param {Object} [options] Additional Telegram query options
+   * @param {Object} [options] Additional Telegram query options.
    * @see https://core.telegram.org/bots/api#verifychat
    */
   verifyChat(chatId, form = {}) {
@@ -3401,8 +3418,8 @@ class TelegramBot extends EventEmitter {
   /**
    * This method removes verification from a chat who is currently verified [on behalf of the organization](https://telegram.org/verify#third-party-verification) which is represented by the bot.
    *
-   * @param {Number} chatId Unique identifier of the target chat
-   * @param {Object} [options] Additional Telegram query options
+   * @param {Number} chatId Unique identifier of the target chat.
+   * @param {Object} [options] Additional Telegram query options.
    * @return {Promise} On success, returns true.
    * @see https://core.telegram.org/bots/api#removechatverification
    */
@@ -3437,7 +3454,7 @@ class TelegramBot extends EventEmitter {
    *
    * @param {String} businessConnectionId Unique identifier of the business connection on behalf of which to delete the message.
    * @param {Number[]} messageIds List of 1-100 identifiers of messages to delete. All messages **must be from the same chat**.
-   * @param {Object} [options] Additional Telegram query options
+   * @param {Object} [options] Additional Telegram query options.
    * @return {Promise} On success, returns true.
    * @see https://core.telegram.org/bots/api#deletebusinessmessages
    */
@@ -3505,9 +3522,9 @@ class TelegramBot extends EventEmitter {
    * @return {Promise} On success, returns true.
    * @see https://core.telegram.org/bots/api#setbusinessaccountprofilephoto
    */
-  setBusinessAccountProfilePhoto(businessConnectionId, photo, form = {}) {
+  setBusinessAccountProfilePhoto(businessConnectionId, photo, options = {}) {
     const opts = {
-      qs: {},
+      qs: options,
     };
 
     opts.qs.business_connection_id = businessConnectionId;
@@ -3520,7 +3537,7 @@ class TelegramBot extends EventEmitter {
       return Promise.reject(ex);
     }
 
-    return this._request('setBusinessAccountProfilePhoto', { form });
+    return this._request('setBusinessAccountProfilePhoto', opts);
   }
 
   /**
@@ -3657,6 +3674,116 @@ class TelegramBot extends EventEmitter {
     form.owned_gift_id = ownedGiftId;
     form.new_owner_chat_id = newOwnerChatId;
     return this._request('transferGift', { form });
+  }
+
+  /**
+   * This method posts a story on behalf of a managed business account.
+   *
+   * Requires the **can_manage_stories** business bot right.
+   *
+   * @param {String} businessConnectionId Unique identifier of the business connection.
+   * @param {Array} content [InputStoryContent](https://core.telegram.org/bots/api#inputpaidmedia). The photo/video property can be String, Stream or Buffer.
+   * @param {Number} activePeriod Unique identifier of the chat which will own the gift. The chat **must be active in the last 24 hours**.
+   * @param {Object} [options] Additional Telegram query options
+   * @return {Promise} On success, returns [Story](https://core.telegram.org/bots/api#story).
+   * @see https://core.telegram.org/bots/api#poststory
+   */
+  postStory(businessConnectionId, content, activePeriod, options = {}) {
+    const opts = {
+      qs: options,
+    };
+
+    opts.qs.business_connection_id = businessConnectionId;
+    opts.qs.active_period = activePeriod;
+
+    try {
+      const inputHistoryContent = content;
+      opts.formData = {};
+
+      if (!content.type) {
+        return Promise.reject(new Error('content.type is required'));
+      }
+
+      const { formData, fileIds } = this._formatSendMultipleData(content.type, [content]);
+
+      opts.formData = formData;
+
+      if (fileIds[0]) {
+        inputHistoryContent[content.type] = fileIds[0];
+      } else {
+        inputHistoryContent[content.type] = `attach://${content.type}_0`;
+      }
+
+      opts.qs.content = stringify(inputHistoryContent);
+    } catch (ex) {
+      return Promise.reject(ex);
+    }
+
+    return this._request('postStory', opts);
+  }
+
+  /**
+   * This method edits a story previously posted by the bot on behalf of a managed business account.
+   *
+   * Requires the **can_manage_stories** business bot right.
+   *
+   * @param {String} businessConnectionId Unique identifier of the business connection.
+   * @param {Number} storyId Unique identifier of the story to edit.
+   * @param {Array} content [InputStoryContent](https://core.telegram.org/bots/api#inputpaidmedia). The photo/video property can be String, Stream or Buffer.
+   * @param {Object} [options] Additional Telegram query options
+   * @return {Promise} On success, returns [Story](https://core.telegram.org/bots/api#story).
+   * @see https://core.telegram.org/bots/api#editstory
+   */
+  editStory(businessConnectionId, storyId, content, options = {}) {
+    const opts = {
+      qs: options,
+    };
+
+    opts.qs.business_connection_id = businessConnectionId;
+    opts.qs.story_id = storyId;
+
+    try {
+      const inputHistoryContent = content;
+      opts.formData = {};
+
+      if (!content.type) {
+        return Promise.reject(new Error('content.type is required'));
+      }
+
+      const { formData, fileIds } = this._formatSendMultipleData(content.type, [content]);
+
+      opts.formData = formData;
+
+      if (fileIds[0]) {
+        inputHistoryContent[content.type] = fileIds[0];
+      } else {
+        inputHistoryContent[content.type] = `attach://${content.type}_0`;
+      }
+
+      opts.qs.content = stringify(inputHistoryContent);
+    } catch (ex) {
+      return Promise.reject(ex);
+    }
+
+    return this._request('editStory', opts);
+  }
+
+
+  /**
+   * This method deletes a story previously posted by the bot on behalf of a managed business account.
+   *
+   * Requires the **can_manage_stories** business bot right.
+   *
+   * @param {String} businessConnectionId Unique identifier of the business connection.
+   * @param {Number} storyId Unique identifier of the story to delete.
+   * @param {Object} [options] Additional Telegram query options.
+   * @return {Promise} On success, returns True.
+   * @see https://core.telegram.org/bots/api#deletestory
+   */
+  deleteStory(businessConnectionId, storyId, form = {}) {
+    form.business_connection_id = businessConnectionId;
+    form.story_id = storyId;
+    return this._request('deleteStory', { form });
   }
 
 }

@@ -24,6 +24,26 @@ This project adheres to [Semantic Versioning](http://semver.org/).
    * removeUserVerification
    * removeChatVerification
 
+5. Support Telegram Bot API 9.0 (@danielperez9430)
+   * readBusinessMessage
+   * deleteBusinessMessages
+   * setBusinessAccountName
+   * setBusinessAccountUsername
+   * setBusinessAccountBio
+   * setBusinessAccountProfilePhoto
+   * removeBusinessAccountProfilePhoto
+   * setBusinessAccountGiftSettings
+   * getBusinessAccountStarBalance
+   * transferBusinessAccountStars
+   * getBusinessAccountGifts
+   * convertGiftToStars
+   * upgradeGift
+   * transferGift
+   * postStory
+   * editStory
+   * deleteStory
+   * giftPremiumSubscription
+
 ## [0.67.0][0.67.0] - 2024-05-30
 
 1. Support Telegram Bot API 7.4 (@danielperez9430)
