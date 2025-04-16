@@ -62,6 +62,7 @@ TelegramBot
         * [.sendChatAction(chatId, action, [options])](#TelegramBot+sendChatAction) ⇒ <code>Promise</code>
         * [.setMessageReaction(chatId, messageId, [options])](#TelegramBot+setMessageReaction) ⇒ <code>[ &#x27;Promise&#x27; ].&lt;Boolean&gt;</code>
         * [.getUserProfilePhotos(userId, [options])](#TelegramBot+getUserProfilePhotos) ⇒ <code>Promise</code>
+        * [.setUserEmojiStatus(userId, [options])](#TelegramBot+setUserEmojiStatus) ⇒ <code>Promise</code>
         * [.getFile(fileId, [options])](#TelegramBot+getFile) ⇒ <code>Promise</code>
         * [.banChatMember(chatId, userId, [options])](#TelegramBot+banChatMember) ⇒ <code>Promise</code>
         * [.unbanChatMember(chatId, userId, [options])](#TelegramBot+unbanChatMember) ⇒ <code>Promise</code>
@@ -107,7 +108,7 @@ TelegramBot
         * [.unhideGeneralForumTopic(chatId, [options])](#TelegramBot+unhideGeneralForumTopic) ⇒ <code>Promise</code>
         * [.unpinAllGeneralForumTopicMessages(chatId, [options])](#TelegramBot+unpinAllGeneralForumTopicMessages) ⇒ <code>Promise</code>
         * [.answerCallbackQuery(callbackQueryId, [options])](#TelegramBot+answerCallbackQuery) ⇒ <code>Promise</code>
-        * [.savePreparedInlineMessage(userId, result, [form])](#TelegramBot+savePreparedInlineMessage) ⇒ <code>Promise</code>
+        * [.savePreparedInlineMessage(userId, result, [options])](#TelegramBot+savePreparedInlineMessage) ⇒ <code>Promise</code>
         * [.getUserChatBoosts(chatId, userId, [options])](#TelegramBot+getUserChatBoosts) ⇒ <code>Promise</code>
         * [.getBusinessConnection(businessConnectionId, [options])](#TelegramBot+getBusinessConnection) ⇒ <code>Promise</code>
         * [.setMyCommands(commands, [options])](#TelegramBot+setMyCommands) ⇒ <code>Promise</code>
@@ -152,11 +153,14 @@ TelegramBot
         * [.answerPreCheckoutQuery(preCheckoutQueryId, ok, [options])](#TelegramBot+answerPreCheckoutQuery) ⇒ <code>Promise</code>
         * [.getStarTransactions([options])](#TelegramBot+getStarTransactions) ⇒ <code>Promise</code>
         * [.refundStarPayment(userId, telegramPaymentChargeId, [options])](#TelegramBot+refundStarPayment) ⇒ <code>Promise</code>
+        * [.editUserStarSubscription(userId, telegramPaymentChargeId, isCanceled, [options])](#TelegramBot+editUserStarSubscription) ⇒ <code>Promise</code>
         * [.sendGame(chatId, gameShortName, [options])](#TelegramBot+sendGame) ⇒ <code>Promise</code>
         * [.setGameScore(userId, score, [options])](#TelegramBot+setGameScore) ⇒ <code>Promise</code>
         * [.getGameHighScores(userId, [options])](#TelegramBot+getGameHighScores) ⇒ <code>Promise</code>
         * [.deleteMessage(chatId, messageId, [options])](#TelegramBot+deleteMessage) ⇒ <code>Promise</code>
         * [.deleteMessages(chatId, messageIds, [options])](#TelegramBot+deleteMessages) ⇒ <code>[ &#x27;Promise&#x27; ].&lt;Boolean&gt;</code>
+        * [.getAvailableGifts([options])](#TelegramBot+getAvailableGifts) ⇒ <code>Promise</code>
+        * [.sendGift(giftId, [options])](#TelegramBot+sendGift) ⇒ <code>Promise</code>
     * _static_
         * [.errors](#TelegramBot.errors) : <code>Object</code>
         * [.messageTypes](#TelegramBot.messageTypes) : <code>[ &#x27;Array&#x27; ].&lt;String&gt;</code>
@@ -980,6 +984,21 @@ that is being deprecated.
 | userId | <code>Number</code> | Unique identifier of the target user |
 | [options] | <code>Object</code> | Additional Telegram query options |
 
+<a name="TelegramBot+setUserEmojiStatus"></a>
+
+### telegramBot.setUserEmojiStatus(userId, [options]) ⇒ <code>Promise</code>
+Changes the emoji status for a given user that previously allowed the bot to manage their emoji status
+via the Mini App method [requestEmojiStatusAccess](https://core.telegram.org/bots/webapps#initializing-mini-apps).
+
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
+**Returns**: <code>Promise</code> - True on success  
+**See**: https://core.telegram.org/bots/api#setuseremojistatus  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| userId | <code>Number</code> | Unique identifier of the target user |
+| [options] | <code>Object</code> | Additional Telegram query options |
+
 <a name="TelegramBot+getFile"></a>
 
 ### telegramBot.getFile(fileId, [options]) ⇒ <code>Promise</code>
@@ -1200,7 +1219,6 @@ Use this method to create a subscription invite link for a channel chat.
 
 The bot must have the can_invite_users administrator rights
 
-
 **Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
 **Returns**: <code>Promise</code> - The new invite link as a [ChatInviteLink](https://core.telegram.org/bots/api#chatinvitelink) object  
 **See**: https://core.telegram.org/bots/api#createchatsubscriptioninvitelink  
@@ -1215,7 +1233,6 @@ The bot must have the can_invite_users administrator rights
 <a name="TelegramBot+editChatSubscriptionInviteLink"></a>
 
 ### telegramBot.editChatSubscriptionInviteLink(chatId, inviteLink, [options]) ⇒ <code>Promise</code>
-
 Use this method to edit a subscription invite link created by the bot.
 
 The bot must have the can_invite_users administrator rights
@@ -1739,18 +1756,18 @@ that are being deprecated.
 
 <a name="TelegramBot+savePreparedInlineMessage"></a>
 
-### telegramBot.savePreparedInlineMessage(userId, result, [form]) ⇒ <code>Promise</code>
-Use this method to get the unique identifier of the prepared message and expiration date of the prepared message as an object.
+### telegramBot.savePreparedInlineMessage(userId, result, [options]) ⇒ <code>Promise</code>
+Use this method to stores a message that can be sent by a user of a Mini App.
 
 **Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
-**Returns**: <code>Promise</code> - On success, returns a PreparedInlineMessage object  
+**Returns**: <code>Promise</code> - On success, returns a [PreparedInlineMessage](https://core.telegram.org/bots/api#preparedinlinemessage) object.  
 **See**: https://core.telegram.org/bots/api#savepreparedinlinemessage  
 
-| Param | Type | Default | Description |
-| --- | --- | --- | --- |
-| userId | <code>Number</code> |  | Unique identifier of the target user |
-| result | <code>Object</code> |  | The prepared inline message result to be saved |
-| [form] | <code>Object</code> | <code>{}</code> | Optional form data to include in the request |
+| Param | Type | Description |
+| --- | --- | --- |
+| userId | <code>Number</code> | Unique identifier of the target user |
+| result | <code>InlineQueryResult</code> | object that represents one result of an inline query |
+| [options] | <code>Object</code> | Optional form data to include in the request |
 
 <a name="TelegramBot+getUserChatBoosts"></a>
 
@@ -2466,6 +2483,22 @@ Use this method for refund a successful payment in [Telegram Stars](https://t.me
 | telegramPaymentChargeId | <code>String</code> | Telegram payment identifier |
 | [options] | <code>Object</code> | Additional Telegram query options |
 
+<a name="TelegramBot+editUserStarSubscription"></a>
+
+### telegramBot.editUserStarSubscription(userId, telegramPaymentChargeId, isCanceled, [options]) ⇒ <code>Promise</code>
+Allows the bot to cancel or re-enable extension of a subscription paid in Telegram Stars.
+
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
+**Returns**: <code>Promise</code> - On success, True is returned  
+**See**: https://core.telegram.org/bots/api#cancelrenewsubscription  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| userId | <code>Number</code> | Unique identifier of the user whose subscription will be canceled or re-enabled |
+| telegramPaymentChargeId | <code>String</code> | Telegram payment identifier for the subscription |
+| isCanceled | <code>Boolean</code> | True, if the subscription should be canceled, False, if it should be re-enabled |
+| [options] | <code>Object</code> | Additional Telegram query options |
+
 <a name="TelegramBot+sendGame"></a>
 
 ### telegramBot.sendGame(chatId, gameShortName, [options]) ⇒ <code>Promise</code>
@@ -2547,6 +2580,33 @@ Use this method to delete multiple messages simultaneously. If some of the speci
 | --- | --- | --- |
 | chatId | <code>Number</code> \| <code>String</code> | Unique identifier for the target chat or username of the target channel (in the format @channelusername) |
 | messageIds | <code>[ &#x27;Array&#x27; ].&lt;(Number\|String)&gt;</code> | Identifiers of 1-100 messages to delete. See deleteMessage for limitations on which messages can be deleted |
+| [options] | <code>Object</code> | Additional Telegram query options |
+
+<a name="TelegramBot+getAvailableGifts"></a>
+
+### telegramBot.getAvailableGifts([options]) ⇒ <code>Promise</code>
+Use this method to returns the list of gifts that can be sent by the bot to users and channel chats.
+
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
+**Returns**: <code>Promise</code> - On success, returns a [Gifts](https://core.telegram.org/bots/api#gifts) objects.  
+**See**: https://core.telegram.org/bots/api#getavailablegifts  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| [options] | <code>Object</code> | Additional Telegram query options |
+
+<a name="TelegramBot+sendGift"></a>
+
+### telegramBot.sendGift(giftId, [options]) ⇒ <code>Promise</code>
+Use this method to sends a gift to the given user or channel chat.
+
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
+**Returns**: <code>Promise</code> - On success, returns true.  
+**See**: https://core.telegram.org/bots/api#getavailablegifts  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| giftId | <code>String</code> | Unique identifier of the gift |
 | [options] | <code>Object</code> | Additional Telegram query options |
 
 <a name="TelegramBot.errors"></a>

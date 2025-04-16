@@ -1626,6 +1626,20 @@ class TelegramBot extends EventEmitter {
   }
 
   /**
+   * Changes the emoji status for a given user that previously allowed the bot to manage their emoji status
+   * via the Mini App method [requestEmojiStatusAccess](https://core.telegram.org/bots/webapps#initializing-mini-apps).
+   *
+   * @param {Number} userId Unique identifier of the target user
+   * @param  {Object} [options] Additional Telegram query options
+   * @return {Promise} True on success
+   * @see https://core.telegram.org/bots/api#setuseremojistatus
+  */
+  setUserEmojiStatus(userId, form = {}) {
+    form.user_id = userId;
+    return this._request('setUserEmojiStatus', { form });
+  }
+
+  /**
    * Get file.
    * Use this method to get basic info about a file and prepare it for downloading.
    *
@@ -2399,14 +2413,14 @@ class TelegramBot extends EventEmitter {
   }
 
   /**
- * Use this method to get the unique identifier of the prepared message and expiration date of the prepared message as an object.
- *
- * @param  {Number} userId  Unique identifier of the target user
- * @param  {Object} result  The prepared inline message result to be saved
- * @param  {Object} [form={}] Optional form data to include in the request
- * @return {Promise} On success, returns a PreparedInlineMessage object
- * @see https://core.telegram.org/bots/api#savepreparedinlinemessage
- */
+   * Use this method to stores a message that can be sent by a user of a Mini App.
+   *
+   * @param {Number} userId Unique identifier of the target user
+   * @param {InlineQueryResult} result object that represents one result of an inline query
+   * @param {Object} [options] Optional form data to include in the request
+   * @return {Promise} On success, returns a [PreparedInlineMessage](https://core.telegram.org/bots/api#preparedinlinemessage) object.
+   * @see https://core.telegram.org/bots/api#savepreparedinlinemessage
+   */
   savePreparedInlineMessage(userId, result, form = {}) {
     form.user_id = userId;
     form.result = stringify(result);
@@ -3222,6 +3236,23 @@ class TelegramBot extends EventEmitter {
   }
 
   /**
+   * Allows the bot to cancel or re-enable extension of a subscription paid in Telegram Stars.
+   *
+   * @param {Number} userId Unique identifier of the user whose subscription will be canceled or re-enabled
+   * @param {String} telegramPaymentChargeId Telegram payment identifier for the subscription
+   * @param {Boolean} isCanceled True, if the subscription should be canceled, False, if it should be re-enabled
+   * @param {Object} [options] Additional Telegram query options
+   * @return {Promise} On success, True is returned
+   * @see https://core.telegram.org/bots/api#cancelrenewsubscription
+   */
+  editUserStarSubscription(userId, telegramPaymentChargeId, isCanceled, form = {}) {
+    form.user_id = userId;
+    form.telegram_payment_charge_id = telegramPaymentChargeId;
+    form.is_canceled = isCanceled;
+    return this._request('editUserStarSubscription', { form });
+  }
+
+  /**
    * Use this method to send a game.
    *
    * @param  {Number|String} chatId Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
@@ -3302,6 +3333,30 @@ class TelegramBot extends EventEmitter {
     form.chat_id = chatId;
     form.message_ids = stringify(messageIds);
     return this._request('deleteMessages', { form });
+  }
+
+  /**
+   * Use this method to returns the list of gifts that can be sent by the bot to users and channel chats.
+   *
+   * @param {Object} [options] Additional Telegram query options
+   * @return {Promise} On success, returns a [Gifts](https://core.telegram.org/bots/api#gifts) objects.
+   * @see https://core.telegram.org/bots/api#getavailablegifts
+   */
+  getAvailableGifts(form = {}) {
+    return this._request('getAvailableGifts', { form });
+  }
+
+  /**
+   * Use this method to sends a gift to the given user or channel chat.
+   *
+   * @param {String} giftId Unique identifier of the gift
+   * @param {Object} [options] Additional Telegram query options
+   * @return {Promise} On success, returns true.
+   * @see https://core.telegram.org/bots/api#getavailablegifts
+   */
+  sendGift(giftId, form = {}) {
+    form.gift_id = giftId;
+    return this._request('getAvailableGifts', { form });
   }
 
 }

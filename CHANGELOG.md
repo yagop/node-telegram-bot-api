@@ -5,11 +5,18 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [0.68.0][0.68.0] - UNRELEASE
 
-1. Support Telegram Bot API 7.10 (@danielperez9430)
+1. Support Telegram Bot API 7.6 (@danielperez9430)
+   * sendPaidMedia
+
+2. Support Telegram Bot API 7.10 (@danielperez9430)
   * Update: `purchased_paid_media`
 
-2. Support Telegram Bot API 7.6 (@danielperez9430)
-   * sendPaidMedia
+3. Support Telegram Bot API 8.0 and 8.1
+   * savePreparedInlineMessage (@IsmailBinMujeeb & @danielperez9430)
+   * setUserEmojiStatus (@danielperez9430)
+   * editUserStarSubscription (@danielperez9430)
+   * getAvailableGifts (@danielperez9430)
+   * sendGift (@danielperez9430)
 
 ## [0.67.0][0.67.0] - 2024-05-30
 
