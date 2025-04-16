@@ -18,6 +18,12 @@ This project adheres to [Semantic Versioning](http://semver.org/).
    * getAvailableGifts (@danielperez9430)
    * sendGift (@danielperez9430)
 
+4. Support Telegram Bot API 8.2 and 8.3 (@danielperez9430)
+   * verifyUser
+   * verifyChat
+   * removeUserVerification
+   * removeChatVerification
+
 ## [0.67.0][0.67.0] - 2024-05-30
 
 1. Support Telegram Bot API 7.4 (@danielperez9430)

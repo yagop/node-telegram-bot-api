@@ -161,6 +161,10 @@ TelegramBot
         * [.deleteMessages(chatId, messageIds, [options])](#TelegramBot+deleteMessages) ⇒ <code>[ &#x27;Promise&#x27; ].&lt;Boolean&gt;</code>
         * [.getAvailableGifts([options])](#TelegramBot+getAvailableGifts) ⇒ <code>Promise</code>
         * [.sendGift(giftId, [options])](#TelegramBot+sendGift) ⇒ <code>Promise</code>
+        * [.verifyUser(userId)](#TelegramBot+verifyUser) ⇒ <code>Promise</code>
+        * [.verifyChat(chatId)](#TelegramBot+verifyChat) ⇒ <code>Promise</code>
+        * [.removeUserVerification(userId)](#TelegramBot+removeUserVerification) ⇒ <code>Promise</code>
+        * [.removeChatVerification(chatId)](#TelegramBot+removeChatVerification) ⇒ <code>Promise</code>
     * _static_
         * [.errors](#TelegramBot.errors) : <code>Object</code>
         * [.messageTypes](#TelegramBot.messageTypes) : <code>[ &#x27;Array&#x27; ].&lt;String&gt;</code>
@@ -2608,6 +2612,58 @@ Use this method to sends a gift to the given user or channel chat.
 | --- | --- | --- |
 | giftId | <code>String</code> | Unique identifier of the gift |
 | [options] | <code>Object</code> | Additional Telegram query options |
+
+<a name="TelegramBot+verifyUser"></a>
+
+### telegramBot.verifyUser(userId) ⇒ <code>Promise</code>
+This method verifies a user [on behalf of the organization](https://telegram.org/verify#third-party-verification) which is represented by the bot.
+
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
+**Returns**: <code>Promise</code> - On success, returns true.  
+**See**: https://core.telegram.org/bots/api#verifyuser  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| userId | <code>Number</code> | Unique identifier of the target user |
+
+<a name="TelegramBot+verifyChat"></a>
+
+### telegramBot.verifyChat(chatId) ⇒ <code>Promise</code>
+This method verifies a chat [on behalf of the organization](https://telegram.org/verify#third-party-verification) which is represented by the bot.
+
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
+**Returns**: <code>Promise</code> - On success, returns true.  
+**See**: https://core.telegram.org/bots/api#verifychat  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| chatId | <code>Number</code> | Unique identifier of the target chat |
+
+<a name="TelegramBot+removeUserVerification"></a>
+
+### telegramBot.removeUserVerification(userId) ⇒ <code>Promise</code>
+This method removes verification from a user who is currently verified [on behalf of the organization](https://telegram.org/verify#third-party-verification) which is represented by the bot.
+
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
+**Returns**: <code>Promise</code> - On success, returns true.  
+**See**: https://core.telegram.org/bots/api#removeuserverification  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| userId | <code>Number</code> | Unique identifier of the target user |
+
+<a name="TelegramBot+removeChatVerification"></a>
+
+### telegramBot.removeChatVerification(chatId) ⇒ <code>Promise</code>
+This method removes verification from a chat who is currently verified [on behalf of the organization](https://telegram.org/verify#third-party-verification) which is represented by the bot.
+
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
+**Returns**: <code>Promise</code> - On success, returns true.  
+**See**: https://core.telegram.org/bots/api#removechatverification  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| chatId | <code>Number</code> | Unique identifier of the target chat |
 
 <a name="TelegramBot.errors"></a>
 

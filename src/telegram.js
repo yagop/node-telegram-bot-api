@@ -3356,7 +3356,55 @@ class TelegramBot extends EventEmitter {
    */
   sendGift(giftId, form = {}) {
     form.gift_id = giftId;
-    return this._request('getAvailableGifts', { form });
+    return this._request('sendGift', { form });
+  }
+
+  /**
+   * This method verifies a user [on behalf of the organization](https://telegram.org/verify#third-party-verification) which is represented by the bot.
+   *
+   * @param {Number} userId Unique identifier of the target user
+   * @return {Promise} On success, returns true.
+   * @see https://core.telegram.org/bots/api#verifyuser
+   */
+  verifyUser(userId, form = {}) {
+    form.user_id = userId;
+    return this._request('verifyUser', { form });
+  }
+
+  /**
+   * This method verifies a chat [on behalf of the organization](https://telegram.org/verify#third-party-verification) which is represented by the bot.
+   *
+   * @param {Number} chatId Unique identifier of the target chat
+   * @return {Promise} On success, returns true.
+   * @see https://core.telegram.org/bots/api#verifychat
+   */
+  verifyChat(chatId, form = {}) {
+    form.chat_id = chatId;
+    return this._request('verifyChat', { form });
+  }
+
+  /**
+   * This method removes verification from a user who is currently verified [on behalf of the organization](https://telegram.org/verify#third-party-verification) which is represented by the bot.
+   *
+   * @param {Number} userId Unique identifier of the target user
+   * @return {Promise} On success, returns true.
+   * @see https://core.telegram.org/bots/api#removeuserverification
+   */
+  removeUserVerification(userId, form = {}) {
+    form.user_id = userId;
+    return this._request('removeUserVerification', { form });
+  }
+
+  /**
+   * This method removes verification from a chat who is currently verified [on behalf of the organization](https://telegram.org/verify#third-party-verification) which is represented by the bot.
+   *
+   * @param {Number} chatId Unique identifier of the target chat
+   * @return {Promise} On success, returns true.
+   * @see https://core.telegram.org/bots/api#removechatverification
+   */
+  removeChatVerification(chatId, form = {}) {
+    form.chat_id = chatId;
+    return this._request('removeChatVerification', { form });
   }
 
 }
