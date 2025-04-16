@@ -66,7 +66,7 @@ const _deprecatedMessageTypes = [
  * JSON-serialize data. If the provided data is already a String,
  * return it as is.
  * @private
- * @param  {*} data
+ * @param {*} data
  * @return {String}
  */
 function stringify(data) {
@@ -97,8 +97,8 @@ class TelegramBot extends EventEmitter {
   /**
    * Add listener for the specified [event](https://github.com/yagop/node-telegram-bot-api/blob/master/doc/usage.md#events).
    * This is the usual `emitter.on()` method.
-   * @param  {String} event
-   * @param  {Function} listener
+   * @param {String} event
+   * @param {Function} listener
    * @see {@link https://github.com/yagop/node-telegram-bot-api/blob/master/doc/usage.md#events|Available events}
    * @see https://nodejs.org/api/events.html#events_emitter_on_eventname_listener
    */
@@ -129,7 +129,7 @@ class TelegramBot extends EventEmitter {
    * @param {Boolean} [options.polling.autoStart=true] Start polling immediately
    * @param {Object} [options.polling.params] Parameters to be used in polling API requests.
    *  See https://core.telegram.org/bots/api#getupdates for more information.
-   * @param  {Number} [options.polling.params.timeout=10] Timeout in seconds for long polling.
+   * @param {Number} [options.polling.params.timeout=10] Timeout in seconds for long polling.
    * @param {Boolean|Object} [options.webHook=false] Set true to enable WebHook or set options
    * @param {String} [options.webHook.host="0.0.0.0"] Host to bind to
    * @param {Number} [options.webHook.port=8443] Port to bind to
@@ -190,7 +190,7 @@ class TelegramBot extends EventEmitter {
 
   /**
    * Generates url with bot token and provided path/method you want to be got/executed by bot
-   * @param  {String} path
+   * @param {String} path
    * @return {String} url
    * @private
    * @see https://core.telegram.org/bots/api#making-requests
@@ -270,8 +270,8 @@ class TelegramBot extends EventEmitter {
 
   /**
    * Make request against the API
-   * @param  {String} _path API endpoint
-   * @param  {Object} [options]
+   * @param {String} _path API endpoint
+   * @param {Object} [options]
    * @private
    * @return {Promise}
    */
@@ -323,11 +323,11 @@ class TelegramBot extends EventEmitter {
 
   /**
    * Format data to be uploaded; handles file paths, streams and buffers
-   * @param  {String} type
-   * @param  {String|stream.Stream|Buffer} data
-   * @param  {Object} fileOptions File options
-   * @param  {String} [fileOptions.filename] File name
-   * @param  {String} [fileOptions.contentType] Content type (i.e. MIME)
+   * @param {String} type
+   * @param {String|stream.Stream|Buffer} data
+   * @param {Object} fileOptions File options
+   * @param {String} [fileOptions.filename] File name
+   * @param {String} [fileOptions.contentType] Content type (i.e. MIME)
    * @return {Array} formatted
    * @return {Object} formatted[0] formData
    * @return {String} formatted[1] fileId
@@ -408,11 +408,11 @@ class TelegramBot extends EventEmitter {
 
   /**
    * Format multiple files to be uploaded; handles file paths, streams, and buffers
-   * @param  {String} type
-   * @param  {Array} files Array of file data objects
-   * @param  {Object} fileOptions File options
-   * @param  {String} [fileOptions.filename] File name
-   * @param  {String} [fileOptions.contentType] Content type (i.e. MIME)
+   * @param {String} type
+   * @param {Array} files Array of file data objects
+   * @param {Object} fileOptions File options
+   * @param {String} [fileOptions.filename] File name
+   * @param {String} [fileOptions.contentType] Content type (i.e. MIME)
    * @return {Object} formatted
    * @return {Object} formatted.formData Form data object with all files
    * @return {Array} formatted.fileIds Array of fileIds for non-file data
@@ -481,8 +481,8 @@ class TelegramBot extends EventEmitter {
   /**
    * Start polling.
    * Rejects returned promise if a WebHook is being used by this instance.
-   * @param  {Object} [options]
-   * @param  {Boolean} [options.restart=true] Consecutive calls to this method causes polling to be restarted
+   * @param {Object} [options]
+   * @param {Boolean} [options.restart=true] Consecutive calls to this method causes polling to be restarted
    * @return {Promise}
    */
   startPolling(options = {}) {
@@ -498,7 +498,7 @@ class TelegramBot extends EventEmitter {
 
   /**
    * Alias of `TelegramBot#startPolling()`. This is **deprecated**.
-   * @param  {Object} [options]
+   * @param {Object} [options]
    * @return {Promise}
    * @deprecated
    */
@@ -511,9 +511,9 @@ class TelegramBot extends EventEmitter {
    * Stops polling after the last polling request resolves.
    * Multiple invocations do nothing if polling is already stopped.
    * Returning the promise of the last polling request is **deprecated**.
-   * @param  {Object} [options] Options
-   * @param  {Boolean} [options.cancel] Cancel current request
-   * @param  {String} [options.reason] Reason for stopping polling
+   * @param {Object} [options] Options
+   * @param {Boolean} [options.cancel] Cancel current request
+   * @param {String} [options.reason] Reason for stopping polling
    * @return {Promise}
    */
   stopPolling(options) {
@@ -531,8 +531,8 @@ class TelegramBot extends EventEmitter {
    * This method is a sugar extension of the (getFile)[#getfilefileid] method,
    * which returns just path to file on remote server (you will have to manually build full uri after that).
    *
-   * @param  {String} fileId  File identifier to get info about
-   * @param  {Object} [options] Additional Telegram query options
+   * @param {String} fileId  File identifier to get info about
+   * @param {Object} [options] Additional Telegram query options
    * @return {Promise} Promise which will have  *fileURI* in resolve callback
    * @see https://core.telegram.org/bots/api#getfile
    */
@@ -552,8 +552,8 @@ class TelegramBot extends EventEmitter {
    * This method is a sugar extension of the [getFileLink](#TelegramBot+getFileLink) method,
    * which returns the full URI to the file on remote server.
    *
-   * @param  {String} fileId File identifier to get info about
-   * @param  {Object} [options] Additional Telegram query options
+   * @param {String} fileId File identifier to get info about
+   * @param {Object} [options] Additional Telegram query options
    * @return {stream.Readable} fileStream
    */
   getFileStream(fileId, form = {}) {
@@ -578,9 +578,9 @@ class TelegramBot extends EventEmitter {
    * This method is a sugar extension of the [getFileStream](#TelegramBot+getFileStream) method,
    * which returns a readable file stream.
    *
-   * @param  {String} fileId  File identifier to get info about
-   * @param  {String} downloadDir Absolute path to the folder in which file will be saved
-   * @param  {Object} [options] Additional Telegram query options
+   * @param {String} fileId  File identifier to get info about
+   * @param {String} downloadDir Absolute path to the folder in which file will be saved
+   * @param {Object} [options] Additional Telegram query options
    * @return {Promise} Promise, which will have *filePath* of downloaded file in resolve callback
    */
   downloadFile(fileId, downloadDir, form = {}) {
@@ -608,8 +608,8 @@ class TelegramBot extends EventEmitter {
 
   /**
    * Register a RegExp to test against an incomming text message.
-   * @param  {RegExp}   regexpRexecuted with `exec`.
-   * @param  {Function} callback     Callback will be called with 2 parameters,
+   * @param {RegExp}   regexpRexecuted with `exec`.
+   * @param {Function} callback     Callback will be called with 2 parameters,
    * the `msg` and the result of executing `regexp.exec` on message text.
    */
   onText(regexp, callback) {
@@ -618,7 +618,7 @@ class TelegramBot extends EventEmitter {
 
   /**
    * Remove a listener registered with `onText()`.
-   * @param  {RegExp} regexp RegExp used previously in `onText()`
+   * @param {RegExp} regexp RegExp used previously in `onText()`
    * @return {Object} deletedListener The removed reply listener if
    *   found. This object has `regexp` and `callback`
    *   properties. If not found, returns `null`.
@@ -643,9 +643,9 @@ class TelegramBot extends EventEmitter {
   /**
    * Register a reply to wait for a message response.
    *
-   * @param  {Number|String} chatId The chat id where the message cames from.
-   * @param  {Number|String} messageId The message id to be replied.
-   * @param  {Function} callback Callback will be called with the reply
+   * @param {Number|String} chatId The chat id where the message cames from.
+   * @param {Number|String} messageId The message id to be replied.
+   * @param {Function} callback Callback will be called with the reply
    *  message.
    * @return {Number} id The ID of the inserted reply listener.
    */
@@ -662,8 +662,8 @@ class TelegramBot extends EventEmitter {
 
   /**
    * Removes a reply that has been prev. registered for a message response.
-   * @param   {Number} replyListenerId The ID of the reply listener.
-   * @return  {Object} deletedListener The removed reply listener if
+   * @param {Number} replyListenerId The ID of the reply listener.
+   * @return {Object} deletedListener The removed reply listener if
    *   found. This object has `id`, `chatId`, `messageId` and `callback`
    *   properties. If not found, returns `null`.
    */
@@ -680,7 +680,7 @@ class TelegramBot extends EventEmitter {
   /**
    * Removes all replies that have been prev. registered for a message response.
    *
-   * @return  {Array} deletedListeners An array of removed listeners.
+   * @return {Array} deletedListeners An array of removed listeners.
    */
   clearReplyListeners() {
     this._replyListeners = [];
@@ -741,7 +741,7 @@ class TelegramBot extends EventEmitter {
    * callbacks. This method is useful should you be using a different
    * way to fetch updates, other than those provided by TelegramBot.
    *
-   * @param  {Object} update
+   * @param {Object} update
    * @see https://core.telegram.org/bots/api#update
    */
   processUpdate(update) {
@@ -904,7 +904,7 @@ class TelegramBot extends EventEmitter {
   * This method has an [older, compatible signature][getUpdates-v0.25.0]
   * that is being deprecated.
   *
-  * @param  {Object} [options] Additional Telegram query options
+  * @param {Object} [options] Additional Telegram query options
   * @return {Promise}
   * @see https://core.telegram.org/bots/api#getupdates
   */
@@ -931,12 +931,12 @@ class TelegramBot extends EventEmitter {
    * This method has an [older, compatible signature][setWebHook-v0.25.0]
    * that is being deprecated.
    *
-   * @param  {String} url URL where Telegram will make HTTP Post. Leave empty to
+   * @param {String} url URL where Telegram will make HTTP Post. Leave empty to
    * delete webHook.
-   * @param  {Object} [options] Additional Telegram query options
-   * @param  {String|stream.Stream} [options.certificate] PEM certificate key (public).
-   * @param  {String} [options.secret_token] Optional secret token to be sent in a header `X-Telegram-Bot-Api-Secret-Token` in every webhook request.
-   * @param  {Object} [fileOptions] Optional file related meta-data
+   * @param {Object} [options] Additional Telegram query options
+   * @param {String|stream.Stream} [options.certificate] PEM certificate key (public).
+   * @param {String} [options.secret_token] Optional secret token to be sent in a header `X-Telegram-Bot-Api-Secret-Token` in every webhook request.
+   * @param {Object} [fileOptions] Optional file related meta-data
    * @return {Promise}
    * @see https://core.telegram.org/bots/api#setwebhook
    * @see https://github.com/yagop/node-telegram-bot-api/blob/master/doc/usage.md#sending-files
@@ -976,7 +976,7 @@ class TelegramBot extends EventEmitter {
   /**
    * Use this method to remove webhook integration if you decide to
    * switch back to getUpdates. Returns True on success.
-   * @param  {Object} [options] Additional Telegram query options
+   * @param {Object} [options] Additional Telegram query options
    * @return {Promise}
    * @see https://core.telegram.org/bots/api#deletewebhook
    */
@@ -989,7 +989,7 @@ class TelegramBot extends EventEmitter {
    * On success, returns a [WebhookInfo](https://core.telegram.org/bots/api#webhookinfo) object.
    * If the bot is using getUpdates, will return an object with the
    * url field empty.
-   * @param  {Object} [options] Additional Telegram query options
+   * @param {Object} [options] Additional Telegram query options
    * @return {Promise}
    * @see https://core.telegram.org/bots/api#getwebhookinfo
    */
@@ -1000,7 +1000,7 @@ class TelegramBot extends EventEmitter {
   /**
    * A simple method for testing your bot's authentication token. Requires no parameters.
    *
-   * @param  {Object} [options] Additional Telegram query options
+   * @param {Object} [options] Additional Telegram query options
    * @return {Promise} basic information about the bot in form of a [User](https://core.telegram.org/bots/api#user) object.
    * @see https://core.telegram.org/bots/api#getme
    */
@@ -1013,7 +1013,7 @@ class TelegramBot extends EventEmitter {
    * You must log out the bot before running it locally, otherwise there is no guarantee that the bot will receive updates.
    * After a successful call, you will not be able to log in again using the same token for 10 minutes.
    *
-   * @param  {Object} [options] Additional Telegram query options
+   * @param {Object} [options] Additional Telegram query options
    * @return {Promise}  True on success
    * @see https://core.telegram.org/bots/api#logout
    */
@@ -1025,7 +1025,7 @@ class TelegramBot extends EventEmitter {
    * This method close the bot instance before moving it from one local server to another.
    * This method will return error 429 in the first 10 minutes after the bot is launched.
    *
-   * @param  {Object} [options] Additional Telegram query options
+   * @param {Object} [options] Additional Telegram query options
    * @return {Promise}  True on success
    * @see https://core.telegram.org/bots/api#close
    */
@@ -1035,9 +1035,9 @@ class TelegramBot extends EventEmitter {
 
   /**
    * Send text message.
-   * @param  {Number|String} chatId Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
-   * @param  {String} text Text of the message to be sent
-   * @param  {Object} [options] Additional Telegram query options
+   * @param {Number|String} chatId Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
+   * @param {String} text Text of the message to be sent
+   * @param {Object} [options] Additional Telegram query options
    * @return {Promise} On success, the sent [Message](https://core.telegram.org/bots/api#message) object is returned
    * @see https://core.telegram.org/bots/api#sendmessage
    */
@@ -1049,12 +1049,12 @@ class TelegramBot extends EventEmitter {
 
   /**
    * Forward messages of any kind.
-   * @param  {Number|String} chatId Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
+   * @param {Number|String} chatId Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
    * or username of the target channel (in the format `@channelusername`)
-   * @param  {Number|String} fromChatId Unique identifier for the chat where the
+   * @param {Number|String} fromChatId Unique identifier for the chat where the
    * original message was sent (or channel username in the format `@channelusername`)
-   * @param  {Number|String} messageId  Unique message identifier in the chat specified in fromChatId
-   * @param  {Object} [options] Additional Telegram query options
+   * @param {Number|String} messageId  Unique message identifier in the chat specified in fromChatId
+   * @param {Object} [options] Additional Telegram query options
    * @return {Promise}
    * @see https://core.telegram.org/bots/api#forwardmessage
    */
@@ -1069,13 +1069,13 @@ class TelegramBot extends EventEmitter {
    * Use this method to forward multiple messages of any kind.
    * If some of the specified messages can't be found or forwarded, they are skipped.
    *
-   * @param  {Number|String} chatId Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
+   * @param {Number|String} chatId Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
    * or username of the target channel (in the format `@channelusername`)
-   * @param  {Number|String} fromChatId Unique identifier for the chat where the
+   * @param {Number|String} fromChatId Unique identifier for the chat where the
    * original message was sent (or channel username in the format `@channelusername`)
-   * @param  {Array<Number|String>} messageIds Identifiers of 1-100 messages in the chat from_chat_id to forward.
+   * @param {Array<Number|String>} messageIds Identifiers of 1-100 messages in the chat from_chat_id to forward.
    * The identifiers must be specified in a strictly increasing order.
-   * @param  {Object} [options] Additional Telegram query options
+   * @param {Object} [options] Additional Telegram query options
    * @return {Promise} An array of MessageId of the sent messages on success
    * @see https://core.telegram.org/bots/api#forwardmessages
    */
@@ -1091,11 +1091,11 @@ class TelegramBot extends EventEmitter {
    * The method is analogous to the method forwardMessages, but the copied message doesn't
    * have a link to the original message.
    * Returns the MessageId of the sent message on success.
-   * @param  {Number|String} chatId     Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
-   * @param  {Number|String} fromChatId Unique identifier for the chat where the
+   * @param {Number|String} chatId     Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
+   * @param {Number|String} fromChatId Unique identifier for the chat where the
    * original message was sent
-   * @param  {Number|String} messageId  Unique message identifier
-   * @param  {Object} [options] Additional Telegram query options
+   * @param {Number|String} messageId  Unique message identifier
+   * @param {Object} [options] Additional Telegram query options
    * @return {Promise} The [MessageId](https://core.telegram.org/bots/api#messageid) of the sent message on success
    * @see https://core.telegram.org/bots/api#copymessage
    */
@@ -1110,12 +1110,12 @@ class TelegramBot extends EventEmitter {
    * Use this method to copy messages of any kind. If some of the specified messages can't be found or copied, they are skipped.
    * Service messages, giveaway messages, giveaway winners messages, and invoice messages can't be copied.
    * Returns the MessageId of the sent message on success.
-   * @param  {Number|String} chatId Unique identifier for the target chat
-   * @param  {Number|String} fromChatId Unique identifier for the chat where the
+   * @param {Number|String} chatId Unique identifier for the target chat
+   * @param {Number|String} fromChatId Unique identifier for the chat where the
    * original message was sent
-   * @param  {Array} messageIds  Identifiers of 1-100 messages in the chat from_chat_id to copy.
+   * @param {Array} messageIds  Identifiers of 1-100 messages in the chat from_chat_id to copy.
    * The identifiers must be specified in a strictly increasing order.
-   * @param  {Object} [options] Additional Telegram query options
+   * @param {Object} [options] Additional Telegram query options
    * @return {Promise} An array of MessageId of the sent messages
    * @see https://core.telegram.org/bots/api#copymessages
    */
@@ -1128,11 +1128,11 @@ class TelegramBot extends EventEmitter {
 
   /**
    * Send photo
-   * @param  {Number|String} chatId  Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
-   * @param  {String|stream.Stream|Buffer} photo A file path or a Stream. Can
+   * @param {Number|String} chatId  Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
+   * @param {String|stream.Stream|Buffer} photo A file path or a Stream. Can
    * also be a `file_id` previously uploaded
-   * @param  {Object} [options] Additional Telegram query options
-   * @param  {Object} [fileOptions] Optional file related meta-data
+   * @param {Object} [options] Additional Telegram query options
+   * @param {Object} [fileOptions] Optional file related meta-data
    * @return {Promise} On success, the sent [Message](https://core.telegram.org/bots/api#message) object is returned
    * @see https://core.telegram.org/bots/api#sendphoto
    * @see https://github.com/yagop/node-telegram-bot-api/blob/master/doc/usage.md#sending-files
@@ -1157,11 +1157,11 @@ class TelegramBot extends EventEmitter {
   *
   * **Your audio must be in the .MP3 or .M4A format.**
   *
-  * @param  {Number|String} chatId  Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
-  * @param  {String|stream.Stream|Buffer} audio A file path, Stream or Buffer.
+  * @param {Number|String} chatId  Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
+  * @param {String|stream.Stream|Buffer} audio A file path, Stream or Buffer.
   * Can also be a `file_id` previously uploaded.
-  * @param  {Object} [options] Additional Telegram query options
-  * @param  {Object} [fileOptions] Optional file related meta-data
+  * @param {Object} [options] Additional Telegram query options
+  * @param {Object} [fileOptions] Optional file related meta-data
   * @return {Promise} On success, the sent [Message](https://core.telegram.org/bots/api#message) object is returned
   * @see https://core.telegram.org/bots/api#sendaudio
   * @see https://github.com/yagop/node-telegram-bot-api/blob/master/doc/usage.md#sending-files
@@ -1187,11 +1187,11 @@ class TelegramBot extends EventEmitter {
 
   /**
   * Send Document
-  * @param  {Number|String} chatId  Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
-  * @param  {String|stream.Stream|Buffer} doc A file path, Stream or Buffer.
+  * @param {Number|String} chatId  Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
+  * @param {String|stream.Stream|Buffer} doc A file path, Stream or Buffer.
   * Can also be a `file_id` previously uploaded.
-  * @param  {Object} [options] Additional Telegram query options
-  * @param  {Object} [fileOptions] Optional file related meta-data
+  * @param {Object} [options] Additional Telegram query options
+  * @param {Object} [fileOptions] Optional file related meta-data
   * @return {Promise}  On success, the sent [Message](https://core.telegram.org/bots/api#message) object is returned
   * @see https://core.telegram.org/bots/api#sendDocument
   * @see https://github.com/yagop/node-telegram-bot-api/blob/master/doc/usage.md#sending-files
@@ -1216,11 +1216,11 @@ class TelegramBot extends EventEmitter {
   /**
    * Use this method to send video files, **Telegram clients support mp4 videos** (other formats may be sent as Document).
    *
-   * @param  {Number|String} chatId  Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
-   * @param  {String|stream.Stream|Buffer} video A file path or Stream.
+   * @param {Number|String} chatId  Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
+   * @param {String|stream.Stream|Buffer} video A file path or Stream.
    * Can also be a `file_id` previously uploaded.
-   * @param  {Object} [options] Additional Telegram query options
-   * @param  {Object} [fileOptions] Optional file related meta-data
+   * @param {Object} [options] Additional Telegram query options
+   * @param {Object} [fileOptions] Optional file related meta-data
    * @return {Promise} On success, the sent [Message](https://core.telegram.org/bots/api#message) object is returned
    * @see https://core.telegram.org/bots/api#sendvideo
    * @see https://github.com/yagop/node-telegram-bot-api/blob/master/doc/usage.md#sending-files
@@ -1243,11 +1243,11 @@ class TelegramBot extends EventEmitter {
 
   /**
    * Use this method to send animation files (GIF or H.264/MPEG-4 AVC video without sound).
-   * @param  {Number|String} chatId  Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
-   * @param  {String|stream.Stream|Buffer} animation A file path, Stream or Buffer.
+   * @param {Number|String} chatId  Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
+   * @param {String|stream.Stream|Buffer} animation A file path, Stream or Buffer.
    * Can also be a `file_id` previously uploaded.
-   * @param  {Object} [options] Additional Telegram query options
-   * @param  {Object} [fileOptions] Optional file related meta-data
+   * @param {Object} [options] Additional Telegram query options
+   * @param {Object} [fileOptions] Optional file related meta-data
    * @return {Promise} On success, the sent [Message](https://core.telegram.org/bots/api#message) object is returned
    * @see https://core.telegram.org/bots/api#sendanimation
    * @see https://github.com/yagop/node-telegram-bot-api/blob/master/doc/usage.md#sending-files
@@ -1271,11 +1271,11 @@ class TelegramBot extends EventEmitter {
    * Send voice
    *
    * **Your audio must be in an .OGG file encoded with OPUS**, or in .MP3 format, or in .M4A format (other formats may be sent as Audio or Document)
-   * @param  {Number|String} chatId  Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
-   * @param  {String|stream.Stream|Buffer} voice A file path, Stream or Buffer.
+   * @param {Number|String} chatId  Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
+   * @param {String|stream.Stream|Buffer} voice A file path, Stream or Buffer.
    * Can also be a `file_id` previously uploaded.
-   * @param  {Object} [options] Additional Telegram query options
-   * @param  {Object} [fileOptions] Optional file related meta-data
+   * @param {Object} [options] Additional Telegram query options
+   * @param {Object} [fileOptions] Optional file related meta-data
    * @return {Promise} On success, the sent [Message](https://core.telegram.org/bots/api#message) object is returned
    * @see https://core.telegram.org/bots/api#sendvoice
    * @see https://github.com/yagop/node-telegram-bot-api/blob/master/doc/usage.md#sending-files
@@ -1298,11 +1298,11 @@ class TelegramBot extends EventEmitter {
   /**
    * Use this method to send video messages
    * Telegram clients support **rounded square MPEG4 videos** of up to 1 minute long.
-   * @param  {Number|String} chatId  Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
-   * @param  {String|stream.Stream|Buffer} videoNote A file path or Stream.
+   * @param {Number|String} chatId  Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
+   * @param {String|stream.Stream|Buffer} videoNote A file path or Stream.
    * Can also be a `file_id` previously uploaded.
-   * @param  {Object} [options] Additional Telegram query options
-   * @param  {Object} [fileOptions] Optional file related meta-data
+   * @param {Object} [options] Additional Telegram query options
+   * @param {Object} [fileOptions] Optional file related meta-data
    * @return {Promise} On success, the sent [Message](https://core.telegram.org/bots/api#message) object is returned
    * @info The length parameter is actually optional. However, the API (at time of writing) requires you to always provide it until it is fixed.
    * @see https://core.telegram.org/bots/api#sendvideonote
@@ -1374,9 +1374,9 @@ class TelegramBot extends EventEmitter {
    * If you wish to [specify file options](https://github.com/yagop/node-telegram-bot-api/blob/master/doc/usage.md#sending-files),
    * add a `fileOptions` property to the target input in `media`.
    *
-   * @param  {String} chatId Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
-   * @param  {Array} media A JSON-serialized array describing photos and videos to be sent, must include 2–10 items
-   * @param  {Object} [options] Additional Telegram query options
+   * @param {String} chatId Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
+   * @param {Array} media A JSON-serialized array describing photos and videos to be sent, must include 2–10 items
+   * @param {Object} [options] Additional Telegram query options
    * @return {Promise} On success, an array of the sent [Messages](https://core.telegram.org/bots/api#message)
    * is returned.
    * @see https://core.telegram.org/bots/api#sendmediagroup
@@ -1420,10 +1420,10 @@ class TelegramBot extends EventEmitter {
    * Send location.
    * Use this method to send point on the map.
    *
-   * @param  {Number|String} chatId  Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
-   * @param  {Float} latitude Latitude of location
-   * @param  {Float} longitude Longitude of location
-   * @param  {Object} [options] Additional Telegram query options
+   * @param {Number|String} chatId  Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
+   * @param {Float} latitude Latitude of location
+   * @param {Float} longitude Longitude of location
+   * @param {Object} [options] Additional Telegram query options
    * @return {Promise} On success, the sent [Message](https://core.telegram.org/bots/api#message) object is returned
    * @see https://core.telegram.org/bots/api#sendlocation
    */
@@ -1443,9 +1443,9 @@ class TelegramBot extends EventEmitter {
    * Note that you must provide one of chat_id, message_id, or
    * inline_message_id in your request.
    *
-   * @param  {Float} latitude Latitude of location
-   * @param  {Float} longitude Longitude of location
-   * @param  {Object} [options] Additional Telegram query options (provide either one of chat_id, message_id, or inline_message_id here)
+   * @param {Float} latitude Latitude of location
+   * @param {Float} longitude Longitude of location
+   * @param {Object} [options] Additional Telegram query options (provide either one of chat_id, message_id, or inline_message_id here)
    * @return {Promise} On success, if the edited message is not an inline message, the edited [Message](https://core.telegram.org/bots/api#message) is returned, otherwise True is returned.
    * @see https://core.telegram.org/bots/api#editmessagelivelocation
    */
@@ -1462,7 +1462,7 @@ class TelegramBot extends EventEmitter {
    * Note that you must provide one of chat_id, message_id, or
    * inline_message_id in your request.
    *
-   * @param  {Object} [options] Additional Telegram query options (provide either one of chat_id, message_id, or inline_message_id here)
+   * @param {Object} [options] Additional Telegram query options (provide either one of chat_id, message_id, or inline_message_id here)
    * @return {Promise} On success, if the edited message is not an inline message, the edited [Message](https://core.telegram.org/bots/api#message) is returned, otherwise True is returned.
    * @see https://core.telegram.org/bots/api#stopmessagelivelocation
    */
@@ -1474,12 +1474,12 @@ class TelegramBot extends EventEmitter {
    * Send venue.
    * Use this method to send information about a venue.
    *
-   * @param  {Number|String} chatId  Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
-   * @param  {Float} latitude Latitude of location
-   * @param  {Float} longitude Longitude of location
-   * @param  {String} title Name of the venue
-   * @param  {String} address Address of the venue
-   * @param  {Object} [options] Additional Telegram query options
+   * @param {Number|String} chatId  Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
+   * @param {Float} latitude Latitude of location
+   * @param {Float} longitude Longitude of location
+   * @param {String} title Name of the venue
+   * @param {String} address Address of the venue
+   * @param {Object} [options] Additional Telegram query options
    * @return {Promise} On success, the sent [Message](https://core.telegram.org/bots/api#message) object is returned.
    * @see https://core.telegram.org/bots/api#sendvenue
    */
@@ -1496,10 +1496,10 @@ class TelegramBot extends EventEmitter {
    * Send contact.
    * Use this method to send phone contacts.
    *
-   * @param  {Number|String} chatId  Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
-   * @param  {String} phoneNumber Contact's phone number
-   * @param  {String} firstName Contact's first name
-   * @param  {Object} [options] Additional Telegram query options
+   * @param {Number|String} chatId  Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
+   * @param {String} phoneNumber Contact's phone number
+   * @param {String} firstName Contact's first name
+   * @param {Object} [options] Additional Telegram query options
    * @return {Promise} On success, the sent [Message](https://core.telegram.org/bots/api#message) object is returned
    * @see https://core.telegram.org/bots/api#sendcontact
    */
@@ -1514,10 +1514,10 @@ class TelegramBot extends EventEmitter {
    * Send poll.
    * Use this method to send a native poll.
    *
-   * @param  {Number|String} chatId  Unique identifier for the group/channel
-   * @param  {String} question Poll question, 1-300 characters
-   * @param  {Array} pollOptions Poll options, between 2-10 options (only 1-100 characters each)
-   * @param  {Object} [options] Additional Telegram query options
+   * @param {Number|String} chatId  Unique identifier for the group/channel
+   * @param {String} question Poll question, 1-300 characters
+   * @param {Array} pollOptions Poll options, between 2-10 options (only 1-100 characters each)
+   * @param {Object} [options] Additional Telegram query options
    * @return {Promise} On success, the sent [Message](https://core.telegram.org/bots/api#message) object is returned
    * @see https://core.telegram.org/bots/api#sendpoll
    */
@@ -1531,8 +1531,8 @@ class TelegramBot extends EventEmitter {
   /**
    * Send Dice
    * Use this method to send an animated emoji that will display a random value.
-   * @param  {Number|String} chatId  Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
-   * @param  {Object} [options] Additional Telegram query options
+   * @param {Number|String} chatId  Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
+   * @param {Object} [options] Additional Telegram query options
    * @return {Promise}  On success, the sent [Message](https://core.telegram.org/bots/api#message) object is returned
    * @see https://core.telegram.org/bots/api#senddice
    */
@@ -1564,9 +1564,9 @@ class TelegramBot extends EventEmitter {
    * `record_video_note` or `upload_video_note` for [video notes](https://core.telegram.org/bots/api#sendvideonote).
    *
    *
-   * @param  {Number|String} chatId  Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
-   * @param  {String} action Type of action to broadcast.
-   * @param  {Object} [options] Additional Telegram query options
+   * @param {Number|String} chatId  Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
+   * @param {String} action Type of action to broadcast.
+   * @param {Object} [options] Additional Telegram query options
    * @return {Promise} True on success
    * @see https://core.telegram.org/bots/api#sendchataction
    */
@@ -1582,9 +1582,9 @@ class TelegramBot extends EventEmitter {
    * - Automatically forwarded messages from a channel to its discussion group have the same available reactions as messages in the channel.
    * - In albums, bots must react to the first message.
    *
-   * @param  {Number|String} chatId  Unique identifier for the target chat or username of the target channel (in the format @channelusername)
-   * @param  {Number} messageId  Unique identifier of the target message
-   * @param  {Object} [options] Additional Telegram query options
+   * @param {Number|String} chatId  Unique identifier for the target chat or username of the target channel (in the format @channelusername)
+   * @param {Number} messageId  Unique identifier of the target message
+   * @param {Object} [options] Additional Telegram query options
    * @return {Promise<Boolean>} True on success
    * @see https://core.telegram.org/bots/api#setmessagereaction
    */
@@ -1603,8 +1603,8 @@ class TelegramBot extends EventEmitter {
    * This method has an [older, compatible signature][getUserProfilePhotos-v0.25.0]
    * that is being deprecated.
    *
-   * @param  {Number} userId  Unique identifier of the target user
-   * @param  {Object} [options] Additional Telegram query options
+   * @param {Number} userId  Unique identifier of the target user
+   * @param {Object} [options] Additional Telegram query options
    * @return {Promise}  Returns a [UserProfilePhotos](https://core.telegram.org/bots/api#userprofilephotos) object
    * @see https://core.telegram.org/bots/api#getuserprofilephotos
    */
@@ -1630,7 +1630,7 @@ class TelegramBot extends EventEmitter {
    * via the Mini App method [requestEmojiStatusAccess](https://core.telegram.org/bots/webapps#initializing-mini-apps).
    *
    * @param {Number} userId Unique identifier of the target user
-   * @param  {Object} [options] Additional Telegram query options
+   * @param {Object} [options] Additional Telegram query options
    * @return {Promise} True on success
    * @see https://core.telegram.org/bots/api#setuseremojistatus
   */
@@ -1645,8 +1645,8 @@ class TelegramBot extends EventEmitter {
    *
    * Attention: **link will be valid for 1 hour.**
    *
-   * @param  {String} fileId  File identifier to get info about
-   * @param  {Object} [options] Additional Telegram query options
+   * @param {String} fileId  File identifier to get info about
+   * @param {Object} [options] Additional Telegram query options
    * @return {Promise} On success, a [File](https://core.telegram.org/bots/api#file) object is returned
    * @see https://core.telegram.org/bots/api#getfile
    */
@@ -1663,9 +1663,9 @@ class TelegramBot extends EventEmitter {
     * The **bot must be an administrator in the group, supergroup or a channel** for this to work.
     *
     *
-    * @param  {Number|String} chatId   Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
-    * @param  {Number} userId  Unique identifier of the target user
-    * @param  {Object} [options] Additional Telegram query options
+    * @param {Number|String} chatId   Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
+    * @param {Number} userId  Unique identifier of the target user
+    * @param {Object} [options] Additional Telegram query options
     * @return {Promise} True on success.
     * @see https://core.telegram.org/bots/api#banchatmember
     */
@@ -1685,9 +1685,9 @@ class TelegramBot extends EventEmitter {
   * **By default**, this method guarantees that after the call the user is not a member of the chat, but will be able to join it.
   * So **if the user is a member of the chat they will also be removed from the chat**. If you don't want this, use the parameter *only_if_banned*
   *
-  * @param  {Number|String} chatId   Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
-  * @param  {Number} userId  Unique identifier of the target user
-  * @param  {Object} [options] Additional Telegram query options
+  * @param {Number|String} chatId   Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
+  * @param {Number} userId  Unique identifier of the target user
+  * @param {Object} [options] Additional Telegram query options
   * @return {Promise} True on success
   * @see https://core.telegram.org/bots/api#unbanchatmember
   */
@@ -1703,9 +1703,9 @@ class TelegramBot extends EventEmitter {
   * and must have the appropriate admin rights. Pass True for all boolean parameters
   * to lift restrictions from a user. Returns True on success.
   *
-  * @param  {Number|String} chatId  Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
-  * @param  {Number} userId Unique identifier of the target user
-  * @param  {Object} [options] Additional Telegram query options
+  * @param {Number|String} chatId  Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
+  * @param {Number} userId Unique identifier of the target user
+  * @param {Object} [options] Additional Telegram query options
   * @return {Promise} True on success
   * @see https://core.telegram.org/bots/api#restrictchatmember
   */
@@ -1720,9 +1720,9 @@ class TelegramBot extends EventEmitter {
    * The bot **must be an administrator** in the chat for this to work
    * and must have the appropriate admin rights. Pass False for all boolean parameters to demote a user.
    *
-   * @param  {Number|String} chatId  Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
-   * @param  {Number} userId
-   * @param  {Object} [options] Additional Telegram query options
+   * @param {Number|String} chatId  Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
+   * @param {Number} userId
+   * @param {Object} [options] Additional Telegram query options
    * @return {Promise} True on success.
    * @see https://core.telegram.org/bots/api#promotechatmember
    */
@@ -1735,10 +1735,10 @@ class TelegramBot extends EventEmitter {
   /**
    * Use this method to set a custom title for an administrator in a supergroup promoted by the bot.
    *
-   * @param  {Number|String} chatId  Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
-   * @param  {Number} userId Unique identifier of the target user
-   * @param  {String} customTitle New custom title for the administrator; 0-16 characters, emoji are not allowed
-   * @param  {Object} [options] Additional Telegram query options
+   * @param {Number|String} chatId  Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
+   * @param {Number} userId Unique identifier of the target user
+   * @param {String} customTitle New custom title for the administrator; 0-16 characters, emoji are not allowed
+   * @param {Object} [options] Additional Telegram query options
    * @return {Promise} True on success
    * @see https://core.telegram.org/bots/api#setchatadministratorcustomtitle
    */
@@ -1756,9 +1756,9 @@ class TelegramBot extends EventEmitter {
    * Until the chat is [unbanned](https://core.telegram.org/bots/api#unbanchatsenderchat), the owner of the banned chat won't be able to send messages on behalf of any of their channels.
    * The bot **must be an administrator in the supergroup or channel** for this to work and must have the appropriate administrator rights
    *
-   * @param  {Number|String} chatId   Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
-   * @param  {Number} senderChatId  Unique identifier of the target user
-   * @param  {Object} [options] Additional Telegram query options
+   * @param {Number|String} chatId   Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
+   * @param {Number} senderChatId  Unique identifier of the target user
+   * @param {Object} [options] Additional Telegram query options
    * @return {Promise} True on success.
    * @see https://core.telegram.org/bots/api#banchatsenderchat
    */
@@ -1773,9 +1773,9 @@ class TelegramBot extends EventEmitter {
   *
   * The bot **must be an administrator** for this to work and must have the appropriate administrator rights.
   *
-  * @param  {Number|String} chatId Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
-  * @param  {Number} senderChatId Unique identifier of the target user
-  * @param  {Object} [options] Additional Telegram query options
+  * @param {Number|String} chatId Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
+  * @param {Number} senderChatId Unique identifier of the target user
+  * @param {Object} [options] Additional Telegram query options
   * @return {Promise} True on success
   * @see https://core.telegram.org/bots/api#unbanchatsenderchat
   */
@@ -1791,9 +1791,9 @@ class TelegramBot extends EventEmitter {
    * The bot **must be an administrator in the group or a supergroup** for this to
    * work and **must have the `can_restrict_members` admin rights.**
    *
-   * @param  {Number|String} chatId  Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
-   * @param  {Array} chatPermissions New default chat permissions
-   * @param  {Object} [options] Additional Telegram query options
+   * @param {Number|String} chatId  Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
+   * @param {Array} chatPermissions New default chat permissions
+   * @param {Object} [options] Additional Telegram query options
    * @return {Promise} True on success
    * @see https://core.telegram.org/bots/api#setchatpermissions
    */
@@ -1808,8 +1808,8 @@ class TelegramBot extends EventEmitter {
    *
    * The bot **must be an administrator in the chat** for this to work and must have the appropriate administrator rights.
    *
-   * @param  {Number|String} chatId Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
-   * @param  {Object} [options] Additional Telegram query options
+   * @param {Number|String} chatId Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
+   * @param {Object} [options] Additional Telegram query options
    * @return {Promise} Exported invite link as String on success.
    * @see https://core.telegram.org/bots/api#exportchatinvitelink
    */
@@ -1825,8 +1825,8 @@ class TelegramBot extends EventEmitter {
    *
    * The link generated with this method can be revoked using the method [revokeChatInviteLink](https://core.telegram.org/bots/api#revokechatinvitelink)
    *
-   * @param  {Number|String} chatId Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
-   * @param  {Object} [options] Additional Telegram query options
+   * @param {Number|String} chatId Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
+   * @param {Object} [options] Additional Telegram query options
    * @return {Object} The new invite link as [ChatInviteLink](https://core.telegram.org/bots/api#chatinvitelink) object
    * @see https://core.telegram.org/bots/api#createchatinvitelink
    */
@@ -1840,9 +1840,9 @@ class TelegramBot extends EventEmitter {
    *
    * The bot **must be an administrator in the chat** for this to work and must have the appropriate admin rights.
    *
-   * @param  {Number|String} chatId Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
-   * @param  {String} inviteLink Text with the invite link to edit
-   * @param  {Object} [options] Additional Telegram query options
+   * @param {Number|String} chatId Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
+   * @param {String} inviteLink Text with the invite link to edit
+   * @param {Object} [options] Additional Telegram query options
    * @return {Promise} The edited invite link as a [ChatInviteLink](https://core.telegram.org/bots/api#chatinvitelink) object
    * @see https://core.telegram.org/bots/api#editchatinvitelink
    */
@@ -1857,10 +1857,10 @@ class TelegramBot extends EventEmitter {
    *
    * The bot must have the can_invite_users administrator rights
    *
-   * @param  {Number|String} chatId Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
-   * @param  {Number} subscriptionPeriod The number of seconds the subscription will be active for before the next payment. Currently, it must always be 2592000 (30 days)
-   * @param  {Number} subscriptionPrice The amount of Telegram Stars a user must pay initially and after each subsequent subscription period to be a member of the chat (1-2500)
-   * @param  {Object} [options] Additional Telegram query options
+   * @param {Number|String} chatId Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
+   * @param {Number} subscriptionPeriod The number of seconds the subscription will be active for before the next payment. Currently, it must always be 2592000 (30 days)
+   * @param {Number} subscriptionPrice The amount of Telegram Stars a user must pay initially and after each subsequent subscription period to be a member of the chat (1-2500)
+   * @param {Object} [options] Additional Telegram query options
    * @return {Promise} The new invite link as a [ChatInviteLink](https://core.telegram.org/bots/api#chatinvitelink) object
    * @see https://core.telegram.org/bots/api#createchatsubscriptioninvitelink
    */
@@ -1876,9 +1876,9 @@ class TelegramBot extends EventEmitter {
    *
    * The bot must have the can_invite_users administrator rights
    *
-   * @param  {Number|String} chatId Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
-   * @param  {String} inviteLink The invite link to edit
-   * @param  {Object} [options] Additional Telegram query options
+   * @param {Number|String} chatId Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
+   * @param {String} inviteLink The invite link to edit
+   * @param {Object} [options] Additional Telegram query options
    * @return {Promise} The new invite link as a [ChatInviteLink](https://core.telegram.org/bots/api#chatinvitelink) object
    * @see https://core.telegram.org/bots/api#editchatsubscriptioninvitelink
    */
@@ -1894,9 +1894,9 @@ class TelegramBot extends EventEmitter {
    *
    * The bot **must be an administrator in the chat** for this to work and must have the appropriate admin rights.
    *
-   * @param  {Number|String} chatId Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
-   * @param  {String} inviteLink The invite link to revoke
-   * @param  {Object} [options] Additional Telegram query options
+   * @param {Number|String} chatId Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
+   * @param {String} inviteLink The invite link to revoke
+   * @param {Object} [options] Additional Telegram query options
    * @return {Promise} The revoked invite link as [ChatInviteLink](https://core.telegram.org/bots/api#chatinvitelink) object
    * @see https://core.telegram.org/bots/api#revokechatinvitelink
    */
@@ -1911,9 +1911,9 @@ class TelegramBot extends EventEmitter {
    *
    * The bot **must be an administrator in the chat** for this to work and **must have the `can_invite_users` administrator right.**
    *
-   * @param  {Number|String} chatId Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
-   * @param  {Number} userId  Unique identifier of the target user
-   * @param  {Object} [options] Additional Telegram query options
+   * @param {Number|String} chatId Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
+   * @param {Number} userId  Unique identifier of the target user
+   * @param {Object} [options] Additional Telegram query options
    * @return {Promise} True on success
    * @see https://core.telegram.org/bots/api#approvechatjoinrequest
    */
@@ -1928,9 +1928,9 @@ class TelegramBot extends EventEmitter {
    *
    * The bot **must be an administrator in the chat** for this to work and **must have the `can_invite_users` administrator right**.
    *
-   * @param  {Number|String} chatId Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
-   * @param  {Number} userId  Unique identifier of the target user
-   * @param  {Object} [options] Additional Telegram query options
+   * @param {Number|String} chatId Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
+   * @param {Number} userId  Unique identifier of the target user
+   * @param {Object} [options] Additional Telegram query options
    * @return {Promise} True on success
    * @see https://core.telegram.org/bots/api#declinechatjoinrequest
    */
@@ -1945,10 +1945,10 @@ class TelegramBot extends EventEmitter {
    *
    * The bot **must be an administrator in the chat** for this to work and must have the appropriate admin rights.
    *
-   * @param  {Number|String} chatId  Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
-   * @param  {stream.Stream|Buffer} photo A file path or a Stream.
-   * @param  {Object} [options] Additional Telegram query options
-   * @param  {Object} [fileOptions] Optional file related meta-data
+   * @param {Number|String} chatId  Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
+   * @param {stream.Stream|Buffer} photo A file path or a Stream.
+   * @param {Object} [options] Additional Telegram query options
+   * @param {Object} [fileOptions] Optional file related meta-data
    * @return {Promise} True on success
    * @see https://core.telegram.org/bots/api#setchatphoto
    */
@@ -1972,8 +1972,8 @@ class TelegramBot extends EventEmitter {
   *
   * The bot **must be an administrator in the chat** for this to work and must have the appropriate admin rights.
   *
-  * @param  {Number|String} chatId  Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
-  * @param  {Object} [options] Additional Telegram query options
+  * @param {Number|String} chatId  Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
+  * @param {Object} [options] Additional Telegram query options
   * @return {Promise} True on success
   * @see https://core.telegram.org/bots/api#deletechatphoto
   */
@@ -1987,9 +1987,9 @@ class TelegramBot extends EventEmitter {
    *
    * The bot **must be an administrator in the chat** for this to work and must have the appropriate admin rights.
    *
-   * @param  {Number|String} chatId  Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
-   * @param  {String} title New chat title, 1-255 characters
-   * @param  {Object} [options] Additional Telegram query options
+   * @param {Number|String} chatId  Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
+   * @param {String} title New chat title, 1-255 characters
+   * @param {Object} [options] Additional Telegram query options
    * @return {Promise} True on success
    * @see https://core.telegram.org/bots/api#setchattitle
    */
@@ -2004,9 +2004,9 @@ class TelegramBot extends EventEmitter {
    *
    * The bot **must be an administrator in the chat** for this to work and must have the appropriate admin rights.
    *
-   * @param  {Number|String} chatId  Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
-   * @param  {String} description New chat title, 0-255 characters
-   * @param  {Object} [options] Additional Telegram query options
+   * @param {Number|String} chatId  Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
+   * @param {String} description New chat title, 0-255 characters
+   * @param {Object} [options] Additional Telegram query options
    * @return {Promise} True on success
    * @see https://core.telegram.org/bots/api#setchatdescription
    */
@@ -2022,9 +2022,9 @@ class TelegramBot extends EventEmitter {
    * If the chat is not a private chat, the **bot must be an administrator in the chat** for this to work and must have the `can_pin_messages` administrator
    * right in a supergroup or `can_edit_messages` administrator right in a channel.
    *
-   * @param  {Number|String} chatId  Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
-   * @param  {Number} messageId Identifier of a message to pin
-   * @param  {Object} [options] Additional Telegram query options
+   * @param {Number|String} chatId  Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
+   * @param {Number} messageId Identifier of a message to pin
+   * @param {Object} [options] Additional Telegram query options
    * @return {Promise} True on success
    * @see https://core.telegram.org/bots/api#pinchatmessage
    */
@@ -2040,8 +2040,8 @@ class TelegramBot extends EventEmitter {
    * If the chat is not a private chat, the **bot must be an administrator in the chat** for this to work and must have the `can_pin_messages` administrator
    * right in a supergroup or `can_edit_messages` administrator right in a channel.
    *
-   * @param  {Number|String} chatId  Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
-   * @param  {Object} [options] Additional Telegram query options
+   * @param {Number|String} chatId  Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
+   * @param {Object} [options] Additional Telegram query options
    * @return {Promise} True on success
    * @see https://core.telegram.org/bots/api#unpinchatmessage
    */
@@ -2056,8 +2056,8 @@ class TelegramBot extends EventEmitter {
   * If the chat is not a private chat, the **bot must be an administrator in the chat** for this to work and must have the `can_pin_messages` administrator
   * right in a supergroup or `can_edit_messages` administrator right in a channel.
   *
-  * @param  {Number|String} chatId  Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
-  * @param  {Object} [options] Additional Telegram query options
+  * @param {Number|String} chatId  Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
+  * @param {Object} [options] Additional Telegram query options
   * @return {Promise} True on success
   * @see https://core.telegram.org/bots/api#unpinallchatmessages
   */
@@ -2069,8 +2069,8 @@ class TelegramBot extends EventEmitter {
   /**
    * Use this method for your bot to leave a group, supergroup or channel
    *
-   * @param  {Number|String} chatId  Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
-   * @param  {Object} [options] Additional Telegram query options
+   * @param {Number|String} chatId  Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
+   * @param {Object} [options] Additional Telegram query options
    * @return {Promise} True on success
    * @see https://core.telegram.org/bots/api#leavechat
    */
@@ -2083,8 +2083,8 @@ class TelegramBot extends EventEmitter {
    * Use this method to get up to date information about the chat
    * (current name of the user for one-on-one conversations, current
    * username of a user, group or channel, etc.).
-   * @param  {Number|String} chatId Unique identifier for the target chat or username of the target channel (in the format `@channelusername`) or channel
-   * @param  {Object} [options] Additional Telegram query options
+   * @param {Number|String} chatId Unique identifier for the target chat or username of the target channel (in the format `@channelusername`) or channel
+   * @param {Object} [options] Additional Telegram query options
    * @return {Promise} [ChatFullInfo](https://core.telegram.org/bots/api#chatfullinfo) object on success
    * @see https://core.telegram.org/bots/api#getchat
    */
@@ -2096,8 +2096,8 @@ class TelegramBot extends EventEmitter {
   /**
    * Use this method to get a list of administrators in a chat
    *
-   * @param  {Number|String} chatId  Unique identifier for the target group or username of the target supergroup
-   * @param  {Object} [options] Additional Telegram query options
+   * @param {Number|String} chatId  Unique identifier for the target group or username of the target supergroup
+   * @param {Object} [options] Additional Telegram query options
    * @return {Promise} On success, returns an Array of [ChatMember](https://core.telegram.org/bots/api#chatmember) objects that contains information about all chat administrators except other bots.
    * If the chat is a group or a supergroup and no administrators were appointed, only the creator will be returned
    * @see https://core.telegram.org/bots/api#getchatadministrators
@@ -2110,8 +2110,8 @@ class TelegramBot extends EventEmitter {
   /**
   * Use this method to get the number of members in a chat.
   *
-  * @param  {Number|String} chatId  Unique identifier for the target group or username of the target supergroup
-  * @param  {Object} [options] Additional Telegram query options
+  * @param {Number|String} chatId  Unique identifier for the target group or username of the target supergroup
+  * @param {Object} [options] Additional Telegram query options
   * @return {Promise} Int on success
   * @see https://core.telegram.org/bots/api#getchatmembercount
   */
@@ -2123,9 +2123,9 @@ class TelegramBot extends EventEmitter {
   /**
    * Use this method to get information about a member of a chat.
    *
-   * @param  {Number|String} chatId  Unique identifier for the target group or username of the target supergroup
-   * @param  {Number} userId  Unique identifier of the target user
-   * @param  {Object} [options] Additional Telegram query options
+   * @param {Number|String} chatId  Unique identifier for the target group or username of the target supergroup
+   * @param {Number} userId  Unique identifier of the target user
+   * @param {Object} [options] Additional Telegram query options
    * @return {Promise} [ChatMember](https://core.telegram.org/bots/api#chatmember) object on success
    * @see https://core.telegram.org/bots/api#getchatmember
    */
@@ -2142,9 +2142,9 @@ class TelegramBot extends EventEmitter {
    *
    * **Note:** Use the field `can_set_sticker_set` optionally returned in [getChat](https://core.telegram.org/bots/api#getchat) requests to check if the bot can use this method.
    *
-   * @param  {Number|String} chatId Unique identifier for the target group or username of the target supergroup (in the format @supergroupusername)
-   * @param  {String} stickerSetName Name of the sticker set to be set as the group sticker set
-   * @param  {Object} [options] Additional Telegram query options
+   * @param {Number|String} chatId Unique identifier for the target group or username of the target supergroup (in the format @supergroupusername)
+   * @param {String} stickerSetName Name of the sticker set to be set as the group sticker set
+   * @param {Object} [options] Additional Telegram query options
    * @return {Promise} True on success
    * @see https://core.telegram.org/bots/api#setchatstickerset
    */
@@ -2160,8 +2160,8 @@ class TelegramBot extends EventEmitter {
    *
    * Use the field `can_set_sticker_set` optionally returned in [getChat](https://core.telegram.org/bots/api#getchat) requests to check if the bot can use this method.
    *
-   * @param  {Number|String} chatId Unique identifier for the target group or username of the target supergroup (in the format @supergroupusername)
-   * @param  {Object} [options] Additional Telegram query options
+   * @param {Number|String} chatId Unique identifier for the target group or username of the target supergroup (in the format @supergroupusername)
+   * @param {Object} [options] Additional Telegram query options
    * @return {Promise} True on success
    * @see https://core.telegram.org/bots/api#deletechatstickerset
    */
@@ -2173,8 +2173,8 @@ class TelegramBot extends EventEmitter {
   /**
    * Use this method to get custom emoji stickers, which can be used as a forum topic icon by any user.
    *
-   * @param  {Number|String} chatId Unique identifier for the target group or username of the target supergroup (in the format @supergroupusername)
-   * @param  {Object} [options] Additional Telegram query options
+   * @param {Number|String} chatId Unique identifier for the target group or username of the target supergroup (in the format @supergroupusername)
+   * @param {Object} [options] Additional Telegram query options
    * @return {Promise} Array of [Sticker](https://core.telegram.org/bots/api#sticker) objects
    * @see https://core.telegram.org/bots/api#getforumtopiciconstickers
    */
@@ -2189,9 +2189,9 @@ class TelegramBot extends EventEmitter {
    *
    * Returns information about the created topic as a [ForumTopic](https://core.telegram.org/bots/api#forumtopic) object.
    *
-   * @param  {Number|String} chatId Unique identifier for the target group or username of the target supergroup (in the format @supergroupusername)
-   * @param  {String} name Topic name, 1-128 characters
-   * @param  {Object} [options] Additional Telegram query options
+   * @param {Number|String} chatId Unique identifier for the target group or username of the target supergroup (in the format @supergroupusername)
+   * @param {String} name Topic name, 1-128 characters
+   * @param {Object} [options] Additional Telegram query options
    * @see https://core.telegram.org/bots/api#createforumtopic
    */
   createForumTopic(chatId, name, form = {}) {
@@ -2379,8 +2379,8 @@ class TelegramBot extends EventEmitter {
    * This method has **older, compatible signatures ([1][answerCallbackQuery-v0.27.1])([2][answerCallbackQuery-v0.29.0])**
    * that are being deprecated.
    *
-   * @param  {String} callbackQueryId Unique identifier for the query to be answered
-   * @param  {Object} [options] Additional Telegram query options
+   * @param {String} callbackQueryId Unique identifier for the query to be answered
+   * @param {Object} [options] Additional Telegram query options
    * @return {Promise} True on success
    * @see https://core.telegram.org/bots/api#answercallbackquery
    */
@@ -2431,9 +2431,9 @@ class TelegramBot extends EventEmitter {
    * Use this method to get the list of boosts added to a chat by a use.
    * Requires administrator rights in the chat
    *
-   * @param  {Number|String} chatId  Unique identifier for the group/channel
-   * @param  {Number} userId Unique identifier of the target user
-   * @param  {Object} [options] Additional Telegram query options
+   * @param {Number|String} chatId  Unique identifier for the group/channel
+   * @param {Number} userId Unique identifier of the target user
+   * @param {Object} [options] Additional Telegram query options
    * @return {Promise} On success, returns a [UserChatBoosts](https://core.telegram.org/bots/api#userchatboosts) object
    * @see https://core.telegram.org/bots/api#getuserchatboosts
    */
@@ -2446,8 +2446,8 @@ class TelegramBot extends EventEmitter {
   /**
    * Use this method to get information about the connection of the bot with a business account
    *
-   * @param  {Number|String} businessConnectionId  Unique identifier for the group/channel
-   * @param  {Object} [options] Additional Telegram query options
+   * @param {Number|String} businessConnectionId  Unique identifier for the group/channel
+   * @param {Object} [options] Additional Telegram query options
    * @return {Promise} On success, returns [BusinessConnection](https://core.telegram.org/bots/api#businessconnection) object
    * @see https://core.telegram.org/bots/api#getbusinessconnection
    */
@@ -2461,8 +2461,8 @@ class TelegramBot extends EventEmitter {
    *
    * See https://core.telegram.org/bots#commands for more details about bot commands
    *
-   * @param  {Array} commands  List of bot commands to be set as the list of the [bot's commands](https://core.telegram.org/bots/api#botcommand). At most 100 commands can be specified.
-   * @param  {Object} [options] Additional Telegram query options
+   * @param {Array} commands  List of bot commands to be set as the list of the [bot's commands](https://core.telegram.org/bots/api#botcommand). At most 100 commands can be specified.
+   * @param {Object} [options] Additional Telegram query options
    * @return {Promise} True on success
    * @see https://core.telegram.org/bots/api#setmycommands
    */
@@ -2481,7 +2481,7 @@ class TelegramBot extends EventEmitter {
    *
    *  After deletion, [higher level commands](https://core.telegram.org/bots/api#determining-list-of-commands) will be shown to affected users.
    *
-   * @param  {Object} [options] Additional Telegram query options
+   * @param {Object} [options] Additional Telegram query options
    * @return {Promise} True on success
    * @see https://core.telegram.org/bots/api#deletemycommands
    */
@@ -2493,7 +2493,7 @@ class TelegramBot extends EventEmitter {
   /**
    * Use this method to get the current list of the bot's commands for the given scope and user language.
    *
-   * @param  {Object} [options] Additional Telegram query options
+   * @param {Object} [options] Additional Telegram query options
    * @return {Promise} Array of [BotCommand](https://core.telegram.org/bots/api#botcommand) on success. If commands aren't set, an empty list is returned.
    * @see https://core.telegram.org/bots/api#getmycommands
    */
@@ -2507,7 +2507,7 @@ class TelegramBot extends EventEmitter {
   /**
    * Use this method to change the bot's name.
    *
-   * @param  {Object} [options] Additional Telegram query options
+   * @param {Object} [options] Additional Telegram query options
    * @return {Promise} True on success
    * @see https://core.telegram.org/bots/api#setmyname
    */
@@ -2518,7 +2518,7 @@ class TelegramBot extends EventEmitter {
   /**
    * Use this method to get the current bot name for the given user language.
    *
-   * @param  {Object} [options] Additional Telegram query options
+   * @param {Object} [options] Additional Telegram query options
    * @return {Promise} [BotName](https://core.telegram.org/bots/api#botname) on success
    * @see https://core.telegram.org/bots/api#getmyname
    */
@@ -2531,7 +2531,7 @@ class TelegramBot extends EventEmitter {
    *
    * Returns True on success.
    *
-   * @param  {Object} [options] Additional Telegram query options
+   * @param {Object} [options] Additional Telegram query options
    * @return {Promise} True on success
    * @see https://core.telegram.org/bots/api#setmydescription
    */
@@ -2542,7 +2542,7 @@ class TelegramBot extends EventEmitter {
   /**
    * Use this method to get the current bot description for the given user language.
    *
-   * @param  {Object} [options] Additional Telegram query options
+   * @param {Object} [options] Additional Telegram query options
    * @return {Promise} Returns [BotDescription](https://core.telegram.org/bots/api#botdescription) on success.
    * @see https://core.telegram.org/bots/api#getmydescription
    */
@@ -2554,7 +2554,7 @@ class TelegramBot extends EventEmitter {
    * Use this method to change the bot's short description, which is shown on the bot's profile page
    * and is sent together with the link when users share the bot.
    *
-   * @param  {Object} [options] Additional Telegram query options
+   * @param {Object} [options] Additional Telegram query options
    * @return {Promise} Returns True on success.
    * @see https://core.telegram.org/bots/api#setmyshortdescription
    */
@@ -2565,7 +2565,7 @@ class TelegramBot extends EventEmitter {
   /**
    * Use this method to get the current bot short description for the given user language.
    *
-   * @param  {Object} [options] Additional Telegram query options
+   * @param {Object} [options] Additional Telegram query options
    * @return {Promise} Returns [BotShortDescription](https://core.telegram.org/bots/api#botshortdescription) on success.
    * @see https://core.telegram.org/bots/api#getmyshortdescription
    */
@@ -2576,7 +2576,7 @@ class TelegramBot extends EventEmitter {
   /**
    * Use this method to change the bot's menu button in a private chat, or the default menu button.
    *
-   * @param  {Object} [options] Additional Telegram query options
+   * @param {Object} [options] Additional Telegram query options
    * @return {Promise} True on success
    * @see https://core.telegram.org/bots/api#setchatmenubutton
    */
@@ -2587,7 +2587,7 @@ class TelegramBot extends EventEmitter {
   /**
    * Use this method to get the current value of the bot's menu button in a private chat, or the default menu button.
    *
-   * @param  {Object} [options] Additional Telegram query options
+   * @param {Object} [options] Additional Telegram query options
    * @return {Promise} [MenuButton](https://core.telegram.org/bots/api#menubutton) on success
    * @see https://core.telegram.org/bots/api#getchatmenubutton
    */
@@ -2600,7 +2600,7 @@ class TelegramBot extends EventEmitter {
    *
    * These rights will be suggested to users, but they are are free to modify the list before adding the bot.
    *
-   * @param  {Object} [options] Additional Telegram query options
+   * @param {Object} [options] Additional Telegram query options
    * @return {Promise} True on success
    * @see https://core.telegram.org/bots/api#getchatmenubutton
    */
@@ -2611,7 +2611,7 @@ class TelegramBot extends EventEmitter {
   /**
    * Use this method to get the current default administrator rights of the bot.
    *
-   * @param  {Object} [options] Additional Telegram query options
+   * @param {Object} [options] Additional Telegram query options
    * @return {Promise} [ChatAdministratorRights](https://core.telegram.org/bots/api#chatadministratorrights) on success
    * @see https://core.telegram.org/bots/api#getmydefaultadministratorrights
    */
@@ -2624,8 +2624,8 @@ class TelegramBot extends EventEmitter {
    *
    * Note: that **you must provide one of chat_id, message_id, or inline_message_id** in your request.
    *
-   * @param  {String} text  New text of the message
-   * @param  {Object} [options] Additional Telegram query options (provide either one of chat_id, message_id, or inline_message_id here)
+   * @param {String} text  New text of the message
+   * @param {Object} [options] Additional Telegram query options (provide either one of chat_id, message_id, or inline_message_id here)
    * @return {Promise} On success, if the edited message is not an inline message, the edited [Message](https://core.telegram.org/bots/api#message) is returned, otherwise True is returned
    * @see https://core.telegram.org/bots/api#editmessagetext
    */
@@ -2639,8 +2639,8 @@ class TelegramBot extends EventEmitter {
    *
    * Note: You **must provide one of chat_id, message_id, or inline_message_id** in your request.
    *
-   * @param  {String} caption  New caption of the message
-   * @param  {Object} [options] Additional Telegram query options (provide either one of chat_id, message_id, or inline_message_id here)
+   * @param {String} caption  New caption of the message
+   * @param {Object} [options] Additional Telegram query options (provide either one of chat_id, message_id, or inline_message_id here)
    * @return {Promise} On success, if the edited message is not an inline message, the edited [Message](https://core.telegram.org/bots/api#message) is returned, otherwise True is returned
    * @see https://core.telegram.org/bots/api#editmessagecaption
    */
@@ -2659,8 +2659,8 @@ class TelegramBot extends EventEmitter {
    *
    * Note: You **must provide one of chat_id, message_id, or inline_message_id** in your request.
    *
-   * @param  {Object} media  A JSON-serialized object for a new media content of the message
-   * @param  {Object} [options] Additional Telegram query options (provide either one of chat_id, message_id, or inline_message_id here)
+   * @param {Object} media  A JSON-serialized object for a new media content of the message
+   * @param {Object} [options] Additional Telegram query options (provide either one of chat_id, message_id, or inline_message_id here)
    * @return {Promise} On success, if the edited message is not an inline message, the edited [Message](https://core.telegram.org/bots/api#message) is returned, otherwise True is returned
    * @see https://core.telegram.org/bots/api#editmessagemedia
    */
@@ -2710,8 +2710,8 @@ class TelegramBot extends EventEmitter {
    *
    * Note: You **must provide one of chat_id, message_id, or inline_message_id** in your request.
    *
-   * @param  {Object} replyMarkup  A JSON-serialized object for an inline keyboard.
-   * @param  {Object} [options] Additional Telegram query options (provide either one of chat_id, message_id, or inline_message_id here)
+   * @param {Object} replyMarkup  A JSON-serialized object for an inline keyboard.
+   * @param {Object} [options] Additional Telegram query options (provide either one of chat_id, message_id, or inline_message_id here)
    * @return {Promise} On success, if the edited message is not an inline message, the edited [Message](https://core.telegram.org/bots/api#message) is returned, otherwise True is returned
    * @see https://core.telegram.org/bots/api#editmessagetext
    */
@@ -2724,9 +2724,9 @@ class TelegramBot extends EventEmitter {
   /**
    * Use this method to stop a poll which was sent by the bot.
    *
-   * @param  {Number|String} chatId  Unique identifier for the group/channel
-   * @param  {Number} pollId Identifier of the original message with the poll
-   * @param  {Object} [options] Additional Telegram query options
+   * @param {Number|String} chatId  Unique identifier for the group/channel
+   * @param {Number} pollId Identifier of the original message with the poll
+   * @param {Object} [options] Additional Telegram query options
    * @return {Promise} On success, the stopped [Poll](https://core.telegram.org/bots/api#poll) is returned
    * @see https://core.telegram.org/bots/api#stoppoll
    */
@@ -2739,11 +2739,11 @@ class TelegramBot extends EventEmitter {
   /**
    * Use this method to send static .WEBP, [animated](https://telegram.org/blog/animated-stickers) .TGS,
    * or [video](https://telegram.org/blog/video-stickers-better-reactions) .WEBM stickers.
-   * @param  {Number|String} chatId  Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
-   * @param  {String|stream.Stream|Buffer} sticker A file path, Stream or Buffer.
+   * @param {Number|String} chatId  Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
+   * @param {String|stream.Stream|Buffer} sticker A file path, Stream or Buffer.
    * Can also be a `file_id` previously uploaded. Stickers are WebP format files.
-   * @param  {Object} [options] Additional Telegram query options
-   * @param  {Object} [fileOptions] Optional file related meta-data
+   * @param {Object} [options] Additional Telegram query options
+   * @param {Object} [fileOptions] Optional file related meta-data
    * @return {Promise} On success, the sent [Message](https://core.telegram.org/bots/api#message) is returned
    * @see https://core.telegram.org/bots/api#sendsticker
    */
@@ -2765,8 +2765,8 @@ class TelegramBot extends EventEmitter {
   /**
    * Use this method to get a sticker set.
    *
-   * @param  {String} name Name of the sticker set
-   * @param  {Object} [options] Additional Telegram query options
+   * @param {String} name Name of the sticker set
+   * @param {Object} [options] Additional Telegram query options
    * @return {Promise} On success, a [StickerSet](https://core.telegram.org/bots/api#stickerset) object is returned
    * @see https://core.telegram.org/bots/api#getstickerset
    */
@@ -2778,8 +2778,8 @@ class TelegramBot extends EventEmitter {
   /**
    * Use this method to get information about custom emoji stickers by their identifiers.
    *
-   * @param  {Array} custom_emoji_ids List of custom emoji identifiers. At most 200 custom emoji identifiers can be specified.
-   * @param  {Object} [options] Additional Telegram query options
+   * @param {Array} custom_emoji_ids List of custom emoji identifiers. At most 200 custom emoji identifiers can be specified.
+   * @param {Object} [options] Additional Telegram query options
    * @return {Promise} Array of [Sticker](https://core.telegram.org/bots/api#sticker) objects.
    * @see https://core.telegram.org/bots/api#getcustomemojistickers
    */
@@ -2792,11 +2792,11 @@ class TelegramBot extends EventEmitter {
    * Use this method to upload a file with a sticker for later use in *createNewStickerSet* and *addStickerToSet* methods (can be used multiple
    * times).
    *
-   * @param  {Number} userId User identifier of sticker file owner
-   * @param  {String|stream.Stream|Buffer} sticker A file path or a Stream with the sticker in .WEBP, .PNG, .TGS, or .WEBM format. Can also be a `file_id` previously uploaded.
+   * @param {Number} userId User identifier of sticker file owner
+   * @param {String|stream.Stream|Buffer} sticker A file path or a Stream with the sticker in .WEBP, .PNG, .TGS, or .WEBM format. Can also be a `file_id` previously uploaded.
    * @param {String} stickerFormat Allow values:  `static`, `animated` or `video`
-   * @param  {Object} [options] Additional Telegram query options
-   * @param  {Object} [fileOptions] Optional file related meta-data
+   * @param {Object} [options] Additional Telegram query options
+   * @param {Object} [fileOptions] Optional file related meta-data
    * @return {Promise} On success, a [File](https://core.telegram.org/bots/api#file) object is returned
    * @see https://core.telegram.org/bots/api#uploadstickerfile
    */
@@ -2824,15 +2824,15 @@ class TelegramBot extends EventEmitter {
    *
    * You must use exactly one of the fields *png_sticker*, *tgs_sticker*, or *webm_sticker*
    *
-   * @param  {Number} userId User identifier of created sticker set owner
-   * @param  {String} name Short name of sticker set, to be used in `t.me/addstickers/` URLs (e.g.,   *"animals"*). Can contain only english letters, digits and underscores.
+   * @param {Number} userId User identifier of created sticker set owner
+   * @param {String} name Short name of sticker set, to be used in `t.me/addstickers/` URLs (e.g.,   *"animals"*). Can contain only english letters, digits and underscores.
    *  Must begin with a letter, can't contain consecutive underscores and must end in `"_by_<bot_username>"`. `<bot_username>` is case insensitive. 1-64 characters.
-   * @param  {String} title Sticker set title, 1-64 characters
-   * @param  {String|stream.Stream|Buffer} pngSticker Png image with the sticker, must be up to 512 kilobytes in size,
+   * @param {String} title Sticker set title, 1-64 characters
+   * @param {String|stream.Stream|Buffer} pngSticker Png image with the sticker, must be up to 512 kilobytes in size,
    *  dimensions must not exceed 512px, and either width or height must be exactly 512px.
-   * @param  {String} emojis One or more emoji corresponding to the sticker
-   * @param  {Object} [options] Additional Telegram query options
-   * @param  {Object} [fileOptions] Optional file related meta-data
+   * @param {String} emojis One or more emoji corresponding to the sticker
+   * @param {Object} [options] Additional Telegram query options
+   * @param {Object} [fileOptions] Optional file related meta-data
    * @return {Promise}  True on success
    * @see https://core.telegram.org/bots/api#createnewstickerset
    */
@@ -2866,15 +2866,15 @@ class TelegramBot extends EventEmitter {
    * - Emoji sticker sets can have up to 200 sticker
    * - Static or Animated sticker sets can have up to 120 stickers
    *
-   * @param  {Number} userId User identifier of sticker set owner
-   * @param  {String} name Sticker set name
-   * @param  {String|stream.Stream|Buffer} sticker Png image with the sticker (must be up to 512 kilobytes in size,
+   * @param {Number} userId User identifier of sticker set owner
+   * @param {String} name Sticker set name
+   * @param {String|stream.Stream|Buffer} sticker Png image with the sticker (must be up to 512 kilobytes in size,
    * dimensions must not exceed 512px, and either width or height must be exactly 512px, [TGS animation](https://core.telegram.org/stickers#animated-sticker-requirements)
    * with the sticker or [WEBM video](https://core.telegram.org/stickers#video-sticker-requirements) with the sticker.
-   * @param  {String} emojis One or more emoji corresponding to the sticker
-   * @param  {String} stickerType Allow values: `png_sticker`, `tgs_sticker`, or `webm_sticker`.
-   * @param  {Object} [options] Additional Telegram query options
-   * @param  {Object} [fileOptions] Optional file related meta-data
+   * @param {String} emojis One or more emoji corresponding to the sticker
+   * @param {String} stickerType Allow values: `png_sticker`, `tgs_sticker`, or `webm_sticker`.
+   * @param {Object} [options] Additional Telegram query options
+   * @param {Object} [fileOptions] Optional file related meta-data
    * @return {Promise}  True on success
    * @see https://core.telegram.org/bots/api#addstickertoset
    */
@@ -2904,9 +2904,9 @@ class TelegramBot extends EventEmitter {
   /**
    * Use this method to move a sticker in a set created by the bot to a specific position.
    *
-   * @param  {String} sticker File identifier of the sticker
-   * @param  {Number} position New sticker position in the set, zero-based
-   * @param  {Object} [options] Additional Telegram query options
+   * @param {String} sticker File identifier of the sticker
+   * @param {Number} position New sticker position in the set, zero-based
+   * @param {Object} [options] Additional Telegram query options
    * @return {Promise} True on success
    * @see https://core.telegram.org/bots/api#setstickerpositioninset
    */
@@ -2919,8 +2919,8 @@ class TelegramBot extends EventEmitter {
   /**
    * Use this method to delete a sticker from a set created by the bot.
    *
-   * @param  {String} sticker File identifier of the sticker
-   * @param  {Object} [options] Additional Telegram query options
+   * @param {String} sticker File identifier of the sticker
+   * @param {Object} [options] Additional Telegram query options
    * @return {Promise} True on success
    * @see https://core.telegram.org/bots/api#deletestickerfromset
    * @todo Add tests for this method!
@@ -2933,10 +2933,10 @@ class TelegramBot extends EventEmitter {
   /**
    * Use this method to replace an existing sticker in a sticker set with a new one
    *
-   * @param  {Number} user_id User identifier of the sticker set owner
-   * @param  {String} name Sticker set name
-   * @param  {String} sticker File identifier of the sticker
-   * @param  {Object} [options] Additional Telegram query options
+   * @param {Number} user_id User identifier of the sticker set owner
+   * @param {String} name Sticker set name
+   * @param {String} sticker File identifier of the sticker
+   * @param {Object} [options] Additional Telegram query options
    * @return {Promise} True on success
    * @see https://core.telegram.org/bots/api#replacestickerinset
    * @todo Add tests for this method!
@@ -2954,9 +2954,9 @@ class TelegramBot extends EventEmitter {
    *
    * The sticker must belong to a sticker set created by the bot.
    *
-   * @param  {String} sticker File identifier of the sticker
+   * @param {String} sticker File identifier of the sticker
    * @param { Array } emojiList A JSON-serialized list of 1-20 emoji associated with the sticker
-   * @param  {Object} [options] Additional Telegram query options
+   * @param {Object} [options] Additional Telegram query options
    * @return {Promise} True on success
    * @see https://core.telegram.org/bots/api#setstickeremojilist
    */
@@ -2971,8 +2971,8 @@ class TelegramBot extends EventEmitter {
    *
    * The sticker must belong to a sticker set created by the bot.
    *
-   * @param  {String} sticker File identifier of the sticker
-   * @param  {Object} [options] Additional Telegram query options
+   * @param {String} sticker File identifier of the sticker
+   * @param {Object} [options] Additional Telegram query options
    * @return {Promise} True on success
    * @see https://core.telegram.org/bots/api#setstickerkeywords
    */
@@ -2989,8 +2989,8 @@ class TelegramBot extends EventEmitter {
    *
    * The sticker must belong to a sticker set created by the bot.
    *
-   * @param  {String} sticker File identifier of the sticker
-   * @param  {Object} [options] Additional Telegram query options
+   * @param {String} sticker File identifier of the sticker
+   * @param {Object} [options] Additional Telegram query options
    * @return {Promise} True on success
    * @see https://core.telegram.org/bots/api#setstickermaskposition
    */
@@ -3007,9 +3007,9 @@ class TelegramBot extends EventEmitter {
    *
    * The sticker must belong to a sticker set created by the bot.
    *
-   * @param  {String} name Sticker set name
-   * @param  {String} title Sticker set title, 1-64 characters
-   * @param  {Object} [options] Additional Telegram query options
+   * @param {String} name Sticker set name
+   * @param {String} title Sticker set title, 1-64 characters
+   * @param {Object} [options] Additional Telegram query options
    * @return {Promise} True on success
    * @see https://core.telegram.org/bots/api#setstickersettitle
    */
@@ -3024,16 +3024,16 @@ class TelegramBot extends EventEmitter {
    *
    * Animated thumbnails can be set for animated sticker sets only. Video thumbnails can be set only for video sticker sets only
    *
-   * @param  {Number} userId User identifier of sticker set owner
-   * @param  {String} name Sticker set name
-   * @param  {String|stream.Stream|Buffer} thumbnail A .WEBP or .PNG image with the thumbnail,
+   * @param {Number} userId User identifier of sticker set owner
+   * @param {String} name Sticker set name
+   * @param {String|stream.Stream|Buffer} thumbnail A .WEBP or .PNG image with the thumbnail,
    * must be up to 128 kilobytes in size and have width and height exactly 100px,
    * a TGS animation with the thumbnail up to 32 kilobytes in size or a WEBM video with the thumbnail up to 32 kilobytes in size.
    *
    * Pass a file_id as a String to send a file that already exists on the Telegram servers, pass an HTTP URL as a String for Telegram
    * to get a file from the Internet, or upload a new one. Animated sticker set thumbnails can't be uploaded via HTTP URL.
-   * @param  {Object} [options] Additional Telegram query options
-   * @param  {Object} [fileOptions] Optional file related meta-data
+   * @param {Object} [options] Additional Telegram query options
+   * @param {Object} [fileOptions] Optional file related meta-data
    * @return {Promise} True on success
    * @see https://core.telegram.org/bots/api#setstickersetthumbnail
    */
@@ -3060,8 +3060,8 @@ class TelegramBot extends EventEmitter {
    *
    * The sticker must belong to a sticker set created by the bot.
    *
-   * @param  {String} name Sticker set name
-   * @param  {Object} [options] Additional Telegram query options
+   * @param {String} name Sticker set name
+   * @param {Object} [options] Additional Telegram query options
    * @return {Promise} True on success
    * @see https://core.telegram.org/bots/api#setcustomemojistickersetthumbnail
    */
@@ -3075,8 +3075,8 @@ class TelegramBot extends EventEmitter {
    *
    * The sticker must belong to a sticker set created by the bot.
    *
-   * @param  {String} name Sticker set name
-   * @param  {Object} [options] Additional Telegram query options
+   * @param {String} name Sticker set name
+   * @param {Object} [options] Additional Telegram query options
    * @return {Promise} True on success
    * @see https://core.telegram.org/bots/api#deletestickerset
    */
@@ -3090,9 +3090,9 @@ class TelegramBot extends EventEmitter {
    *
    * Note: No more than 50 results per query are allowed.
    *
-   * @param  {String} inlineQueryId Unique identifier of the query
-   * @param  {InlineQueryResult[]} results An array of results for the inline query
-   * @param  {Object} [options] Additional Telegram query options
+   * @param {String} inlineQueryId Unique identifier of the query
+   * @param {InlineQueryResult[]} results An array of results for the inline query
+   * @param {Object} [options] Additional Telegram query options
    * @return {Promise} On success, True is returned
    * @see https://core.telegram.org/bots/api#answerinlinequery
    */
@@ -3106,9 +3106,9 @@ class TelegramBot extends EventEmitter {
    * Use this method to set the result of an interaction with a [Web App](https://core.telegram.org/bots/webapps)
    * and send a corresponding message on behalf of the user to the chat from which the query originated.
    *
-   * @param  {String} webAppQueryId Unique identifier for the query to be answered
-   * @param  {InlineQueryResult} result object that represents one result of an inline query
-   * @param  {Object} [options] Additional Telegram query options
+   * @param {String} webAppQueryId Unique identifier for the query to be answered
+   * @param {InlineQueryResult} result object that represents one result of an inline query
+   * @param {Object} [options] Additional Telegram query options
    * @return {Promise} On success, a [SentWebAppMessage](https://core.telegram.org/bots/api#sentwebappmessage) object is returned
    * @see https://core.telegram.org/bots/api#answerwebappquery
    */
@@ -3121,14 +3121,14 @@ class TelegramBot extends EventEmitter {
   /**
    * Use this method to send an invoice.
    *
-   * @param  {Number|String} chatId  Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
-   * @param  {String} title Product name, 1-32 characters
-   * @param  {String} description Product description, 1-255 characters
-   * @param  {String} payload Bot defined invoice payload, 1-128 bytes. This will not be displayed to the user, use for your internal processes.
-   * @param  {String} providerToken Payments provider token, obtained via `@BotFather`
-   * @param  {String} currency Three-letter ISO 4217 currency code
-   * @param  {Array} prices Breakdown of prices
-   * @param  {Object} [options] Additional Telegram query options
+   * @param {Number|String} chatId  Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
+   * @param {String} title Product name, 1-32 characters
+   * @param {String} description Product description, 1-255 characters
+   * @param {String} payload Bot defined invoice payload, 1-128 bytes. This will not be displayed to the user, use for your internal processes.
+   * @param {String} providerToken Payments provider token, obtained via `@BotFather`
+   * @param {String} currency Three-letter ISO 4217 currency code
+   * @param {Array} prices Breakdown of prices
+   * @param {Object} [options] Additional Telegram query options
    * @return {Promise} On success, the sent [Message](https://core.telegram.org/bots/api#message) is returned
    * @see https://core.telegram.org/bots/api#sendinvoice
    */
@@ -3176,9 +3176,9 @@ class TelegramBot extends EventEmitter {
   * If you sent an invoice requesting a shipping address and the parameter is_flexible was specified,
   * the Bot API will send an [Update](https://core.telegram.org/bots/api#update) with a shipping_query field to the bot
   *
-  * @param  {String} shippingQueryId  Unique identifier for the query to be answered
-  * @param  {Boolean} ok Specify if delivery of the product is possible
-  * @param  {Object} [options] Additional Telegram query options
+  * @param {String} shippingQueryId  Unique identifier for the query to be answered
+  * @param {Boolean} ok Specify if delivery of the product is possible
+  * @param {Object} [options] Additional Telegram query options
   * @return {Promise} On success, True is returned
   * @see https://core.telegram.org/bots/api#answershippingquery
   */
@@ -3197,9 +3197,9 @@ class TelegramBot extends EventEmitter {
    *
    * **Note:** The Bot API must receive an answer within 10 seconds after the pre-checkout query was sent.
    *
-   * @param  {String} preCheckoutQueryId  Unique identifier for the query to be answered
-   * @param  {Boolean} ok Specify if every order details are ok
-   * @param  {Object} [options] Additional Telegram query options
+   * @param {String} preCheckoutQueryId  Unique identifier for the query to be answered
+   * @param {Boolean} ok Specify if every order details are ok
+   * @param {Object} [options] Additional Telegram query options
    * @return {Promise} On success, True is returned
    * @see https://core.telegram.org/bots/api#answerprecheckoutquery
    */
@@ -3212,7 +3212,7 @@ class TelegramBot extends EventEmitter {
   /**
    * Use this method for get the bot's Telegram Star transactions in chronological order
    *
-   * @param  {Object} [options] Additional Telegram query options
+   * @param {Object} [options] Additional Telegram query options
    * @return {Promise} On success, returns a [StarTransactions](https://core.telegram.org/bots/api#startransactions) object
    * @see https://core.telegram.org/bots/api#getstartransactions
    */
@@ -3223,9 +3223,9 @@ class TelegramBot extends EventEmitter {
   /**
    * Use this method for refund a successful payment in [Telegram Stars](https://t.me/BotNews/90)
    *
-   * @param  {Number} userId  Unique identifier of the user whose payment will be refunded
-   * @param  {String} telegramPaymentChargeId Telegram payment identifier
-   * @param  {Object} [options] Additional Telegram query options
+   * @param {Number} userId  Unique identifier of the user whose payment will be refunded
+   * @param {String} telegramPaymentChargeId Telegram payment identifier
+   * @param {Object} [options] Additional Telegram query options
    * @return {Promise} On success, True is returned
    * @see https://core.telegram.org/bots/api#refundstarpayment
    */
@@ -3255,9 +3255,9 @@ class TelegramBot extends EventEmitter {
   /**
    * Use this method to send a game.
    *
-   * @param  {Number|String} chatId Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
-   * @param  {String} gameShortName name of the game to be sent. Set up your games via `@BotFather`.
-   * @param  {Object} [options] Additional Telegram query options
+   * @param {Number|String} chatId Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
+   * @param {String} gameShortName name of the game to be sent. Set up your games via `@BotFather`.
+   * @param {Object} [options] Additional Telegram query options
    * @return {Promise} On success, the sent [Message](https://core.telegram.org/bots/api#message) is returned
    * @see https://core.telegram.org/bots/api#sendgame
    */
@@ -3270,9 +3270,9 @@ class TelegramBot extends EventEmitter {
   /**
    * Use this method to set the score of the specified user in a game message.
    *
-   * @param  {Number} userId  Unique identifier of the target user
-   * @param  {Number} score New score value, must be non-negative
-   * @param  {Object} [options] Additional Telegram query options
+   * @param {Number} userId  Unique identifier of the target user
+   * @param {Number} score New score value, must be non-negative
+   * @param {Object} [options] Additional Telegram query options
    * @return {Promise} On success, if the message is not an inline message, the [Message](https://core.telegram.org/bots/api#message) is returned, otherwise True is returned
    * @see https://core.telegram.org/bots/api#setgamescore
    */
@@ -3287,8 +3287,8 @@ class TelegramBot extends EventEmitter {
    *
    * Will return the score of the specified user and several of their neighbors in a game.
    *
-   * @param  {Number} userId  Unique identifier of the target user
-   * @param  {Object} [options] Additional Telegram query options
+   * @param {Number} userId  Unique identifier of the target user
+   * @param {Object} [options] Additional Telegram query options
    * @return {Promise} On success, returns an Array of [GameHighScore](https://core.telegram.org/bots/api#gamehighscore) objects
    * @see https://core.telegram.org/bots/api#getgamehighscores
    */
@@ -3308,9 +3308,9 @@ class TelegramBot extends EventEmitter {
  * - If the bot is an administrator of a group, it can delete any message there.
  * - If the bot has `can_delete_messages` permission in a supergroup, it can delete any message there.
  *
- * @param  {Number|String} chatId  Unique identifier for the target chat or username of the target channel (in the format @channelusername)
- * @param  {Number} messageId  Unique identifier of the target message
- * @param  {Object} [options] Additional Telegram query options
+ * @param {Number|String} chatId  Unique identifier for the target chat or username of the target channel (in the format @channelusername)
+ * @param {Number} messageId  Unique identifier of the target message
+ * @param {Object} [options] Additional Telegram query options
  * @return {Promise} True on success
  * @see https://core.telegram.org/bots/api#deletemessage
  */
@@ -3323,9 +3323,9 @@ class TelegramBot extends EventEmitter {
   /**
    * Use this method to delete multiple messages simultaneously. If some of the specified messages can't be found, they are skipped.
    *
-   * @param  {Number|String} chatId  Unique identifier for the target chat or username of the target channel (in the format @channelusername)
-   * @param  {Array<Number|String>} messageIds  Identifiers of 1-100 messages to delete. See deleteMessage for limitations on which messages can be deleted
-   * @param  {Object} [options] Additional Telegram query options
+   * @param {Number|String} chatId  Unique identifier for the target chat or username of the target channel (in the format @channelusername)
+   * @param {Array<Number|String>} messageIds  Identifiers of 1-100 messages to delete. See deleteMessage for limitations on which messages can be deleted
+   * @param {Object} [options] Additional Telegram query options
    * @return {Promise<Boolean>} True on success
    * @see https://core.telegram.org/bots/api#deletemessages
    */
