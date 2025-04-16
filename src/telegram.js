@@ -3363,6 +3363,7 @@ class TelegramBot extends EventEmitter {
    * This method verifies a user [on behalf of the organization](https://telegram.org/verify#third-party-verification) which is represented by the bot.
    *
    * @param {Number} userId Unique identifier of the target user
+   * @param {Object} [options] Additional Telegram query options
    * @return {Promise} On success, returns true.
    * @see https://core.telegram.org/bots/api#verifyuser
    */
@@ -3376,6 +3377,7 @@ class TelegramBot extends EventEmitter {
    *
    * @param {Number} chatId Unique identifier of the target chat
    * @return {Promise} On success, returns true.
+   * @param {Object} [options] Additional Telegram query options
    * @see https://core.telegram.org/bots/api#verifychat
    */
   verifyChat(chatId, form = {}) {
@@ -3387,6 +3389,7 @@ class TelegramBot extends EventEmitter {
    * This method removes verification from a user who is currently verified [on behalf of the organization](https://telegram.org/verify#third-party-verification) which is represented by the bot.
    *
    * @param {Number} userId Unique identifier of the target user
+   * @param {Object} [options] Additional Telegram query options
    * @return {Promise} On success, returns true.
    * @see https://core.telegram.org/bots/api#removeuserverification
    */
@@ -3399,12 +3402,261 @@ class TelegramBot extends EventEmitter {
    * This method removes verification from a chat who is currently verified [on behalf of the organization](https://telegram.org/verify#third-party-verification) which is represented by the bot.
    *
    * @param {Number} chatId Unique identifier of the target chat
+   * @param {Object} [options] Additional Telegram query options
    * @return {Promise} On success, returns true.
    * @see https://core.telegram.org/bots/api#removechatverification
    */
   removeChatVerification(chatId, form = {}) {
     form.chat_id = chatId;
     return this._request('removeChatVerification', { form });
+  }
+
+  /**
+   * This method marks incoming message as read on behalf of a business account.
+   *
+   * Requires the **can_read_messages** business bot right
+   *
+   * @param {String} businessConnectionId Unique identifier of the business connection on behalf of which to read the message.
+   * @param {Number} chatId Unique identifier of the chat in which the message was received. The chat must have been active in the last 24 hours.
+   * @param {Number} messageId Unique identifier of the message to mark as read.
+   * @param {Object} [options] Additional Telegram query options
+   * @return {Promise} On success, returns true.
+   * @see https://core.telegram.org/bots/api#readbusinessmessage
+   */
+  readBusinessMessage(businessConnectionId, chatId, messageId, form = {}) {
+    form.business_connection_id = businessConnectionId;
+    form.chat_id = chatId;
+    form.message_id = messageId;
+    return this._request('readBusinessMessage', { form });
+  }
+
+  /**
+   * This method delete messages on behalf of a business account.
+   *
+   * Requires the **can_delete_outgoing_messages** business bot right to delete messages sent by the bot itself, or the **can_delete_all_messages business** bot right to delete any message.
+   *
+   * @param {String} businessConnectionId Unique identifier of the business connection on behalf of which to delete the message.
+   * @param {Number[]} messageIds List of 1-100 identifiers of messages to delete. All messages **must be from the same chat**.
+   * @param {Object} [options] Additional Telegram query options
+   * @return {Promise} On success, returns true.
+   * @see https://core.telegram.org/bots/api#deletebusinessmessages
+   */
+  deleteBusinessMessages(businessConnectionId, messageIds, form = {}) {
+    form.business_connection_id = businessConnectionId;
+    form.message_ids = stringify(messageIds);
+    return this._request('deleteBusinessMessages', { form });
+  }
+
+  /**
+   * This method changes the first and last name of a managed business account.
+   *
+   * Requires the **can_change_name** business bot right.
+   *
+   * @param {String} businessConnectionId Unique identifier of the business connection.
+   * @param {String} firstName The new value of the first name for the business account; 1-64 characters.
+   * @param {Object} [options] Additional Telegram query options
+   * @return {Promise} On success, returns true.
+   * @see https://core.telegram.org/bots/api#setbusinessaccountname
+   */
+  setBusinessAccountName(businessConnectionId, firstName, form = {}) {
+    form.business_connection_id = businessConnectionId;
+    form.first_name = firstName;
+    return this._request('setBusinessAccountName', { form });
+  }
+
+  /**
+   * This method changes the username of a managed business account.
+   *
+   * Requires the **can_change_username** business bot right.
+   *
+   * @param {String} businessConnectionId Unique identifier of the business connection.
+   * @param {Object} [options] Additional Telegram query options
+   * @return {Promise} On success, returns true.
+   * @see https://core.telegram.org/bots/api#setbusinessaccountusername
+   */
+  setBusinessAccountUsername(businessConnectionId, form = {}) {
+    form.business_connection_id = businessConnectionId;
+    return this._request('setBusinessAccountUsername', { form });
+  }
+
+  /**
+   * This method changes the bio of a managed business account.
+   *
+   * Requires the **can_change_bio** business bot right.
+   *
+   * @param {String} businessConnectionId Unique identifier of the business connection.
+   * @param {Object} [options] Additional Telegram query options
+   * @return {Promise} On success, returns true.
+   * @see https://core.telegram.org/bots/api#setbusinessaccountbio
+   */
+  setBusinessAccountBio(businessConnectionId, form = {}) {
+    form.business_connection_id = businessConnectionId;
+    return this._request('setBusinessAccountBio', { form });
+  }
+
+  /**
+   * This method changes the profile photo of a managed business account.
+   *
+   * Requires the **can_edit_profile_photo** business bot right.
+   *
+   * @param {String} businessConnectionId Unique identifier of the business connection.
+   * @param {String|stream.Stream|Buffer} photo New profile photo.
+   * @param {Object} [options] Additional Telegram query options
+   * @return {Promise} On success, returns true.
+   * @see https://core.telegram.org/bots/api#setbusinessaccountprofilephoto
+   */
+  setBusinessAccountProfilePhoto(businessConnectionId, photo, form = {}) {
+    const opts = {
+      qs: {},
+    };
+
+    opts.qs.business_connection_id = businessConnectionId;
+
+    try {
+      const sendData = this._formatSendData('photo', photo);
+      opts.formData = sendData[0];
+      opts.qs.photo = sendData[1];
+    } catch (ex) {
+      return Promise.reject(ex);
+    }
+
+    return this._request('setBusinessAccountProfilePhoto', { form });
+  }
+
+  /**
+   * This method removes the current profile photo of a managed business account.
+   *
+   * Requires the **can_edit_profile_photo** business bot right.
+   *
+   * @param {String} businessConnectionId Unique identifier of the business connection.
+   * @param {Object} [options] Additional Telegram query options
+   * @return {Promise} On success, returns true.
+   * @see https://core.telegram.org/bots/api#removebusinessaccountprofilephoto
+   */
+  removeBusinessAccountProfilePhoto(businessConnectionId, form = {}) {
+    form.business_connection_id = businessConnectionId;
+    return this._request('removeBusinessAccountProfilePhoto', { form });
+  }
+
+  /**
+   * This method changes the privacy settings pertaining to incoming gifts in a managed business account.
+   *
+   * Requires the **can_change_gift_settings** business bot right.
+   *
+   * @param {String} businessConnectionId Unique identifier of the business connection.
+   * @param {Boolean} showGiftButton Pass True, if a button for sending a gift to the user or by the business account must always be shown in the input field.
+   * @param {Object} acceptedGiftTypes Types of gifts accepted by the business account.
+   * @param {Object} [options] Additional Telegram query options
+   * @return {Promise} On success, returns true.
+   * @see https://core.telegram.org/bots/api#setbusinessaccountgiftsettings
+   */
+  setBusinessAccountGiftSettings(businessConnectionId, showGiftButton, acceptedGiftTypes, form = {}) {
+    form.business_connection_id = businessConnectionId;
+    form.show_gift_button = showGiftButton;
+    form.accepted_gift_types = acceptedGiftTypes;
+    return this._request('setBusinessAccountGiftSettings', { form });
+  }
+
+  /**
+   * This method returns the amount of Telegram Stars owned by a managed business account.
+   *
+   * Requires the **can_view_gifts_and_stars** business bot right.
+   *
+   * @param {String} businessConnectionId Unique identifier of the business connection.
+   * @param {Object} [options] Additional Telegram query options
+   * @return {Promise} On success, returns [StarAmount](https://core.telegram.org/bots/api#staramount).
+   * @see https://core.telegram.org/bots/api#getbusinessaccountstarbalance
+   */
+  getBusinessAccountStarBalance(businessConnectionId, form = {}) {
+    form.business_connection_id = businessConnectionId;
+    return this._request('getBusinessAccountStarBalance', { form });
+  }
+
+  /**
+   * This method transfers Telegram Stars from the business account balance to the bot's balance.
+   *
+   * Requires the **can_transfer_stars** business bot right.
+   *
+   * @param {String} businessConnectionId Unique identifier of the business connection.
+   * @param {Number} starCount Number of Telegram Stars to transfer; 1-10000.
+   * @param {Object} [options] Additional Telegram query options.
+   * @return {Promise} On success, returns True.
+   * @see https://core.telegram.org/bots/api#transferbusinessaccountstars
+   */
+  transferBusinessAccountStars(businessConnectionId, startCount, form = {}) {
+    form.business_connection_id = businessConnectionId;
+    form.star_count = startCount;
+    return this._request('transferBusinessAccountStars', { form });
+  }
+
+  /**
+   * This method returns the gifts received and owned by a managed business account.
+   *
+   * Requires the **can_view_gifts_and_stars** business bot right.
+   *
+   * @param {String} businessConnectionId Unique identifier of the business connection.
+   * @param {Object} [options] Additional Telegram query options
+   * @return {Promise} On success, returns [OwnedGifts](https://core.telegram.org/bots/api#ownedgifts).
+   * @see https://core.telegram.org/bots/api#getbusinessaccountgifts
+   */
+  getBusinessAccountGifts(businessConnectionId, form = {}) {
+    form.business_connection_id = businessConnectionId;
+    return this._request('getBusinessAccountGifts', { form });
+  }
+
+  /**
+   * This method converts a given regular gift to Telegram Stars.
+   *
+   * Requires the **can_convert_gifts_to_stars** business bot right.
+   *
+   * @param {String} businessConnectionId Unique identifier of the business connection.
+   * @param {String} ownedGiftId Unique identifier of the regular gift that should be converted to Telegram Stars.
+   * @param {Object} [options] Additional Telegram query options
+   * @return {Promise} On success, returns True.
+   * @see https://core.telegram.org/bots/api#convertgifttostars
+   */
+  convertGiftToStars(businessConnectionId, ownedGiftId, form = {}) {
+    form.business_connection_id = businessConnectionId;
+    form.owned_gift_id = ownedGiftId;
+    return this._request('convertGiftToStars', { form });
+  }
+
+  /**
+   * This method upgrades a given regular gift to a unique gift.
+   *
+   * Requires the **can_transfer_and_upgrade_gifts** business bot right.
+   * Additionally requires the **can_transfer_stars** business bot right **if the upgrade is paid**.
+   *
+   * @param {String} businessConnectionId Unique identifier of the business connection.
+   * @param {String} ownedGiftId Unique identifier of the regular gift that should be upgraded to a unique one.
+   * @param {Object} [options] Additional Telegram query options
+   * @return {Promise} On success, returns True.
+   * @see https://core.telegram.org/bots/api#upgradegift
+   */
+  upgradeGift(businessConnectionId, ownedGiftId, form = {}) {
+    form.business_connection_id = businessConnectionId;
+    form.owned_gift_id = ownedGiftId;
+    return this._request('upgradeGift', { form });
+  }
+
+  /**
+   * This method transfers an owned unique gift to another user.
+   *
+   * Requires the **can_transfer_and_upgrade_gifts** business bot right.
+   * Additionally requires the **can_transfer_stars** business bot right **if the transfer is paid**.
+   *
+   * @param {String} businessConnectionId Unique identifier of the business connection.
+   * @param {String} ownedGiftId Unique identifier of the regular gift that should be transferred.
+   * @param {Number} newOwnerChatId Unique identifier of the chat which will own the gift. The chat **must be active in the last 24 hours**.
+   * @param {Object} [options] Additional Telegram query options
+   * @return {Promise} On success, returns True.
+   * @see https://core.telegram.org/bots/api#transfergift
+   */
+  transferGift(businessConnectionId, ownedGiftId, newOwnerChatId, form = {}) {
+    form.business_connection_id = businessConnectionId;
+    form.owned_gift_id = ownedGiftId;
+    form.new_owner_chat_id = newOwnerChatId;
+    return this._request('transferGift', { form });
   }
 
 }
