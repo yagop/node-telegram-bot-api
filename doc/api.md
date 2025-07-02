@@ -161,10 +161,28 @@ TelegramBot
         * [.deleteMessages(chatId, messageIds, [options])](#TelegramBot+deleteMessages) ⇒ <code>[ &#x27;Promise&#x27; ].&lt;Boolean&gt;</code>
         * [.getAvailableGifts([options])](#TelegramBot+getAvailableGifts) ⇒ <code>Promise</code>
         * [.sendGift(giftId, [options])](#TelegramBot+sendGift) ⇒ <code>Promise</code>
-        * [.verifyUser(userId)](#TelegramBot+verifyUser) ⇒ <code>Promise</code>
-        * [.verifyChat(chatId)](#TelegramBot+verifyChat) ⇒ <code>Promise</code>
-        * [.removeUserVerification(userId)](#TelegramBot+removeUserVerification) ⇒ <code>Promise</code>
-        * [.removeChatVerification(chatId)](#TelegramBot+removeChatVerification) ⇒ <code>Promise</code>
+        * [.giftPremiumSubscription(userId, monthCount, starCount, [options])](#TelegramBot+giftPremiumSubscription) ⇒ <code>Promise</code>
+        * [.verifyUser(userId, [options])](#TelegramBot+verifyUser) ⇒ <code>Promise</code>
+        * [.verifyChat(chatId, [options])](#TelegramBot+verifyChat) ⇒ <code>Promise</code>
+        * [.removeUserVerification(userId, [options])](#TelegramBot+removeUserVerification) ⇒ <code>Promise</code>
+        * [.removeChatVerification(chatId, [options])](#TelegramBot+removeChatVerification) ⇒ <code>Promise</code>
+        * [.readBusinessMessage(businessConnectionId, chatId, messageId, [options])](#TelegramBot+readBusinessMessage) ⇒ <code>Promise</code>
+        * [.deleteBusinessMessages(businessConnectionId, messageIds, [options])](#TelegramBot+deleteBusinessMessages) ⇒ <code>Promise</code>
+        * [.setBusinessAccountName(businessConnectionId, firstName, [options])](#TelegramBot+setBusinessAccountName) ⇒ <code>Promise</code>
+        * [.setBusinessAccountUsername(businessConnectionId, [options])](#TelegramBot+setBusinessAccountUsername) ⇒ <code>Promise</code>
+        * [.setBusinessAccountBio(businessConnectionId, [options])](#TelegramBot+setBusinessAccountBio) ⇒ <code>Promise</code>
+        * [.setBusinessAccountProfilePhoto(businessConnectionId, photo, [options])](#TelegramBot+setBusinessAccountProfilePhoto) ⇒ <code>Promise</code>
+        * [.removeBusinessAccountProfilePhoto(businessConnectionId, [options])](#TelegramBot+removeBusinessAccountProfilePhoto) ⇒ <code>Promise</code>
+        * [.setBusinessAccountGiftSettings(businessConnectionId, showGiftButton, acceptedGiftTypes, [options])](#TelegramBot+setBusinessAccountGiftSettings) ⇒ <code>Promise</code>
+        * [.getBusinessAccountStarBalance(businessConnectionId, [options])](#TelegramBot+getBusinessAccountStarBalance) ⇒ <code>Promise</code>
+        * [.transferBusinessAccountStars(businessConnectionId, starCount, [options])](#TelegramBot+transferBusinessAccountStars) ⇒ <code>Promise</code>
+        * [.getBusinessAccountGifts(businessConnectionId, [options])](#TelegramBot+getBusinessAccountGifts) ⇒ <code>Promise</code>
+        * [.convertGiftToStars(businessConnectionId, ownedGiftId, [options])](#TelegramBot+convertGiftToStars) ⇒ <code>Promise</code>
+        * [.upgradeGift(businessConnectionId, ownedGiftId, [options])](#TelegramBot+upgradeGift) ⇒ <code>Promise</code>
+        * [.transferGift(businessConnectionId, ownedGiftId, newOwnerChatId, [options])](#TelegramBot+transferGift) ⇒ <code>Promise</code>
+        * [.postStory(businessConnectionId, content, activePeriod, [options])](#TelegramBot+postStory) ⇒ <code>Promise</code>
+        * [.editStory(businessConnectionId, storyId, content, [options])](#TelegramBot+editStory) ⇒ <code>Promise</code>
+        * [.deleteStory(businessConnectionId, storyId, [options])](#TelegramBot+deleteStory) ⇒ <code>Promise</code>
     * _static_
         * [.errors](#TelegramBot.errors) : <code>Object</code>
         * [.messageTypes](#TelegramBot.messageTypes) : <code>[ &#x27;Array&#x27; ].&lt;String&gt;</code>
@@ -188,6 +206,7 @@ Emits `message` when a message arrives.
 | [options.polling.autoStart] | <code>Boolean</code> | <code>true</code> | Start polling immediately |
 | [options.polling.params] | <code>Object</code> |  | Parameters to be used in polling API requests.  See https://core.telegram.org/bots/api#getupdates for more information. |
 | [options.polling.params.timeout] | <code>Number</code> | <code>10</code> | Timeout in seconds for long polling. |
+| [options.polling.params.allowed_updates] | <code>Array</code> |  | A JSON-serialized list of the update types you want your bot to receive.  For example, specify ["message", "edited_channel_post", "callback_query"] to only receive updates of these types. |
 | [options.webHook] | <code>Boolean</code> \| <code>Object</code> | <code>false</code> | Set true to enable WebHook or set options |
 | [options.webHook.host] | <code>String</code> | <code>&quot;0.0.0.0&quot;</code> | Host to bind to |
 | [options.webHook.port] | <code>Number</code> | <code>8443</code> | Port to bind to |
@@ -778,7 +797,7 @@ Use this method to send paid media.
 | --- | --- | --- |
 | chatId | <code>Number</code> \| <code>String</code> | Unique identifier for the target chat or username of the target channel (in the format `@channelusername`) |
 | starCount | <code>Number</code> | The number of Telegram Stars that must be paid to buy access to the media; 1-10000 |
-| media | <code>String</code> \| <code>stream.Stream</code> \| <code>Buffer</code> | A file path or Stream. |
+| media | <code>Array</code> | Array of [InputPaidMedia](https://core.telegram.org/bots/api#inputpaidmedia). The media property can bea String, Stream or Buffer. |
 | [options] | <code>Object</code> | Additional Telegram query options |
 
 <a name="TelegramBot+sendMediaGroup"></a>
@@ -2597,7 +2616,7 @@ Use this method to returns the list of gifts that can be sent by the bot to user
 
 | Param | Type | Description |
 | --- | --- | --- |
-| [options] | <code>Object</code> | Additional Telegram query options |
+| [options] | <code>Object</code> | Additional Telegram query options. |
 
 <a name="TelegramBot+sendGift"></a>
 
@@ -2611,11 +2630,27 @@ Use this method to sends a gift to the given user or channel chat.
 | Param | Type | Description |
 | --- | --- | --- |
 | giftId | <code>String</code> | Unique identifier of the gift |
-| [options] | <code>Object</code> | Additional Telegram query options |
+| [options] | <code>Object</code> | Additional Telegram query options. |
+
+<a name="TelegramBot+giftPremiumSubscription"></a>
+
+### telegramBot.giftPremiumSubscription(userId, monthCount, starCount, [options]) ⇒ <code>Promise</code>
+Use this method to sends a gift to the given user or channel chat.
+
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
+**Returns**: <code>Promise</code> - On success, returns true.  
+**See**: https://core.telegram.org/bots/api#getavailablegifts  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| userId | <code>Number</code> | Unique identifier of the target user who will receive a Telegram Premium subscription. |
+| monthCount | <code>Number</code> | Number of months the Telegram Premium subscription will be active for the user; must be one of 3, 6, or 12. |
+| starCount | <code>String</code> | Number of Telegram Stars to pay for the Telegram Premium subscription; must be 1000 for 3 months, 1500 for 6 months, and 2500 for 12 months. |
+| [options] | <code>Object</code> | Additional Telegram query options. |
 
 <a name="TelegramBot+verifyUser"></a>
 
-### telegramBot.verifyUser(userId) ⇒ <code>Promise</code>
+### telegramBot.verifyUser(userId, [options]) ⇒ <code>Promise</code>
 This method verifies a user [on behalf of the organization](https://telegram.org/verify#third-party-verification) which is represented by the bot.
 
 **Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
@@ -2624,11 +2659,12 @@ This method verifies a user [on behalf of the organization](https://telegram.org
 
 | Param | Type | Description |
 | --- | --- | --- |
-| userId | <code>Number</code> | Unique identifier of the target user |
+| userId | <code>Number</code> | Unique identifier of the target user. |
+| [options] | <code>Object</code> | Additional Telegram query options. |
 
 <a name="TelegramBot+verifyChat"></a>
 
-### telegramBot.verifyChat(chatId) ⇒ <code>Promise</code>
+### telegramBot.verifyChat(chatId, [options]) ⇒ <code>Promise</code>
 This method verifies a chat [on behalf of the organization](https://telegram.org/verify#third-party-verification) which is represented by the bot.
 
 **Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
@@ -2637,11 +2673,12 @@ This method verifies a chat [on behalf of the organization](https://telegram.org
 
 | Param | Type | Description |
 | --- | --- | --- |
-| chatId | <code>Number</code> | Unique identifier of the target chat |
+| chatId | <code>Number</code> | Unique identifier of the target chat. |
+| [options] | <code>Object</code> | Additional Telegram query options. |
 
 <a name="TelegramBot+removeUserVerification"></a>
 
-### telegramBot.removeUserVerification(userId) ⇒ <code>Promise</code>
+### telegramBot.removeUserVerification(userId, [options]) ⇒ <code>Promise</code>
 This method removes verification from a user who is currently verified [on behalf of the organization](https://telegram.org/verify#third-party-verification) which is represented by the bot.
 
 **Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
@@ -2651,10 +2688,11 @@ This method removes verification from a user who is currently verified [on behal
 | Param | Type | Description |
 | --- | --- | --- |
 | userId | <code>Number</code> | Unique identifier of the target user |
+| [options] | <code>Object</code> | Additional Telegram query options |
 
 <a name="TelegramBot+removeChatVerification"></a>
 
-### telegramBot.removeChatVerification(chatId) ⇒ <code>Promise</code>
+### telegramBot.removeChatVerification(chatId, [options]) ⇒ <code>Promise</code>
 This method removes verification from a chat who is currently verified [on behalf of the organization](https://telegram.org/verify#third-party-verification) which is represented by the bot.
 
 **Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
@@ -2663,7 +2701,299 @@ This method removes verification from a chat who is currently verified [on behal
 
 | Param | Type | Description |
 | --- | --- | --- |
-| chatId | <code>Number</code> | Unique identifier of the target chat |
+| chatId | <code>Number</code> | Unique identifier of the target chat. |
+| [options] | <code>Object</code> | Additional Telegram query options. |
+
+<a name="TelegramBot+readBusinessMessage"></a>
+
+### telegramBot.readBusinessMessage(businessConnectionId, chatId, messageId, [options]) ⇒ <code>Promise</code>
+This method marks incoming message as read on behalf of a business account.
+
+Requires the **can_read_messages** business bot right
+
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
+**Returns**: <code>Promise</code> - On success, returns true.  
+**See**: https://core.telegram.org/bots/api#readbusinessmessage  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| businessConnectionId | <code>String</code> | Unique identifier of the business connection on behalf of which to read the message. |
+| chatId | <code>Number</code> | Unique identifier of the chat in which the message was received. The chat must have been active in the last 24 hours. |
+| messageId | <code>Number</code> | Unique identifier of the message to mark as read. |
+| [options] | <code>Object</code> | Additional Telegram query options |
+
+<a name="TelegramBot+deleteBusinessMessages"></a>
+
+### telegramBot.deleteBusinessMessages(businessConnectionId, messageIds, [options]) ⇒ <code>Promise</code>
+This method delete messages on behalf of a business account.
+
+Requires the **can_delete_outgoing_messages** business bot right to delete messages sent by the bot itself, or the **can_delete_all_messages business** bot right to delete any message.
+
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
+**Returns**: <code>Promise</code> - On success, returns true.  
+**See**: https://core.telegram.org/bots/api#deletebusinessmessages  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| businessConnectionId | <code>String</code> | Unique identifier of the business connection on behalf of which to delete the message. |
+| messageIds | <code>[ &#x27;Array&#x27; ].&lt;Number&gt;</code> | List of 1-100 identifiers of messages to delete. All messages **must be from the same chat**. |
+| [options] | <code>Object</code> | Additional Telegram query options. |
+
+<a name="TelegramBot+setBusinessAccountName"></a>
+
+### telegramBot.setBusinessAccountName(businessConnectionId, firstName, [options]) ⇒ <code>Promise</code>
+This method changes the first and last name of a managed business account.
+
+Requires the **can_change_name** business bot right.
+
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
+**Returns**: <code>Promise</code> - On success, returns true.  
+**See**: https://core.telegram.org/bots/api#setbusinessaccountname  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| businessConnectionId | <code>String</code> | Unique identifier of the business connection. |
+| firstName | <code>String</code> | The new value of the first name for the business account; 1-64 characters. |
+| [options] | <code>Object</code> | Additional Telegram query options |
+
+<a name="TelegramBot+setBusinessAccountUsername"></a>
+
+### telegramBot.setBusinessAccountUsername(businessConnectionId, [options]) ⇒ <code>Promise</code>
+This method changes the username of a managed business account.
+
+Requires the **can_change_username** business bot right.
+
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
+**Returns**: <code>Promise</code> - On success, returns true.  
+**See**: https://core.telegram.org/bots/api#setbusinessaccountusername  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| businessConnectionId | <code>String</code> | Unique identifier of the business connection. |
+| [options] | <code>Object</code> | Additional Telegram query options |
+
+<a name="TelegramBot+setBusinessAccountBio"></a>
+
+### telegramBot.setBusinessAccountBio(businessConnectionId, [options]) ⇒ <code>Promise</code>
+This method changes the bio of a managed business account.
+
+Requires the **can_change_bio** business bot right.
+
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
+**Returns**: <code>Promise</code> - On success, returns true.  
+**See**: https://core.telegram.org/bots/api#setbusinessaccountbio  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| businessConnectionId | <code>String</code> | Unique identifier of the business connection. |
+| [options] | <code>Object</code> | Additional Telegram query options |
+
+<a name="TelegramBot+setBusinessAccountProfilePhoto"></a>
+
+### telegramBot.setBusinessAccountProfilePhoto(businessConnectionId, photo, [options]) ⇒ <code>Promise</code>
+This method changes the profile photo of a managed business account.
+
+Requires the **can_edit_profile_photo** business bot right.
+
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
+**Returns**: <code>Promise</code> - On success, returns true.  
+**See**: https://core.telegram.org/bots/api#setbusinessaccountprofilephoto  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| businessConnectionId | <code>String</code> | Unique identifier of the business connection. |
+| photo | <code>String</code> \| <code>stream.Stream</code> \| <code>Buffer</code> | New profile photo. |
+| [options] | <code>Object</code> | Additional Telegram query options |
+
+<a name="TelegramBot+removeBusinessAccountProfilePhoto"></a>
+
+### telegramBot.removeBusinessAccountProfilePhoto(businessConnectionId, [options]) ⇒ <code>Promise</code>
+This method removes the current profile photo of a managed business account.
+
+Requires the **can_edit_profile_photo** business bot right.
+
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
+**Returns**: <code>Promise</code> - On success, returns true.  
+**See**: https://core.telegram.org/bots/api#removebusinessaccountprofilephoto  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| businessConnectionId | <code>String</code> | Unique identifier of the business connection. |
+| [options] | <code>Object</code> | Additional Telegram query options |
+
+<a name="TelegramBot+setBusinessAccountGiftSettings"></a>
+
+### telegramBot.setBusinessAccountGiftSettings(businessConnectionId, showGiftButton, acceptedGiftTypes, [options]) ⇒ <code>Promise</code>
+This method changes the privacy settings pertaining to incoming gifts in a managed business account.
+
+Requires the **can_change_gift_settings** business bot right.
+
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
+**Returns**: <code>Promise</code> - On success, returns true.  
+**See**: https://core.telegram.org/bots/api#setbusinessaccountgiftsettings  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| businessConnectionId | <code>String</code> | Unique identifier of the business connection. |
+| showGiftButton | <code>Boolean</code> | Pass True, if a button for sending a gift to the user or by the business account must always be shown in the input field. |
+| acceptedGiftTypes | <code>Object</code> | Types of gifts accepted by the business account. |
+| [options] | <code>Object</code> | Additional Telegram query options |
+
+<a name="TelegramBot+getBusinessAccountStarBalance"></a>
+
+### telegramBot.getBusinessAccountStarBalance(businessConnectionId, [options]) ⇒ <code>Promise</code>
+This method returns the amount of Telegram Stars owned by a managed business account.
+
+Requires the **can_view_gifts_and_stars** business bot right.
+
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
+**Returns**: <code>Promise</code> - On success, returns [StarAmount](https://core.telegram.org/bots/api#staramount).  
+**See**: https://core.telegram.org/bots/api#getbusinessaccountstarbalance  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| businessConnectionId | <code>String</code> | Unique identifier of the business connection. |
+| [options] | <code>Object</code> | Additional Telegram query options |
+
+<a name="TelegramBot+transferBusinessAccountStars"></a>
+
+### telegramBot.transferBusinessAccountStars(businessConnectionId, starCount, [options]) ⇒ <code>Promise</code>
+This method transfers Telegram Stars from the business account balance to the bot's balance.
+
+Requires the **can_transfer_stars** business bot right.
+
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
+**Returns**: <code>Promise</code> - On success, returns True.  
+**See**: https://core.telegram.org/bots/api#transferbusinessaccountstars  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| businessConnectionId | <code>String</code> | Unique identifier of the business connection. |
+| starCount | <code>Number</code> | Number of Telegram Stars to transfer; 1-10000. |
+| [options] | <code>Object</code> | Additional Telegram query options. |
+
+<a name="TelegramBot+getBusinessAccountGifts"></a>
+
+### telegramBot.getBusinessAccountGifts(businessConnectionId, [options]) ⇒ <code>Promise</code>
+This method returns the gifts received and owned by a managed business account.
+
+Requires the **can_view_gifts_and_stars** business bot right.
+
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
+**Returns**: <code>Promise</code> - On success, returns [OwnedGifts](https://core.telegram.org/bots/api#ownedgifts).  
+**See**: https://core.telegram.org/bots/api#getbusinessaccountgifts  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| businessConnectionId | <code>String</code> | Unique identifier of the business connection. |
+| [options] | <code>Object</code> | Additional Telegram query options |
+
+<a name="TelegramBot+convertGiftToStars"></a>
+
+### telegramBot.convertGiftToStars(businessConnectionId, ownedGiftId, [options]) ⇒ <code>Promise</code>
+This method converts a given regular gift to Telegram Stars.
+
+Requires the **can_convert_gifts_to_stars** business bot right.
+
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
+**Returns**: <code>Promise</code> - On success, returns True.  
+**See**: https://core.telegram.org/bots/api#convertgifttostars  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| businessConnectionId | <code>String</code> | Unique identifier of the business connection. |
+| ownedGiftId | <code>String</code> | Unique identifier of the regular gift that should be converted to Telegram Stars. |
+| [options] | <code>Object</code> | Additional Telegram query options |
+
+<a name="TelegramBot+upgradeGift"></a>
+
+### telegramBot.upgradeGift(businessConnectionId, ownedGiftId, [options]) ⇒ <code>Promise</code>
+This method upgrades a given regular gift to a unique gift.
+
+Requires the **can_transfer_and_upgrade_gifts** business bot right.
+Additionally requires the **can_transfer_stars** business bot right **if the upgrade is paid**.
+
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
+**Returns**: <code>Promise</code> - On success, returns True.  
+**See**: https://core.telegram.org/bots/api#upgradegift  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| businessConnectionId | <code>String</code> | Unique identifier of the business connection. |
+| ownedGiftId | <code>String</code> | Unique identifier of the regular gift that should be upgraded to a unique one. |
+| [options] | <code>Object</code> | Additional Telegram query options |
+
+<a name="TelegramBot+transferGift"></a>
+
+### telegramBot.transferGift(businessConnectionId, ownedGiftId, newOwnerChatId, [options]) ⇒ <code>Promise</code>
+This method transfers an owned unique gift to another user.
+
+Requires the **can_transfer_and_upgrade_gifts** business bot right.
+Additionally requires the **can_transfer_stars** business bot right **if the transfer is paid**.
+
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
+**Returns**: <code>Promise</code> - On success, returns True.  
+**See**: https://core.telegram.org/bots/api#transfergift  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| businessConnectionId | <code>String</code> | Unique identifier of the business connection. |
+| ownedGiftId | <code>String</code> | Unique identifier of the regular gift that should be transferred. |
+| newOwnerChatId | <code>Number</code> | Unique identifier of the chat which will own the gift. The chat **must be active in the last 24 hours**. |
+| [options] | <code>Object</code> | Additional Telegram query options |
+
+<a name="TelegramBot+postStory"></a>
+
+### telegramBot.postStory(businessConnectionId, content, activePeriod, [options]) ⇒ <code>Promise</code>
+This method posts a story on behalf of a managed business account.
+
+Requires the **can_manage_stories** business bot right.
+
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
+**Returns**: <code>Promise</code> - On success, returns [Story](https://core.telegram.org/bots/api#story).  
+**See**: https://core.telegram.org/bots/api#poststory  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| businessConnectionId | <code>String</code> | Unique identifier of the business connection. |
+| content | <code>Array</code> | [InputStoryContent](https://core.telegram.org/bots/api#inputpaidmedia). The photo/video property can be String, Stream or Buffer. |
+| activePeriod | <code>Number</code> | Unique identifier of the chat which will own the gift. The chat **must be active in the last 24 hours**. |
+| [options] | <code>Object</code> | Additional Telegram query options |
+
+<a name="TelegramBot+editStory"></a>
+
+### telegramBot.editStory(businessConnectionId, storyId, content, [options]) ⇒ <code>Promise</code>
+This method edits a story previously posted by the bot on behalf of a managed business account.
+
+Requires the **can_manage_stories** business bot right.
+
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
+**Returns**: <code>Promise</code> - On success, returns [Story](https://core.telegram.org/bots/api#story).  
+**See**: https://core.telegram.org/bots/api#editstory  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| businessConnectionId | <code>String</code> | Unique identifier of the business connection. |
+| storyId | <code>Number</code> | Unique identifier of the story to edit. |
+| content | <code>Array</code> | [InputStoryContent](https://core.telegram.org/bots/api#inputpaidmedia). The photo/video property can be String, Stream or Buffer. |
+| [options] | <code>Object</code> | Additional Telegram query options |
+
+<a name="TelegramBot+deleteStory"></a>
+
+### telegramBot.deleteStory(businessConnectionId, storyId, [options]) ⇒ <code>Promise</code>
+This method deletes a story previously posted by the bot on behalf of a managed business account.
+
+Requires the **can_manage_stories** business bot right.
+
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
+**Returns**: <code>Promise</code> - On success, returns True.  
+**See**: https://core.telegram.org/bots/api#deletestory  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| businessConnectionId | <code>String</code> | Unique identifier of the business connection. |
+| storyId | <code>Number</code> | Unique identifier of the story to delete. |
+| [options] | <code>Object</code> | Additional Telegram query options. |
 
 <a name="TelegramBot.errors"></a>
 
