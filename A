@@ -1,0 +1,6 @@
+from telegram.ext import MessageHandler, Filters
+
+def echo(update, context):
+    update.message.reply_text(update.message.text)
+
+dispatcher.add_handler(MessageHandler(Filters.text & ~Filters.command, echo))
