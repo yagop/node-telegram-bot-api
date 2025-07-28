@@ -1529,6 +1529,24 @@ class TelegramBot extends EventEmitter {
   }
 
   /**
+   * Send sendChecklist.
+   * Use this method to send a checklist on behalf of a connected business account.
+   *
+   * @param {Number|String} businessConnectionId  Unique identifier for the business connection
+   * @param {Number|String} chatId  Unique identifier for the group/channel
+   * @param {Object} checklist A JSON-serialized object for the checklist to send
+   * @param {Object} [options] Additional Telegram query options
+   * @return {Promise} On success, the sent [Message](https://core.telegram.org/bots/api#message) object is returned
+   * @see https://core.telegram.org/bots/api#sendchecklist
+   */
+  sendChecklist(businessConnectionId, chatId, checklist, form = {}) {
+    form.business_connection_id = businessConnectionId;
+    form.chat_id = chatId;
+    form.checklist = stringify(checklist);
+    return this._request('sendChecklist', { form });
+  }
+
+  /**
    * Send Dice
    * Use this method to send an animated emoji that will display a random value.
    * @param {Number|String} chatId  Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
@@ -2706,6 +2724,24 @@ class TelegramBot extends EventEmitter {
   }
 
   /**
+   * Use this method to edit a checklist on behalf of a business connection.
+   * @param {Number|String} businessConnectionId  Unique identifier for the target business connection
+   * @param {Number|String} chatId  Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
+   * @param {Number} messageId  Unique identifier for the target message
+   * @param {Object} checklist  A JSON-serialized object for the new checklist
+   * @param {Object} [options] Additional Telegram query options
+   * @return {Promise} On success, the sent [Message](https://core.telegram.org/bots/api#message) object is returned.
+   * @see https://core.telegram.org/bots/api#editmessagechecklist
+   */
+  editMessageChecklist(businessConnectionId, chatId, messageId, checklist, form = {}) {
+    form.business_connection_id = businessConnectionId;
+    form.chat_id = chatId;
+    form.message_id = messageId;
+    form.checklist = stringify(checklist);
+    return this._request('editMessageChecklist', { form });
+  }
+
+  /**
    * Use this method to edit only the reply markup of messages sent by the bot or via the bot (for inline bots).
    *
    * Note: You **must provide one of chat_id, message_id, or inline_message_id** in your request.
@@ -3207,6 +3243,17 @@ class TelegramBot extends EventEmitter {
     form.pre_checkout_query_id = preCheckoutQueryId;
     form.ok = ok;
     return this._request('answerPreCheckoutQuery', { form });
+  }
+
+  /**
+   * Use this method to get the current Telegram Stars balance of the bot.
+   *
+   * @param {Object} [options] Additional Telegram query options
+   * @return {Promise} On success, returns a [StarAmount](https://core.telegram.org/bots/api#staramount) object
+   * @see https://core.telegram.org/bots/api#getmystarbalance
+   */
+  getMyStarBalance(form = {}) {
+    return this._request('getMyStarBalance', { form });
   }
 
   /**

@@ -5,26 +5,12 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [0.68.0][0.68.0] - UNRELEASE
 
-1. Support Telegram Bot API 7.6 (@danielperez9430)
-   * sendPaidMedia
+1. Support Telegram Bot API 9.1 (@danielperez9430)
+   * sendChecklist
+   * editMessageChecklist
+   * getMyStarBalance
 
-2. Support Telegram Bot API 7.10 (@danielperez9430)
-  * Update: `purchased_paid_media`
-
-3. Support Telegram Bot API 8.0 and 8.1
-   * savePreparedInlineMessage (@IsmailBinMujeeb & @danielperez9430)
-   * setUserEmojiStatus (@danielperez9430)
-   * editUserStarSubscription (@danielperez9430)
-   * getAvailableGifts (@danielperez9430)
-   * sendGift (@danielperez9430)
-
-4. Support Telegram Bot API 8.2 and 8.3 (@danielperez9430)
-   * verifyUser
-   * verifyChat
-   * removeUserVerification
-   * removeChatVerification
-
-5. Support Telegram Bot API 9.0 (@danielperez9430)
+2. Support Telegram Bot API 9.0 (@danielperez9430)
    * readBusinessMessage
    * deleteBusinessMessages
    * setBusinessAccountName
@@ -43,6 +29,25 @@ This project adheres to [Semantic Versioning](http://semver.org/).
    * editStory
    * deleteStory
    * giftPremiumSubscription
+
+3. Support Telegram Bot API 8.2 and 8.3 (@danielperez9430)
+   * verifyUser
+   * verifyChat
+   * removeUserVerification
+   * removeChatVerification
+
+4. Support Telegram Bot API 8.0 and 8.1
+   * savePreparedInlineMessage (@IsmailBinMujeeb & @danielperez9430)
+   * setUserEmojiStatus (@danielperez9430)
+   * editUserStarSubscription (@danielperez9430)
+   * getAvailableGifts (@danielperez9430)
+   * sendGift (@danielperez9430)
+
+5. Support Telegram Bot API 7.10 (@danielperez9430)
+  * Update: `purchased_paid_media`
+
+6. Support Telegram Bot API 7.6 (@danielperez9430)
+   * sendPaidMedia
 
 ## [0.67.0][0.67.0] - 2024-05-30
 
