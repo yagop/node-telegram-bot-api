@@ -209,7 +209,7 @@ Emits `message` when a message arrives.
 | [options.polling.autoStart] | <code>Boolean</code> | <code>true</code> | Start polling immediately |
 | [options.polling.params] | <code>Object</code> |  | Parameters to be used in polling API requests.  See https://core.telegram.org/bots/api#getupdates for more information. |
 | [options.polling.params.timeout] | <code>Number</code> | <code>10</code> | Timeout in seconds for long polling. |
-| [options.polling.params.allowed_updates] | <code>Array</code> |  | A JSON-serialized list of the update types you want your bot to receive.  For example, specify ["message", "edited_channel_post", "callback_query"] to only receive updates of these types. |
+| [options.polling.params.allowed_updates] | <code>Array</code> \| <code>String</code> |  | A JSON-serialized list of the update types you want your bot to receive.  For example, specify ["message", "edited_channel_post", "callback_query"] to only receive updates of these types. |
 | [options.webHook] | <code>Boolean</code> \| <code>Object</code> | <code>false</code> | Set true to enable WebHook or set options |
 | [options.webHook.host] | <code>String</code> | <code>&quot;0.0.0.0&quot;</code> | Host to bind to |
 | [options.webHook.port] | <code>Number</code> | <code>8443</code> | Port to bind to |

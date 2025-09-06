@@ -130,7 +130,7 @@ class TelegramBot extends EventEmitter {
    * @param {Object} [options.polling.params] Parameters to be used in polling API requests.
    *  See https://core.telegram.org/bots/api#getupdates for more information.
    * @param {Number} [options.polling.params.timeout=10] Timeout in seconds for long polling.
-   * @param {Array|String} [options.polling.params.allowed_updates] A JSON-serialized list of the update types you want your bot to receive.
+   * @param {Array<String>|String} [options.polling.params.allowed_updates] A JSON-serialized list of the update types you want your bot to receive.
    *  For example, specify ["message", "edited_channel_post", "callback_query"] to only receive updates of these types.
    * @param {Boolean|Object} [options.webHook=false] Set true to enable WebHook or set options
    * @param {String} [options.webHook.host="0.0.0.0"] Host to bind to
