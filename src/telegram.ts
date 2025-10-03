@@ -824,4 +824,25 @@ export class TelegramBot extends EventEmitter {
   getUpdates(options: GetUpdatesOptions = {}): Promise<TelegramTypes.Update[]> {
     return this._request('getUpdates', { qs: options }) as Promise<TelegramTypes.Update[]>;
   }
+
+  // Basic API methods for testing
+  sendPhoto(chatId: number | string, photo: unknown, options?: Record<string, unknown>): Promise<unknown> {
+    return this._request('sendPhoto', { form: { chat_id: chatId, photo, ...options } });
+  }
+
+  sendMessage(chatId: number | string, text: string, options?: Record<string, unknown>): Promise<unknown> {
+    return this._request('sendMessage', { form: { chat_id: chatId, text, ...options } });
+  }
+
+  sendGame(chatId: number | string, gameShortName: string, options?: Record<string, unknown>): Promise<unknown> {
+    return this._request('sendGame', { form: { chat_id: chatId, game_short_name: gameShortName, ...options } });
+  }
+
+  getMe(): Promise<unknown> {
+    return this._request('getMe');
+  }
+
+  getChat(chatId: number | string): Promise<unknown> {
+    return this._request('getChat', { qs: { chat_id: chatId } });
+  }
 }

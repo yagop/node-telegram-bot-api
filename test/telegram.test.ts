@@ -1,4 +1,4 @@
-import { TelegramBot } from '..';
+import { TelegramBot } from '../index';
 import * as assert from 'assert';
 import * as utils from './utils';
 import * as isCI from 'is-ci';
@@ -107,24 +107,24 @@ describe('TelegramBot', function telegramSuite() {
 
     return bot
       .sendPhoto(USERID, FILE_PATH)
-      .then((resp) => {
+      .then((resp: any) => {
         FILE_ID = resp.photo[0].file_id;
         return bot.sendMessage(USERID, 'chat');
       })
-      .then((resp) => {
+      .then((resp: any) => {
         GAME_CHAT_ID = resp.chat.id;
         return bot.sendGame(USERID, GAME_SHORT_NAME);
       })
-      .then((resp) => {
+      .then((resp: any) => {
         GAME_MSG_ID = resp.message_id;
       })
       .then(() => {
-        return bot.getMe().then((resp) => {
+        return bot.getMe().then((resp: any) => {
           BOT_USERNAME = resp.username;
         });
       })
       .then(() =>
-        bot.getChat(GROUPID).then((resp) => {
+        bot.getChat(GROUPID).then((resp: any) => {
           CHAT_INFO = resp;
         })
       );
