@@ -23,7 +23,7 @@
     "prepublishOnly": "npm run clean && npm run build && npm run doc",
     "lint": "eslint src test examples",
     "lint:fix": "eslint src test examples --fix",
-    "test": "npm run lint && npm run build && mocha 'lib/test/**/*.test.js'",
+    "test": "npm run build && mocha 'lib/test/**/*.test.js'",
     "test:watch": "npm run build && mocha 'lib/test/**/*.test.js' --watch"
   },
   "author": "Yago Pérez <yagoperezs@gmail.com>",

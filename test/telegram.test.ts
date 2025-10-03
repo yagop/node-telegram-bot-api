@@ -1,13 +1,7 @@
 import { TelegramBot } from '..';
 import * as assert from 'assert';
-import * as fs from 'fs';
-import * as os from 'os';
-import * as path from 'path';
-import * as stream from 'stream';
-import * as is from 'is';
 import * as utils from './utils';
 import * as isCI from 'is-ci';
-import * as concat from 'concat-stream';
 
 // Allows self-signed certificates to be used in our tests
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';

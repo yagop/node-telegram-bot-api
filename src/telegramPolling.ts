@@ -7,19 +7,23 @@ import { deprecateFunction } from './utils';
 import { GetUpdatesOptions } from './types/bot-types';
 import * as TelegramTypes from './types/telegram-types';
 
-const debugLog = debug.default('node-telegram-bot-api');
-const ANOTHER_WEB_HOOK_USED = 409;
+interface CancellablePromise<T> extends Promise<T> {
+  cancel?: (reason?: string) => void;
+}
 
 export interface TelegramBotPollingConfig {
   interval: number;
   params: GetUpdatesOptions;
 }
 
+const debugLog = debug.default('node-telegram-bot-api');
+const ANOTHER_WEB_HOOK_USED = 409;
+
 export class TelegramBotPolling {
   private bot: TelegramBot;
   private options: TelegramBotPollingConfig;
   private _lastUpdate = 0;
-  private _lastRequest: Promise<void> | null = null;
+  private _lastRequest: CancellablePromise<void | null> | null = null;
   private _abort = false;
   private _pollingTimeout: NodeJS.Timeout | null = null;
 
@@ -93,13 +97,13 @@ export class TelegramBotPolling {
     if (options.cancel) {
       const reason = options.reason || 'Polling stop';
       // Note: This assumes the request has a cancel method
-      (lastRequest as any).cancel?.(reason);
+      (lastRequest as CancellablePromise<void | null>).cancel?.(reason);
       return Promise.resolve();
     }
     this._abort = true;
     return lastRequest.finally(() => {
       this._abort = false;
-    });
+    }) as Promise<void>;
   }
 
   /**
@@ -138,7 +142,7 @@ export class TelegramBotPolling {
           try {
             this.bot.processUpdate(update);
           } catch (err: unknown) {
-            (err as any)._processing = true;
+            (err as Error & { _processing?: boolean })._processing = true;
             throw err;
           }
         });
@@ -147,10 +151,10 @@ export class TelegramBotPolling {
       .catch((err: unknown) => {
         const error = err instanceof Error ? err : new Error(String(err));
         debugLog('polling error: %s', error.message);
-        if (!(error as any)._processing) {
+        if (!(error as Error & { _processing?: boolean })._processing) {
           return this._error(error);
         }
-        delete (error as any)._processing;
+        delete (error as Error & { _processing?: boolean })._processing;
         /*
          * An error occured while processing the items,
          * i.e. in `this.bot.processUpdate()` above.
@@ -169,7 +173,7 @@ export class TelegramBotPolling {
           limit: 1,
           timeout: 0,
         };
-        return (this.bot as any)
+        return this.bot
           .getUpdates(opts)
           .then(() => {
             return this._error(error);
@@ -209,8 +213,9 @@ export class TelegramBotPolling {
    * and we are trying to poll. Polling and WebHook are mutually exclusive.
    * @private
    */
-  private _unsetWebHook(): Promise<any> {
+  private _unsetWebHook(): Promise<unknown> {
     debugLog('unsetting webhook');
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return (this.bot as any)._request('setWebHook');
   }
 
@@ -219,11 +224,11 @@ export class TelegramBotPolling {
    */
   private _getUpdates(): Promise<unknown> {
     debugLog('polling with options: %j', this.options.params);
-    return (this.bot as any).getUpdates(this.options.params).catch((err: unknown) => {
-      const error = err as any;
+    return this.bot.getUpdates(this.options.params as GetUpdatesOptions).catch((err: unknown) => {
+      const error = err as { response?: { statusCode?: number } };
       if (error.response && error.response.statusCode === ANOTHER_WEB_HOOK_USED) {
         return this._unsetWebHook().then(() => {
-          return (this.bot as any).getUpdates(this.options.params);
+          return this.bot.getUpdates(this.options.params as GetUpdatesOptions);
         });
       }
       throw err;

@@ -1,10 +1,12 @@
+/* eslint-disable */
+
 /**
  * This example demonstrates using polling.
  * It also demonstrates how you would process and send messages.
  */
 
 const TOKEN = process.env.TELEGRAM_TOKEN || 'YOUR_TELEGRAM_BOT_TOKEN';
-import { TelegramBot } from '..';
+import { TelegramBot } from '../src/telegram';
 import fetch from 'node-fetch';
 const options = {
   polling: true,

@@ -34,10 +34,11 @@ export default [
 //     },
 //   },
 
-  // TypeScript configuration - only for .ts files
+  // TypeScript configuration - only for .ts files except test
   ...tseslint.configs.recommended,
   {
     files: ['**/*.ts'],
+    ignores: ['test/**/*', '**/*.test.ts', '**/*.spec.ts'],
     languageOptions: {
       parser: tseslint.parser,
       parserOptions: {
@@ -57,24 +58,32 @@ export default [
     },
   },
 
-  // Test files
-//   {
-//     files: ['test/**/*.{js,ts}', '**/*.test.{js,ts}', '**/*.spec.{js,ts}'],
-//     languageOptions: {
-//       globals: {
-//         describe: 'readonly',
-//         it: 'readonly',
-//         before: 'readonly',
-//         after: 'readonly',
-//         beforeEach: 'readonly',
-//         afterEach: 'readonly',
-//         expect: 'readonly',
-//       },
-//     },
-//     rules: {
-//       'no-console': 'off',
-//     },
-//   },
+  // Test files - no project for TypeScript
+  {
+    files: ['test/**/*.{js,ts}', '**/*.test.{js,ts}', '**/*.spec.{js,ts}'],
+    languageOptions: {
+      parser: tseslint.parser,
+      parserOptions: {
+        // No project for test files
+      },
+      globals: {
+        describe: 'readonly',
+        it: 'readonly',
+        before: 'readonly',
+        after: 'readonly',
+        beforeEach: 'readonly',
+        afterEach: 'readonly',
+        expect: 'readonly',
+      },
+    },
+    rules: {
+      'no-console': 'off',
+      '@typescript-eslint/no-unused-vars': 'off', // Test files often have unused setup vars
+      '@typescript-eslint/no-explicit-any': 'off', // Test files often need any for mocking
+      '@typescript-eslint/no-require-imports': 'off', // Allow require in tests
+      '@typescript-eslint/no-var-requires': 'off', // Allow require in tests
+    },
+  },
 
   // Examples - more lenient
   {

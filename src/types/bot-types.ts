@@ -163,7 +163,7 @@ export interface SendAudioOptions extends SendMessageOptions {
   /** Track name */
   title?: string;
   /** Thumbnail of the file */
-  thumb?: any;
+  thumb?: FileInput;
 }
 
 export interface SendDocumentOptions extends SendMessageOptions {

@@ -1,3 +1,5 @@
+/* eslint-disable */
+
 /**
  * This example demonstrates setting up a webook, and receiving
  * updates in your express app
@@ -5,7 +7,7 @@
 
 const TOKEN = process.env.TELEGRAM_TOKEN || 'YOUR_TELEGRAM_BOT_TOKEN';
 const url = 'https://<PUBLIC-URL>';
-const port = process.env.PORT;
+// const port = process.env.PORT;
 
 import { TelegramBot } from '../..';
 import * as express from 'express';

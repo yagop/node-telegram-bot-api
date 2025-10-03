@@ -15,6 +15,7 @@ import { errors } from './errors';
 import { deprecateFunction } from './utils';
 import * as TelegramTypes from './types/telegram-types';
 import * as BotTypes from './types/bot-types';
+import { GetUpdatesOptions } from './types/bot-types';
 
 const debugLog = debug.default('node-telegram-bot-api');
 
@@ -271,9 +272,14 @@ export class TelegramBot extends EventEmitter {
       const formData = new FormData();
       for (const [key, value] of Object.entries(options.form)) {
         if (value !== undefined && value !== null) {
-          if (typeof value === 'object' && (value as any).value !== undefined) {
+          if (typeof value === 'object' && value !== null && 'value' in value) {
             // File upload
-            formData.append(key, (value as any).value, (value as any).options?.filename);
+            const fileValue = value as { value: unknown; options?: { filename?: string } };
+            formData.append(
+              key,
+              fileValue.value as string | Buffer | NodeJS.ReadableStream,
+              fileValue.options?.filename
+            );
           } else {
             formData.append(key, String(value));
           }
@@ -313,10 +319,10 @@ export class TelegramBot extends EventEmitter {
       }
 
       throw new errors.TelegramError(`${data.error_code} ${data.description}`, response);
-    } catch (error: any) {
+    } catch (error: unknown) {
       // TODO: why can't we do `error instanceof errors.BaseError`?
-      if (error.response) throw error;
-      throw new errors.FatalError(error);
+      if (error instanceof errors.ParseError || error instanceof errors.TelegramError) throw error;
+      throw new errors.FatalError(error instanceof Error ? error : new Error(String(error)));
     }
   }
 
@@ -349,10 +355,12 @@ export class TelegramBot extends EventEmitter {
     let contentType = fileOptions.contentType;
 
     if (data instanceof stream.Stream) {
-      if (!filename && (data as any).path) {
+      if (!filename && (data as NodeJS.ReadableStream & { path?: unknown }).path) {
         // Will be 'null' if could not be parsed.
         // For example, 'data.path' === '/?id=123' from 'request("https://example.com/?id=123")'
-        const url = new URL(path.basename((data as any).path.toString()));
+        const url = new URL(
+          path.basename(String((data as NodeJS.ReadableStream & { path?: unknown }).path))
+        );
         if (url.pathname) {
           filename = qs.unescape(url.pathname);
         }
@@ -448,8 +456,10 @@ export class TelegramBot extends EventEmitter {
       let contentType = file.contentType || fileOptions.contentType;
 
       if (filedata instanceof stream.Stream) {
-        if (!filename && (filedata as any).path) {
-          const url = new URL(path.basename((filedata as any).path.toString()));
+        if (!filename && (filedata as NodeJS.ReadableStream & { path?: unknown }).path) {
+          const url = new URL(
+            path.basename(String((filedata as NodeJS.ReadableStream & { path?: unknown }).path))
+          );
           if (url.pathname) {
             filename = qs.unescape(url.pathname);
           }
@@ -473,7 +483,9 @@ export class TelegramBot extends EventEmitter {
         filedata = fs.createReadStream(filedata);
 
         if (!filename) {
-          filename = path.basename((filedata as any).path);
+          filename = path.basename(
+            String((filedata as NodeJS.ReadableStream & { path?: unknown }).path)
+          );
         }
       } else {
         fileIds[index] = filedata;
@@ -608,7 +620,7 @@ export class TelegramBot extends EventEmitter {
       const metadata = { type: '' };
       metadata.type =
         TelegramBot.messageTypes.find((messageType) => {
-          return (message as any)[messageType];
+          return messageType in message;
         }) || '';
       this.emit('message', message, metadata);
       if (metadata.type) {
@@ -617,14 +629,15 @@ export class TelegramBot extends EventEmitter {
       }
       if (message.text) {
         debugLog('Text message');
+        const text = message.text;
         this._textRegexpCallbacks.some((reg) => {
-          debugLog('Matching %s with %s', message.text, reg.regexp);
+          debugLog('Matching %s with %s', text, reg.regexp);
 
           if (!(reg.regexp instanceof RegExp)) {
             reg.regexp = new RegExp(reg.regexp);
           }
 
-          const result = reg.regexp.exec(message.text!);
+          const result = reg.regexp.exec(text);
           if (!result) {
             return false;
           }
@@ -637,12 +650,13 @@ export class TelegramBot extends EventEmitter {
         });
       }
       if (message.reply_to_message) {
+        const replyToMessage = message.reply_to_message;
         // Only callbacks waiting for this message
         this._replyListeners.forEach((reply) => {
           // Message from the same chat
           if (reply.chatId === message.chat.id) {
             // Responding to that message
-            if (reply.messageId === message.reply_to_message!.message_id) {
+            if (reply.messageId === replyToMessage.message_id) {
               // Resolve the promise
               reply.callback(message);
             }
@@ -723,7 +737,10 @@ export class TelegramBot extends EventEmitter {
    *   found. This object has `regexp` and `callback`
    *   properties. If not found, returns `null`.
    */
-  removeTextListener(regexp: RegExp): { regexp: RegExp; callback: Function } | null {
+  removeTextListener(regexp: RegExp): {
+    regexp: RegExp;
+    callback: (msg: TelegramTypes.Message, match: RegExpMatchArray | null) => void;
+  } | null {
     const index = this._textRegexpCallbacks.findIndex((textListener) => {
       return String(textListener.regexp) === String(regexp);
     });
@@ -769,9 +786,12 @@ export class TelegramBot extends EventEmitter {
    *   found. This object has `id`, `chatId`, `messageId` and `callback`
    *   properties. If not found, returns `null`.
    */
-  removeReplyListener(
-    replyListenerId: number
-  ): { id: number; chatId: number | string; messageId: number; callback: Function } | null {
+  removeReplyListener(replyListenerId: number): {
+    id: number;
+    chatId: number | string;
+    messageId: number;
+    callback: (msg: TelegramTypes.Message) => void;
+  } | null {
     const index = this._replyListeners.findIndex((replyListener) => {
       return replyListener.id === replyListenerId;
     });
@@ -789,10 +809,19 @@ export class TelegramBot extends EventEmitter {
     id: number;
     chatId: number | string;
     messageId: number;
-    callback: Function;
+    callback: (msg: TelegramTypes.Message) => void;
   }[] {
     const deletedListeners = [...this._replyListeners];
     this._replyListeners = [];
     return deletedListeners;
+  }
+
+  /**
+   * Use this method to receive incoming updates using long polling.
+   * @param options Options for the getUpdates call
+   * @return Promise of updates
+   */
+  getUpdates(options: GetUpdatesOptions = {}): Promise<TelegramTypes.Update[]> {
+    return this._request('getUpdates', { qs: options }) as Promise<TelegramTypes.Update[]>;
   }
 }

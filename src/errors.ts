@@ -1,7 +1,5 @@
 /// <reference types="node" />
 
-import { IncomingMessage } from 'http';
-
 export class BaseError extends Error {
   public readonly code: string;
 
@@ -43,28 +41,28 @@ export class FatalError extends BaseError {
 }
 
 export class ParseError extends BaseError {
-  public readonly response: Response | IncomingMessage;
+  public readonly response: unknown;
 
   /**
    * Error during parsing. Error code is "EPARSE".
    * @param message Error message
    * @param response Server response
    */
-  constructor(message: string, response: Response | IncomingMessage) {
+  constructor(message: string, response: unknown) {
     super('EPARSE', message);
     this.response = response;
   }
 }
 
 export class TelegramError extends BaseError {
-  public readonly response: Response | IncomingMessage;
+  public readonly response: unknown;
 
   /**
    * Error returned from Telegram. Error code is "ETELEGRAM".
    * @param message Error message
    * @param response Server response
    */
-  constructor(message: string, response: Response | IncomingMessage) {
+  constructor(message: string, response: unknown) {
     super('ETELEGRAM', message);
     this.response = response;
   }
