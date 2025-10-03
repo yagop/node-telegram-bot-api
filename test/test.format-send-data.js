@@ -7,7 +7,6 @@ const paths = {
   audio: path.join(__dirname, 'data/audio.mp3'),
 };
 
-
 describe('#_formatSendData', function sendfileSuite() {
   const bot = new TelegramBot('token');
   const type = 'file';

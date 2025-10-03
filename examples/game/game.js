@@ -1,7 +1,6 @@
 /**
  * This example demonstrates using HTML5 games with Telegram.
  */
-/* eslint-disable no-console */
 
 const TOKEN = process.env.TELEGRAM_TOKEN || 'YOUR_TELEGRAM_BOT_TOKEN';
 const gameName = process.env.TELEGRAM_GAMENAME || 'YOUR_TELEGRAM_GAMENAME';

@@ -4,14 +4,13 @@
  * work.
  */
 
-
 const TOKEN = process.env.TELEGRAM_TOKEN || 'YOUR_TELEGRAM_BOT_TOKEN';
 const TelegramBot = require('../..');
 const options = {
   webHook: {
     // Just use 443 directly
-    port: 443
-  }
+    port: 443,
+  },
 };
 // You can use 'now alias <your deployment url> <custom url>' to assign fixed
 // domain.
@@ -20,11 +19,9 @@ const options = {
 const url = 'YOUR_DOMAIN_ALIAS' || process.env.NOW_URL;
 const bot = new TelegramBot(TOKEN, options);
 
-
 // This informs the Telegram servers of the new webhook.
 // Note: we do not need to pass in the cert, as it already provided
 bot.setWebHook(`${url}/bot${TOKEN}`);
-
 
 // Just to ping!
 bot.on('message', function onMessage(msg) {

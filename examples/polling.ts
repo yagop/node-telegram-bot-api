@@ -4,15 +4,15 @@
  */
 
 const TOKEN = process.env.TELEGRAM_TOKEN || 'YOUR_TELEGRAM_BOT_TOKEN';
-const TelegramBot = require('..');
-const request = require('@cypress/request');
+import { TelegramBot } from '..';
+import fetch from 'node-fetch';
 const options = {
   polling: true,
 };
 const bot = new TelegramBot(TOKEN, options);
 
 // Matches /photo
-bot.onText(/\/photo/, function onPhotoText(msg) {
+bot.onText(/\/photo/, function onPhotoText(msg: any) {
   // From file path
   const photo = `${__dirname}/../test/data/photo.gif`;
   bot.sendPhoto(msg.chat.id, photo, {
@@ -21,32 +21,32 @@ bot.onText(/\/photo/, function onPhotoText(msg) {
 });
 
 // Matches /audio
-bot.onText(/\/audio/, function onAudioText(msg) {
+bot.onText(/\/audio/, function onAudioText(msg: any) {
   // From HTTP request
   const url = 'https://upload.wikimedia.org/wikipedia/commons/c/c8/Example.ogg';
-  const audio = request(url);
+  const audio = fetch(url);
   bot.sendAudio(msg.chat.id, audio);
 });
 
 // Matches /love
-bot.onText(/\/love/, function onLoveText(msg) {
+bot.onText(/\/love/, function onLoveText(msg: any) {
   const opts = {
     reply_to_message_id: msg.message_id,
     reply_markup: JSON.stringify({
       keyboard: [['Yes, you are the bot of my life ❤'], ['No, sorry there is another one...']],
     }),
   };
-  bot.sendMessage(msg.chat.id, 'Do you love me?', opts);
+  (bot as any).sendMessage(msg.chat.id, 'Do you love me?', opts);
 });
 
 // Matches /echo [whatever]
-bot.onText(/\/echo (.+)/, function onEchoText(msg, match) {
-  const resp = match[1];
-  bot.sendMessage(msg.chat.id, resp);
+bot.onText(/\/echo (.+)/, function onEchoText(msg: any, match: RegExpMatchArray | null) {
+  const resp = match ? match[1] : '';
+  (bot as any).sendMessage(msg.chat.id, resp);
 });
 
 // Matches /editable
-bot.onText(/\/editable/, function onEditableText(msg) {
+bot.onText(/\/editable/, function onEditableText(msg: any) {
   const opts = {
     reply_markup: {
       inline_keyboard: [
@@ -61,11 +61,11 @@ bot.onText(/\/editable/, function onEditableText(msg) {
       ],
     },
   };
-  bot.sendMessage(msg.from.id, 'Original Text', opts);
+  (bot as any).sendMessage(msg.from.id, 'Original Text', opts);
 });
 
 // Handle callback queries
-bot.on('callback_query', function onCallbackQuery(callbackQuery) {
+bot.on('callback_query', function onCallbackQuery(callbackQuery: any) {
   const action = callbackQuery.data;
   const msg = callbackQuery.message;
   const opts = {
@@ -78,5 +78,5 @@ bot.on('callback_query', function onCallbackQuery(callbackQuery) {
     text = 'Edited Text';
   }
 
-  bot.editMessageText(text, opts);
+  (bot as any).editMessageText(text, opts);
 });

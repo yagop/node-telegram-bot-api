@@ -1,4 +1,3 @@
-/* eslint-disable no-use-before-define */
 exports = module.exports = {
   /**
    * Clear polling check, so that 'isPollingMockServer()' returns false
@@ -76,8 +75,6 @@ exports = module.exports = {
    */
   startStaticServer,
 };
-/* eslint-enable no-use-before-define */
-
 
 const assert = require('assert');
 const http = require('http');
@@ -86,7 +83,6 @@ const statics = require('node-static');
 
 const servers = {};
 
-
 function startMockServer(port, options = {}) {
   assert.ok(port);
   const server = http.Server((req, res) => {
@@ -94,13 +90,17 @@ function startMockServer(port, options = {}) {
     if (options.bad) {
       return res.end('can not be parsed with JSON.parse()');
     }
-    return res.end(JSON.stringify({
-      ok: true,
-      result: [{
-        update_id: 0,
-        message: { text: 'test' },
-      }],
-    }));
+    return res.end(
+      JSON.stringify({
+        ok: true,
+        result: [
+          {
+            update_id: 0,
+            message: { text: 'test' },
+          },
+        ],
+      })
+    );
   });
   return new Promise((resolve, reject) => {
     servers[port] = { server, polling: false };
@@ -108,16 +108,18 @@ function startMockServer(port, options = {}) {
   });
 }
 
-
 function startStaticServer(port) {
   const fileServer = new statics.Server(`${__dirname}/data`);
-  http.Server((req, res) => {
-    req.addListener('end', () => {
-      fileServer.serve(req, res);
-    }).resume();
-  }).listen(port);
+  http
+    .Server((req, res) => {
+      req
+        .addListener('end', () => {
+          fileServer.serve(req, res);
+        })
+        .resume();
+    })
+    .listen(port);
 }
-
 
 function isPollingMockServer(port, reverse) {
   assert.ok(port);
@@ -133,23 +135,24 @@ function isPollingMockServer(port, reverse) {
   });
 }
 
-
 function clearPollingCheck(port) {
   assert.ok(port);
   if (servers[port]) servers[port].polling = false;
 }
 
-
 function hasOpenWebHook(port, reverse) {
   assert.ok(port);
   const error = new Error('open-webhook-check failed');
   let connected = false;
-  return request.get(`http://127.0.0.1:${port}`)
+  return request
+    .get(`http://127.0.0.1:${port}`)
     .then(() => {
       connected = true;
-    }).catch(e => {
+    })
+    .catch((e) => {
       if (e.statusCode < 500) connected = true;
-    }).finally(() => {
+    })
+    .finally(() => {
       if (reverse) {
         if (connected) throw error;
         return;
@@ -157,7 +160,6 @@ function hasOpenWebHook(port, reverse) {
       if (!connected) throw error;
     });
 }
-
 
 function sendWebHookRequest(port, path, options = {}) {
   assert.ok(port);
@@ -169,12 +171,11 @@ function sendWebHookRequest(port, path, options = {}) {
     method: options.method || 'POST',
     body: options.update || {
       update_id: 1,
-      message: options.message || { text: 'test' }
+      message: options.message || { text: 'test' },
     },
-    json: (typeof options.json === 'undefined') ? true : options.json,
+    json: typeof options.json === 'undefined' ? true : options.json,
   });
 }
-
 
 function sendWebHookMessage(port, token, options = {}) {
   assert.ok(port);
@@ -182,7 +183,6 @@ function sendWebHookMessage(port, token, options = {}) {
   const path = `/bot${token}`;
   return sendWebHookRequest(port, path, options);
 }
-
 
 function handleRatelimit(bot, methodName, suite) {
   const backupMethodName = `__${methodName}`;
@@ -196,34 +196,32 @@ function handleRatelimit(bot, methodName, suite) {
   bot[methodName] = (...args) => {
     let retry = 0;
     function exec() {
-      return method.call(bot, ...args)
-        .catch(error => {
-          if (!error.response || error.response.statusCode !== 429) {
-            throw error;
-          }
-          retry++;
-          if (retry > maxRetries) {
-            throw error;
-          }
-          if (typeof error.response.body === 'string') {
-            error.response.body = JSON.parse(error.response.body);
-          }
-          const retrySecs = error.response.body.parameters.retry_after;
-          const timeout = (1000 * retrySecs) + (1000 * addSecs);
-          console.error('tests: Handling rate-limit error. Retrying after %d secs', timeout / 1000); // eslint-disable-line no-console
-          suite.timeout(timeout * 2);
-          return new Promise(function timeoutPromise(resolve, reject) {
-            setTimeout(function execTimeout() {
-              return exec().then(resolve).catch(reject);
-            }, timeout);
-          });
+      return method.call(bot, ...args).catch((error) => {
+        if (!error.response || error.response.statusCode !== 429) {
+          throw error;
+        }
+        retry++;
+        if (retry > maxRetries) {
+          throw error;
+        }
+        if (typeof error.response.body === 'string') {
+          error.response.body = JSON.parse(error.response.body);
+        }
+        const retrySecs = error.response.body.parameters.retry_after;
+        const timeout = 1000 * retrySecs + 1000 * addSecs;
+        console.error('tests: Handling rate-limit error. Retrying after %d secs', timeout / 1000);
+        suite.timeout(timeout * 2);
+        return new Promise(function timeoutPromise(resolve, reject) {
+          setTimeout(function execTimeout() {
+            return exec().then(resolve).catch(reject);
+          }, timeout);
         });
+      });
     }
     return exec();
   };
   return bot;
 }
-
 
 function isTelegramFileURI(uri) {
   return /https?:\/\/.*\/file\/bot.*\/.*/.test(uri);

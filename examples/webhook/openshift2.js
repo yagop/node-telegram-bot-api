@@ -15,7 +15,6 @@
  * !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
  */
 
-
 const TOKEN = process.env.TELEGRAM_TOKEN || 'YOUR_TELEGRAM_BOT_TOKEN';
 const TelegramBot = require('../..');
 // See https://developers.openshift.com/en/node-js-environment-variables.html
@@ -32,11 +31,9 @@ const domain = process.env.OPENSHIFT_APP_DNS;
 const url = `${domain}:443`;
 const bot = new TelegramBot(TOKEN, options);
 
-
 // This informs the Telegram servers of the new webhook.
 // Note: we do not need to pass in the cert, as it already provided
 bot.setWebHook(`${url}/bot${TOKEN}`);
-
 
 // Just to ping!
 bot.on('message', function onMessage(msg) {

@@ -7,14 +7,14 @@ const TOKEN = process.env.TELEGRAM_TOKEN || 'YOUR_TELEGRAM_BOT_TOKEN';
 const url = 'https://<PUBLIC-URL>';
 const port = process.env.PORT;
 
-const TelegramBot = require('../..');
-const express = require('express');
+import { TelegramBot } from '../..';
+import * as express from 'express';
 
 // No need to pass any parameters as we will handle the updates with Express
 const bot = new TelegramBot(TOKEN);
 
 // This informs the Telegram servers of the new webhook.
-bot.setWebHook(`${url}/bot${TOKEN}`);
+(bot as any).setWebHook(`${url}/bot${TOKEN}`);
 
 const app = express();
 
@@ -22,17 +22,9 @@ const app = express();
 app.use(express.json());
 
 // We are receiving updates at the route below!
-app.post(`/bot${TOKEN}`, (req, res) => {
+app.post(`/bot${TOKEN}`, (req: any, res: any) => {
   bot.processUpdate(req.body);
   res.sendStatus(200);
 });
 
 // Start Express Server
-app.listen(port, () => {
-  console.log(`Express server is listening on ${port}`);
-});
-
-// Just to ping!
-bot.on('message', (msg) => {
-  bot.sendMessage(msg.chat.id, 'I am alive!');
-});
