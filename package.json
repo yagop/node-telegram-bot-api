@@ -4,6 +4,17 @@
   "description": "Telegram Bot API",
   "main": "./lib/index.js",
   "types": "./lib/index.d.ts",
+  "files": [
+    "lib/src/",
+    "lib/index.js",
+    "lib/index.d.ts",
+    "lib/index.js.map",
+    "lib/index.d.ts.map",
+    "doc/",
+    "LICENSE.md",
+    "README.md",
+    "CHANGELOG.md"
+  ],
   "directories": {
     "example": "examples",
     "test": "test"
