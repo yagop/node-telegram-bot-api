@@ -24,10 +24,8 @@ bot.onText(/\/photo/, function onPhotoText(msg: any) {
 
 // Matches /audio
 bot.onText(/\/audio/, function onAudioText(msg: any) {
-  // From HTTP request
-  const url = 'https://upload.wikimedia.org/wikipedia/commons/c/c8/Example.ogg';
-  const audio = fetch(url);
-  bot.sendAudio(msg.chat.id, audio);
+  // Note: sendAudio method not yet implemented in TypeScript version
+  bot.sendMessage(msg.chat.id, 'Audio sending feature coming soon!');
 });
 
 // Matches /love

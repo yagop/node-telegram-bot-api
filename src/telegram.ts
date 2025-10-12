@@ -825,24 +825,603 @@ export class TelegramBot extends EventEmitter {
     return this._request('getUpdates', { qs: options }) as Promise<TelegramTypes.Update[]>;
   }
 
-  // Basic API methods for testing
-  sendPhoto(chatId: number | string, photo: unknown, options?: Record<string, unknown>): Promise<unknown> {
-    return this._request('sendPhoto', { form: { chat_id: chatId, photo, ...options } });
+  /**
+   * Specify a url to receive incoming updates via an outgoing webhook.
+   * @param url URL where Telegram will make HTTP Post. Leave empty to delete webhook.
+   * @param options Additional Telegram query options
+   * @param fileOptions Optional file related meta-data
+   * @return Promise
+   * @see https://core.telegram.org/bots/api#setwebhook
+   */
+  setWebHook(
+    url: string,
+    options: Record<string, unknown> = {},
+    fileOptions: { filename?: string; contentType?: string } = {}
+  ): Promise<unknown> {
+    const opts: { qs: Record<string, unknown>; formData?: Record<string, unknown> | null } = {
+      qs: options,
+    };
+    opts.qs.url = url;
+
+    const cert = options.certificate;
+    if (cert) {
+      try {
+        const sendData = this._formatSendData(
+          'certificate',
+          cert as BotTypes.FileInput,
+          fileOptions
+        );
+        opts.formData = sendData[0];
+        opts.qs.certificate = sendData[1];
+      } catch (ex) {
+        return Promise.reject(ex);
+      }
+    }
+
+    return this._request('setWebHook', opts);
   }
 
-  sendMessage(chatId: number | string, text: string, options?: Record<string, unknown>): Promise<unknown> {
-    return this._request('sendMessage', { form: { chat_id: chatId, text, ...options } });
+  /**
+   * Use this method to remove webhook integration if you decide to
+   * switch back to getUpdates.
+   * @param options Additional Telegram query options
+   * @return Promise
+   * @see https://core.telegram.org/bots/api#deletewebhook
+   */
+  deleteWebHook(options: Record<string, unknown> = {}): Promise<unknown> {
+    return this._request('deleteWebhook', { form: options });
   }
 
-  sendGame(chatId: number | string, gameShortName: string, options?: Record<string, unknown>): Promise<unknown> {
-    return this._request('sendGame', { form: { chat_id: chatId, game_short_name: gameShortName, ...options } });
+  /**
+   * Use this method to get current webhook status.
+   * @param options Additional Telegram query options
+   * @return Promise
+   * @see https://core.telegram.org/bots/api#getwebhookinfo
+   */
+  getWebHookInfo(options: Record<string, unknown> = {}): Promise<unknown> {
+    return this._request('getWebhookInfo', { form: options });
   }
 
+  // ===== API Methods =====
+
+  /**
+   * Returns basic information about the bot
+   * @see https://core.telegram.org/bots/api#getme
+   */
   getMe(): Promise<unknown> {
     return this._request('getMe');
   }
 
+  /**
+   * Get information about a chat
+   * @see https://core.telegram.org/bots/api#getchat
+   */
   getChat(chatId: number | string): Promise<unknown> {
     return this._request('getChat', { qs: { chat_id: chatId } });
+  }
+
+  /**
+   * Send a text message
+   * @see https://core.telegram.org/bots/api#sendmessage
+   */
+  sendMessage(
+    chatId: number | string,
+    text: string,
+    options: Record<string, unknown> = {}
+  ): Promise<unknown> {
+    return this._request('sendMessage', { form: { chat_id: chatId, text, ...options } });
+  }
+
+  /**
+   * Send a photo
+   * @param chatId Unique identifier for the target chat
+   * @param photo Photo to send (file path, Stream, Buffer, or file_id)
+   * @param options Additional Telegram query options
+   * @param fileOptions Optional file related meta-data
+   * @see https://core.telegram.org/bots/api#sendphoto
+   */
+  sendPhoto(
+    chatId: number | string,
+    photo: BotTypes.FileInput,
+    options: Record<string, unknown> = {},
+    fileOptions: { filename?: string; contentType?: string } = {}
+  ): Promise<unknown> {
+    const opts: { qs: Record<string, unknown>; formData?: Record<string, unknown> | null } = {
+      qs: options,
+    };
+    opts.qs.chat_id = chatId;
+    try {
+      const sendData = this._formatSendData('photo', photo, fileOptions);
+      opts.formData = sendData[0];
+      opts.qs.photo = sendData[1];
+    } catch (ex) {
+      return Promise.reject(ex);
+    }
+    return this._request('sendPhoto', opts);
+  }
+
+  /**
+   * Send audio files (MP3 or M4A format)
+   * @param chatId Unique identifier for the target chat
+   * @param audio Audio file to send
+   * @param options Additional Telegram query options
+   * @param fileOptions Optional file related meta-data
+   * @see https://core.telegram.org/bots/api#sendaudio
+   */
+  sendAudio(
+    chatId: number | string,
+    audio: BotTypes.FileInput,
+    options: Record<string, unknown> = {},
+    fileOptions: { filename?: string; contentType?: string } = {}
+  ): Promise<unknown> {
+    const opts: { qs: Record<string, unknown>; formData: Record<string, unknown> | null } = {
+      qs: options,
+      formData: null,
+    };
+    opts.qs.chat_id = chatId;
+    try {
+      const sendData = this._formatSendData('audio', audio, fileOptions);
+      opts.formData = sendData[0];
+      opts.qs.audio = sendData[1];
+      this._fixAddFileThumbnail(options as { thumb?: string }, opts);
+    } catch (ex) {
+      return Promise.reject(ex);
+    }
+    return this._request('sendAudio', opts);
+  }
+
+  /**
+   * Send general files
+   * @param chatId Unique identifier for the target chat
+   * @param doc Document to send
+   * @param options Additional Telegram query options
+   * @param fileOptions Optional file related meta-data
+   * @see https://core.telegram.org/bots/api#senddocument
+   */
+  sendDocument(
+    chatId: number | string,
+    doc: BotTypes.FileInput,
+    options: Record<string, unknown> = {},
+    fileOptions: { filename?: string; contentType?: string } = {}
+  ): Promise<unknown> {
+    const opts: { qs: Record<string, unknown>; formData: Record<string, unknown> | null } = {
+      qs: options,
+      formData: null,
+    };
+    opts.qs.chat_id = chatId;
+    try {
+      const sendData = this._formatSendData('document', doc, fileOptions);
+      opts.formData = sendData[0];
+      opts.qs.document = sendData[1];
+      this._fixAddFileThumbnail(options as { thumb?: string }, opts);
+    } catch (ex) {
+      return Promise.reject(ex);
+    }
+    return this._request('sendDocument', opts);
+  }
+
+  /**
+   * Send video files (mp4 format)
+   * @param chatId Unique identifier for the target chat
+   * @param video Video to send
+   * @param options Additional Telegram query options
+   * @param fileOptions Optional file related meta-data
+   * @see https://core.telegram.org/bots/api#sendvideo
+   */
+  sendVideo(
+    chatId: number | string,
+    video: BotTypes.FileInput,
+    options: Record<string, unknown> = {},
+    fileOptions: { filename?: string; contentType?: string } = {}
+  ): Promise<unknown> {
+    const opts: { qs: Record<string, unknown>; formData: Record<string, unknown> | null } = {
+      qs: options,
+      formData: null,
+    };
+    opts.qs.chat_id = chatId;
+    try {
+      const sendData = this._formatSendData('video', video, fileOptions);
+      opts.formData = sendData[0];
+      opts.qs.video = sendData[1];
+      this._fixAddFileThumbnail(options as { thumb?: string }, opts);
+    } catch (ex) {
+      return Promise.reject(ex);
+    }
+    return this._request('sendVideo', opts);
+  }
+
+  /**
+   * Send animation files (GIF or H.264/MPEG-4 AVC video without sound)
+   * @param chatId Unique identifier for the target chat
+   * @param animation Animation to send
+   * @param options Additional Telegram query options
+   * @param fileOptions Optional file related meta-data
+   * @see https://core.telegram.org/bots/api#sendanimation
+   */
+  sendAnimation(
+    chatId: number | string,
+    animation: BotTypes.FileInput,
+    options: Record<string, unknown> = {},
+    fileOptions: { filename?: string; contentType?: string } = {}
+  ): Promise<unknown> {
+    const opts: { qs: Record<string, unknown>; formData?: Record<string, unknown> | null } = {
+      qs: options,
+    };
+    opts.qs.chat_id = chatId;
+    try {
+      const sendData = this._formatSendData('animation', animation, fileOptions);
+      opts.formData = sendData[0];
+      opts.qs.animation = sendData[1];
+    } catch (ex) {
+      return Promise.reject(ex);
+    }
+    return this._request('sendAnimation', opts);
+  }
+
+  /**
+   * Send voice messages (OGG format with OPUS encoding, or MP3/M4A)
+   * @param chatId Unique identifier for the target chat
+   * @param voice Voice file to send
+   * @param options Additional Telegram query options
+   * @param fileOptions Optional file related meta-data
+   * @see https://core.telegram.org/bots/api#sendvoice
+   */
+  sendVoice(
+    chatId: number | string,
+    voice: BotTypes.FileInput,
+    options: Record<string, unknown> = {},
+    fileOptions: { filename?: string; contentType?: string } = {}
+  ): Promise<unknown> {
+    const opts: { qs: Record<string, unknown>; formData?: Record<string, unknown> | null } = {
+      qs: options,
+    };
+    opts.qs.chat_id = chatId;
+    try {
+      const sendData = this._formatSendData('voice', voice, fileOptions);
+      opts.formData = sendData[0];
+      opts.qs.voice = sendData[1];
+    } catch (ex) {
+      return Promise.reject(ex);
+    }
+    return this._request('sendVoice', opts);
+  }
+
+  /**
+   * Send video messages (rounded square MPEG4 videos up to 1 minute long)
+   * @param chatId Unique identifier for the target chat
+   * @param videoNote Video note to send
+   * @param options Additional Telegram query options
+   * @param fileOptions Optional file related meta-data
+   * @see https://core.telegram.org/bots/api#sendvideonote
+   */
+  sendVideoNote(
+    chatId: number | string,
+    videoNote: BotTypes.FileInput,
+    options: Record<string, unknown> = {},
+    fileOptions: { filename?: string; contentType?: string } = {}
+  ): Promise<unknown> {
+    const opts: { qs: Record<string, unknown>; formData: Record<string, unknown> | null } = {
+      qs: options,
+      formData: null,
+    };
+    opts.qs.chat_id = chatId;
+    try {
+      const sendData = this._formatSendData('video_note', videoNote, fileOptions);
+      opts.formData = sendData[0];
+      opts.qs.video_note = sendData[1];
+      this._fixAddFileThumbnail(options as { thumb?: string }, opts);
+    } catch (ex) {
+      return Promise.reject(ex);
+    }
+    return this._request('sendVideoNote', opts);
+  }
+
+  /**
+   * Send stickers (.WEBP, .TGS, or .WEBM format)
+   * @param chatId Unique identifier for the target chat
+   * @param sticker Sticker to send
+   * @param options Additional Telegram query options
+   * @param fileOptions Optional file related meta-data
+   * @see https://core.telegram.org/bots/api#sendsticker
+   */
+  sendSticker(
+    chatId: number | string,
+    sticker: BotTypes.FileInput,
+    options: Record<string, unknown> = {},
+    fileOptions: { filename?: string; contentType?: string } = {}
+  ): Promise<unknown> {
+    const opts: { qs: Record<string, unknown>; formData?: Record<string, unknown> | null } = {
+      qs: options,
+    };
+    opts.qs.chat_id = chatId;
+    try {
+      const sendData = this._formatSendData('sticker', sticker, fileOptions);
+      opts.formData = sendData[0];
+      opts.qs.sticker = sendData[1];
+    } catch (ex) {
+      return Promise.reject(ex);
+    }
+    return this._request('sendSticker', opts);
+  }
+
+  /**
+   * Send a game
+   * @param chatId Unique identifier for the target chat
+   * @param gameShortName Short name of the game
+   * @param options Additional Telegram query options
+   * @see https://core.telegram.org/bots/api#sendgame
+   */
+  sendGame(
+    chatId: number | string,
+    gameShortName: string,
+    options: Record<string, unknown> = {}
+  ): Promise<unknown> {
+    return this._request('sendGame', {
+      form: { chat_id: chatId, game_short_name: gameShortName, ...options },
+    });
+  }
+
+  /**
+   * Send media group (album of photos and videos)
+   * @param chatId Unique identifier for the target chat
+   * @param media Array of InputMedia to be sent
+   * @param options Additional Telegram query options
+   * @see https://core.telegram.org/bots/api#sendmediagroup
+   */
+  sendMediaGroup(
+    chatId: number | string,
+    media: unknown[],
+    options: Record<string, unknown> = {}
+  ): Promise<unknown> {
+    const opts: { qs: Record<string, unknown>; formData?: Record<string, unknown> } = {
+      qs: options,
+    };
+    opts.qs.chat_id = chatId;
+
+    opts.formData = {};
+    const inputMedia: unknown[] = [];
+    let index = 0;
+    for (const input of media) {
+      const payload = Object.assign({}, input as Record<string, unknown>);
+      delete payload.media;
+      delete payload.fileOptions;
+      try {
+        const attachName = String(index);
+        const [formData, fileId] = this._formatSendData(
+          attachName,
+          (input as { media: unknown }).media as BotTypes.FileInput,
+          (input as { fileOptions?: { filename?: string; contentType?: string } }).fileOptions
+        );
+        if (formData) {
+          opts.formData[attachName] = formData[attachName];
+          payload.media = `attach://${attachName}`;
+        } else {
+          payload.media = fileId;
+        }
+      } catch (ex) {
+        return Promise.reject(ex);
+      }
+      inputMedia.push(payload);
+      index++;
+    }
+    opts.qs.media = JSON.stringify(inputMedia);
+
+    return this._request('sendMediaGroup', opts);
+  }
+
+  /**
+   * Send location on the map
+   * @param chatId Unique identifier for the target chat
+   * @param latitude Latitude of location
+   * @param longitude Longitude of location
+   * @param options Additional Telegram query options
+   * @see https://core.telegram.org/bots/api#sendlocation
+   */
+  sendLocation(
+    chatId: number | string,
+    latitude: number,
+    longitude: number,
+    options: Record<string, unknown> = {}
+  ): Promise<unknown> {
+    const form = { chat_id: chatId, latitude, longitude, ...options };
+    return this._request('sendLocation', { form });
+  }
+
+  /**
+   * Edit live location messages
+   * @param latitude Latitude of new location
+   * @param longitude Longitude of new location
+   * @param options Additional Telegram query options
+   * @see https://core.telegram.org/bots/api#editmessagelivelocation
+   */
+  editMessageLiveLocation(
+    latitude: number,
+    longitude: number,
+    options: Record<string, unknown> = {}
+  ): Promise<unknown> {
+    const form = { latitude, longitude, ...options };
+    return this._request('editMessageLiveLocation', { form });
+  }
+
+  /**
+   * Stop updating live location
+   * @param options Additional Telegram query options
+   * @see https://core.telegram.org/bots/api#stopmessagelivelocation
+   */
+  stopMessageLiveLocation(options: Record<string, unknown> = {}): Promise<unknown> {
+    return this._request('stopMessageLiveLocation', { form: options });
+  }
+
+  /**
+   * Send venue information
+   * @param chatId Unique identifier for the target chat
+   * @param latitude Latitude of location
+   * @param longitude Longitude of location
+   * @param title Name of the venue
+   * @param address Address of the venue
+   * @param options Additional Telegram query options
+   * @see https://core.telegram.org/bots/api#sendvenue
+   */
+  sendVenue(
+    chatId: number | string,
+    latitude: number,
+    longitude: number,
+    title: string,
+    address: string,
+    options: Record<string, unknown> = {}
+  ): Promise<unknown> {
+    const form = { chat_id: chatId, latitude, longitude, title, address, ...options };
+    return this._request('sendVenue', { form });
+  }
+
+  /**
+   * Send phone contacts
+   * @param chatId Unique identifier for the target chat
+   * @param phoneNumber Contact's phone number
+   * @param firstName Contact's first name
+   * @param options Additional Telegram query options
+   * @see https://core.telegram.org/bots/api#sendcontact
+   */
+  sendContact(
+    chatId: number | string,
+    phoneNumber: string,
+    firstName: string,
+    options: Record<string, unknown> = {}
+  ): Promise<unknown> {
+    const form = { chat_id: chatId, phone_number: phoneNumber, first_name: firstName, ...options };
+    return this._request('sendContact', { form });
+  }
+
+  /**
+   * Send a native poll
+   * @param chatId Unique identifier for the target chat
+   * @param question Poll question
+   * @param pollOptions Array of answer options
+   * @param options Additional Telegram query options
+   * @see https://core.telegram.org/bots/api#sendpoll
+   */
+  sendPoll(
+    chatId: number | string,
+    question: string,
+    pollOptions: string[],
+    options: Record<string, unknown> = {}
+  ): Promise<unknown> {
+    const form = { chat_id: chatId, question, options: JSON.stringify(pollOptions), ...options };
+    return this._request('sendPoll', { form });
+  }
+
+  /**
+   * Send an animated emoji (dice, dart, basketball, etc.)
+   * @param chatId Unique identifier for the target chat
+   * @param options Additional Telegram query options
+   * @see https://core.telegram.org/bots/api#senddice
+   */
+  sendDice(chatId: number | string, options: Record<string, unknown> = {}): Promise<unknown> {
+    const form = { chat_id: chatId, ...options };
+    return this._request('sendDice', { form });
+  }
+
+  /**
+   * Send chat action (typing, uploading, etc.)
+   * @param chatId Unique identifier for the target chat
+   * @param action Type of action to broadcast
+   * @param options Additional Telegram query options
+   * @see https://core.telegram.org/bots/api#sendchataction
+   */
+  sendChatAction(
+    chatId: number | string,
+    action: string,
+    options: Record<string, unknown> = {}
+  ): Promise<unknown> {
+    const form = { chat_id: chatId, action, ...options };
+    return this._request('sendChatAction', { form });
+  }
+
+  /**
+   * Get user profile photos
+   * @param userId Unique identifier of the target user
+   * @param options Additional Telegram query options
+   * @see https://core.telegram.org/bots/api#getuserprofilephotos
+   */
+  getUserProfilePhotos(userId: number, options: Record<string, unknown> = {}): Promise<unknown> {
+    const form = { user_id: userId, ...options };
+    return this._request('getUserProfilePhotos', { form });
+  }
+
+  /**
+   * Get basic info about a file
+   * @param fileId File identifier
+   * @param options Additional Telegram query options
+   * @see https://core.telegram.org/bots/api#getfile
+   */
+  getFile(fileId: string, options: Record<string, unknown> = {}): Promise<unknown> {
+    const form = { file_id: fileId, ...options };
+    return this._request('getFile', { form });
+  }
+
+  /**
+   * Use this method to edit text messages
+   * @param text New text of the message
+   * @param options Additional Telegram query options
+   * @see https://core.telegram.org/bots/api#editmessagetext
+   */
+  editMessageText(text: string, options: Record<string, unknown> = {}): Promise<unknown> {
+    const form = { text, ...options };
+    return this._request('editMessageText', { form });
+  }
+
+  /**
+   * Use this method to edit captions of messages
+   * @param caption New caption of the message
+   * @param options Additional Telegram query options
+   * @see https://core.telegram.org/bots/api#editmessagecaption
+   */
+  editMessageCaption(caption: string, options: Record<string, unknown> = {}): Promise<unknown> {
+    const form = { caption, ...options };
+    return this._request('editMessageCaption', { form });
+  }
+
+  /**
+   * Use this method to edit message reply markup
+   * @param replyMarkup A JSON-serialized object for an inline keyboard
+   * @param options Additional Telegram query options
+   * @see https://core.telegram.org/bots/api#editmessagereplymarkup
+   */
+  editMessageReplyMarkup(
+    replyMarkup: unknown,
+    options: Record<string, unknown> = {}
+  ): Promise<unknown> {
+    const form = { reply_markup: replyMarkup, ...options };
+    return this._request('editMessageReplyMarkup', { form });
+  }
+
+  /**
+   * Use this method to delete a message
+   * @param chatId Unique identifier for the target chat
+   * @param messageId Identifier of the message to delete
+   * @param options Additional Telegram query options
+   * @see https://core.telegram.org/bots/api#deletemessage
+   */
+  deleteMessage(
+    chatId: number | string,
+    messageId: number,
+    options: Record<string, unknown> = {}
+  ): Promise<unknown> {
+    const form = { chat_id: chatId, message_id: messageId, ...options };
+    return this._request('deleteMessage', { form });
+  }
+
+  /**
+   * Use this method to send answers to callback queries
+   * @param callbackQueryId Unique identifier for the query to be answered
+   * @param options Additional Telegram query options
+   * @see https://core.telegram.org/bots/api#answercallbackquery
+   */
+  answerCallbackQuery(
+    callbackQueryId: string,
+    options: Record<string, unknown> = {}
+  ): Promise<unknown> {
+    const form = { callback_query_id: callbackQueryId, ...options };
+    return this._request('answerCallbackQuery', { form });
   }
 }

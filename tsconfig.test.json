@@ -5,11 +5,11 @@
     "outDir": "./lib"
   },
   "include": [
+    "test/**/*",
     "src/**/*"
   ],
   "exclude": [
     "node_modules",
-    "test",
     "examples"
   ]
 }

@@ -5,7 +5,8 @@
  */
 
 const TOKEN = process.env.TELEGRAM_TOKEN || 'YOUR_TELEGRAM_BOT_TOKEN';
-const TelegramBot = require('../..');
+import { TelegramBot } from '../..';
+
 const options = {
   webHook: {
     // Just use 443 directly
@@ -16,7 +17,7 @@ const options = {
 // domain.
 // See: https://zeit.co/blog/now-alias
 // Or just use NOW_URL to get deployment url from env.
-const url = 'YOUR_DOMAIN_ALIAS' || process.env.NOW_URL;
+const url = process.env.NOW_URL || 'YOUR_DOMAIN_ALIAS';
 const bot = new TelegramBot(TOKEN, options);
 
 // This informs the Telegram servers of the new webhook.
@@ -24,6 +25,6 @@ const bot = new TelegramBot(TOKEN, options);
 bot.setWebHook(`${url}/bot${TOKEN}`);
 
 // Just to ping!
-bot.on('message', function onMessage(msg) {
+bot.on('message', (msg: any) => {
   bot.sendMessage(msg.chat.id, 'I am alive on Zeit Now!');
 });

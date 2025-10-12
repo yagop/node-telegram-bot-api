@@ -4,7 +4,7 @@ import * as debug from 'debug';
 import * as https from 'https';
 import * as http from 'http';
 import * as fs from 'fs';
-import * as bl from 'bl';
+import bl from 'bl';
 import { IncomingMessage, ServerResponse } from 'http';
 
 import { TelegramBot } from './telegram';

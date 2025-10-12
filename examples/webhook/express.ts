@@ -10,7 +10,7 @@ const url = 'https://<PUBLIC-URL>';
 // const port = process.env.PORT;
 
 import { TelegramBot } from '../..';
-import * as express from 'express';
+import express from 'express';
 
 // No need to pass any parameters as we will handle the updates with Express
 const bot = new TelegramBot(TOKEN);

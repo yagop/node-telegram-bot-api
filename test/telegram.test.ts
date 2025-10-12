@@ -1,4 +1,4 @@
-import { TelegramBot } from '../index';
+import { TelegramBot } from '../src';
 import * as assert from 'assert';
 import * as utils from './utils';
 import * as isCI from 'is-ci';

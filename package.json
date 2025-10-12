@@ -16,15 +16,20 @@
     "typescript"
   ],
   "scripts": {
-    "build": "tsc --project tsconfig.build.json",
-    "build:watch": "tsc --watch",
-    "clean": "rm -rf lib",
+    "build": "npm run build:src",
+    "build:src": "tsc --project tsconfig.build.json",
+    "build:test": "tsc --project tsconfig.test.json",
+    "build:examples": "tsc --project tsconfig.examples.json && npm run copy:static",
+    "build:all": "npm run build:src && npm run build:test && npm run build:examples",
+    "build:watch": "tsc --project tsconfig.build.json --watch",
+    "copy:static": "cp -r examples/game/game.html dist/examples/game/ 2>/dev/null || true && cp -r examples/ssl dist/examples/ 2>/dev/null || true",
+    "clean": "rm -rf lib dist",
     "doc": "typedoc --out docs src/index.ts",
     "prepublishOnly": "npm run clean && npm run build && npm run doc",
     "lint": "eslint src test examples",
     "lint:fix": "eslint src test examples --fix",
-    "test": "npm run build && mocha 'lib/test/**/*.test.js'",
-    "test:watch": "npm run build && mocha ./test/**/*.test.js' --watch"
+    "test": "npm run build:src && npm run build:test && mocha 'lib/test/**/*.test.js'",
+    "test:watch": "npm run build:src && npm run build:test && mocha 'lib/test/**/*.test.js' --watch"
   },
   "author": "Yago Pérez <yagoperezs@gmail.com>",
   "license": "MIT",
