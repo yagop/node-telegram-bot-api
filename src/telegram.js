@@ -2504,6 +2504,9 @@ class TelegramBot extends EventEmitter {
    * @see https://core.telegram.org/bots/api#deletemycommands
    */
   deleteMyCommands(form = {}) {
+    if (form.scope) {
+      form.scope = stringify(form.scope);
+    }
     return this._request('deleteMyCommands', { form });
   }
 
