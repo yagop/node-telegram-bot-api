@@ -10,6 +10,17 @@ output/
 test/
 examples/
 lib-doc/
+dist/
+src/
+
+# TypeScript configs
+tsconfig.json
+tsconfig.build.json
+tsconfig.test.json
+tsconfig.examples.json
+
+# ESLint configs
+eslint.config.mjs
 
 # dotfiles
 .travis.yml
@@ -19,3 +30,4 @@ lib-doc/
 .babelrc
 .gitignore
 .git
+.prettierrc

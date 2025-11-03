@@ -1,9 +1,9 @@
 language: node_js
 node_js:
-  - "12"
-  - "10"
-  - "8"
-  - "6"
+  - "22"
+  - "20"
+  - "18"
+  - "16"
 #
 # create required bash scripts to run builds on pull requests in the future
 #
