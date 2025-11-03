@@ -8,6 +8,7 @@ import * as stream from 'stream';
 import * as qs from 'querystring';
 import * as debug from 'debug';
 import fetch from 'node-fetch';
+import { fileTypeFromBuffer } from 'file-type';
 
 import { TelegramBotWebHook } from './telegramWebHook';
 import { TelegramBotPolling } from './telegramPolling';
@@ -204,17 +205,20 @@ export class TelegramBot extends EventEmitter {
     }
   }
 
-  private _fixAddFileThumbnail(
+  private async _fixAddFileThumbnail(
     options: { thumb?: string },
     opts: { formData: Record<string, unknown> | null; qs: Record<string, unknown> }
-  ): void {
+  ): Promise<void> {
     if (options.thumb) {
       if (opts.formData === null) {
         opts.formData = {};
       }
 
       const attachName = 'photo';
-      const [formData] = this._formatSendData(attachName, options.thumb.replace('attach://', ''));
+      const [formData] = await this._formatSendData(
+        attachName,
+        options.thumb.replace('attach://', '')
+      );
 
       if (formData) {
         opts.formData[attachName] = formData[attachName];
@@ -320,8 +324,8 @@ export class TelegramBot extends EventEmitter {
 
       throw new errors.TelegramError(`${data.error_code} ${data.description}`, response);
     } catch (error: unknown) {
-      // TODO: why can't we do `error instanceof errors.BaseError`?
-      if (error instanceof errors.ParseError || error instanceof errors.TelegramError) throw error;
+      // Re-throw our custom errors, wrap everything else in FatalError
+      if (error instanceof errors.BaseError) throw error;
       throw new errors.FatalError(error instanceof Error ? error : new Error(String(error)));
     }
   }
@@ -335,17 +339,19 @@ export class TelegramBot extends EventEmitter {
    * @throws Error if Buffer file type is not supported.
    * @private
    */
-  private _formatSendData(
+  private async _formatSendData(
     type: string,
     data: BotTypes.FileInput,
     fileOptions: { filename?: string; contentType?: string } = {}
-  ): [
-    Record<
-      string,
-      { value: BotTypes.FileInput; options: { filename: string; contentType: string } }
-    > | null,
-    string | null,
-  ] {
+  ): Promise<
+    [
+      Record<
+        string,
+        { value: BotTypes.FileInput; options: { filename: string; contentType: string } }
+      > | null,
+      string | null,
+    ]
+  > {
     const deprecationMessage =
       'See https://github.com/yagop/node-telegram-bot-api/blob/master/doc/usage.md#sending-files' +
       ' for more information on how sending files has been improved and' +
@@ -373,17 +379,15 @@ export class TelegramBot extends EventEmitter {
         filename = 'data';
       }
       if (!contentType) {
-        // const filetype = fileType(data);
-        // if (filetype) {
-        //   contentType = filetype.mime;
-        //   const ext = filetype.ext;
-        //   if (ext && !process.env.NTBA_FIX_350) {
-        //     filename = `${filename}.${ext}`;
-        //   }
-        // } else if (!process.env.NTBA_FIX_350) {
-        //   deprecateFunction(`An error will no longer be thrown if file-type of buffer could not be detected. ${deprecationMessage}`);
-        //   throw new errors.FatalError('Unsupported Buffer file-type');
-        // }
+        const filetype = await fileTypeFromBuffer(data);
+        if (filetype) {
+          contentType = filetype.mime;
+          const ext = filetype.ext;
+          // Add file extension if filename doesn't already have one
+          if (ext && filename && !path.extname(filename)) {
+            filename = `${filename}.${ext}`;
+          }
+        }
       }
     } else if (data) {
       if (this.options.filepath && typeof data === 'string' && fs.existsSync(data)) {
@@ -400,8 +404,6 @@ export class TelegramBot extends EventEmitter {
 
     filename = filename || 'filename';
     contentType = contentType || 'application/octet-stream';
-
-    // TODO: Add missing file extension.
 
     return [
       {
@@ -833,7 +835,7 @@ export class TelegramBot extends EventEmitter {
    * @return Promise
    * @see https://core.telegram.org/bots/api#setwebhook
    */
-  setWebHook(
+  async setWebHook(
     url: string,
     options: Record<string, unknown> = {},
     fileOptions: { filename?: string; contentType?: string } = {}
@@ -846,7 +848,7 @@ export class TelegramBot extends EventEmitter {
     const cert = options.certificate;
     if (cert) {
       try {
-        const sendData = this._formatSendData(
+        const sendData = await this._formatSendData(
           'certificate',
           cert as BotTypes.FileInput,
           fileOptions
@@ -920,7 +922,7 @@ export class TelegramBot extends EventEmitter {
    * @param fileOptions Optional file related meta-data
    * @see https://core.telegram.org/bots/api#sendphoto
    */
-  sendPhoto(
+  async sendPhoto(
     chatId: number | string,
     photo: BotTypes.FileInput,
     options: Record<string, unknown> = {},
@@ -931,7 +933,7 @@ export class TelegramBot extends EventEmitter {
     };
     opts.qs.chat_id = chatId;
     try {
-      const sendData = this._formatSendData('photo', photo, fileOptions);
+      const sendData = await this._formatSendData('photo', photo, fileOptions);
       opts.formData = sendData[0];
       opts.qs.photo = sendData[1];
     } catch (ex) {
@@ -948,7 +950,7 @@ export class TelegramBot extends EventEmitter {
    * @param fileOptions Optional file related meta-data
    * @see https://core.telegram.org/bots/api#sendaudio
    */
-  sendAudio(
+  async sendAudio(
     chatId: number | string,
     audio: BotTypes.FileInput,
     options: Record<string, unknown> = {},
@@ -960,10 +962,10 @@ export class TelegramBot extends EventEmitter {
     };
     opts.qs.chat_id = chatId;
     try {
-      const sendData = this._formatSendData('audio', audio, fileOptions);
+      const sendData = await this._formatSendData('audio', audio, fileOptions);
       opts.formData = sendData[0];
       opts.qs.audio = sendData[1];
-      this._fixAddFileThumbnail(options as { thumb?: string }, opts);
+      await this._fixAddFileThumbnail(options as { thumb?: string }, opts);
     } catch (ex) {
       return Promise.reject(ex);
     }
@@ -978,7 +980,7 @@ export class TelegramBot extends EventEmitter {
    * @param fileOptions Optional file related meta-data
    * @see https://core.telegram.org/bots/api#senddocument
    */
-  sendDocument(
+  async sendDocument(
     chatId: number | string,
     doc: BotTypes.FileInput,
     options: Record<string, unknown> = {},
@@ -990,10 +992,10 @@ export class TelegramBot extends EventEmitter {
     };
     opts.qs.chat_id = chatId;
     try {
-      const sendData = this._formatSendData('document', doc, fileOptions);
+      const sendData = await this._formatSendData('document', doc, fileOptions);
       opts.formData = sendData[0];
       opts.qs.document = sendData[1];
-      this._fixAddFileThumbnail(options as { thumb?: string }, opts);
+      await this._fixAddFileThumbnail(options as { thumb?: string }, opts);
     } catch (ex) {
       return Promise.reject(ex);
     }
@@ -1008,7 +1010,7 @@ export class TelegramBot extends EventEmitter {
    * @param fileOptions Optional file related meta-data
    * @see https://core.telegram.org/bots/api#sendvideo
    */
-  sendVideo(
+  async sendVideo(
     chatId: number | string,
     video: BotTypes.FileInput,
     options: Record<string, unknown> = {},
@@ -1020,10 +1022,10 @@ export class TelegramBot extends EventEmitter {
     };
     opts.qs.chat_id = chatId;
     try {
-      const sendData = this._formatSendData('video', video, fileOptions);
+      const sendData = await this._formatSendData('video', video, fileOptions);
       opts.formData = sendData[0];
       opts.qs.video = sendData[1];
-      this._fixAddFileThumbnail(options as { thumb?: string }, opts);
+      await this._fixAddFileThumbnail(options as { thumb?: string }, opts);
     } catch (ex) {
       return Promise.reject(ex);
     }
@@ -1038,7 +1040,7 @@ export class TelegramBot extends EventEmitter {
    * @param fileOptions Optional file related meta-data
    * @see https://core.telegram.org/bots/api#sendanimation
    */
-  sendAnimation(
+  async sendAnimation(
     chatId: number | string,
     animation: BotTypes.FileInput,
     options: Record<string, unknown> = {},
@@ -1049,7 +1051,7 @@ export class TelegramBot extends EventEmitter {
     };
     opts.qs.chat_id = chatId;
     try {
-      const sendData = this._formatSendData('animation', animation, fileOptions);
+      const sendData = await this._formatSendData('animation', animation, fileOptions);
       opts.formData = sendData[0];
       opts.qs.animation = sendData[1];
     } catch (ex) {
@@ -1066,7 +1068,7 @@ export class TelegramBot extends EventEmitter {
    * @param fileOptions Optional file related meta-data
    * @see https://core.telegram.org/bots/api#sendvoice
    */
-  sendVoice(
+  async sendVoice(
     chatId: number | string,
     voice: BotTypes.FileInput,
     options: Record<string, unknown> = {},
@@ -1077,7 +1079,7 @@ export class TelegramBot extends EventEmitter {
     };
     opts.qs.chat_id = chatId;
     try {
-      const sendData = this._formatSendData('voice', voice, fileOptions);
+      const sendData = await this._formatSendData('voice', voice, fileOptions);
       opts.formData = sendData[0];
       opts.qs.voice = sendData[1];
     } catch (ex) {
@@ -1094,7 +1096,7 @@ export class TelegramBot extends EventEmitter {
    * @param fileOptions Optional file related meta-data
    * @see https://core.telegram.org/bots/api#sendvideonote
    */
-  sendVideoNote(
+  async sendVideoNote(
     chatId: number | string,
     videoNote: BotTypes.FileInput,
     options: Record<string, unknown> = {},
@@ -1106,10 +1108,10 @@ export class TelegramBot extends EventEmitter {
     };
     opts.qs.chat_id = chatId;
     try {
-      const sendData = this._formatSendData('video_note', videoNote, fileOptions);
+      const sendData = await this._formatSendData('video_note', videoNote, fileOptions);
       opts.formData = sendData[0];
       opts.qs.video_note = sendData[1];
-      this._fixAddFileThumbnail(options as { thumb?: string }, opts);
+      await this._fixAddFileThumbnail(options as { thumb?: string }, opts);
     } catch (ex) {
       return Promise.reject(ex);
     }
@@ -1124,7 +1126,7 @@ export class TelegramBot extends EventEmitter {
    * @param fileOptions Optional file related meta-data
    * @see https://core.telegram.org/bots/api#sendsticker
    */
-  sendSticker(
+  async sendSticker(
     chatId: number | string,
     sticker: BotTypes.FileInput,
     options: Record<string, unknown> = {},
@@ -1135,7 +1137,7 @@ export class TelegramBot extends EventEmitter {
     };
     opts.qs.chat_id = chatId;
     try {
-      const sendData = this._formatSendData('sticker', sticker, fileOptions);
+      const sendData = await this._formatSendData('sticker', sticker, fileOptions);
       opts.formData = sendData[0];
       opts.qs.sticker = sendData[1];
     } catch (ex) {
@@ -1168,7 +1170,7 @@ export class TelegramBot extends EventEmitter {
    * @param options Additional Telegram query options
    * @see https://core.telegram.org/bots/api#sendmediagroup
    */
-  sendMediaGroup(
+  async sendMediaGroup(
     chatId: number | string,
     media: unknown[],
     options: Record<string, unknown> = {}
@@ -1187,7 +1189,7 @@ export class TelegramBot extends EventEmitter {
       delete payload.fileOptions;
       try {
         const attachName = String(index);
-        const [formData, fileId] = this._formatSendData(
+        const [formData, fileId] = await this._formatSendData(
           attachName,
           (input as { media: unknown }).media as BotTypes.FileInput,
           (input as { fileOptions?: { filename?: string; contentType?: string } }).fileOptions

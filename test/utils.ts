@@ -73,28 +73,27 @@ export function handleRatelimit(bot: any, methodName: string, suite: any): any {
   bot[methodName] = (...args: any[]) => {
     let retry = 0;
     function exec(): Promise<any> {
-      return method.call(bot, ...args)
-        .catch((error: any) => {
-          if (!error.response || error.response.statusCode !== 429) {
-            throw error;
-          }
-          retry++;
-          if (retry > maxRetries) {
-            throw error;
-          }
-          if (typeof error.response.body === 'string') {
-            error.response.body = JSON.parse(error.response.body);
-          }
-          const retrySecs = error.response.body.parameters.retry_after;
-          const timeout = (1000 * retrySecs) + (1000 * addSecs);
-          console.error('tests: Handling rate-limit error. Retrying after %d secs', timeout / 1000);
-          suite.timeout(timeout * 2);
-          return new Promise(function timeoutPromise(resolve, reject) {
-            setTimeout(function execTimeout() {
-              return exec().then(resolve).catch(reject);
-            }, timeout);
-          });
+      return method.call(bot, ...args).catch((error: any) => {
+        if (!error.response || error.response.statusCode !== 429) {
+          throw error;
+        }
+        retry++;
+        if (retry > maxRetries) {
+          throw error;
+        }
+        if (typeof error.response.body === 'string') {
+          error.response.body = JSON.parse(error.response.body);
+        }
+        const retrySecs = error.response.body.parameters.retry_after;
+        const timeout = 1000 * retrySecs + 1000 * addSecs;
+        console.error('tests: Handling rate-limit error. Retrying after %d secs', timeout / 1000);
+        suite.timeout(timeout * 2);
+        return new Promise(function timeoutPromise(resolve, reject) {
+          setTimeout(function execTimeout() {
+            return exec().then(resolve).catch(reject);
+          }, timeout);
         });
+      });
     }
     return exec();
   };
@@ -133,7 +132,7 @@ export function clearPollingCheck(port: number): void {
 export function hasOpenWebHook(port: number, reverse?: boolean): Promise<boolean> {
   const error = new Error('open-webhook-check failed');
   let connected = false;
-  
+
   // Simple HTTP check to see if port is open
   return new Promise((resolve, reject) => {
     const req = http.get(`http://127.0.0.1:${port}`, () => {
