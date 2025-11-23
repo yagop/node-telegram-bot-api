@@ -625,6 +625,28 @@ describe('TelegramBot', function telegramSuite() {
     });
   });
 
+  describe('#forwardMessages', function forwardMessagesSuite() {
+    before(function before() {
+      utils.handleRatelimit(bot, 'sendMessage', this);
+      utils.handleRatelimit(bot, 'forwardMessages', this);
+    });
+    it('should forward multiple messages', function test() {
+      return Promise.all([
+        bot.sendMessage(USERID, 'test 1'),
+        bot.sendMessage(USERID, 'test 2'),
+      ]).then(responses => {
+        const messageIds = [
+          responses[0].message_id,
+          responses[1].message_id,
+        ].sort();
+        return bot.forwardMessages(GROUPID, USERID, messageIds).then(forwarded => {
+          assert.ok(is.array(forwarded));
+          assert.ok(forwarded.length === 2);
+        });
+      });
+    });
+  });
+
   describe('#copyMessage', function copyMessageSuite() {
     before(function before() {
       utils.handleRatelimit(bot, 'sendMessage', this);
