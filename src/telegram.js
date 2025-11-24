@@ -238,6 +238,10 @@ class TelegramBot extends EventEmitter {
   }
 
   _fixAddFileThumbnail(options, opts) {
+    if (options.thumb) {
+      deprecate('The "thumb" parameter was renamed to "thumbnail" in Telegram Bot API v6.6. Please use the renamed parameter instead.');
+      options.thumbnail = options.thumb;
+    }
     if (options.thumbnail) {
       if (opts.formData === null) {
         opts.formData = {};
