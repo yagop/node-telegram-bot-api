@@ -60,6 +60,7 @@ TelegramBot
         * [.sendPoll(chatId, question, pollOptions, [options])](#TelegramBot+sendPoll) ⇒ <code>Promise</code>
         * [.sendChecklist(businessConnectionId, chatId, checklist, [options])](#TelegramBot+sendChecklist) ⇒ <code>Promise</code>
         * [.sendDice(chatId, [options])](#TelegramBot+sendDice) ⇒ <code>Promise</code>
+        * [.sendMessageDraft(chatId, draftId, text, [options])](#TelegramBot+sendMessageDraft) ⇒ <code>Promise</code>
         * [.sendChatAction(chatId, action, [options])](#TelegramBot+sendChatAction) ⇒ <code>Promise</code>
         * [.setMessageReaction(chatId, messageId, [options])](#TelegramBot+setMessageReaction) ⇒ <code>Promise.&lt;Boolean&gt;</code>
         * [.getUserProfilePhotos(userId, [options])](#TelegramBot+getUserProfilePhotos) ⇒ <code>Promise</code>
@@ -966,6 +967,23 @@ Use this method to send an animated emoji that will display a random value.
 | Param | Type | Description |
 | --- | --- | --- |
 | chatId | <code>Number</code> \| <code>String</code> | Unique identifier for the target chat or username of the target channel (in the format `@channelusername`) |
+| [options] | <code>Object</code> | Additional Telegram query options |
+
+<a name="TelegramBot+sendMessageDraft"></a>
+
+### telegramBot.sendMessageDraft(chatId, draftId, text, [options]) ⇒ <code>Promise</code>
+Send Message Draft
+Use this method to stream a partial message to a user while the message is being generated; supported only for bots with forum topic mode enabled. Returns True on success.
+
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
+**Returns**: <code>Promise</code> - On success, return true  
+**See**: https://core.telegram.org/bots/api#sendmessagedraft  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| chatId | <code>Number</code> \| <code>String</code> | Unique identifier for the target private chat |
+| draftId | <code>Number</code> | Unique identifier of the message draft; must be non-zero. Changes of drafts with the same identifier are animated |
+| text | <code>String</code> | Text of the message to be sent, 1-4096 characters after entities parsing |
 | [options] | <code>Object</code> | Additional Telegram query options |
 
 <a name="TelegramBot+sendChatAction"></a>

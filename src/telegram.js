@@ -1588,6 +1588,22 @@ class TelegramBot extends EventEmitter {
     return this._request('sendDice', opts);
   }
 
+  /**
+   * Send Message Draft
+   * Use this method to stream a partial message to a user while the message is being generated; supported only for bots with forum topic mode enabled. Returns True on success.
+   * @param {Number|String} chatId  Unique identifier for the target private chat
+   * @param {Number} draftId  Unique identifier of the message draft; must be non-zero. Changes of drafts with the same identifier are animated
+   * @param {String} text  Text of the message to be sent, 1-4096 characters after entities parsing
+   * @param {Object} [options] Additional Telegram query options
+   * @return {Promise}  On success, return true
+   * @see https://core.telegram.org/bots/api#sendmessagedraft
+   */
+  sendMessageDraft(chatId, draftId, text, form = {}) {
+    form.chat_id = chatId;
+    form.draft_id = draftId;
+    form.text = text;
+    return this._request('sendMessageDraft', { form });
+  }
 
   /**
    * Send chat action.
