@@ -1107,6 +1107,16 @@ describe('TelegramBot', function telegramSuite() {
     });
   });
 
+  describe('#sendMessageDraft', function sendMessageDraftSuite() {
+    it('should send a Draft', function test() {
+      const draftId = Date.now();
+      const text = 'test content';
+      return bot.sendMessageDraft(GROUPID, draftId, text).then(resp => {
+        assert.ok(is.boolean(resp));
+      });
+    });
+  });
+
   describe('#sendChatAction', function sendChatActionSuite() {
     before(function before() {
       utils.handleRatelimit(bot, 'sendChatAction', this);
