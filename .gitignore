@@ -7,4 +7,19 @@ output.md
 output/
 lib/
 lib-doc/
+dist/
 .DS_Store
+
+# Prevent compiled files in source directories
+src/**/*.js
+src/**/*.d.ts
+src/**/*.js.map
+src/**/*.d.ts.map
+test/**/*.js
+test/**/*.d.ts
+test/**/*.js.map
+test/**/*.d.ts.map
+examples/**/*.js
+examples/**/*.d.ts
+examples/**/*.js.map
+examples/**/*.d.ts.map
