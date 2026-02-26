@@ -13,6 +13,12 @@ import { WebHookOptions } from './types/bot-types';
 
 const debugLog = debug.default('node-telegram-bot-api');
 
+/**
+ * Handles webhook-based updates from the Telegram Bot API.
+ * Sets up an HTTP/HTTPS server to receive incoming updates via webhooks.
+ * Supports SSL/TLS configuration and health check endpoints.
+ * @see {@link https://core.telegram.org/bots/api#setwebhook|Telegram Bot API - setWebhook}
+ */
 export class TelegramBotWebHook {
   private bot: TelegramBot;
   private options: WebHookOptions;

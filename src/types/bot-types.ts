@@ -1,5 +1,6 @@
 /// <reference types="node" />
 
+/** Configuration options for initializing a TelegramBot instance. */
 export interface TelegramBotOptions {
   /** Bot token */
   token?: string;
@@ -23,6 +24,7 @@ export interface TelegramBotOptions {
   onlyFirstMatch?: boolean;
 }
 
+/** Options for configuring long polling behavior when receiving updates. */
 export interface PollingOptions {
   /** Identifier of the first update to be returned */
   offset?: number;
@@ -40,6 +42,7 @@ export interface PollingOptions {
   params?: Record<string, unknown>;
 }
 
+/** Options for configuring the webhook server to receive updates. */
 export interface WebHookOptions {
   /** HTTPS url to send updates to */
   url?: string;
@@ -73,6 +76,7 @@ export interface WebHookOptions {
   pfx?: string;
 }
 
+/** Options for configuring HTTP requests made to the Telegram API. */
 export interface RequestOptions {
   /** Request timeout in milliseconds */
   timeout?: number;
@@ -90,6 +94,7 @@ export interface RequestOptions {
   forever?: boolean;
 }
 
+/** HTTPS/TLS configuration options for secure connections. */
 export interface HttpsOptions {
   /** Pfx certificate */
   pfx?: Buffer | string;
@@ -121,6 +126,7 @@ export interface HttpsOptions {
   sessionIdContext?: string;
 }
 
+/** Options for the sendMessage method. */
 export interface SendMessageOptions {
   /** Send Markdown or HTML, if you want Telegram apps to show bold, italic, fixed-width text or inline URLs */
   parse_mode?: 'Markdown' | 'MarkdownV2' | 'HTML';
@@ -144,6 +150,7 @@ export interface SendMessageOptions {
     | import('./telegram-types').ForceReply;
 }
 
+/** Options for the sendPhoto method. */
 export interface SendPhotoOptions extends SendMessageOptions {
   /** Photo caption */
   caption?: string;
@@ -151,6 +158,7 @@ export interface SendPhotoOptions extends SendMessageOptions {
   caption_entities?: import('./telegram-types').MessageEntity[];
 }
 
+/** Options for the sendAudio method. */
 export interface SendAudioOptions extends SendMessageOptions {
   /** Audio caption */
   caption?: string;
@@ -166,6 +174,7 @@ export interface SendAudioOptions extends SendMessageOptions {
   thumb?: FileInput;
 }
 
+/** Options for the sendDocument method. */
 export interface SendDocumentOptions extends SendMessageOptions {
   /** Document caption */
   caption?: string;
@@ -177,6 +186,7 @@ export interface SendDocumentOptions extends SendMessageOptions {
   disable_content_type_detection?: boolean;
 }
 
+/** Options for the sendVideo method. */
 export interface SendVideoOptions extends SendMessageOptions {
   /** Video caption */
   caption?: string;
@@ -194,6 +204,7 @@ export interface SendVideoOptions extends SendMessageOptions {
   supports_streaming?: boolean;
 }
 
+/** Options for the sendAnimation method. */
 export interface SendAnimationOptions extends SendMessageOptions {
   /** Animation caption */
   caption?: string;
@@ -209,6 +220,7 @@ export interface SendAnimationOptions extends SendMessageOptions {
   thumb?: FileInput;
 }
 
+/** Options for the sendVoice method. */
 export interface SendVoiceOptions extends SendMessageOptions {
   /** Voice message caption */
   caption?: string;
@@ -218,6 +230,7 @@ export interface SendVoiceOptions extends SendMessageOptions {
   duration?: number;
 }
 
+/** Options for the sendVideoNote method. */
 export interface SendVideoNoteOptions extends SendMessageOptions {
   /** Duration of sent video in seconds */
   duration?: number;
@@ -227,6 +240,7 @@ export interface SendVideoNoteOptions extends SendMessageOptions {
   thumb?: FileInput;
 }
 
+/** Options for the sendLocation method. */
 export interface SendLocationOptions extends SendMessageOptions {
   /** Period in seconds for which the location will be updated */
   live_period?: number;
@@ -238,6 +252,7 @@ export interface SendLocationOptions extends SendMessageOptions {
   proximity_alert_radius?: number;
 }
 
+/** Options for the sendVenue method. */
 export interface SendVenueOptions extends SendMessageOptions {
   /** Foursquare identifier of the venue */
   foursquare_id?: string;
@@ -249,6 +264,7 @@ export interface SendVenueOptions extends SendMessageOptions {
   google_place_type?: string;
 }
 
+/** Options for the sendContact method. */
 export interface SendContactOptions extends SendMessageOptions {
   /** Contact's last name */
   last_name?: string;
@@ -256,6 +272,7 @@ export interface SendContactOptions extends SendMessageOptions {
   vcard?: string;
 }
 
+/** Options for the sendPoll method. */
 export interface SendPollOptions extends SendMessageOptions {
   /** True, if the poll needs to be anonymous */
   is_anonymous?: boolean;
@@ -277,15 +294,19 @@ export interface SendPollOptions extends SendMessageOptions {
   is_closed?: boolean;
 }
 
+/** Options for the sendDice method. */
 export interface SendDiceOptions extends SendMessageOptions {
   /** Emoji on which the dice throw animation is based */
   emoji?: '🎲' | '🎯' | '🏀' | '⚽' | '🎳' | '🎰';
 }
 
+/** Options for the sendSticker method. */
 export interface SendStickerOptions extends SendMessageOptions {} // eslint-disable-line @typescript-eslint/no-empty-object-type
 
+/** Options for the sendGame method. */
 export interface SendGameOptions extends SendMessageOptions {} // eslint-disable-line @typescript-eslint/no-empty-object-type
 
+/** Options for the sendInvoice method used to send payment invoices. */
 export interface SendInvoiceOptions extends SendMessageOptions {
   /** Bot-defined invoice payload */
   payload: string;
@@ -327,6 +348,7 @@ export interface SendInvoiceOptions extends SendMessageOptions {
   is_flexible?: boolean;
 }
 
+/** Options for the getUpdates method to receive incoming updates via long polling. */
 export interface GetUpdatesOptions {
   /** Identifier of the first update to be returned */
   offset?: number;
@@ -338,6 +360,7 @@ export interface GetUpdatesOptions {
   allowed_updates?: string[];
 }
 
+/** Options for the setWebhook method to configure an HTTPS webhook URL. */
 export interface SetWebhookOptions {
   /** HTTPS url to send updates to */
   url: string;
@@ -355,6 +378,7 @@ export interface SetWebhookOptions {
   secret_token?: string;
 }
 
+/** Options for the answerCallbackQuery method to respond to callback queries from inline keyboards. */
 export interface AnswerCallbackQueryOptions {
   /** Text of the notification */
   text?: string;
@@ -366,6 +390,7 @@ export interface AnswerCallbackQueryOptions {
   cache_time?: number;
 }
 
+/** Options for the editMessageText method to edit text and game messages. */
 export interface EditMessageTextOptions {
   /** Required if inline_message_id is not specified. Unique identifier for the target chat */
   chat_id?: number | string;
@@ -383,6 +408,7 @@ export interface EditMessageTextOptions {
   reply_markup?: import('./telegram-types').InlineKeyboardMarkup;
 }
 
+/** Options for the editMessageCaption method to edit captions of messages. */
 export interface EditMessageCaptionOptions {
   /** Required if inline_message_id is not specified. Unique identifier for the target chat */
   chat_id?: number | string;
@@ -400,6 +426,7 @@ export interface EditMessageCaptionOptions {
   reply_markup?: import('./telegram-types').InlineKeyboardMarkup;
 }
 
+/** Options for the editMessageMedia method to edit animation, audio, document, photo, or video messages. */
 export interface EditMessageMediaOptions {
   /** Required if inline_message_id is not specified. Unique identifier for the target chat */
   chat_id?: number | string;
@@ -411,6 +438,7 @@ export interface EditMessageMediaOptions {
   reply_markup?: import('./telegram-types').InlineKeyboardMarkup;
 }
 
+/** Options for the editMessageReplyMarkup method to edit only the reply markup of messages. */
 export interface EditMessageReplyMarkupOptions {
   /** Required if inline_message_id is not specified. Unique identifier for the target chat */
   chat_id?: number | string;
@@ -422,6 +450,7 @@ export interface EditMessageReplyMarkupOptions {
   reply_markup?: import('./telegram-types').InlineKeyboardMarkup;
 }
 
+/** Options for the deleteMessage method to delete a message. */
 export interface DeleteMessageOptions {
   /** Unique identifier for the target chat */
   chat_id: number | string;
@@ -429,11 +458,13 @@ export interface DeleteMessageOptions {
   message_id: number;
 }
 
+/** Options for the getFile method to get basic info about a file. */
 export interface GetFileOptions {
   /** File identifier to get info about */
   file_id: string;
 }
 
+/** Options for the banChatMember method to ban a user from a group, supergroup, or channel. */
 export interface BanChatMemberOptions {
   /** Unique identifier for the target group or username of the target supergroup */
   chat_id: number | string;
@@ -445,6 +476,7 @@ export interface BanChatMemberOptions {
   revoke_messages?: boolean;
 }
 
+/** Options for the unbanChatMember method to unban a previously banned user. */
 export interface UnbanChatMemberOptions {
   /** Unique identifier for the target group or username of the target supergroup */
   chat_id: number | string;
@@ -454,6 +486,7 @@ export interface UnbanChatMemberOptions {
   only_if_banned?: boolean;
 }
 
+/** Options for the restrictChatMember method to restrict a user in a supergroup. */
 export interface RestrictChatMemberOptions {
   /** Unique identifier for the target chat */
   chat_id: number | string;
@@ -465,6 +498,7 @@ export interface RestrictChatMemberOptions {
   until_date?: number;
 }
 
+/** Options for the promoteChatMember method to promote or demote a user in a supergroup or channel. */
 export interface PromoteChatMemberOptions {
   /** Unique identifier for the target chat */
   chat_id: number | string;
@@ -494,6 +528,7 @@ export interface PromoteChatMemberOptions {
   can_pin_messages?: boolean;
 }
 
+/** Union type representing all possible message types that can be received. */
 export type MessageType =
   | 'text'
   | 'animation'
@@ -533,6 +568,7 @@ export type MessageType =
   | 'web_app_data'
   | 'message_reaction';
 
+/** Options for file uploads including filename and content type. */
 export interface FileOptions {
   /** Filename for the file */
   filename?: string;
@@ -540,18 +576,22 @@ export interface FileOptions {
   contentType?: string;
 }
 
+/** Extended readable stream interface with optional file path property. */
 export interface Stream extends NodeJS.ReadableStream {
   path?: string;
 }
 
+/** Union type representing valid file input formats for file uploads. */
 export type FileInput = string | Buffer | NodeJS.ReadableStream | Stream;
 
+/** Internal configuration for the polling mechanism after initialization. */
 export interface TelegramBotPollingConfig {
   interval: number;
   autoStart: boolean;
   params: GetUpdatesOptions;
 }
 
+/** Internal configuration for the webhook server after initialization. */
 export interface TelegramBotWebHookConfig {
   host: string;
   port: number;

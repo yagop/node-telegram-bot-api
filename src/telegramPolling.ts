@@ -11,6 +11,11 @@ interface CancellablePromise<T> extends Promise<T> {
   cancel?: (reason?: string) => void;
 }
 
+/**
+ * Configuration options for the polling mechanism.
+ * @description Defines the interval between polling requests and parameters passed to the getUpdates API call.
+ * @see {@link https://core.telegram.org/bots/api#getupdates|Telegram Bot API - getUpdates}
+ */
 export interface TelegramBotPollingConfig {
   interval: number;
   params: GetUpdatesOptions;
@@ -19,6 +24,12 @@ export interface TelegramBotPollingConfig {
 const debugLog = debug.default('node-telegram-bot-api');
 const ANOTHER_WEB_HOOK_USED = 409;
 
+/**
+ * Handles long polling against the Telegram Bot API servers.
+ * Manages the polling lifecycle including starting, stopping, and processing updates.
+ * Uses long polling with configurable intervals and timeout settings.
+ * @see {@link https://core.telegram.org/bots/api#getupdates|Telegram Bot API - getUpdates}
+ */
 export class TelegramBotPolling {
   private bot: TelegramBot;
   private options: TelegramBotPollingConfig;

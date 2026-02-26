@@ -76,6 +76,23 @@ function stringify(data: unknown): string {
   return JSON.stringify(data);
 }
 
+/**
+ * TelegramBot allows you to interact with the Telegram Bot API.
+ * Main class for creating and managing a Telegram bot. Supports both polling and webhook
+ * modes for receiving updates, and provides methods for all Telegram Bot API endpoints.
+ * @see {@link https://core.telegram.org/bots/api|Telegram Bot API Documentation}
+ * @example
+ * ```typescript
+ * import TelegramBot from 'node-telegram-bot-api';
+ *
+ * const bot = new TelegramBot('YOUR_TOKEN', { polling: true });
+ *
+ * bot.on('message', (msg) => {
+ *   bot.sendMessage(msg.chat.id, 'Hello!');
+ * });
+ * ```
+ * @extends EventEmitter
+ */
 export class TelegramBot extends EventEmitter {
   public readonly token: string;
   public readonly options: BotTypes.TelegramBotOptions;
@@ -560,10 +577,8 @@ export class TelegramBot extends EventEmitter {
   /**
    * Open webhook.
    * Multiple WebHooks are not supported.
-   * @param url URL to which WebHook will send updates
-   * @param certificate PEM certificate contents
-   * @param options
-   * @return Promise
+   * Uses webhook options from TelegramBotOptions.webHook configuration.
+   * @returns Promise that resolves when webhook is open
    */
   openWebHook(): Promise<void> {
     if (this.isPolling()) {

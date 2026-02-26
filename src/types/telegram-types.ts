@@ -1,6 +1,10 @@
 // Telegram Bot API Types
 // Based on the official Telegram Bot API documentation
 
+/**
+ * Represents a Telegram user or bot.
+ * @see https://core.telegram.org/bots/api#user
+ */
 export interface User {
   id: number;
   is_bot: boolean;
@@ -13,6 +17,10 @@ export interface User {
   supports_inline_queries?: boolean;
 }
 
+/**
+ * Represents a Telegram chat (private, group, supergroup, or channel).
+ * @see https://core.telegram.org/bots/api#chat
+ */
 export interface Chat {
   id: number;
   type: 'private' | 'group' | 'supergroup' | 'channel';
@@ -36,6 +44,10 @@ export interface Chat {
   location?: ChatLocation;
 }
 
+/**
+ * Represents a message in a Telegram chat.
+ * @see https://core.telegram.org/bots/api#message
+ */
 export interface Message {
   message_id: number;
   from?: User;
@@ -98,6 +110,10 @@ export interface Message {
   reply_markup?: InlineKeyboardMarkup;
 }
 
+/**
+ * Represents a special entity in a text message (e.g., hashtag, mention, URL).
+ * @see https://core.telegram.org/bots/api#messageentity
+ */
 export interface MessageEntity {
   type: MessageEntityType;
   offset: number;
@@ -107,6 +123,10 @@ export interface MessageEntity {
   language?: string;
 }
 
+/**
+ * Type of message entity (mention, hashtag, bold, etc.).
+ * @see https://core.telegram.org/bots/api#messageentity
+ */
 export type MessageEntityType =
   | 'mention'
   | 'hashtag'
@@ -125,6 +145,10 @@ export type MessageEntityType =
   | 'text_link'
   | 'text_mention';
 
+/**
+ * Represents one size of a photo or a file/sticker thumbnail.
+ * @see https://core.telegram.org/bots/api#photosize
+ */
 export interface PhotoSize {
   file_id: string;
   file_unique_id: string;
@@ -133,6 +157,10 @@ export interface PhotoSize {
   file_size?: number;
 }
 
+/**
+ * Represents an animation file (GIF or H.264/MPEG-4 AVC video without sound).
+ * @see https://core.telegram.org/bots/api#animation
+ */
 export interface Animation {
   file_id: string;
   file_unique_id: string;
@@ -145,6 +173,10 @@ export interface Animation {
   file_size?: number;
 }
 
+/**
+ * Represents an audio file to be treated as music.
+ * @see https://core.telegram.org/bots/api#audio
+ */
 export interface Audio {
   file_id: string;
   file_unique_id: string;
@@ -157,6 +189,10 @@ export interface Audio {
   thumb?: PhotoSize;
 }
 
+/**
+ * Represents a general file (as opposed to photos, voice messages, and audio files).
+ * @see https://core.telegram.org/bots/api#document
+ */
 export interface Document {
   file_id: string;
   file_unique_id: string;
@@ -166,6 +202,10 @@ export interface Document {
   file_size?: number;
 }
 
+/**
+ * Represents a video file.
+ * @see https://core.telegram.org/bots/api#video
+ */
 export interface Video {
   file_id: string;
   file_unique_id: string;
@@ -178,6 +218,10 @@ export interface Video {
   file_size?: number;
 }
 
+/**
+ * Represents a video message (available in Telegram apps as of v.4.0).
+ * @see https://core.telegram.org/bots/api#videonote
+ */
 export interface VideoNote {
   file_id: string;
   file_unique_id: string;
@@ -187,6 +231,10 @@ export interface VideoNote {
   file_size?: number;
 }
 
+/**
+ * Represents a voice note.
+ * @see https://core.telegram.org/bots/api#voice
+ */
 export interface Voice {
   file_id: string;
   file_unique_id: string;
@@ -195,6 +243,10 @@ export interface Voice {
   file_size?: number;
 }
 
+/**
+ * Represents a phone contact.
+ * @see https://core.telegram.org/bots/api#contact
+ */
 export interface Contact {
   phone_number: string;
   first_name: string;
@@ -203,22 +255,38 @@ export interface Contact {
   vcard?: string;
 }
 
+/**
+ * Represents an animated emoji that displays a random value.
+ * @see https://core.telegram.org/bots/api#dice
+ */
 export interface Dice {
   emoji: string;
   value: number;
 }
 
+/**
+ * Contains information about one answer option in a poll.
+ * @see https://core.telegram.org/bots/api#polloption
+ */
 export interface PollOption {
   text: string;
   voter_count: number;
 }
 
+/**
+ * Represents an answer of a user in a non-anonymous poll.
+ * @see https://core.telegram.org/bots/api#pollanswer
+ */
 export interface PollAnswer {
   poll_id: string;
   user: User;
   option_ids: number[];
 }
 
+/**
+ * Contains information about a poll.
+ * @see https://core.telegram.org/bots/api#poll
+ */
 export interface Poll {
   id: string;
   question: string;
@@ -235,6 +303,10 @@ export interface Poll {
   close_date?: number;
 }
 
+/**
+ * Represents a point on the map.
+ * @see https://core.telegram.org/bots/api#location
+ */
 export interface Location {
   longitude: number;
   latitude: number;
@@ -244,6 +316,10 @@ export interface Location {
   proximity_alert_radius?: number;
 }
 
+/**
+ * Represents a venue (location with name and address).
+ * @see https://core.telegram.org/bots/api#venue
+ */
 export interface Venue {
   location: Location;
   title: string;
@@ -254,40 +330,76 @@ export interface Venue {
   google_place_type?: string;
 }
 
+/**
+ * Describes data sent from a Web App to the bot.
+ * @see https://core.telegram.org/bots/api#webappdata
+ */
 export interface WebAppData {
   data: string;
   button_text: string;
 }
 
+/**
+ * Represents the content of a service message about a user triggering a proximity alert.
+ * @see https://core.telegram.org/bots/api#proximityalerttriggered
+ */
 export interface ProximityAlertTriggered {
   traveler: User;
   watcher: User;
   distance: number;
 }
 
+/**
+ * Represents a service message about a change in auto-delete timer settings.
+ * @see https://core.telegram.org/bots/api#messageautodeletetimerchanged
+ */
 export interface MessageAutoDeleteTimerChanged {
   message_auto_delete_time: number;
 }
 
+/**
+ * Represents a service message about a video chat scheduled in the chat.
+ * @see https://core.telegram.org/bots/api#videochatscheduled
+ */
 export interface VideoChatScheduled {
   start_date: number;
 }
 
+/**
+ * Represents a service message about a video chat started in the chat.
+ * @see https://core.telegram.org/bots/api#videochatstarted
+ */
 export interface VideoChatStarted {} // eslint-disable-line @typescript-eslint/no-empty-object-type
 
+/**
+ * Represents a service message about a video chat ended in the chat.
+ * @see https://core.telegram.org/bots/api#videochatended
+ */
 export interface VideoChatEnded {
   duration: number;
 }
 
+/**
+ * Represents a service message about new members invited to a video chat.
+ * @see https://core.telegram.org/bots/api#videochatparticipantsinvited
+ */
 export interface VideoChatParticipantsInvited {
   users: User[];
 }
 
+/**
+ * Represents a user's profile pictures.
+ * @see https://core.telegram.org/bots/api#userprofilephotos
+ */
 export interface UserProfilePhotos {
   total_count: number;
   photos: PhotoSize[][];
 }
 
+/**
+ * Represents a file ready to be downloaded.
+ * @see https://core.telegram.org/bots/api#file
+ */
 export interface File {
   file_id: string;
   file_unique_id: string;
@@ -295,10 +407,18 @@ export interface File {
   file_path?: string;
 }
 
+/**
+ * Describes a Web App.
+ * @see https://core.telegram.org/bots/api#webappinfo
+ */
 export interface WebApp {
   url: string;
 }
 
+/**
+ * Represents a custom keyboard with reply options.
+ * @see https://core.telegram.org/bots/api#replykeyboardmarkup
+ */
 export interface ReplyKeyboardMarkup {
   keyboard: KeyboardButton[][];
   resize_keyboard?: boolean;
@@ -307,6 +427,10 @@ export interface ReplyKeyboardMarkup {
   selective?: boolean;
 }
 
+/**
+ * Represents one button of the reply keyboard.
+ * @see https://core.telegram.org/bots/api#keyboardbutton
+ */
 export interface KeyboardButton {
   text: string;
   request_contact?: boolean;
@@ -315,19 +439,35 @@ export interface KeyboardButton {
   web_app?: WebApp;
 }
 
+/**
+ * Represents type of a poll allowed to be created with a keyboard button.
+ * @see https://core.telegram.org/bots/api#keyboardbuttonpolltype
+ */
 export interface KeyboardButtonPollType {
   type?: 'quiz' | 'regular';
 }
 
+/**
+ * Requests clients to remove the current custom keyboard.
+ * @see https://core.telegram.org/bots/api#replykeyboardremove
+ */
 export interface ReplyKeyboardRemove {
   remove_keyboard: true;
   selective?: boolean;
 }
 
+/**
+ * Represents an inline keyboard that appears right next to the message.
+ * @see https://core.telegram.org/bots/api#inlinekeyboardmarkup
+ */
 export interface InlineKeyboardMarkup {
   inline_keyboard: InlineKeyboardButton[][];
 }
 
+/**
+ * Represents one button of an inline keyboard.
+ * @see https://core.telegram.org/bots/api#inlinekeyboardbutton
+ */
 export interface InlineKeyboardButton {
   text: string;
   url?: string;
@@ -340,6 +480,10 @@ export interface InlineKeyboardButton {
   pay?: boolean;
 }
 
+/**
+ * Represents a parameter of the inline keyboard button used to automatically authorize a user.
+ * @see https://core.telegram.org/bots/api#loginurl
+ */
 export interface LoginUrl {
   url: string;
   forward_text?: string;
@@ -347,6 +491,10 @@ export interface LoginUrl {
   request_write_access?: boolean;
 }
 
+/**
+ * Represents an incoming callback query from a callback button in an inline keyboard.
+ * @see https://core.telegram.org/bots/api#callbackquery
+ */
 export interface CallbackQuery {
   id: string;
   from: User;
@@ -357,12 +505,20 @@ export interface CallbackQuery {
   game_short_name?: string;
 }
 
+/**
+ * Forces the user to reply to the bot's message.
+ * @see https://core.telegram.org/bots/api#forcereply
+ */
 export interface ForceReply {
   force_reply: true;
   input_field_placeholder?: string;
   selective?: boolean;
 }
 
+/**
+ * Represents a chat photo.
+ * @see https://core.telegram.org/bots/api#chatphoto
+ */
 export interface ChatPhoto {
   small_file_id: string;
   small_file_unique_id: string;
@@ -370,6 +526,10 @@ export interface ChatPhoto {
   big_file_unique_id: string;
 }
 
+/**
+ * Represents an invite link for a chat.
+ * @see https://core.telegram.org/bots/api#chatinvitelink
+ */
 export interface ChatInviteLink {
   invite_link: string;
   creator: User;
@@ -382,6 +542,10 @@ export interface ChatInviteLink {
   pending_join_request_count?: number;
 }
 
+/**
+ * Represents the rights of an administrator in a chat.
+ * @see https://core.telegram.org/bots/api#chatadministratorrights
+ */
 export interface ChatAdministratorRights {
   is_anonymous: boolean;
   can_manage_chat: boolean;
@@ -396,16 +560,28 @@ export interface ChatAdministratorRights {
   can_pin_messages?: boolean;
 }
 
+/**
+ * Contains information about one member of a chat.
+ * @see https://core.telegram.org/bots/api#chatmember
+ */
 export interface ChatMember {
   status: ChatMemberStatus;
   user: User;
 }
 
+/**
+ * Represents a chat member that owns the chat.
+ * @see https://core.telegram.org/bots/api#chatmemberowner
+ */
 export interface ChatMemberOwner extends ChatMember {
   status: 'creator';
   is_anonymous: boolean;
 }
 
+/**
+ * Represents a chat member that has administrative privileges.
+ * @see https://core.telegram.org/bots/api#chatmemberadministrator
+ */
 export interface ChatMemberAdministrator extends ChatMember {
   status: 'administrator';
   can_be_edited: boolean;
@@ -422,10 +598,18 @@ export interface ChatMemberAdministrator extends ChatMember {
   is_anonymous: boolean;
 }
 
+/**
+ * Represents a chat member that has no additional privileges or restrictions.
+ * @see https://core.telegram.org/bots/api#chatmembermember
+ */
 export interface ChatMemberMember extends ChatMember {
   status: 'member';
 }
 
+/**
+ * Represents a chat member that is restricted in the chat.
+ * @see https://core.telegram.org/bots/api#chatmemberrestricted
+ */
 export interface ChatMemberRestricted extends ChatMember {
   status: 'restricted';
   is_member: boolean;
@@ -440,15 +624,27 @@ export interface ChatMemberRestricted extends ChatMember {
   until_date: number;
 }
 
+/**
+ * Represents a chat member that isn't currently a member of the chat but may join.
+ * @see https://core.telegram.org/bots/api#chatmemberleft
+ */
 export interface ChatMemberLeft extends ChatMember {
   status: 'left';
 }
 
+/**
+ * Represents a chat member that was banned in the chat.
+ * @see https://core.telegram.org/bots/api#chatmemberbanned
+ */
 export interface ChatMemberBanned extends ChatMember {
   status: 'kicked';
   until_date: number;
 }
 
+/**
+ * Chat member status indicating the role of a user in a chat.
+ * @see https://core.telegram.org/bots/api#chatmember
+ */
 export type ChatMemberStatus =
   | 'creator'
   | 'administrator'
@@ -457,6 +653,10 @@ export type ChatMemberStatus =
   | 'left'
   | 'kicked';
 
+/**
+ * Represents changes in the status of a chat member.
+ * @see https://core.telegram.org/bots/api#chatmemberupdated
+ */
 export interface ChatMemberUpdated {
   chat: Chat;
   from: User;
@@ -466,6 +666,10 @@ export interface ChatMemberUpdated {
   invite_link?: ChatInviteLink;
 }
 
+/**
+ * Represents a join request sent to a chat.
+ * @see https://core.telegram.org/bots/api#chatjoinrequest
+ */
 export interface ChatJoinRequest {
   chat: Chat;
   from: User;
@@ -474,6 +678,10 @@ export interface ChatJoinRequest {
   invite_link?: ChatInviteLink;
 }
 
+/**
+ * Describes actions that a non-administrator user is allowed to take in a chat.
+ * @see https://core.telegram.org/bots/api#chatpermissions
+ */
 export interface ChatPermissions {
   can_send_messages?: boolean;
   can_send_media_messages?: boolean;
@@ -485,21 +693,37 @@ export interface ChatPermissions {
   can_pin_messages?: boolean;
 }
 
+/**
+ * Represents a location to which a chat is connected.
+ * @see https://core.telegram.org/bots/api#chatlocation
+ */
 export interface ChatLocation {
   location: Location;
   address: string;
 }
 
+/**
+ * Represents a bot command.
+ * @see https://core.telegram.org/bots/api#botcommand
+ */
 export interface BotCommand {
   command: string;
   description: string;
 }
 
+/**
+ * Describes why a request was unsuccessful.
+ * @see https://core.telegram.org/bots/api#responseparameters
+ */
 export interface ResponseParameters {
   migrate_to_chat_id?: number;
   retry_after?: number;
 }
 
+/**
+ * Represents the content of a media message to be sent.
+ * @see https://core.telegram.org/bots/api#inputmedia
+ */
 export interface InputMedia {
   type: string;
   media: string;
@@ -508,10 +732,18 @@ export interface InputMedia {
   caption_entities?: MessageEntity[];
 }
 
+/**
+ * Represents a photo to be sent.
+ * @see https://core.telegram.org/bots/api#inputmediaphoto
+ */
 export interface InputMediaPhoto extends InputMedia {
   type: 'photo';
 }
 
+/**
+ * Represents a video to be sent.
+ * @see https://core.telegram.org/bots/api#inputmediavideo
+ */
 export interface InputMediaVideo extends InputMedia {
   type: 'video';
   thumb?: string;
@@ -521,6 +753,10 @@ export interface InputMediaVideo extends InputMedia {
   supports_streaming?: boolean;
 }
 
+/**
+ * Represents an animation file (GIF or H.264/MPEG-4 AVC video without sound) to be sent.
+ * @see https://core.telegram.org/bots/api#inputmediaanimation
+ */
 export interface InputMediaAnimation extends InputMedia {
   type: 'animation';
   thumb?: string;
@@ -529,6 +765,10 @@ export interface InputMediaAnimation extends InputMedia {
   duration?: number;
 }
 
+/**
+ * Represents an audio file to be treated as music to be sent.
+ * @see https://core.telegram.org/bots/api#inputmediaaudio
+ */
 export interface InputMediaAudio extends InputMedia {
   type: 'audio';
   thumb?: string;
@@ -537,18 +777,30 @@ export interface InputMediaAudio extends InputMedia {
   title?: string;
 }
 
+/**
+ * Represents a general file to be sent.
+ * @see https://core.telegram.org/bots/api#inputmediadocument
+ */
 export interface InputMediaDocument extends InputMedia {
   type: 'document';
   thumb?: string;
   disable_content_type_detection?: boolean;
 }
 
+/**
+ * Represents the contents of a file to be uploaded.
+ * @see https://core.telegram.org/bots/api#inputfile
+ */
 export interface InputFile {
   filename?: string;
   contentType?: string;
   knownLength?: number;
 }
 
+/**
+ * Represents a sticker.
+ * @see https://core.telegram.org/bots/api#sticker
+ */
 export interface Sticker {
   file_id: string;
   file_unique_id: string;
@@ -563,6 +815,10 @@ export interface Sticker {
   file_size?: number;
 }
 
+/**
+ * Represents a sticker set.
+ * @see https://core.telegram.org/bots/api#stickerset
+ */
 export interface StickerSet {
   name: string;
   title: string;
@@ -573,6 +829,10 @@ export interface StickerSet {
   thumb?: PhotoSize;
 }
 
+/**
+ * Describes the position on faces where a mask should be placed.
+ * @see https://core.telegram.org/bots/api#maskposition
+ */
 export interface MaskPosition {
   point: 'forehead' | 'eyes' | 'mouth' | 'chin';
   x_shift: number;
@@ -580,6 +840,10 @@ export interface MaskPosition {
   scale: number;
 }
 
+/**
+ * Represents an incoming inline query.
+ * @see https://core.telegram.org/bots/api#inlinequery
+ */
 export interface InlineQuery {
   id: string;
   from: User;
@@ -589,11 +853,19 @@ export interface InlineQuery {
   location?: Location;
 }
 
+/**
+ * Represents one result of an inline query.
+ * @see https://core.telegram.org/bots/api#inlinequeryresult
+ */
 export interface InlineQueryResult {
   type: string;
   id: string;
 }
 
+/**
+ * Represents a result of an inline query that was chosen by the user and sent to their chat partner.
+ * @see https://core.telegram.org/bots/api#choseninlineresult
+ */
 export interface ChosenInlineResult {
   result_id: string;
   from: User;
@@ -602,6 +874,10 @@ export interface ChosenInlineResult {
   query: string;
 }
 
+/**
+ * Contains information about an incoming shipping query.
+ * @see https://core.telegram.org/bots/api#shippingquery
+ */
 export interface ShippingQuery {
   id: string;
   from: User;
@@ -609,6 +885,10 @@ export interface ShippingQuery {
   shipping_address: ShippingAddress;
 }
 
+/**
+ * Contains information about an incoming pre-checkout query.
+ * @see https://core.telegram.org/bots/api#precheckoutquery
+ */
 export interface PreCheckoutQuery {
   id: string;
   from: User;
@@ -619,11 +899,19 @@ export interface PreCheckoutQuery {
   order_info?: OrderInfo;
 }
 
+/**
+ * Describes Telegram Passport data shared with the bot by the user.
+ * @see https://core.telegram.org/bots/api#passportdata
+ */
 export interface PassportData {
   data: EncryptedPassportElement[];
   credentials: EncryptedCredentials;
 }
 
+/**
+ * Represents a file uploaded to Telegram Passport.
+ * @see https://core.telegram.org/bots/api#passportfile
+ */
 export interface PassportFile {
   file_id: string;
   file_unique_id: string;
@@ -631,6 +919,10 @@ export interface PassportFile {
   file_date: number;
 }
 
+/**
+ * Describes documents or other Telegram Passport elements shared with the bot.
+ * @see https://core.telegram.org/bots/api#encryptedpassportelement
+ */
 export interface EncryptedPassportElement {
   type: string;
   data?: string;
@@ -644,18 +936,30 @@ export interface EncryptedPassportElement {
   hash: string;
 }
 
+/**
+ * Describes data required for decrypting and authenticating EncryptedPassportElement.
+ * @see https://core.telegram.org/bots/api#encryptedcredentials
+ */
 export interface EncryptedCredentials {
   data: string;
   hash: string;
   secret: string;
 }
 
+/**
+ * Represents an error in the Telegram Passport element.
+ * @see https://core.telegram.org/bots/api#passportelementerror
+ */
 export interface PassportElementError {
   source: string;
   type: string;
   message: string;
 }
 
+/**
+ * Represents a game.
+ * @see https://core.telegram.org/bots/api#game
+ */
 export interface Game {
   title: string;
   description: string;
@@ -665,14 +969,26 @@ export interface Game {
   animation?: Animation;
 }
 
+/**
+ * A placeholder for the CallbackGame type (currently holds no information).
+ * @see https://core.telegram.org/bots/api#callbackgame
+ */
 export interface CallbackGame {} // eslint-disable-line @typescript-eslint/no-empty-object-type
 
+/**
+ * Represents one row of the high scores table for a game.
+ * @see https://core.telegram.org/bots/api#gamehighscore
+ */
 export interface GameHighScore {
   position: number;
   user: User;
   score: number;
 }
 
+/**
+ * Contains basic information about an invoice.
+ * @see https://core.telegram.org/bots/api#invoice
+ */
 export interface Invoice {
   title: string;
   description: string;
@@ -681,6 +997,10 @@ export interface Invoice {
   total_amount: number;
 }
 
+/**
+ * Represents a shipping address.
+ * @see https://core.telegram.org/bots/api#shippingaddress
+ */
 export interface ShippingAddress {
   country_code: string;
   state: string;
@@ -690,6 +1010,10 @@ export interface ShippingAddress {
   post_code: string;
 }
 
+/**
+ * Represents information about an order.
+ * @see https://core.telegram.org/bots/api#orderinfo
+ */
 export interface OrderInfo {
   name?: string;
   phone_number?: string;
@@ -697,12 +1021,20 @@ export interface OrderInfo {
   shipping_address?: ShippingAddress;
 }
 
+/**
+ * Represents one shipping option.
+ * @see https://core.telegram.org/bots/api#shippingoption
+ */
 export interface ShippingOption {
   id: string;
   title: string;
   prices: LabeledPrice[];
 }
 
+/**
+ * Contains basic information about a successful payment.
+ * @see https://core.telegram.org/bots/api#successfulpayment
+ */
 export interface SuccessfulPayment {
   currency: string;
   total_amount: number;
@@ -713,6 +1045,10 @@ export interface SuccessfulPayment {
   provider_payment_charge_id: string;
 }
 
+/**
+ * Contains information about an incoming shipping query (duplicate declaration).
+ * @see https://core.telegram.org/bots/api#shippingquery
+ */
 export interface ShippingQuery {
   id: string;
   from: User;
@@ -720,11 +1056,19 @@ export interface ShippingQuery {
   shipping_address: ShippingAddress;
 }
 
+/**
+ * Represents a portion of the price for goods or services.
+ * @see https://core.telegram.org/bots/api#labeledprice
+ */
 export interface LabeledPrice {
   label: string;
   amount: number;
 }
 
+/**
+ * Represents an incoming update from Telegram.
+ * @see https://core.telegram.org/bots/api#update
+ */
 export interface Update {
   update_id: number;
   message?: Message;
@@ -743,6 +1087,10 @@ export interface Update {
   chat_join_request?: ChatJoinRequest;
 }
 
+/**
+ * Describes the current status of a webhook.
+ * @see https://core.telegram.org/bots/api#webhookinfo
+ */
 export interface WebhookInfo {
   url: string;
   has_custom_certificate: boolean;
@@ -755,8 +1103,16 @@ export interface WebhookInfo {
   allowed_updates?: string[];
 }
 
+/**
+ * Formatting mode for text messages (Markdown, MarkdownV2, or HTML).
+ * @see https://core.telegram.org/bots/api#formatting-options
+ */
 export type ParseMode = 'Markdown' | 'MarkdownV2' | 'HTML';
 
+/**
+ * Type of action to broadcast to the chat (e.g., typing, uploading).
+ * @see https://core.telegram.org/bots/api#sendchataction
+ */
 export type ChatAction =
   | 'typing'
   | 'upload_photo'

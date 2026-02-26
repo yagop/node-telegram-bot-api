@@ -1,5 +1,20 @@
 /// <reference types="node" />
 
+/**
+ * Base error class for all Telegram Bot API errors.
+ * @description Provides a standardized error structure with error codes and JSON serialization.
+ * All other error classes in this module extend from BaseError.
+ * @example
+ * ```typescript
+ * try {
+ *   // bot operation
+ * } catch (error) {
+ *   if (error instanceof BaseError) {
+ *     console.log(error.code, error.message);
+ *   }
+ * }
+ * ```
+ */
 export class BaseError extends Error {
   public readonly code: string;
 
@@ -13,6 +28,10 @@ export class BaseError extends Error {
     this.code = code;
   }
 
+  /**
+   * Converts the error to a JSON-serializable object.
+   * @returns An object containing the error code and message.
+   */
   toJSON(): { code: string; message: string } {
     return {
       code: this.code,
@@ -21,6 +40,12 @@ export class BaseError extends Error {
   }
 }
 
+/**
+ * Represents a fatal, unrecoverable error.
+ * @description Thrown when the bot encounters a critical failure that prevents normal operation.
+ * Error code is "EFATAL". Can wrap an existing Error to preserve the original stack trace.
+ * @extends BaseError
+ */
 export class FatalError extends BaseError {
   public readonly cause?: Error;
 
@@ -40,6 +65,12 @@ export class FatalError extends BaseError {
   }
 }
 
+/**
+ * Represents an error during response parsing.
+ * @description Thrown when the bot fails to parse a response from the Telegram API.
+ * Error code is "EPARSE". Includes the original server response for debugging.
+ * @extends BaseError
+ */
 export class ParseError extends BaseError {
   public readonly response: unknown;
 
@@ -54,6 +85,13 @@ export class ParseError extends BaseError {
   }
 }
 
+/**
+ * Represents an error returned by the Telegram Bot API.
+ * @description Thrown when the Telegram API returns an error response.
+ * Error code is "ETELEGRAM". Includes the full API response for error handling.
+ * @see {@link https://core.telegram.org/bots/api#making-requests|Telegram Bot API - Making Requests}
+ * @extends BaseError
+ */
 export class TelegramError extends BaseError {
   public readonly response: unknown;
 
@@ -68,6 +106,22 @@ export class TelegramError extends BaseError {
   }
 }
 
+/**
+ * Collection of all error classes used by the Telegram Bot API library.
+ * Provides convenient access to all error types for error handling and type checking.
+ * @example
+ * ```typescript
+ * import { errors } from 'node-telegram-bot-api';
+ *
+ * try {
+ *   await bot.sendMessage(chatId, text);
+ * } catch (error) {
+ *   if (error instanceof errors.TelegramError) {
+ *     console.log('Telegram API error:', error.response);
+ *   }
+ * }
+ * ```
+ */
 export const errors = {
   BaseError,
   FatalError,
