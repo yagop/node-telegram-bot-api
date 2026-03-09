@@ -12,10 +12,10 @@ describe('#_formatSendData', function sendfileSuite() {
   const bot = new TelegramBot('token');
   const type = 'file';
 
-  before(function beforeSuite() {
+  beforeAll(function beforeSuite() {
     process.env.NTBA_FIX_350 = 1;
   });
-  after(function afterSuite() {
+  afterAll(function afterSuite() {
     delete process.env.NTBA_FIX_350;
   });
 
@@ -40,8 +40,7 @@ describe('#_formatSendData', function sendfileSuite() {
 
       it('(2) Stream#path', function test() {
         if (!stream.path) {
-          this.skip('Stream#path unsupported');
-          return;
+          return; // Stream#path unsupported
         }
         const [{ [type]: data }] = bot._formatSendData(type, stream);
         assert.equal(data.options.filename, path.basename(paths.audio));
@@ -71,8 +70,7 @@ describe('#_formatSendData', function sendfileSuite() {
 
       it('(2) Stream#path', function test() {
         if (!stream.path) {
-          this.skip('Stream#path unsupported');
-          return;
+          return; // Stream#path unsupported
         }
         const [{ [type]: data }] = bot._formatSendData(type, stream);
         assert.equal(data.options.contentType, 'audio/mpeg');

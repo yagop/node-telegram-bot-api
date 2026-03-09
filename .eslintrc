@@ -10,10 +10,7 @@
     "comma-dangle": 0,
     "indent": ["error", 2]
   },
-  "plugins": [
-    "mocha"
-  ],
   "env": {
-    "mocha": true
+    "jest": true
   }
 }

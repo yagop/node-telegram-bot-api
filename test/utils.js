@@ -10,7 +10,6 @@ exports = module.exports = {
    * Redefine a bot method to allow us to ignore 429 (rate-limit) errors
    * @param  {TelegramBot} bot
    * @param  {String} methodName
-   * @param  {Suite} suite From mocha
    * @return {TelegramBot}
    */
   handleRatelimit,
@@ -184,7 +183,7 @@ function sendWebHookMessage(port, token, options = {}) {
 }
 
 
-function handleRatelimit(bot, methodName, suite) {
+function handleRatelimit(bot, methodName) {
   const backupMethodName = `__${methodName}`;
   if (!bot[backupMethodName]) bot[backupMethodName] = bot[methodName];
 
@@ -211,7 +210,7 @@ function handleRatelimit(bot, methodName, suite) {
           const retrySecs = error.response.body.parameters.retry_after;
           const timeout = (1000 * retrySecs) + (1000 * addSecs);
           console.error('tests: Handling rate-limit error. Retrying after %d secs', timeout / 1000); // eslint-disable-line no-console
-          suite.timeout(timeout * 2);
+          jest.setTimeout(timeout * 2);
           return new Promise(function timeoutPromise(resolve, reject) {
             setTimeout(function execTimeout() {
               return exec().then(resolve).catch(reject);
