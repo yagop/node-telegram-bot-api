@@ -2421,7 +2421,7 @@ class TelegramBot extends EventEmitter {
    */
   unpinAllGeneralForumTopicMessages(chatId, form = {}) {
     form.chat_id = chatId;
-    return this._request('unhideGeneralForumTopic', { form });
+    return this._request('unpinAllGeneralForumTopicMessages', { form });
   }
 
   /**
@@ -3708,6 +3708,34 @@ class TelegramBot extends EventEmitter {
   }
 
   /**
+   * Use this method to get gifts owned by a regular user.
+   *
+   * @param {Number} userId Unique identifier of the target user.
+   * @param {Object} [options] Additional Telegram query options
+   * @return {Promise} On success, returns an [OwnedGifts](https://core.telegram.org/bots/api#ownedgifts) object.
+   * @see https://core.telegram.org/bots/api#getusergifts
+   */
+  getUserGifts(userId, form = {}) {
+    form.user_id = userId;
+    return this._request('getUserGifts', { form });
+  }
+
+  /**
+   * Use this method to get gifts received by a channel chat or a business account managed by the bot.
+   *
+   * Requires the **can_view_gifts_and_stars** administrator right if the chat is a channel.
+   *
+   * @param {Number|String} chatId Unique identifier for the target chat or username of the target channel (in the format `@channelusername`).
+   * @param {Object} [options] Additional Telegram query options
+   * @return {Promise} On success, returns an [OwnedGifts](https://core.telegram.org/bots/api#ownedgifts) object.
+   * @see https://core.telegram.org/bots/api#getchatgifts
+   */
+  getChatGifts(chatId, form = {}) {
+    form.chat_id = chatId;
+    return this._request('getChatGifts', { form });
+  }
+
+  /**
    * This method converts a given regular gift to Telegram Stars.
    *
    * Requires the **can_convert_gifts_to_stars** business bot right.
@@ -3806,6 +3834,28 @@ class TelegramBot extends EventEmitter {
     }
 
     return this._request('postStory', opts);
+  }
+
+  /**
+   * This method reposts a story on behalf of a managed business account.
+   *
+   * Requires the **can_manage_stories** business bot right for both the source and destination accounts.
+   * The story must have been originally posted or reposted by the bot itself.
+   *
+   * @param {String} businessConnectionId Unique identifier of the business connection of the account that will repost the story.
+   * @param {Number} fromChatId Unique identifier of the chat that originally posted the story.
+   * @param {Number} fromStoryId Unique identifier of the story to repost.
+   * @param {Number} activePeriod The period after which the story is moved to archive, in seconds; must be one of 21600, 43200, 86400, or 172800.
+   * @param {Object} [options] Additional Telegram query options
+   * @return {Promise} On success, returns a [Story](https://core.telegram.org/bots/api#story) object.
+   * @see https://core.telegram.org/bots/api#repoststory
+   */
+  repostStory(businessConnectionId, fromChatId, fromStoryId, activePeriod, form = {}) {
+    form.business_connection_id = businessConnectionId;
+    form.from_chat_id = fromChatId;
+    form.from_story_id = fromStoryId;
+    form.active_period = activePeriod;
+    return this._request('repostStory', { form });
   }
 
   /**

@@ -2130,4 +2130,63 @@ describe('TelegramBot', function telegramSuite() {
       });
     });
   });
+
+  describe('#getUserGifts', function getUserGiftsSuite() {
+    before(function before() {
+      utils.handleRatelimit(bot, 'getUserGifts', this);
+    });
+    it('should return an OwnedGifts object', function test() {
+      return bot.getUserGifts(USERID).then(resp => {
+        assert.ok(is.object(resp));
+        assert.ok(is.array(resp.gifts));
+        assert.ok(is.number(resp.total_count));
+      });
+    });
+    it('should support pagination options', function test() {
+      return bot.getUserGifts(USERID, { limit: 10, offset: '' }).then(resp => {
+        assert.ok(is.object(resp));
+        assert.ok(is.array(resp.gifts));
+      });
+    });
+  });
+
+  describe.skip('#getChatGifts', function getChatGiftsSuite() {
+    // Requires can_view_gifts_and_stars administrator right for channels
+    it('should return an OwnedGifts object for a channel', function test() {
+      return bot.getChatGifts(GROUPID).then(resp => {
+        assert.ok(is.object(resp));
+        assert.ok(is.array(resp.gifts));
+        assert.ok(is.number(resp.total_count));
+      });
+    });
+  });
+
+  describe.skip('#sendMessageDraft', function sendMessageDraftSuite() {
+    // Requires special bot permissions; available to all bots since Bot API 9.5
+    it('should send a message draft', function test() {
+      return bot.sendMessageDraft(USERID, 1, 'Draft text...').then(resp => {
+        assert.strictEqual(resp, true);
+      });
+    });
+    it('should update an existing draft with the same draft_id', function test() {
+      return bot.sendMessageDraft(USERID, 1, 'Updated draft text.').then(resp => {
+        assert.strictEqual(resp, true);
+      });
+    });
+  });
+
+  describe.skip('#repostStory', function repostStorySuite() {
+    // Requires two managed business accounts and a story posted by the bot
+    it('should repost a story to another business account', function test() {
+      const businessConnectionId = process.env.TEST_BUSINESS_CONNECTION_ID;
+      const fromChatId = process.env.TEST_STORY_CHAT_ID;
+      const fromStoryId = parseInt(process.env.TEST_STORY_ID, 10);
+      const activePeriod = 86400;
+      return bot.repostStory(businessConnectionId, fromChatId, fromStoryId, activePeriod).then(resp => {
+        assert.ok(is.object(resp));
+        assert.ok(is.number(resp.id));
+      });
+    });
+  });
+
 }); // End Telegram

@@ -181,10 +181,13 @@ TelegramBot
         * [.getBusinessAccountStarBalance(businessConnectionId, [options])](#TelegramBot+getBusinessAccountStarBalance) ⇒ <code>Promise</code>
         * [.transferBusinessAccountStars(businessConnectionId, starCount, [options])](#TelegramBot+transferBusinessAccountStars) ⇒ <code>Promise</code>
         * [.getBusinessAccountGifts(businessConnectionId, [options])](#TelegramBot+getBusinessAccountGifts) ⇒ <code>Promise</code>
+        * [.getUserGifts(userId, [options])](#TelegramBot+getUserGifts) ⇒ <code>Promise</code>
+        * [.getChatGifts(chatId, [options])](#TelegramBot+getChatGifts) ⇒ <code>Promise</code>
         * [.convertGiftToStars(businessConnectionId, ownedGiftId, [options])](#TelegramBot+convertGiftToStars) ⇒ <code>Promise</code>
         * [.upgradeGift(businessConnectionId, ownedGiftId, [options])](#TelegramBot+upgradeGift) ⇒ <code>Promise</code>
         * [.transferGift(businessConnectionId, ownedGiftId, newOwnerChatId, [options])](#TelegramBot+transferGift) ⇒ <code>Promise</code>
         * [.postStory(businessConnectionId, content, activePeriod, [options])](#TelegramBot+postStory) ⇒ <code>Promise</code>
+        * [.repostStory(businessConnectionId, fromChatId, fromStoryId, activePeriod, [options])](#TelegramBot+repostStory) ⇒ <code>Promise</code>
         * [.editStory(businessConnectionId, storyId, content, [options])](#TelegramBot+editStory) ⇒ <code>Promise</code>
         * [.deleteStory(businessConnectionId, storyId, [options])](#TelegramBot+deleteStory) ⇒ <code>Promise</code>
     * _static_
@@ -2956,6 +2959,36 @@ Requires the **can_view_gifts_and_stars** business bot right.
 | businessConnectionId | <code>String</code> | Unique identifier of the business connection. |
 | [options] | <code>Object</code> | Additional Telegram query options |
 
+<a name="TelegramBot+getUserGifts"></a>
+
+### telegramBot.getUserGifts(userId, [options]) ⇒ <code>Promise</code>
+Use this method to get gifts owned by a regular user.
+
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
+**Returns**: <code>Promise</code> - On success, returns an [OwnedGifts](https://core.telegram.org/bots/api#ownedgifts) object.  
+**See**: https://core.telegram.org/bots/api#getusergifts  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| userId | <code>Number</code> | Unique identifier of the target user. |
+| [options] | <code>Object</code> | Additional Telegram query options |
+
+<a name="TelegramBot+getChatGifts"></a>
+
+### telegramBot.getChatGifts(chatId, [options]) ⇒ <code>Promise</code>
+Use this method to get gifts received by a channel chat or a business account managed by the bot.
+
+Requires the **can_view_gifts_and_stars** administrator right if the chat is a channel.
+
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
+**Returns**: <code>Promise</code> - On success, returns an [OwnedGifts](https://core.telegram.org/bots/api#ownedgifts) object.  
+**See**: https://core.telegram.org/bots/api#getchatgifts  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| chatId | <code>Number</code> \| <code>String</code> | Unique identifier for the target chat or username of the target channel (in the format `@channelusername`). |
+| [options] | <code>Object</code> | Additional Telegram query options |
+
 <a name="TelegramBot+convertGiftToStars"></a>
 
 ### telegramBot.convertGiftToStars(businessConnectionId, ownedGiftId, [options]) ⇒ <code>Promise</code>
@@ -3026,6 +3059,26 @@ Requires the **can_manage_stories** business bot right.
 | businessConnectionId | <code>String</code> | Unique identifier of the business connection. |
 | content | <code>Array</code> | [InputStoryContent](https://core.telegram.org/bots/api#inputpaidmedia). The photo/video property can be String, Stream or Buffer. |
 | activePeriod | <code>Number</code> | Unique identifier of the chat which will own the gift. The chat **must be active in the last 24 hours**. |
+| [options] | <code>Object</code> | Additional Telegram query options |
+
+<a name="TelegramBot+repostStory"></a>
+
+### telegramBot.repostStory(businessConnectionId, fromChatId, fromStoryId, activePeriod, [options]) ⇒ <code>Promise</code>
+This method reposts a story on behalf of a managed business account.
+
+Requires the **can_manage_stories** business bot right for both the source and destination accounts.
+The story must have been originally posted or reposted by the bot itself.
+
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
+**Returns**: <code>Promise</code> - On success, returns a [Story](https://core.telegram.org/bots/api#story) object.  
+**See**: https://core.telegram.org/bots/api#repoststory  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| businessConnectionId | <code>String</code> | Unique identifier of the business connection of the account that will repost the story. |
+| fromChatId | <code>Number</code> | Unique identifier of the chat that originally posted the story. |
+| fromStoryId | <code>Number</code> | Unique identifier of the story to repost. |
+| activePeriod | <code>Number</code> | The period after which the story is moved to archive, in seconds; must be one of 21600, 43200, 86400, or 172800. |
 | [options] | <code>Object</code> | Additional Telegram query options |
 
 <a name="TelegramBot+editStory"></a>
