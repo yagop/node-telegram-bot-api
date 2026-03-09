@@ -99,7 +99,7 @@ class TelegramBotWebHook {
    */
   _error(error) {
     if (!this.bot.listeners('webhook_error').length) {
-      return console.error('error: [webhook_error] %j', error); // eslint-disable-line no-console
+      return console.error(`${new Date().toISOString()} error: [webhook_error] %j`, error); // eslint-disable-line no-console
     }
     return this.bot.emit('webhook_error', error);
   }

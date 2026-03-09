@@ -87,7 +87,7 @@ class TelegramBotPolling {
    */
   _error(error) {
     if (!this.bot.listeners('polling_error').length) {
-      return console.error('error: [polling_error] %j', error); // eslint-disable-line no-console
+      return console.error(`${new Date().toISOString()} error: [polling_error] %j`, error); // eslint-disable-line no-console
     }
     return this.bot.emit('polling_error', error);
   }
@@ -152,10 +152,11 @@ class TelegramBotPolling {
            */
           /* eslint-disable no-console */
           const bugUrl = 'https://github.com/yagop/node-telegram-bot-api/issues/36#issuecomment-268532067';
-          console.error('error: Internal handling of The Offset Infinite Loop failed');
-          console.error(`error: Due to error '${requestErr}'`);
-          console.error('error: You may receive already-processed updates on app restart');
-          console.error(`error: Please see ${bugUrl} for more information`);
+          const ts = new Date().toISOString();
+          console.error(`${ts} error: Internal handling of The Offset Infinite Loop failed`);
+          console.error(`${ts} error: Due to error '${requestErr}'`);
+          console.error(`${ts} error: You may receive already-processed updates on app restart`);
+          console.error(`${ts} error: Please see ${bugUrl} for more information`);
           /* eslint-enable no-console */
           return this.bot.emit('error', new errors.FatalError(err));
         });
