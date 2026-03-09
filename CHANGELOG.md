@@ -16,7 +16,14 @@ Added:
    * `#repostStory`
 
 2. Fixed method:
-   * unpinAllGeneralForumTopicMessages
+   * `unpinAllGeneralForumTopicMessages`
+
+3. Support Telegram Bot API v9.5 (by @danielperez9430)
+   * `setChatMemberTag`
+
+4. Support Telegram Bot API v9.6 (by @danielperez9430)
+   * setMyProfilePhoto
+   * removeMyProfilePhoto
 
 ## [0.67.0][0.67.0] - 2025-12-13
 

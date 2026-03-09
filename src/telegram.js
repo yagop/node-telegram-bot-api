@@ -1803,6 +1803,22 @@ class TelegramBot extends EventEmitter {
     return this._request('setChatAdministratorCustomTitle', { form });
   }
 
+  /**
+   * Use this method to set a tag for a regular member in a group or a supergroup.
+   *
+   * The bot must be an administrator in the chat for this to work and must have the can_manage_tags administrator right.
+   *
+   * @param {Number|String} chatId  Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
+   * @param {Number} userId Unique identifier of the target user
+   * @param {Object} [options] Additional Telegram query options
+   * @return {Promise} True on success
+   * @see https://core.telegram.org/bots/api#setchatmembertag
+   */
+  setChatMemberTag(chatId, userId, form = {}) {
+    form.chat_id = chatId;
+    form.user_id = userId;
+    return this._request('setChatMemberTag', { form });
+  }
 
   /**
    * Use this method to ban a channel chat in a supergroup or a channel.
@@ -2628,6 +2644,41 @@ class TelegramBot extends EventEmitter {
    */
   getMyShortDescription(form = {}) {
     return this._request('getMyShortDescription', { form });
+  }
+
+  /**
+   * Changes the profile photo of the bot.
+   *
+   * @param {String|stream.Stream|Buffer} photo New profile photo.
+   * @param {Object} [options] Additional Telegram query options
+   * @return {Promise} True on success
+   * @see https://core.telegram.org/bots/api#setmyprofilephoto
+   */
+  setMyProfilePhoto(photo, options = {}) {
+    const opts = {
+      qs: options,
+    };
+
+    try {
+      const sendData = this._formatSendData('photo', photo);
+      opts.formData = sendData[0];
+      opts.qs.photo = sendData[1];
+    } catch (ex) {
+      return Promise.reject(ex);
+    }
+
+    return this._request('setMyProfilePhoto', opts);
+  }
+
+  /**
+   * Removes the profile photo of the bot.
+   *
+   * @param {Object} [options] Additional Telegram query options
+   * @return {Promise} True on success
+   * @see https://core.telegram.org/bots/api#removemyprofilephoto
+   */
+  removeMyProfilePhoto(form = {}) {
+    return this._request('removeMyProfilePhoto', { form });
   }
 
   /**

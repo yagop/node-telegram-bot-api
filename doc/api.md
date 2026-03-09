@@ -71,6 +71,7 @@ TelegramBot
         * [.restrictChatMember(chatId, userId, [options])](#TelegramBot+restrictChatMember) ⇒ <code>Promise</code>
         * [.promoteChatMember(chatId, userId, [options])](#TelegramBot+promoteChatMember) ⇒ <code>Promise</code>
         * [.setChatAdministratorCustomTitle(chatId, userId, customTitle, [options])](#TelegramBot+setChatAdministratorCustomTitle) ⇒ <code>Promise</code>
+        * [.setChatMemberTag(chatId, userId, [options])](#TelegramBot+setChatMemberTag) ⇒ <code>Promise</code>
         * [.banChatSenderChat(chatId, senderChatId, [options])](#TelegramBot+banChatSenderChat) ⇒ <code>Promise</code>
         * [.unbanChatSenderChat(chatId, senderChatId, [options])](#TelegramBot+unbanChatSenderChat) ⇒ <code>Promise</code>
         * [.setChatPermissions(chatId, chatPermissions, [options])](#TelegramBot+setChatPermissions) ⇒ <code>Promise</code>
@@ -122,6 +123,8 @@ TelegramBot
         * [.getMyDescription([options])](#TelegramBot+getMyDescription) ⇒ <code>Promise</code>
         * [.setMyShortDescription([options])](#TelegramBot+setMyShortDescription) ⇒ <code>Promise</code>
         * [.getMyShortDescription([options])](#TelegramBot+getMyShortDescription) ⇒ <code>Promise</code>
+        * [.setMyProfilePhoto(photo, [options])](#TelegramBot+setMyProfilePhoto) ⇒ <code>Promise</code>
+        * [.removeMyProfilePhoto([options])](#TelegramBot+removeMyProfilePhoto) ⇒ <code>Promise</code>
         * [.setChatMenuButton([options])](#TelegramBot+setChatMenuButton) ⇒ <code>Promise</code>
         * [.getChatMenuButton([options])](#TelegramBot+getChatMenuButton) ⇒ <code>Promise</code>
         * [.setMyDefaultAdministratorRights([options])](#TelegramBot+setMyDefaultAdministratorRights) ⇒ <code>Promise</code>
@@ -1172,6 +1175,23 @@ Use this method to set a custom title for an administrator in a supergroup promo
 | customTitle | <code>String</code> | New custom title for the administrator; 0-16 characters, emoji are not allowed |
 | [options] | <code>Object</code> | Additional Telegram query options |
 
+<a name="TelegramBot+setChatMemberTag"></a>
+
+### telegramBot.setChatMemberTag(chatId, userId, [options]) ⇒ <code>Promise</code>
+Use this method to set a tag for a regular member in a group or a supergroup.
+
+The bot must be an administrator in the chat for this to work and must have the can_manage_tags administrator right.
+
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
+**Returns**: <code>Promise</code> - True on success  
+**See**: https://core.telegram.org/bots/api#setchatmembertag  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| chatId | <code>Number</code> \| <code>String</code> | Unique identifier for the target chat or username of the target channel (in the format `@channelusername`) |
+| userId | <code>Number</code> | Unique identifier of the target user |
+| [options] | <code>Object</code> | Additional Telegram query options |
+
 <a name="TelegramBot+banChatSenderChat"></a>
 
 ### telegramBot.banChatSenderChat(chatId, senderChatId, [options]) ⇒ <code>Promise</code>
@@ -1983,6 +2003,33 @@ Use this method to get the current bot short description for the given user lang
 **Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
 **Returns**: <code>Promise</code> - Returns [BotShortDescription](https://core.telegram.org/bots/api#botshortdescription) on success.  
 **See**: https://core.telegram.org/bots/api#getmyshortdescription  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| [options] | <code>Object</code> | Additional Telegram query options |
+
+<a name="TelegramBot+setMyProfilePhoto"></a>
+
+### telegramBot.setMyProfilePhoto(photo, [options]) ⇒ <code>Promise</code>
+Changes the profile photo of the bot.
+
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
+**Returns**: <code>Promise</code> - True on success  
+**See**: https://core.telegram.org/bots/api#setmyprofilephoto  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| photo | <code>String</code> \| <code>stream.Stream</code> \| <code>Buffer</code> | New profile photo. |
+| [options] | <code>Object</code> | Additional Telegram query options |
+
+<a name="TelegramBot+removeMyProfilePhoto"></a>
+
+### telegramBot.removeMyProfilePhoto([options]) ⇒ <code>Promise</code>
+Removes the profile photo of the bot.
+
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
+**Returns**: <code>Promise</code> - True on success  
+**See**: https://core.telegram.org/bots/api#removemyprofilephoto  
 
 | Param | Type | Description |
 | --- | --- | --- |

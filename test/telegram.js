@@ -1175,9 +1175,33 @@ describe('TelegramBot', function telegramSuite() {
 
   describe.skip('#promoteChatMember', function promoteChatMemberSuite() { });
 
-  describe.skip('#setChatAdministratorCustomTitle ', function setChatAdministratorCustomTitleSuite() {
+  describe.skip('#setChatAdministratorCustomTitle', function setChatAdministratorCustomTitleSuite() {
     it('should set chat permissions', function test() {
       return bot.setChatAdministratorCustomTitle(GROUPID, USERID, 'Custom Name').then(resp => {
+        assert.ok(is.boolean(resp));
+      });
+    });
+  });
+
+  describe('#setChatMemberTag', function setChatMemberTagSuite() {
+    before(function before() {
+      utils.handleRatelimit(bot, 'setChatMemberTag', this);
+    });
+
+    it('should set tag for a chat member', function test() {
+      return bot.setChatMemberTag(GROUPID, USERID, { tag: 'nodebot' }).then(resp => {
+        assert.ok(is.boolean(resp));
+      });
+    });
+  });
+
+  describe.skip('#unpinAllGeneralForumTopicMessages', function unpinAllGeneralForumTopicMessagesSuite() {
+    before(function before() {
+      utils.handleRatelimit(bot, 'unpinAllGeneralForumTopicMessages', this);
+    });
+
+    it('should unpin all general forum topic messages', function test() {
+      return bot.unpinAllGeneralForumTopicMessages(GROUPID).then(resp => {
         assert.ok(is.boolean(resp));
       });
     });
@@ -1515,6 +1539,32 @@ describe('TelegramBot', function telegramSuite() {
     it('should get bot sort description for Spanish users', function test() {
       return bot.getMyShortDescription({ language_code: 'es' }).then(resp => {
         assert.ok(is.equal(resp.short_description, 'Spanish bot sort description'));
+      });
+    });
+  });
+
+  describe('#setMyProfilePhoto', function setMyProfilePhotoSuite() {
+    this.timeout(timeout);
+    before(function before() {
+      utils.handleRatelimit(bot, 'setMyProfilePhoto', this);
+    });
+
+    it('should set bot profile photo from file', function test() {
+      const photo = `${__dirname}/data/chat_photo.png`;
+      return bot.setMyProfilePhoto(photo).then(resp => {
+        assert.strictEqual(resp, true);
+      });
+    });
+  });
+
+  describe('#removeMyProfilePhoto', function removeMyProfilePhotoSuite() {
+    before(function before() {
+      utils.handleRatelimit(bot, 'removeMyProfilePhoto', this);
+    });
+
+    it('should remove bot profile photo', function test() {
+      return bot.removeMyProfilePhoto().then(resp => {
+        assert.strictEqual(resp, true);
       });
     });
   });
@@ -2188,5 +2238,4 @@ describe('TelegramBot', function telegramSuite() {
       });
     });
   });
-
 }); // End Telegram
