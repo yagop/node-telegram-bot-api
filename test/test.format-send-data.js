@@ -22,6 +22,7 @@ describe('#_formatSendData', function sendfileSuite() {
   describe('using fileOptions', function sendfileOptionsSuite() {
     const stream = fs.createReadStream(paths.audio);
     const nonPathStream = fs.createReadStream(paths.audio);
+    nonPathStream.on('error', () => {}); // Prevent unhandled error on Node.js 18+ lazy stream construction
     const buffer = fs.readFileSync(paths.audio);
     const nonDetectableBuffer = fs.readFileSync(__filename);
     const filepath = paths.audio;
@@ -129,6 +130,7 @@ describe('#_formatSendData', function sendfileSuite() {
 
   it('should allow stream.path that can not be parsed', function test() {
     const stream = fs.createReadStream(paths.audio);
+    stream.on('error', () => {}); // Prevent unhandled error on Node.js 18+ lazy stream construction
     stream.path = '/?id=123'; // for example, 'http://example.com/?id=666'
     assert.doesNotThrow(function assertDoesNotThrow() {
       bot._formatSendData('file', stream);
