@@ -182,6 +182,7 @@ function sendWebHookRequest(port, path, options = {}) {
       message: options.message || { text: 'test' }
     },
     json: (typeof options.json === 'undefined') ? true : options.json,
+    agentOptions: options.https ? { rejectUnauthorized: false } : undefined,
   });
 }
 
