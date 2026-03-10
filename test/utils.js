@@ -10,7 +10,6 @@ exports = module.exports = {
    * Redefine a bot method to allow us to ignore 429 (rate-limit) errors
    * @param  {TelegramBot} bot
    * @param  {String} methodName
-   * @param  {Suite} suite From mocha
    * @return {TelegramBot}
    */
   handleRatelimit,
@@ -75,6 +74,17 @@ exports = module.exports = {
    * @param  {Number} port
    */
   startStaticServer,
+  /**
+   * Stop the server at the specified port.
+   * @param  {Number} port
+   * @return {Promise}
+   */
+  stopServer,
+  /**
+   * Stop all tracked servers.
+   * @return {Promise}
+   */
+  stopAllServers,
 };
 /* eslint-enable no-use-before-define */
 
@@ -172,6 +182,7 @@ function sendWebHookRequest(port, path, options = {}) {
       message: options.message || { text: 'test' }
     },
     json: (typeof options.json === 'undefined') ? true : options.json,
+    agentOptions: options.https ? { rejectUnauthorized: false } : undefined,
   });
 }
 
@@ -184,7 +195,7 @@ function sendWebHookMessage(port, token, options = {}) {
 }
 
 
-function handleRatelimit(bot, methodName, suite) {
+function handleRatelimit(bot, methodName) {
   const backupMethodName = `__${methodName}`;
   if (!bot[backupMethodName]) bot[backupMethodName] = bot[methodName];
 
@@ -211,7 +222,7 @@ function handleRatelimit(bot, methodName, suite) {
           const retrySecs = error.response.body.parameters.retry_after;
           const timeout = (1000 * retrySecs) + (1000 * addSecs);
           console.error('tests: Handling rate-limit error. Retrying after %d secs', timeout / 1000); // eslint-disable-line no-console
-          suite.timeout(timeout * 2);
+          jest.setTimeout(timeout * 2);
           return new Promise(function timeoutPromise(resolve, reject) {
             setTimeout(function execTimeout() {
               return exec().then(resolve).catch(reject);
@@ -222,6 +233,25 @@ function handleRatelimit(bot, methodName, suite) {
     return exec();
   };
   return bot;
+}
+
+
+function stopServer(port) {
+  assert.ok(port);
+  return new Promise((resolve, reject) => {
+    const entry = servers[port];
+    if (!entry) return resolve();
+    return entry.server.close((err) => {
+      if (err) return reject(err);
+      delete servers[port];
+      return resolve();
+    });
+  });
+}
+
+
+function stopAllServers() {
+  return Promise.all(Object.keys(servers).map(port => stopServer(Number(port))));
 }
 
 

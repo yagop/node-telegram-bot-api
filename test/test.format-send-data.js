@@ -12,16 +12,17 @@ describe('#_formatSendData', function sendfileSuite() {
   const bot = new TelegramBot('token');
   const type = 'file';
 
-  before(function beforeSuite() {
+  beforeAll(function beforeSuite() {
     process.env.NTBA_FIX_350 = 1;
   });
-  after(function afterSuite() {
+  afterAll(function afterSuite() {
     delete process.env.NTBA_FIX_350;
   });
 
   describe('using fileOptions', function sendfileOptionsSuite() {
     const stream = fs.createReadStream(paths.audio);
     const nonPathStream = fs.createReadStream(paths.audio);
+    nonPathStream.on('error', () => {}); // Prevent unhandled error on Node.js 18+ lazy stream construction
     const buffer = fs.readFileSync(paths.audio);
     const nonDetectableBuffer = fs.readFileSync(__filename);
     const filepath = paths.audio;
@@ -40,8 +41,7 @@ describe('#_formatSendData', function sendfileSuite() {
 
       it('(2) Stream#path', function test() {
         if (!stream.path) {
-          this.skip('Stream#path unsupported');
-          return;
+          return; // Stream#path unsupported
         }
         const [{ [type]: data }] = bot._formatSendData(type, stream);
         assert.equal(data.options.filename, path.basename(paths.audio));
@@ -71,8 +71,7 @@ describe('#_formatSendData', function sendfileSuite() {
 
       it('(2) Stream#path', function test() {
         if (!stream.path) {
-          this.skip('Stream#path unsupported');
-          return;
+          return; // Stream#path unsupported
         }
         const [{ [type]: data }] = bot._formatSendData(type, stream);
         assert.equal(data.options.contentType, 'audio/mpeg');
@@ -131,6 +130,7 @@ describe('#_formatSendData', function sendfileSuite() {
 
   it('should allow stream.path that can not be parsed', function test() {
     const stream = fs.createReadStream(paths.audio);
+    stream.on('error', () => {}); // Prevent unhandled error on Node.js 18+ lazy stream construction
     stream.path = '/?id=123'; // for example, 'http://example.com/?id=666'
     assert.doesNotThrow(function assertDoesNotThrow() {
       bot._formatSendData('file', stream);
