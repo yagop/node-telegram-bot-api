@@ -122,7 +122,7 @@ class TelegramBotPolling {
         }
         delete err._processing;
         /*
-         * An error occured while processing the items,
+         * An error occurred while processing the items,
          * i.e. in `this.bot.processUpdate()` above.
          * We need to mark the already-processed items
          * to avoid fetching them again once the application
@@ -165,7 +165,7 @@ class TelegramBotPolling {
         if (this._abort) {
           debug('Polling is aborted!');
         } else {
-          debug('setTimeout for %s miliseconds', this.options.interval);
+          debug('setTimeout for %s milliseconds', this.options.interval);
           this._pollingTimeout = setTimeout(() => this._polling(), this.options.interval);
         }
       });

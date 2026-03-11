@@ -37,7 +37,8 @@
     "eventemitter3": "^3.0.0",
     "file-type": "^3.9.0",
     "mime": "^1.6.0",
-    "pump": "^2.0.0"
+    "pump": "^2.0.0",
+    "tough-cookie": "~2.5.0"
   },
   "devDependencies": {
     "babel-cli": "^6.26.0",

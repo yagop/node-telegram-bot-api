@@ -125,7 +125,7 @@ class TelegramBot extends EventEmitter {
    *  Timeout in seconds for long polling.
    * @param {Boolean} [options.testEnvironment=false] Set true to  work with test enviroment.
    * When working with the test environment, you may use HTTP links without TLS to test your Web App.
-   * @param {String|Number} [options.polling.interval=300] Interval between requests in miliseconds
+   * @param {String|Number} [options.polling.interval=300] Interval between requests in milliseconds
    * @param {Boolean} [options.polling.autoStart=true] Start polling immediately
    * @param {Object} [options.polling.params] Parameters to be used in polling API requests.
    *  See https://core.telegram.org/bots/api#getupdates for more information.
@@ -276,7 +276,7 @@ class TelegramBot extends EventEmitter {
    * @see https://core.telegram.org/bots/api#sendmessage
    */
   _fixReplyParameters(obj) {
-    if (obj.hasOwnProperty('reply_parameters') && typeof obj.reply_parameters !== 'string') {
+    if (Object.prototype.hasOwnProperty.call(obj, 'reply_parameters') && typeof obj.reply_parameters !== 'string') {
       obj.reply_parameters = stringify(obj.reply_parameters);
     }
   }
@@ -765,7 +765,7 @@ class TelegramBot extends EventEmitter {
     const channelPost = update.channel_post;
     const editedChannelPost = update.edited_channel_post;
     const businessConnection = update.business_connection;
-    const businesssMessage = update.business_message;
+    const businessMessage = update.business_message;
     const editedBusinessMessage = update.edited_business_message;
     const deletedBusinessMessage = update.deleted_business_messages;
     const messageReaction = update.message_reaction;
@@ -819,6 +819,7 @@ class TelegramBot extends EventEmitter {
       }
       if (message.reply_to_message) {
         // Only callbacks waiting for this message
+        const listenerIdsToRemove = [];
         this._replyListeners.forEach(reply => {
           // Message from the same chat
           if (reply.chatId === message.chat.id) {
@@ -826,8 +827,14 @@ class TelegramBot extends EventEmitter {
             if (reply.messageId === message.reply_to_message.message_id) {
               // Resolve the promise
               reply.callback(message);
+              // Mark listener for removal to prevent memory leaks
+              listenerIdsToRemove.push(reply.id);
             }
           }
+        });
+        // Remove matched listeners
+        listenerIdsToRemove.forEach(id => {
+          this.removeReplyListener(id);
         });
       }
     } else if (editedMessage) {
@@ -854,9 +861,9 @@ class TelegramBot extends EventEmitter {
     } else if (businessConnection) {
       debug('Process Update business_connection %j', businessConnection);
       this.emit('business_connection', businessConnection);
-    } else if (businesssMessage) {
-      debug('Process Update business_message %j', businesssMessage);
-      this.emit('business_message', businesssMessage);
+    } else if (businessMessage) {
+      debug('Process Update business_message %j', businessMessage);
+      this.emit('business_message', businessMessage);
     } else if (editedBusinessMessage) {
       debug('Process Update edited_business_message %j', editedBusinessMessage);
       this.emit('edited_business_message', editedBusinessMessage);
@@ -3071,7 +3078,7 @@ class TelegramBot extends EventEmitter {
     form.user_id = userId;
     form.name = name;
     form.old_sticker = oldSticker;
-    return this._request('deleteStickerFromSet', { form });
+    return this._request('replaceStickerInSet', { form });
   }
 
 
