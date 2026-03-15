@@ -1144,14 +1144,9 @@ describe('TelegramBot', function telegramSuite() {
         assert.ok(is.array(resp.photos));
       });
     });
-    it('(v0.25.0 and lower) should get user profile photos', function test() {
-      return bot.getUserProfilePhotos(USERID, opts.offset, opts.limit).then(resp => {
-        assert.ok(is.object(resp));
-        assert.ok(is.number(resp.total_count));
-        assert.ok(is.array(resp.photos));
-      });
-    });
   });
+
+  describe.skip('#getUserProfileAudios', function getUserProfileAudiosSuite() { });
 
   describe('#getFile', function getFileSuite() {
     this.timeout(timeout);
@@ -1749,6 +1744,10 @@ describe('TelegramBot', function telegramSuite() {
     }
     );
   });
+
+  describe.skip('#approveSuggestedPost', function approveSuggestedPostSuite() { });
+
+  describe.skip('#declineSuggestedPost', function declineSuggestedPostSuite() { });
 
   describe('#deleteMessage', function deleteMessageSuite() {
     let messageId;

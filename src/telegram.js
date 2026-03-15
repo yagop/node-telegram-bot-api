@@ -765,7 +765,7 @@ class TelegramBot extends EventEmitter {
     const channelPost = update.channel_post;
     const editedChannelPost = update.edited_channel_post;
     const businessConnection = update.business_connection;
-    const businesssMessage = update.business_message;
+    const businessMessage = update.business_message;
     const editedBusinessMessage = update.edited_business_message;
     const deletedBusinessMessage = update.deleted_business_messages;
     const messageReaction = update.message_reaction;
@@ -854,9 +854,9 @@ class TelegramBot extends EventEmitter {
     } else if (businessConnection) {
       debug('Process Update business_connection %j', businessConnection);
       this.emit('business_connection', businessConnection);
-    } else if (businesssMessage) {
-      debug('Process Update business_message %j', businesssMessage);
-      this.emit('business_message', businesssMessage);
+    } else if (businessMessage) {
+      debug('Process Update business_message %j', businessMessage);
+      this.emit('business_message', businessMessage);
     } else if (editedBusinessMessage) {
       debug('Process Update edited_business_message %j', editedBusinessMessage);
       this.emit('edited_business_message', editedBusinessMessage);
@@ -1654,8 +1654,6 @@ class TelegramBot extends EventEmitter {
   /**
    * Use this method to get a list of profile pictures for a user.
    * Returns a [UserProfilePhotos](https://core.telegram.org/bots/api#userprofilephotos) object.
-   * This method has an [older, compatible signature][getUserProfilePhotos-v0.25.0]
-   * that is being deprecated.
    *
    * @param {Number} userId  Unique identifier of the target user
    * @param {Object} [options] Additional Telegram query options
@@ -1663,21 +1661,24 @@ class TelegramBot extends EventEmitter {
    * @see https://core.telegram.org/bots/api#getuserprofilephotos
    */
   getUserProfilePhotos(userId, form = {}) {
-    /* The older method signature was getUserProfilePhotos(userId, offset, limit).
-     * We need to ensure backwards-compatibility while maintaining
-     * consistency of the method signatures throughout the library */
-    if (typeof form !== 'object') {
-      /* eslint-disable no-param-reassign, prefer-rest-params */
-      deprecate('The method signature getUserProfilePhotos(userId, offset, limit) has been deprecated since v0.25.0');
-      form = {
-        offset: arguments[1],
-        limit: arguments[2],
-      };
-      /* eslint-enable no-param-reassign, prefer-rest-params */
-    }
     form.user_id = userId;
     return this._request('getUserProfilePhotos', { form });
   }
+
+  /**
+   * Use this method to get a list of profile audios for a user.
+   * Returns a [UserProfileAudios](https://core.telegram.org/bots/api#userprofileaudios) object.
+   *
+   * @param {Number} userId  Unique identifier of the target user
+   * @param {Object} [options] Additional Telegram query options
+   * @return {Promise}  Returns a [UserProfileAudios](https://core.telegram.org/bots/api#userprofileaudios) object
+   * @see https://core.telegram.org/bots/api#getuserprofileaudios
+   */
+  getUserProfileAudios(userId, form = {}) {
+    form.user_id = userId;
+    return this._request('getUserProfileAudios', { form });
+  }
+
 
   /**
    * Changes the emoji status for a given user that previously allowed the bot to manage their emoji status
@@ -2846,7 +2847,6 @@ class TelegramBot extends EventEmitter {
     return this._request('editMessageReplyMarkup', { form });
   }
 
-
   /**
    * Use this method to stop a poll which was sent by the bot.
    *
@@ -2860,6 +2860,40 @@ class TelegramBot extends EventEmitter {
     form.chat_id = chatId;
     form.message_id = pollId;
     return this._request('stopPoll', { form });
+  }
+
+  /**
+   * Use this method to approve a suggested post in a direct messages chat.
+   *
+   * The bot must have the 'can_post_messages' administrator right in the corresponding channel chat. 
+   *
+   * @param {Number|String} chatId  Unique identifier for the group/channel
+   * @param {Number} messageId Identifier of the original message with the suggested post
+   * @param {Object} [options] Additional Telegram query options
+   * @return {Promise} on success, returns True
+   * @see https://core.telegram.org/bots/api#approvesuggestedpost
+   */
+  approveSuggestedPost(chatId, messageId, form = {}) {
+    form.chat_id = chatId;
+    form.message_id = messageId;
+    return this._request('approveSuggestedPost', { form });
+  }
+
+  /**
+   * Use this method to decline a suggested post in a direct messages chat.
+   *
+   * The bot must have the 'can_manage_direct_messages' administrator right in the corresponding channel chat.
+   *
+   * @param {Number|String} chatId  Unique identifier for the group/channel
+   * @param {Number} messageId Identifier of the original message with the suggested post
+   * @param {Object} [options] Additional Telegram query options
+   * @return {Promise} on success, returns True
+   * @see https://core.telegram.org/bots/api#declinesuggestedpost
+   */
+  declineSuggestedPost(chatId, messageId, form = {}) {
+    form.chat_id = chatId;
+    form.message_id = messageId;
+    return this._request('declineSuggestedPost', { form });
   }
 
   /**
@@ -3059,7 +3093,7 @@ class TelegramBot extends EventEmitter {
   /**
    * Use this method to replace an existing sticker in a sticker set with a new one
    *
-   * @param {Number} user_id User identifier of the sticker set owner
+   * @param {Number} userId User identifier of the sticker set owner
    * @param {String} name Sticker set name
    * @param {String} sticker File identifier of the sticker
    * @param {Object} [options] Additional Telegram query options
@@ -3071,7 +3105,7 @@ class TelegramBot extends EventEmitter {
     form.user_id = userId;
     form.name = name;
     form.old_sticker = oldSticker;
-    return this._request('deleteStickerFromSet', { form });
+    return this._request('replaceStickerInSet', { form });
   }
 
 

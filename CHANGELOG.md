@@ -5,7 +5,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased][Unreleased]
 
-## [0.68.0][0.68.0] - 2026-03-09
+## [0.68.0][0.68.0] - 2026-03-15
 
 Added:
 
@@ -17,6 +17,7 @@ Added:
 
 2. Fixed method:
    * `unpinAllGeneralForumTopicMessages`
+   * `replaceStickerInSet`
 
 3. Support Telegram Bot API v9.5 (by @danielperez9430)
    * `setChatMemberTag`
@@ -24,6 +25,13 @@ Added:
 4. Support Telegram Bot API v9.6 (by @danielperez9430)
    * setMyProfilePhoto
    * removeMyProfilePhoto
+
+5. Added missing methods (by @danielperez9430)
+   * getUserProfileAudios
+   * approveSuggestedPost
+   * declineSuggestedPost
+
+6. Added more test
 
 ## [0.67.0][0.67.0] - 2025-12-13
 

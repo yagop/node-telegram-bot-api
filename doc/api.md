@@ -64,6 +64,7 @@ TelegramBot
         * [.sendChatAction(chatId, action, [options])](#TelegramBot+sendChatAction) ⇒ <code>Promise</code>
         * [.setMessageReaction(chatId, messageId, [options])](#TelegramBot+setMessageReaction) ⇒ <code>Promise.&lt;Boolean&gt;</code>
         * [.getUserProfilePhotos(userId, [options])](#TelegramBot+getUserProfilePhotos) ⇒ <code>Promise</code>
+        * [.getUserProfileAudios(userId, [options])](#TelegramBot+getUserProfileAudios) ⇒ <code>Promise</code>
         * [.setUserEmojiStatus(userId, [options])](#TelegramBot+setUserEmojiStatus) ⇒ <code>Promise</code>
         * [.getFile(fileId, [options])](#TelegramBot+getFile) ⇒ <code>Promise</code>
         * [.banChatMember(chatId, userId, [options])](#TelegramBot+banChatMember) ⇒ <code>Promise</code>
@@ -135,6 +136,8 @@ TelegramBot
         * [.editMessageChecklist(businessConnectionId, chatId, messageId, checklist, [options])](#TelegramBot+editMessageChecklist) ⇒ <code>Promise</code>
         * [.editMessageReplyMarkup(replyMarkup, [options])](#TelegramBot+editMessageReplyMarkup) ⇒ <code>Promise</code>
         * [.stopPoll(chatId, pollId, [options])](#TelegramBot+stopPoll) ⇒ <code>Promise</code>
+        * [.approveSuggestedPost(chatId, messageId, [options])](#TelegramBot+approveSuggestedPost) ⇒ <code>Promise</code>
+        * [.declineSuggestedPost(chatId, messageId, [options])](#TelegramBot+declineSuggestedPost) ⇒ <code>Promise</code>
         * [.sendSticker(chatId, sticker, [options], [fileOptions])](#TelegramBot+sendSticker) ⇒ <code>Promise</code>
         * [.getStickerSet(name, [options])](#TelegramBot+getStickerSet) ⇒ <code>Promise</code>
         * [.getCustomEmojiStickers(custom_emoji_ids, [options])](#TelegramBot+getCustomEmojiStickers) ⇒ <code>Promise</code>
@@ -143,7 +146,7 @@ TelegramBot
         * [.addStickerToSet(userId, name, sticker, emojis, stickerType, [options], [fileOptions])](#TelegramBot+addStickerToSet) ⇒ <code>Promise</code>
         * [.setStickerPositionInSet(sticker, position, [options])](#TelegramBot+setStickerPositionInSet) ⇒ <code>Promise</code>
         * [.deleteStickerFromSet(sticker, [options])](#TelegramBot+deleteStickerFromSet) ⇒ <code>Promise</code>
-        * [.replaceStickerInSet(user_id, name, sticker, [options])](#TelegramBot+replaceStickerInSet) ⇒ <code>Promise</code>
+        * [.replaceStickerInSet(userId, name, sticker, [options])](#TelegramBot+replaceStickerInSet) ⇒ <code>Promise</code>
         * [.setStickerEmojiList(sticker, emojiList, [options])](#TelegramBot+setStickerEmojiList) ⇒ <code>Promise</code>
         * [.setStickerKeywords(sticker, [options])](#TelegramBot+setStickerKeywords) ⇒ <code>Promise</code>
         * [.setStickerMaskPosition(sticker, [options])](#TelegramBot+setStickerMaskPosition) ⇒ <code>Promise</code>
@@ -1039,12 +1042,25 @@ Use this method to change the chosen reactions on a message.
 ### telegramBot.getUserProfilePhotos(userId, [options]) ⇒ <code>Promise</code>
 Use this method to get a list of profile pictures for a user.
 Returns a [UserProfilePhotos](https://core.telegram.org/bots/api#userprofilephotos) object.
-This method has an [older, compatible signature][getUserProfilePhotos-v0.25.0]
-that is being deprecated.
 
 **Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
 **Returns**: <code>Promise</code> - Returns a [UserProfilePhotos](https://core.telegram.org/bots/api#userprofilephotos) object  
 **See**: https://core.telegram.org/bots/api#getuserprofilephotos  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| userId | <code>Number</code> | Unique identifier of the target user |
+| [options] | <code>Object</code> | Additional Telegram query options |
+
+<a name="TelegramBot+getUserProfileAudios"></a>
+
+### telegramBot.getUserProfileAudios(userId, [options]) ⇒ <code>Promise</code>
+Use this method to get a list of profile audios for a user.
+Returns a [UserProfileAudios](https://core.telegram.org/bots/api#userprofileaudios) object.
+
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
+**Returns**: <code>Promise</code> - Returns a [UserProfileAudios](https://core.telegram.org/bots/api#userprofileaudios) object  
+**See**: https://core.telegram.org/bots/api#getuserprofileaudios  
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -2190,6 +2206,40 @@ Use this method to stop a poll which was sent by the bot.
 | pollId | <code>Number</code> | Identifier of the original message with the poll |
 | [options] | <code>Object</code> | Additional Telegram query options |
 
+<a name="TelegramBot+approveSuggestedPost"></a>
+
+### telegramBot.approveSuggestedPost(chatId, messageId, [options]) ⇒ <code>Promise</code>
+Use this method to approve a suggested post in a direct messages chat.
+
+The bot must have the 'can_post_messages' administrator right in the corresponding channel chat.
+
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
+**Returns**: <code>Promise</code> - on success, returns True  
+**See**: https://core.telegram.org/bots/api#approvesuggestedpost  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| chatId | <code>Number</code> \| <code>String</code> | Unique identifier for the group/channel |
+| messageId | <code>Number</code> | Identifier of the original message with the suggested post |
+| [options] | <code>Object</code> | Additional Telegram query options |
+
+<a name="TelegramBot+declineSuggestedPost"></a>
+
+### telegramBot.declineSuggestedPost(chatId, messageId, [options]) ⇒ <code>Promise</code>
+Use this method to decline a suggested post in a direct messages chat.
+
+The bot must have the 'can_manage_direct_messages' administrator right in the corresponding channel chat.
+
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
+**Returns**: <code>Promise</code> - on success, returns True  
+**See**: https://core.telegram.org/bots/api#declinesuggestedpost  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| chatId | <code>Number</code> \| <code>String</code> | Unique identifier for the group/channel |
+| messageId | <code>Number</code> | Identifier of the original message with the suggested post |
+| [options] | <code>Object</code> | Additional Telegram query options |
+
 <a name="TelegramBot+sendSticker"></a>
 
 ### telegramBot.sendSticker(chatId, sticker, [options], [fileOptions]) ⇒ <code>Promise</code>
@@ -2338,7 +2388,7 @@ Use this method to delete a sticker from a set created by the bot.
 
 <a name="TelegramBot+replaceStickerInSet"></a>
 
-### telegramBot.replaceStickerInSet(user_id, name, sticker, [options]) ⇒ <code>Promise</code>
+### telegramBot.replaceStickerInSet(userId, name, sticker, [options]) ⇒ <code>Promise</code>
 Use this method to replace an existing sticker in a sticker set with a new one
 
 **Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)  
@@ -2351,7 +2401,7 @@ Use this method to replace an existing sticker in a sticker set with a new one
 
 | Param | Type | Description |
 | --- | --- | --- |
-| user_id | <code>Number</code> | User identifier of the sticker set owner |
+| userId | <code>Number</code> | User identifier of the sticker set owner |
 | name | <code>String</code> | Sticker set name |
 | sticker | <code>String</code> | File identifier of the sticker |
 | [options] | <code>Object</code> | Additional Telegram query options |
