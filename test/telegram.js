@@ -232,7 +232,7 @@ describe('TelegramBot', function telegramSuite() {
       httpsbot = new TelegramBot(TOKEN, { webHook: { port, key, cert } });
       return utils.sendWebHookMessage(port, TOKEN, { https: true });
     });
-    it('is enabled, through options.pfx');
+    it.todo('is enabled, through options.pfx');
     it('is enabled, through options.https', function test() {
       httpsbot = new TelegramBot(TOKEN, {
         webHook: {

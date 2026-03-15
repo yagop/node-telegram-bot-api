@@ -2865,7 +2865,7 @@ class TelegramBot extends EventEmitter {
   /**
    * Use this method to approve a suggested post in a direct messages chat.
    *
-   * The bot must have the 'can_post_messages' administrator right in the corresponding channel chat. 
+   * The bot must have the 'can_post_messages' administrator right in the corresponding channel chat.
    *
    * @param {Number|String} chatId  Unique identifier for the group/channel
    * @param {Number} messageId Identifier of the original message with the suggested post
