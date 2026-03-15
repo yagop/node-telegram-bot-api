@@ -8,7 +8,7 @@ export TEST_TELEGRAM_TOKEN=<YOUR_BOT_TOKEN>
 export TEST_USER_ID=<USER_ID>
 
 # Group Id which to use in some of the tests, e.g. for TelegramBot#getChat()
-export TEST_GROUP_ID=<GROUP_ID>
+export TEST_GROUP_ID=<GROUP_ID> 
 
 # Game short name to use in some tests, e.g. TelegramBot#sendGame()
 # Defaults to "medusalab_test".
