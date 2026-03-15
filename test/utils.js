@@ -74,6 +74,17 @@ exports = module.exports = {
    * @param  {Number} port
    */
   startStaticServer,
+  /**
+   * Stop the server at the specified port.
+   * @param  {Number} port
+   * @return {Promise}
+   */
+  stopServer,
+  /**
+   * Stop all tracked servers.
+   * @return {Promise}
+   */
+  stopAllServers,
 };
 /* eslint-enable no-use-before-define */
 
@@ -221,6 +232,25 @@ function handleRatelimit(bot, methodName) {
     return exec();
   };
   return bot;
+}
+
+
+function stopServer(port) {
+  assert.ok(port);
+  return new Promise((resolve, reject) => {
+    const entry = servers[port];
+    if (!entry) return resolve();
+    return entry.server.close((err) => {
+      if (err) return reject(err);
+      delete servers[port];
+      return resolve();
+    });
+  });
+}
+
+
+function stopAllServers() {
+  return Promise.all(Object.keys(servers).map(port => stopServer(Number(port))));
 }
 
 

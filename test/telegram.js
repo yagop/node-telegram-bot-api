@@ -2233,4 +2233,18 @@ describe('TelegramBot', function telegramSuite() {
       });
     });
   });
+
+  afterAll(function afterAll() {
+    return Promise.all([
+      botPolling.stopPolling(),
+      botWebHook.closeWebHook(),
+      testbot.stopPolling().catch(() => { /* may already be stopped */ }),
+      testbot.closeWebHook().catch(() => { /* may already be closed */ }),
+    ]);
+  });
 }); // End Telegram
+
+
+afterAll(function afterAll() {
+  return utils.stopAllServers();
+});
