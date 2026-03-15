@@ -52,7 +52,7 @@ let CHAT_INFO;
 let STICKER_FILE_ID_FROM_SET;
 let STICKERS_FROM_BOT_SET;
 
-before(function beforeAll() {
+beforeAll(function beforeAll() {
   utils.startStaticServer(staticPort);
   return utils.startMockServer(pollingPort)
     .then(() => {
@@ -66,11 +66,11 @@ before(function beforeAll() {
 describe('module.exports', function moduleExportsSuite() {
   const nodeVersion = parseInt(process.versions.node.split('.')[0], 10);
   it('is loaded from src/ on Node.js v6+ and above', function test() {
-    if (nodeVersion <= 5) this.skip(); // skip on Node.js v5 and below
+    if (nodeVersion <= 5) return; // skip on Node.js v5 and below
     assert.strictEqual(TelegramBot, require('../src/telegram'));
   });
   it('is loaded from lib/ on Node.js v5 and below', function test() {
-    if (nodeVersion > 5) this.skip(); // skip on newer versions
+    if (nodeVersion > 5) return; // skip on newer versions
     assert.strictEqual(TelegramBot, require('../lib/telegram'));
   });
 });
@@ -82,8 +82,8 @@ describe('TelegramBot', function telegramSuite() {
   let botPolling;
   let botWebHook;
 
-  before(function beforeAll() {
-    this.timeout(timeout);
+  beforeAll(function beforeAll() {
+    jest.setTimeout(timeout);
     bot = new TelegramBot(TOKEN);
     testbot = new TelegramBot(TOKEN, {
       baseApiUrl: `http://127.0.0.1:${pollingPort}`,
@@ -105,11 +105,11 @@ describe('TelegramBot', function telegramSuite() {
       },
     });
 
-    utils.handleRatelimit(bot, 'sendPhoto', this);
-    utils.handleRatelimit(bot, 'sendMessage', this);
-    utils.handleRatelimit(bot, 'sendGame', this);
-    utils.handleRatelimit(bot, 'getMe', this);
-    utils.handleRatelimit(bot, 'getChat', this);
+    utils.handleRatelimit(bot, 'sendPhoto');
+    utils.handleRatelimit(bot, 'sendMessage');
+    utils.handleRatelimit(bot, 'sendGame');
+    utils.handleRatelimit(bot, 'getMe');
+    utils.handleRatelimit(bot, 'getChat');
 
     return bot.sendPhoto(USERID, FILE_PATH).then(resp => {
       FILE_ID = resp.photo[0].file_id;
@@ -153,7 +153,7 @@ describe('TelegramBot', function telegramSuite() {
     const myBot = new TelegramBot(TOKEN, {
       polling: { autoStart: false, params: { timeout: 0 } },
     });
-    utils.handleRatelimit(myBot, 'setWebHook', this);
+    utils.handleRatelimit(myBot, 'setWebHook');
     myBot.on('polling_error', (error) => {
       assert.ifError(error);
     });
@@ -327,7 +327,7 @@ describe('TelegramBot', function telegramSuite() {
         return utils.isPollingMockServer(pollingPort, true);
       });
     });
-    after(function after() {
+    afterAll(function afterAll() {
       return testbot.initPolling();
     });
   });
@@ -368,7 +368,7 @@ describe('TelegramBot', function telegramSuite() {
         return utils.hasOpenWebHook(webHookPort, true);
       });
     });
-    after(function after() {
+    afterAll(function afterAll() {
       return testbot.openWebHook();
     });
   });
@@ -383,8 +383,8 @@ describe('TelegramBot', function telegramSuite() {
 
 
   describe('#setWebHook', function setWebHookSuite() {
-    before(function before() {
-      utils.handleRatelimit(bot, 'setWebHook', this);
+    beforeAll(function beforeAll() {
+      utils.handleRatelimit(bot, 'setWebHook');
     });
     it('should set a webHook', function test() {
       return bot
@@ -417,8 +417,8 @@ describe('TelegramBot', function telegramSuite() {
   });
 
   describe('#getWebHookInfo', function getWebHookInfoSuite() {
-    before(function before() {
-      utils.handleRatelimit(bot, 'getWebHookInfo', this);
+    beforeAll(function beforeAll() {
+      utils.handleRatelimit(bot, 'getWebHookInfo');
     });
     it('should return WebhookInfo', function test() {
       return bot.getWebHookInfo().then(resp => {
@@ -430,8 +430,8 @@ describe('TelegramBot', function telegramSuite() {
   });
 
   describe('#deleteWebHook', function deleteWebHookSuite() {
-    before(function before() {
-      utils.handleRatelimit(bot, 'deleteWebHook', this);
+    beforeAll(function beforeAll() {
+      utils.handleRatelimit(bot, 'deleteWebHook');
     });
     it('should delete webhook', function test() {
       return bot.deleteWebHook().then(resp => {
@@ -445,9 +445,9 @@ describe('TelegramBot', function telegramSuite() {
       timeout: 0,
       limit: 10,
     };
-    before(function before() {
-      utils.handleRatelimit(bot, 'setWebHook', this);
-      utils.handleRatelimit(bot, 'getUpdates', this);
+    beforeAll(function beforeAll() {
+      utils.handleRatelimit(bot, 'setWebHook');
+      utils.handleRatelimit(bot, 'getUpdates');
       return bot.deleteWebHook();
     });
     it('should return an Array', function test() {
@@ -463,8 +463,8 @@ describe('TelegramBot', function telegramSuite() {
   });
 
   describe('#getMe', function getMeSuite() {
-    before(function before() {
-      utils.handleRatelimit(bot, 'getMe', this);
+    beforeAll(function beforeAll() {
+      utils.handleRatelimit(bot, 'getMe');
     });
     it('should return an User object', function test() {
       return bot.getMe().then(resp => {
@@ -476,9 +476,9 @@ describe('TelegramBot', function telegramSuite() {
   });
 
   describe('#getFileLink', function getFileLinkSuite() {
-    this.timeout(timeout);
-    before(function before() {
-      utils.handleRatelimit(bot, 'getFileLink', this);
+    jest.setTimeout(timeout);
+    beforeAll(function beforeAll() {
+      utils.handleRatelimit(bot, 'getFileLink');
     });
     it('should get a file link', function test() {
       return bot.getFileLink(FILE_ID)
@@ -490,9 +490,9 @@ describe('TelegramBot', function telegramSuite() {
   });
 
   describe('#getFileStream', function getFileStreamSuite() {
-    this.timeout(timeout);
-    before(function before() {
-      // utils.handleRatelimit(bot, 'getFileStream', this);
+    jest.setTimeout(timeout);
+    beforeAll(function beforeAll() {
+      // utils.handleRatelimit(bot, 'getFileStream');
     });
     it('should get a file stream', function test(done) {
       const fileStream = bot.getFileStream(FILE_ID);
@@ -511,9 +511,9 @@ describe('TelegramBot', function telegramSuite() {
 
   describe('#downloadFile', function downloadFileSuite() {
     const downloadPath = os.tmpdir();
-    this.timeout(timeout);
-    before(function before() {
-      utils.handleRatelimit(bot, 'downloadFile', this);
+    jest.setTimeout(timeout);
+    beforeAll(function beforeAll() {
+      utils.handleRatelimit(bot, 'downloadFile');
     });
     it('should download a file', function test() {
       return bot.downloadFile(FILE_ID, downloadPath)
@@ -555,7 +555,7 @@ describe('TelegramBot', function telegramSuite() {
     const regexp = /\/onText/;
     const regexp2 = /\/onText/;
     const callback = function noop() { };
-    after(function after() {
+    afterAll(function afterAll() {
       bot.removeTextListener(regexp);
       bot.removeTextListener(regexp2);
     });
@@ -597,8 +597,8 @@ describe('TelegramBot', function telegramSuite() {
   describe.skip('#close', function closeSuite() { });
 
   describe('#sendMessage', function sendMessageSuite() {
-    before(function before() {
-      utils.handleRatelimit(bot, 'sendMessage', this);
+    beforeAll(function beforeAll() {
+      utils.handleRatelimit(bot, 'sendMessage');
     });
     it('should send a message', function test() {
       return bot.sendMessage(USERID, 'test').then(resp => {
@@ -609,9 +609,9 @@ describe('TelegramBot', function telegramSuite() {
   });
 
   describe('#forwardMessage', function forwardMessageSuite() {
-    before(function before() {
-      utils.handleRatelimit(bot, 'sendMessage', this);
-      utils.handleRatelimit(bot, 'forwardMessage', this);
+    beforeAll(function beforeAll() {
+      utils.handleRatelimit(bot, 'sendMessage');
+      utils.handleRatelimit(bot, 'forwardMessage');
     });
     it('should forward a message', function test() {
       return bot.sendMessage(USERID, 'test').then(resp => {
@@ -626,9 +626,9 @@ describe('TelegramBot', function telegramSuite() {
   });
 
   describe('#forwardMessages', function forwardMessagesSuite() {
-    before(function before() {
-      utils.handleRatelimit(bot, 'sendMessage', this);
-      utils.handleRatelimit(bot, 'forwardMessages', this);
+    beforeAll(function beforeAll() {
+      utils.handleRatelimit(bot, 'sendMessage');
+      utils.handleRatelimit(bot, 'forwardMessages');
     });
     it('should forward multiple messages', function test() {
       return Promise.all([
@@ -648,9 +648,9 @@ describe('TelegramBot', function telegramSuite() {
   });
 
   describe('#copyMessage', function copyMessageSuite() {
-    before(function before() {
-      utils.handleRatelimit(bot, 'sendMessage', this);
-      utils.handleRatelimit(bot, 'copyMessage', this);
+    beforeAll(function beforeAll() {
+      utils.handleRatelimit(bot, 'sendMessage');
+      utils.handleRatelimit(bot, 'copyMessage');
     });
     it('should send copy of a message', function test() {
       return bot.sendMessage(USERID, 'test').then(resp => {
@@ -666,9 +666,9 @@ describe('TelegramBot', function telegramSuite() {
 
   describe('#sendPhoto', function sendPhotoSuite() {
     let photoId;
-    this.timeout(timeout);
-    before(function before() {
-      utils.handleRatelimit(bot, 'sendPhoto', this);
+    jest.setTimeout(timeout);
+    beforeAll(function beforeAll() {
+      utils.handleRatelimit(bot, 'sendPhoto');
     });
     it('should send a photo from file', function test() {
       const photo = `${__dirname}/data/photo.png`;
@@ -711,9 +711,9 @@ describe('TelegramBot', function telegramSuite() {
 
   describe('#sendAudio', function sendAudioSuite() {
     let audioId;
-    this.timeout(timeout);
-    before(function before() {
-      utils.handleRatelimit(bot, 'sendAudio', this);
+    jest.setTimeout(timeout);
+    beforeAll(function beforeAll() {
+      utils.handleRatelimit(bot, 'sendAudio');
     });
     it('should send an MP3 audio', function test() {
       const audio = `${__dirname}/data/audio.mp3`;
@@ -766,9 +766,9 @@ describe('TelegramBot', function telegramSuite() {
 
   describe('#sendDocument', function sendDocumentSuite() {
     let documentId;
-    this.timeout(timeout);
-    before(function before() {
-      utils.handleRatelimit(bot, 'sendDocument', this);
+    jest.setTimeout(timeout);
+    beforeAll(function beforeAll() {
+      utils.handleRatelimit(bot, 'sendDocument');
     });
     it('should send a document from file', function test() {
       const document = `${__dirname}/data/photo.gif`;
@@ -811,9 +811,9 @@ describe('TelegramBot', function telegramSuite() {
 
   describe('#sendVideo', function sendVideoSuite() {
     let videoId;
-    this.timeout(timeout);
-    before(function before() {
-      utils.handleRatelimit(bot, 'sendVideo', this);
+    jest.setTimeout(timeout);
+    beforeAll(function beforeAll() {
+      utils.handleRatelimit(bot, 'sendVideo');
     });
     it('should send a video from file', function test() {
       const video = `${__dirname}/data/video.mp4`;
@@ -854,8 +854,8 @@ describe('TelegramBot', function telegramSuite() {
   });
 
   describe('#sendAnimation', function sendAnimationSuite() {
-    before(function before() {
-      utils.handleRatelimit(bot, 'sendAnimation', this);
+    beforeAll(function beforeAll() {
+      utils.handleRatelimit(bot, 'sendAnimation');
     });
     it('should send a gif as an animation', function test() {
       return bot.sendAnimation(USERID, `${__dirname}/data/photo.gif`).then(resp => {
@@ -867,9 +867,9 @@ describe('TelegramBot', function telegramSuite() {
 
   describe('#sendVoice', function sendVoiceSuite() {
     let voiceId;
-    this.timeout(timeout);
-    before(function before() {
-      utils.handleRatelimit(bot, 'sendVoice', this);
+    jest.setTimeout(timeout);
+    beforeAll(function beforeAll() {
+      utils.handleRatelimit(bot, 'sendVoice');
     });
     it('should send a voice from file', function test() {
       const voice = `${__dirname}/data/voice.ogg`;
@@ -912,9 +912,9 @@ describe('TelegramBot', function telegramSuite() {
 
   describe('#sendVideoNote', function sendVideoNoteSuite() {
     let videoNoteId;
-    this.timeout(timeout);
-    before(function before() {
-      utils.handleRatelimit(bot, 'sendVideoNote', this);
+    jest.setTimeout(timeout);
+    beforeAll(function beforeAll() {
+      utils.handleRatelimit(bot, 'sendVideoNote');
     });
     it('should send a video from file', function test() {
       const video = `${__dirname}/data/video.mp4`;
@@ -949,8 +949,8 @@ describe('TelegramBot', function telegramSuite() {
   });
 
   describe('#sendMediaGroup', function sendMediaGroupSuite() {
-    before(function before() {
-      utils.handleRatelimit(bot, 'sendMediaGroup', this);
+    beforeAll(function beforeAll() {
+      utils.handleRatelimit(bot, 'sendMediaGroup');
     });
     it('should send group of photos/videos as album', function test() {
       return bot.sendMediaGroup(USERID, [
@@ -976,8 +976,8 @@ describe('TelegramBot', function telegramSuite() {
   });
 
   describe('#sendLocation', function sendLocationSuite() {
-    before(function before() {
-      utils.handleRatelimit(bot, 'sendLocation', this);
+    beforeAll(function beforeAll() {
+      utils.handleRatelimit(bot, 'sendLocation');
     });
     it('should send a location', function test() {
       return bot.sendLocation(USERID, lat, long).then(resp => {
@@ -991,8 +991,8 @@ describe('TelegramBot', function telegramSuite() {
 
   describe('#editMessageLiveLocation', function editMessageLiveLocationSuite() {
     let message;
-    before(function before() {
-      utils.handleRatelimit(bot, 'editMessageLiveLocation', this);
+    beforeAll(function beforeAll() {
+      utils.handleRatelimit(bot, 'editMessageLiveLocation');
       const opts = { live_period: 86400 };
       return bot.sendLocation(USERID, lat, long, opts).then(resp => { message = resp; });
     });
@@ -1009,8 +1009,8 @@ describe('TelegramBot', function telegramSuite() {
 
   describe.skip('#stopMessageLiveLocation', function editMessageLiveLocationSuite() {
     let message;
-    before(function before() {
-      utils.handleRatelimit(bot, 'stopMessageLiveLocation', this);
+    beforeAll(function beforeAll() {
+      utils.handleRatelimit(bot, 'stopMessageLiveLocation');
       return bot.sendLocation(USERID, lat, long, { live_period: 86400 })
         .then((resp) => {
           message = resp;
@@ -1029,8 +1029,8 @@ describe('TelegramBot', function telegramSuite() {
 
 
   describe('#sendVenue', function sendVenueSuite() {
-    before(function before() {
-      utils.handleRatelimit(bot, 'sendVenue', this);
+    beforeAll(function beforeAll() {
+      utils.handleRatelimit(bot, 'sendVenue');
     });
     it('should send a venue', function test() {
       const title = 'The Village Shopping Centre';
@@ -1055,8 +1055,8 @@ describe('TelegramBot', function telegramSuite() {
   // We surely can NOT wait for that much time during testing
   // (or in most practical cases for that matter!)
   describe.skip('#sendContact', function sendContactSuite() {
-    before(function before() {
-      utils.handleRatelimit(bot, 'sendContact', this);
+    beforeAll(function beforeAll() {
+      utils.handleRatelimit(bot, 'sendContact');
     });
     it('should send a contact', function test() {
       const phoneNumber = '+1(000)000-000';
@@ -1118,8 +1118,8 @@ describe('TelegramBot', function telegramSuite() {
   });
 
   describe('#sendChatAction', function sendChatActionSuite() {
-    before(function before() {
-      utils.handleRatelimit(bot, 'sendChatAction', this);
+    beforeAll(function beforeAll() {
+      utils.handleRatelimit(bot, 'sendChatAction');
     });
     it('should send a chat action', function test() {
       const action = 'typing';
@@ -1134,8 +1134,8 @@ describe('TelegramBot', function telegramSuite() {
       offset: 0,
       limit: 1,
     };
-    before(function before() {
-      utils.handleRatelimit(bot, 'getUserProfilePhotos', this);
+    beforeAll(function beforeAll() {
+      utils.handleRatelimit(bot, 'getUserProfilePhotos');
     });
     it('should get user profile photos', function test() {
       return bot.getUserProfilePhotos(USERID, opts).then(resp => {
@@ -1149,9 +1149,9 @@ describe('TelegramBot', function telegramSuite() {
   describe.skip('#getUserProfileAudios', function getUserProfileAudiosSuite() { });
 
   describe('#getFile', function getFileSuite() {
-    this.timeout(timeout);
-    before(function before() {
-      utils.handleRatelimit(bot, 'getFile', this);
+    jest.setTimeout(timeout);
+    beforeAll(function beforeAll() {
+      utils.handleRatelimit(bot, 'getFile');
     });
     it('should get a file', function test() {
       return bot.getFile(FILE_ID)
@@ -1179,8 +1179,8 @@ describe('TelegramBot', function telegramSuite() {
   });
 
   describe('#setChatMemberTag', function setChatMemberTagSuite() {
-    before(function before() {
-      utils.handleRatelimit(bot, 'setChatMemberTag', this);
+    beforeAll(function beforeAll() {
+      utils.handleRatelimit(bot, 'setChatMemberTag');
     });
 
     it('should set tag for a chat member', function test() {
@@ -1191,8 +1191,8 @@ describe('TelegramBot', function telegramSuite() {
   });
 
   describe.skip('#unpinAllGeneralForumTopicMessages', function unpinAllGeneralForumTopicMessagesSuite() {
-    before(function before() {
-      utils.handleRatelimit(bot, 'unpinAllGeneralForumTopicMessages', this);
+    beforeAll(function beforeAll() {
+      utils.handleRatelimit(bot, 'unpinAllGeneralForumTopicMessages');
     });
 
     it('should unpin all general forum topic messages', function test() {
@@ -1225,8 +1225,8 @@ describe('TelegramBot', function telegramSuite() {
   });
 
   describe('#exportChatInviteLink', function exportChatInviteLinkSuite() {
-    before(function before() {
-      utils.handleRatelimit(bot, 'exportChatInviteLink', this);
+    beforeAll(function beforeAll() {
+      utils.handleRatelimit(bot, 'exportChatInviteLink');
     });
     it('should export the group invite link', function test() {
       return bot.exportChatInviteLink(GROUPID).then(resp => {
@@ -1237,10 +1237,10 @@ describe('TelegramBot', function telegramSuite() {
 
   describe('#createChatInviteLink', function createChatInviteLinkSuite() {
     let inviteLink;
-    before(function before() {
-      utils.handleRatelimit(bot, 'createChatInviteLink', this);
-      utils.handleRatelimit(bot, 'editChatInviteLink', this);
-      utils.handleRatelimit(bot, 'revokeChatInviteLink', this);
+    beforeAll(function beforeAll() {
+      utils.handleRatelimit(bot, 'createChatInviteLink');
+      utils.handleRatelimit(bot, 'editChatInviteLink');
+      utils.handleRatelimit(bot, 'revokeChatInviteLink');
     });
     it('should create a chat invite link', function test() {
       return bot.createChatInviteLink(GROUPID).then(resp => {
@@ -1267,9 +1267,9 @@ describe('TelegramBot', function telegramSuite() {
   describe.skip('#declineChatJoinRequest', function declineChatJoinRequestSuite() { });
 
   describe('#setChatPhoto', function setChatPhotoSuite() {
-    this.timeout(timeout);
-    before(function before() {
-      utils.handleRatelimit(bot, 'setChatPhoto', this);
+    jest.setTimeout(timeout);
+    beforeAll(function beforeAll() {
+      utils.handleRatelimit(bot, 'setChatPhoto');
     });
     it('should set a chat photo from file', function test() {
       const photo = `${__dirname}/data/chat_photo.png`;
@@ -1298,8 +1298,8 @@ describe('TelegramBot', function telegramSuite() {
   });
 
   describe('#deleteChatPhoto', function deleteChatPhotoSuite() {
-    before(function before() {
-      utils.handleRatelimit(bot, 'deleteChatPhoto', this);
+    beforeAll(function beforeAll() {
+      utils.handleRatelimit(bot, 'deleteChatPhoto');
     });
     it('should delete the chat photo', function test() {
       return bot.deleteChatPhoto(GROUPID).then(resp => {
@@ -1309,8 +1309,8 @@ describe('TelegramBot', function telegramSuite() {
   });
 
   describe('#setChatTitle', function setChatTitleSuite() {
-    before(function before() {
-      utils.handleRatelimit(bot, 'setChatTitle', this);
+    beforeAll(function beforeAll() {
+      utils.handleRatelimit(bot, 'setChatTitle');
     });
     it('should set the chat title', function test() {
       const random = Math.floor(Math.random() * 1000);
@@ -1321,8 +1321,8 @@ describe('TelegramBot', function telegramSuite() {
   });
 
   describe('#setChatDescription', function setChatDescriptionSuite() {
-    before(function before() {
-      utils.handleRatelimit(bot, 'setChatDescription', this);
+    beforeAll(function beforeAll() {
+      utils.handleRatelimit(bot, 'setChatDescription');
     });
     it('should set the chat description', function test() {
       const random = Math.floor(Math.random() * 1000);
@@ -1335,8 +1335,8 @@ describe('TelegramBot', function telegramSuite() {
 
   describe('#pinChatMessage', function pinChatMessageSuite() {
     let messageId;
-    before(function before() {
-      utils.handleRatelimit(bot, 'pinChatMessage', this);
+    beforeAll(function beforeAll() {
+      utils.handleRatelimit(bot, 'pinChatMessage');
       return bot.sendMessage(GROUPID, 'To be pinned').then(resp => {
         messageId = resp.message_id;
       });
@@ -1349,8 +1349,8 @@ describe('TelegramBot', function telegramSuite() {
   });
 
   describe('#unpinChatMessage', function unpinChatMessageSuite() {
-    before(function before() {
-      utils.handleRatelimit(bot, 'unpinChatMessage', this);
+    beforeAll(function beforeAll() {
+      utils.handleRatelimit(bot, 'unpinChatMessage');
     });
     it('should unpin chat message', function test() {
       return bot.unpinChatMessage(GROUPID).then(resp => {
@@ -1360,8 +1360,8 @@ describe('TelegramBot', function telegramSuite() {
   });
 
   describe('#unpinAllChatMessages', function unpinAllChatMessagesSuite() {
-    before(function before() {
-      utils.handleRatelimit(bot, 'unpinAllChatMessages', this);
+    beforeAll(function beforeAll() {
+      utils.handleRatelimit(bot, 'unpinAllChatMessages');
     });
     it('should unpin all chats messages', function test() {
       return bot.unpinAllChatMessages(GROUPID).then(resp => {
@@ -1373,8 +1373,8 @@ describe('TelegramBot', function telegramSuite() {
   describe.skip('#leaveChat', function leaveChatSuite() { });
 
   describe('#getChat', function getChatSuite() {
-    before(function before() {
-      utils.handleRatelimit(bot, 'getChat', this);
+    beforeAll(function beforeAll() {
+      utils.handleRatelimit(bot, 'getChat');
     });
     it('should return a Chat object', function test() {
       return bot.getChat(USERID).then(resp => {
@@ -1384,8 +1384,8 @@ describe('TelegramBot', function telegramSuite() {
   });
 
   describe('#getChatAdministrators', function getChatAdministratorsSuite() {
-    before(function before() {
-      utils.handleRatelimit(bot, 'getChatAdministrators', this);
+    beforeAll(function beforeAll() {
+      utils.handleRatelimit(bot, 'getChatAdministrators');
     });
     it('should return an Array', function test() {
       return bot.getChatAdministrators(GROUPID).then(resp => {
@@ -1395,8 +1395,8 @@ describe('TelegramBot', function telegramSuite() {
   });
 
   describe('#getChatMemberCount', function getChatMemberCountSuite() {
-    before(function before() {
-      utils.handleRatelimit(bot, 'getChatMemberCount', this);
+    beforeAll(function beforeAll() {
+      utils.handleRatelimit(bot, 'getChatMemberCount');
     });
     it('should return an Integer', function test() {
       return bot.getChatMemberCount(GROUPID).then(resp => {
@@ -1406,8 +1406,8 @@ describe('TelegramBot', function telegramSuite() {
   });
 
   describe('#getChatMember', function getChatMemberSuite() {
-    before(function before() {
-      utils.handleRatelimit(bot, 'getChatMember', this);
+    beforeAll(function beforeAll() {
+      utils.handleRatelimit(bot, 'getChatMember');
     });
     it('should return a ChatMember', function test() {
       return bot.getChatMember(GROUPID, USERID).then(resp => {
@@ -1419,14 +1419,12 @@ describe('TelegramBot', function telegramSuite() {
   });
 
   describe('#setChatStickerSet', function setChatStickerSetSuite() {
-    before(function before() {
-      utils.handleRatelimit(bot, 'setChatStickerSet', this);
-      // Check if the chat can set sticker sets
-      if (!CHAT_INFO.can_set_sticker_set) {
-        this.skip();
-      }
+    beforeAll(function beforeAll() {
+      utils.handleRatelimit(bot, 'setChatStickerSet');
     });
     it('should return a Boolean', function test() {
+      // Check if the chat can set sticker sets
+      if (!CHAT_INFO.can_set_sticker_set) return Promise.resolve();
       return bot.setChatStickerSet(GROUPID, STICKER_SET_NAME).then(resp => {
         assert.ok(is.boolean(resp));
       });
@@ -1434,14 +1432,12 @@ describe('TelegramBot', function telegramSuite() {
   });
 
   describe('#deleteChatStickerSet', function deleteChatStickerSetSuite() {
-    before(function before() {
-      utils.handleRatelimit(bot, 'deleteChatStickerSet', this);
-      // Check if the chat can delete sticker sets
-      if (!CHAT_INFO.can_set_sticker_set) {
-        this.skip();
-      }
+    beforeAll(function beforeAll() {
+      utils.handleRatelimit(bot, 'deleteChatStickerSet');
     });
     it('should return a Boolean', function test() {
+      // Check if the chat can delete sticker sets
+      if (!CHAT_INFO.can_set_sticker_set) return Promise.resolve();
       return bot.deleteChatStickerSet(GROUPID).then(resp => {
         assert.ok(is.boolean(resp));
       });
@@ -1539,9 +1535,9 @@ describe('TelegramBot', function telegramSuite() {
   });
 
   describe('#setMyProfilePhoto', function setMyProfilePhotoSuite() {
-    this.timeout(timeout);
-    before(function before() {
-      utils.handleRatelimit(bot, 'setMyProfilePhoto', this);
+    jest.setTimeout(timeout);
+    beforeAll(function beforeAll() {
+      utils.handleRatelimit(bot, 'setMyProfilePhoto');
     });
 
     it('should set bot profile photo from file', function test() {
@@ -1553,8 +1549,8 @@ describe('TelegramBot', function telegramSuite() {
   });
 
   describe('#removeMyProfilePhoto', function removeMyProfilePhotoSuite() {
-    before(function before() {
-      utils.handleRatelimit(bot, 'removeMyProfilePhoto', this);
+    beforeAll(function beforeAll() {
+      utils.handleRatelimit(bot, 'removeMyProfilePhoto');
     });
 
     it('should remove bot profile photo', function test() {
@@ -1642,9 +1638,9 @@ describe('TelegramBot', function telegramSuite() {
   });
 
   describe('#editMessageText', function editMessageTextSuite() {
-    before(function before() {
-      utils.handleRatelimit(bot, 'sendMessage', this);
-      utils.handleRatelimit(bot, 'editMessageText', this);
+    beforeAll(function beforeAll() {
+      utils.handleRatelimit(bot, 'sendMessage');
+      utils.handleRatelimit(bot, 'editMessageText');
     });
     it('should edit a message sent by the bot', function test() {
       return bot.sendMessage(USERID, 'test').then(resp => {
@@ -1661,10 +1657,10 @@ describe('TelegramBot', function telegramSuite() {
   });
 
   describe('#editMessageCaption', function editMessageCaptionSuite() {
-    this.timeout(timeout);
-    before(function before() {
-      utils.handleRatelimit(bot, 'sendPhoto', this);
-      utils.handleRatelimit(bot, 'editMessageCaption', this);
+    jest.setTimeout(timeout);
+    beforeAll(function beforeAll() {
+      utils.handleRatelimit(bot, 'sendPhoto');
+      utils.handleRatelimit(bot, 'editMessageCaption');
     });
     it('should edit a caption sent by the bot', function test() {
       const photo = `${__dirname}/data/photo.png`;
@@ -1685,8 +1681,8 @@ describe('TelegramBot', function telegramSuite() {
   describe('#editMessageMedia', function editMessageMediaSuite() {
     let photoId;
     let messageID;
-    before(function before() {
-      utils.handleRatelimit(bot, 'editMessageMedia', this);
+    beforeAll(function beforeAll() {
+      utils.handleRatelimit(bot, 'editMessageMedia');
       const photo = `${__dirname}/data/photo.png`;
       return bot.sendPhoto(USERID, photo).then(resp => {
         assert.ok(is.object(resp));
@@ -1705,9 +1701,9 @@ describe('TelegramBot', function telegramSuite() {
 
 
   describe('#editMessageReplyMarkup', function editMessageReplyMarkupSuite() {
-    before(function before() {
-      utils.handleRatelimit(bot, 'sendMessage', this);
-      utils.handleRatelimit(bot, 'editMessageReplyMarkup', this);
+    beforeAll(function beforeAll() {
+      utils.handleRatelimit(bot, 'sendMessage');
+      utils.handleRatelimit(bot, 'editMessageReplyMarkup');
     });
     it('should edit previously-set reply markup', function test() {
       return bot.sendMessage(USERID, 'test').then(resp => {
@@ -1731,8 +1727,8 @@ describe('TelegramBot', function telegramSuite() {
 
   describe('#stopPoll', function stopPollSuite() {
     let msg;
-    before(function before() {
-      utils.handleRatelimit(bot, 'stopPoll', this);
+    beforeAll(function beforeAll() {
+      utils.handleRatelimit(bot, 'stopPoll');
       return bot.sendPoll(GROUPID, '¿Poll for stop before?', ['Yes', 'No']).then(resp => {
         msg = resp;
       });
@@ -1751,8 +1747,8 @@ describe('TelegramBot', function telegramSuite() {
 
   describe('#deleteMessage', function deleteMessageSuite() {
     let messageId;
-    before(function before() {
-      utils.handleRatelimit(bot, 'deleteMessage', this);
+    beforeAll(function beforeAll() {
+      utils.handleRatelimit(bot, 'deleteMessage');
       return bot.sendMessage(USERID, 'To be deleted').then(resp => {
         messageId = resp.message_id;
       });
@@ -1766,9 +1762,9 @@ describe('TelegramBot', function telegramSuite() {
 
   describe('#sendSticker', function sendStickerSuite() {
     let stickerId;
-    this.timeout(timeout);
-    before(function before() {
-      utils.handleRatelimit(bot, 'sendSticker', this);
+    jest.setTimeout(timeout);
+    beforeAll(function beforeAll() {
+      utils.handleRatelimit(bot, 'sendSticker');
     });
     it('should send a sticker from file', function test() {
       const sticker = `${__dirname}/data/sticker.webp`;
@@ -1809,8 +1805,8 @@ describe('TelegramBot', function telegramSuite() {
   });
 
   describe('#uploadStickerFile', function sendPhotoSuite() {
-    before(function before() {
-      utils.handleRatelimit(bot, 'uploadStickerFile', this);
+    beforeAll(function beforeAll() {
+      utils.handleRatelimit(bot, 'uploadStickerFile');
     });
     it('should upload a sticker from file', function test() {
       const sticker = `${__dirname}/data/sticker.png`;
@@ -1824,8 +1820,8 @@ describe('TelegramBot', function telegramSuite() {
   });
 
   describe('#createNewStickerSet', function createNewStickerSetSuite() {
-    before(function before() {
-      utils.handleRatelimit(bot, 'createNewStickerSet', this);
+    beforeAll(function beforeAll() {
+      utils.handleRatelimit(bot, 'createNewStickerSet');
     });
 
     it('should create a new sticker set', function test(done) {
@@ -1840,8 +1836,8 @@ describe('TelegramBot', function telegramSuite() {
   });
 
   describe('#getStickerSet', function getStickerSetSuite() {
-    before(function before() {
-      utils.handleRatelimit(bot, 'getStickerSet', this);
+    beforeAll(function beforeAll() {
+      utils.handleRatelimit(bot, 'getStickerSet');
     });
     it('should get the sticker set given the name of the set', function test() {
       return bot.getStickerSet(STICKER_SET_NAME).then(resp => {
@@ -1890,8 +1886,8 @@ describe('TelegramBot', function telegramSuite() {
 
 
   describe('#addStickerToSet', function addStickerToSetSuite() {
-    before(function before() {
-      utils.handleRatelimit(bot, 'addStickerToSet', this);
+    beforeAll(function beforeAll() {
+      utils.handleRatelimit(bot, 'addStickerToSet');
     });
 
     it('should add a sticker to a set', function test() {
@@ -1913,8 +1909,8 @@ describe('TelegramBot', function telegramSuite() {
   });
 
   describe('#setStickerPositionInSet', function setStickerPositionInSet() {
-    before(function before() {
-      utils.handleRatelimit(bot, 'setStickerPositionInSet', this);
+    beforeAll(function beforeAll() {
+      utils.handleRatelimit(bot, 'setStickerPositionInSet');
     });
     it('should set the position of a sticker in a set', function test() {
       bot.setStickerPositionInSet(STICKER_FILE_ID_FROM_SET, 0).then((resp) => {
@@ -1924,8 +1920,8 @@ describe('TelegramBot', function telegramSuite() {
   });
 
   describe('#deleteStickerFromSet', function deleteStickerFromSetSuite() {
-    before(function before() {
-      utils.handleRatelimit(bot, 'deleteStickerFromSet', this);
+    beforeAll(function beforeAll() {
+      utils.handleRatelimit(bot, 'deleteStickerFromSet');
     });
     it('should delete a sticker from a set', function test() {
       bot.deleteStickerFromSet(STICKER_FILE_ID_FROM_SET).then((resp) => {
@@ -1935,8 +1931,8 @@ describe('TelegramBot', function telegramSuite() {
   });
 
   describe('#setStickerEmojiList', function setStickerEmojiListSuite() {
-    before(function before() {
-      utils.handleRatelimit(bot, 'setStickerEmojiList', this);
+    beforeAll(function beforeAll() {
+      utils.handleRatelimit(bot, 'setStickerEmojiList');
     });
 
     it('should get the list for the given sticker of the bot sticker pack', function test(done) {
@@ -1960,8 +1956,8 @@ describe('TelegramBot', function telegramSuite() {
   });
 
   describe('#setStickerKeywords', function setStickerKeywordsSuite() {
-    before(function before() {
-      utils.handleRatelimit(bot, 'setStickerKeywords', this);
+    beforeAll(function beforeAll() {
+      utils.handleRatelimit(bot, 'setStickerKeywords');
     });
     it('should set a keywords list for the given sticker', function test() {
       assert.ok(is.equal(STICKERS_FROM_BOT_SET[0].type, 'regular'));
@@ -1972,8 +1968,8 @@ describe('TelegramBot', function telegramSuite() {
   });
 
   describe.skip('#setStickerMaskPosition', function setStickerKeywordsSuite() {
-    before(function before() {
-      utils.handleRatelimit(bot, 'setStickerMaskPosition', this);
+    beforeAll(function beforeAll() {
+      utils.handleRatelimit(bot, 'setStickerMaskPosition');
     });
     it('should delete a sticker from a set', function test() {
       bot.setStickerMaskPosition(STICKER_FILE_ID_FROM_SET, { point: 'eyes', scale: 2, x_shift: 1, y_shift: 1 }).then((resp) => {
@@ -1983,8 +1979,8 @@ describe('TelegramBot', function telegramSuite() {
   });
 
   describe('#setStickerSetTitle', function setStickerSetTitleSuite() {
-    before(function before() {
-      utils.handleRatelimit(bot, 'setStickerSetTitle', this);
+    beforeAll(function beforeAll() {
+      utils.handleRatelimit(bot, 'setStickerSetTitle');
     });
     it('should set a new sticker set title', function test() {
       const stickerPackName = `s${CURRENT_TIMESTAMP}_by_${BOT_USERNAME}`;
@@ -1996,8 +1992,8 @@ describe('TelegramBot', function telegramSuite() {
   });
 
   describe('#setStickerSetThumbnail', function setStickerSetThumbnailSuite() {
-    before(function before() {
-      utils.handleRatelimit(bot, 'setStickerSetThumbnail', this);
+    beforeAll(function beforeAll() {
+      utils.handleRatelimit(bot, 'setStickerSetThumbnail');
     });
 
     it('should set a sticker set thumbnail', function test() {
@@ -2011,8 +2007,8 @@ describe('TelegramBot', function telegramSuite() {
   });
 
   describe.skip('#setCustomEmojiStickerSetThumbnail', function setCustomEmojiStickerSetThumbnailSuite() {
-    before(function before() {
-      utils.handleRatelimit(bot, 'setCustomEmojiStickerSetThumbnail', this);
+    beforeAll(function beforeAll() {
+      utils.handleRatelimit(bot, 'setCustomEmojiStickerSetThumbnail');
     });
 
     it('should set a custom emoji sticjer set as thumbnail', function test() {
@@ -2025,8 +2021,8 @@ describe('TelegramBot', function telegramSuite() {
   });
 
   describe.skip('#deleteStickerSet', function deleteStickerSetSuite() {
-    before(function before() {
-      utils.handleRatelimit(bot, 'deleteStickerSet', this);
+    beforeAll(function beforeAll() {
+      utils.handleRatelimit(bot, 'deleteStickerSet');
     });
 
     it('should delete sticker set', function test() {
@@ -2043,12 +2039,12 @@ describe('TelegramBot', function telegramSuite() {
   describe.skip('#answerWebAppQuery', function answerCallbackQuerySuite() { });
 
   describe('#sendInvoice', function sendInvoiceSuite() {
-    before(function before() {
-      utils.handleRatelimit(bot, 'sendInvoice', this);
+    beforeAll(function beforeAll() {
+      utils.handleRatelimit(bot, 'sendInvoice');
     });
     it('should send an invoice', function test() {
       if (isCI) {
-        this.skip(); // Skip test for now
+        return Promise.resolve(); // Skip test for now
       }
       const title = 'Demo product';
       const description = 'our test product';
@@ -2065,12 +2061,12 @@ describe('TelegramBot', function telegramSuite() {
   });
 
   describe('#createInvoiceLink', function createInvoiceLinkSuite() {
-    before(function before() {
-      utils.handleRatelimit(bot, 'createInvoiceLink', this);
+    beforeAll(function beforeAll() {
+      utils.handleRatelimit(bot, 'createInvoiceLink');
     });
     it('should create an invoice link', function test() {
       if (isCI) {
-        this.skip(); // Skip test for now
+        return Promise.resolve(); // Skip test for now
       }
       const title = 'Invoice link product';
       const description = 'Our test invoice link product';
@@ -2090,8 +2086,8 @@ describe('TelegramBot', function telegramSuite() {
   describe.skip('#answerPreCheckoutQuery', function answerPreCheckoutQuerySuite() { });
 
   describe('#sendGame', function sendGameSuite() {
-    before(function before() {
-      utils.handleRatelimit(bot, 'sendGame', this);
+    beforeAll(function beforeAll() {
+      utils.handleRatelimit(bot, 'sendGame');
     });
     it('should send a Game', function test() {
       return bot.sendGame(USERID, GAME_SHORT_NAME).then(resp => {
@@ -2102,8 +2098,8 @@ describe('TelegramBot', function telegramSuite() {
   });
 
   describe('#setGameScore', function setGameScoreSuite() {
-    before(function before() {
-      utils.handleRatelimit(bot, 'setGameScore', this);
+    beforeAll(function beforeAll() {
+      utils.handleRatelimit(bot, 'setGameScore');
     });
     it('should set GameScore', function test() {
       const score = Math.floor(Math.random() * 1000);
@@ -2119,8 +2115,8 @@ describe('TelegramBot', function telegramSuite() {
   });
 
   describe('#getGameHighScores', function getGameHighScoresSuite() {
-    before(function before() {
-      utils.handleRatelimit(bot, 'getGameHighScores', this);
+    beforeAll(function beforeAll() {
+      utils.handleRatelimit(bot, 'getGameHighScores');
     });
     it('should get GameHighScores', function test() {
       const opts = {
@@ -2136,8 +2132,8 @@ describe('TelegramBot', function telegramSuite() {
   describe('#setMessageReaction', function setMessageReactionSuite() {
     let messageId;
     const Reactions = [{ type: 'emoji', emoji: '👍' }];
-    before(function before() {
-      utils.handleRatelimit(bot, 'setMessageReaction', this);
+    beforeAll(function beforeAll() {
+      utils.handleRatelimit(bot, 'setMessageReaction');
       return bot.sendMessage(USERID, 'To be reacted').then(resp => {
         messageId = resp.message_id;
       });
@@ -2151,8 +2147,8 @@ describe('TelegramBot', function telegramSuite() {
 
   describe('#deleteMessages', function setMessageReactionSuite() {
     let messageId;
-    before(function before() {
-      utils.handleRatelimit(bot, 'deleteMessages', this);
+    beforeAll(function beforeAll() {
+      utils.handleRatelimit(bot, 'deleteMessages');
       return bot.sendMessage(USERID, 'To be deleted').then(resp => {
         messageId = resp.message_id;
       });
@@ -2166,8 +2162,8 @@ describe('TelegramBot', function telegramSuite() {
 
   describe('#copyMessages', function setMessageReactionSuite() {
     let messageId;
-    before(function before() {
-      utils.handleRatelimit(bot, 'copyMessages', this);
+    beforeAll(function beforeAll() {
+      utils.handleRatelimit(bot, 'copyMessages');
       return bot.sendMessage(GROUPID, 'To be copyed').then(resp => {
         messageId = resp.message_id;
       });
@@ -2181,8 +2177,8 @@ describe('TelegramBot', function telegramSuite() {
   });
 
   describe('#getUserGifts', function getUserGiftsSuite() {
-    before(function before() {
-      utils.handleRatelimit(bot, 'getUserGifts', this);
+    beforeAll(function beforeAll() {
+      utils.handleRatelimit(bot, 'getUserGifts');
     });
     it('should return an OwnedGifts object', function test() {
       return bot.getUserGifts(USERID).then(resp => {
