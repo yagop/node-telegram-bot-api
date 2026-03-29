@@ -11,7 +11,7 @@ const request = require('@cypress/request-promise');
 const streamedRequest = require('@cypress/request');
 const qs = require('querystring');
 const stream = require('stream');
-const mime = require('mime');
+const mime = require('mime').default;
 const path = require('path');
 const URL = require('url');
 const fs = require('fs');
@@ -276,7 +276,7 @@ class TelegramBot extends EventEmitter {
    * @see https://core.telegram.org/bots/api#sendmessage
    */
   _fixReplyParameters(obj) {
-    if (obj.hasOwnProperty('reply_parameters') && typeof obj.reply_parameters !== 'string') {
+    if (Object.prototype.hasOwnProperty.call(obj, 'reply_parameters') && typeof obj.reply_parameters !== 'string') {
       obj.reply_parameters = stringify(obj.reply_parameters);
     }
   }
@@ -319,7 +319,7 @@ class TelegramBot extends EventEmitter {
         let data;
         try {
           data = resp.body = JSON.parse(resp.body);
-        } catch (err) {
+        } catch {
           throw new errors.ParseError(`Error parsing response: ${resp.body}`, resp);
         }
 
@@ -399,7 +399,7 @@ class TelegramBot extends EventEmitter {
     }
 
     filename = filename || 'filename';
-    contentType = contentType || mime.lookup(filename);
+    contentType = contentType || mime.getType(filename);
     if (process.env.NTBA_FIX_350) {
       contentType = contentType || 'application/octet-stream';
     } else {
@@ -927,14 +927,14 @@ class TelegramBot extends EventEmitter {
      * We need to ensure backwards-compatibility while maintaining
      * consistency of the method signatures throughout the library */
     if (typeof form !== 'object') {
-      /* eslint-disable no-param-reassign, prefer-rest-params */
+      /* eslint-disable no-param-reassign */
       deprecate('The method signature getUpdates(timeout, limit, offset) has been deprecated since v0.25.0');
       form = {
         timeout: arguments[0],
         limit: arguments[1],
         offset: arguments[2],
       };
-      /* eslint-enable no-param-reassign, prefer-rest-params */
+      /* eslint-enable no-param-reassign */
     }
 
     // If allowed_updates is present and is an array, stringify it.
@@ -2460,23 +2460,23 @@ class TelegramBot extends EventEmitter {
      * We need to ensure backwards-compatibility while maintaining
      * consistency of the method signatures throughout the library */
     if (typeof form !== 'object') {
-      /* eslint-disable no-param-reassign, prefer-rest-params */
+      /* eslint-disable no-param-reassign */
       deprecate('The method signature answerCallbackQuery(callbackQueryId, text, showAlert) has been deprecated since v0.27.1');
       form = {
         callback_query_id: arguments[0],
         text: arguments[1],
         show_alert: arguments[2],
       };
-      /* eslint-enable no-param-reassign, prefer-rest-params */
+      /* eslint-enable no-param-reassign */
     }
     /* The older method signature (in/before v0.29.0) was answerCallbackQuery([options]).
      * We need to ensure backwards-compatibility while maintaining
      * consistency of the method signatures throughout the library. */
     if (typeof callbackQueryId === 'object') {
-      /* eslint-disable no-param-reassign, prefer-rest-params */
+      /* eslint-disable no-param-reassign */
       deprecate('The method signature answerCallbackQuery([options]) has been deprecated since v0.29.0');
       form = callbackQueryId;
-      /* eslint-enable no-param-reassign, prefer-rest-params */
+      /* eslint-enable no-param-reassign */
     } else {
       form.callback_query_id = callbackQueryId;
     }

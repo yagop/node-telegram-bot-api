@@ -17,7 +17,7 @@ const options = {
 // domain.
 // See: https://zeit.co/blog/now-alias
 // Or just use NOW_URL to get deployment url from env.
-const url = 'YOUR_DOMAIN_ALIAS' || process.env.NOW_URL;
+const url = process.env.NOW_URL || 'YOUR_DOMAIN_ALIAS';
 const bot = new TelegramBot(TOKEN, options);
 
 

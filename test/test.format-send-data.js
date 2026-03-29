@@ -1,6 +1,7 @@
 const assert = require('assert');
 const fs = require('fs');
 const path = require('path');
+const { PassThrough } = require('stream');
 const TelegramBot = require('..');
 
 const paths = {
@@ -21,13 +22,13 @@ describe('#_formatSendData', function sendfileSuite() {
 
   describe('using fileOptions', function sendfileOptionsSuite() {
     const stream = fs.createReadStream(paths.audio);
-    const nonPathStream = fs.createReadStream(paths.audio);
+    // Create a PassThrough stream to simulate a stream without a .path property
+    // This avoids issues with deleting properties from real ReadStreams
+    const nonPathStream = new PassThrough();
     const buffer = fs.readFileSync(paths.audio);
     const nonDetectableBuffer = fs.readFileSync(__filename);
     const filepath = paths.audio;
     const files = [stream, nonPathStream, buffer, nonDetectableBuffer, filepath];
-
-    delete nonPathStream.path;
 
     describe('filename', function filenameSuite() {
       it('(1) fileOptions.filename', function test() {
@@ -130,7 +131,7 @@ describe('#_formatSendData', function sendfileSuite() {
   });
 
   it('should allow stream.path that can not be parsed', function test() {
-    const stream = fs.createReadStream(paths.audio);
+    const stream = new PassThrough();
     stream.path = '/?id=123'; // for example, 'http://example.com/?id=666'
     assert.doesNotThrow(function assertDoesNotThrow() {
       bot._formatSendData('file', stream);

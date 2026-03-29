@@ -1,4 +1,4 @@
-/* eslint-disable no-use-before-define */
+/* eslint-disable no-global-assign */
 exports = module.exports = {
   /**
    * Clear polling check, so that 'isPollingMockServer()' returns false
@@ -76,7 +76,7 @@ exports = module.exports = {
    */
   startStaticServer,
 };
-/* eslint-enable no-use-before-define */
+ 
 
 
 const assert = require('assert');
@@ -210,7 +210,7 @@ function handleRatelimit(bot, methodName, suite) {
           }
           const retrySecs = error.response.body.parameters.retry_after;
           const timeout = (1000 * retrySecs) + (1000 * addSecs);
-          console.error('tests: Handling rate-limit error. Retrying after %d secs', timeout / 1000); // eslint-disable-line no-console
+          console.error('tests: Handling rate-limit error. Retrying after %d secs', timeout / 1000);  
           suite.timeout(timeout * 2);
           return new Promise(function timeoutPromise(resolve, reject) {
             setTimeout(function execTimeout() {

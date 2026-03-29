@@ -1,4 +1,5 @@
 node_modules
+.nyc_output/
 coverage/
 npm-debug.log
 .package.json
@@ -8,3 +9,4 @@ output/
 lib/
 lib-doc/
 .DS_Store
+.env

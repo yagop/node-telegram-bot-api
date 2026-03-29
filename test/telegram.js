@@ -263,7 +263,7 @@ describe('TelegramBot', function telegramSuite() {
       let buffer;
       try {
         buffer = Buffer.from('12345');
-      } catch (ex) {
+      } catch {
         buffer = new Buffer('12345');
       }
       return bot.sendPhoto(USERID, buffer).catch(error => {
