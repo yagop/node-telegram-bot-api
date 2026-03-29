@@ -1,5 +1,4 @@
 const TelegramBot = require('..');
-const request = require('@cypress/request-promise');
 const assert = require('assert');
 const fs = require('fs');
 const os = require('os');
@@ -9,6 +8,22 @@ const is = require('is');
 const utils = require('./utils');
 const isCI = require('is-ci');
 const concat = require('concat-stream');
+const fetch = require('node-fetch');
+
+/**
+ * Helper to create a stream from a URL (replaces request(url))
+ * @param {string} url
+ * @return {stream.Readable} Readable stream
+ */
+function getStreamFromUrl(url) {
+  return fetch(url)
+    .then(resp => {
+      if (!resp.ok) {
+        throw new Error(`HTTP ${resp.status}: ${resp.statusText}`);
+      }
+      return resp.body;
+    });
+}
 
 // Allows self-signed certificates to be used in our tests
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
@@ -24,8 +39,8 @@ if (!PROVIDER_TOKEN && !isCI) { // If is not running in Travis / Appveyor
 }
 
 // Telegram service if not User Id
-const USERID = process.env.TEST_USER_ID || 777000;
-const GROUPID = process.env.TEST_GROUP_ID || -1001075450562;
+const USERID = parseInt(process.env.TEST_USER_ID, 10) || 777000;
+const GROUPID = parseInt(process.env.TEST_GROUP_ID, 10) || -1001075450562;
 const GAME_SHORT_NAME = process.env.TEST_GAME_SHORT_NAME || 'medusalab_test';
 const STICKER_SET_NAME = process.env.TEST_STICKER_SET_NAME || 'pusheen';
 const CURRENT_TIMESTAMP = Date.now();
@@ -53,9 +68,10 @@ let STICKER_FILE_ID_FROM_SET;
 let STICKERS_FROM_BOT_SET;
 
 before(function beforeAll() {
-  utils.startStaticServer(staticPort);
-  return utils.startMockServer(pollingPort)
+  return utils.startStaticServer(staticPort)
     .then(() => {
+      return utils.startMockServer(pollingPort);
+    }).then(() => {
       return utils.startMockServer(pollingPort2);
     }).then(() => {
       return utils.startMockServer(badTgServerPort, { bad: true });
@@ -202,8 +218,8 @@ describe('TelegramBot', function telegramSuite() {
       });
     });
     it('returns 401 error if token is wrong', function test(done) {
-      utils.sendWebHookMessage(webHookPort2, 'wrong-token').catch(resp => {
-        assert.strictEqual(resp.statusCode, 401);
+      utils.sendWebHookMessage(webHookPort2, 'wrong-token').catch(error => {
+        assert.strictEqual(error.statusCode, 401);
         return done();
       });
     });
@@ -693,8 +709,8 @@ describe('TelegramBot', function telegramSuite() {
         assert.ok(is.array(resp.photo));
       });
     });
-    it('should send a photo from request Stream', function test() {
-      const photo = request(`${staticUrl}/photo.png`);
+    it('should send a photo from request Stream', async function test() {
+      const photo = await getStreamFromUrl(`${staticUrl}/photo.png`);
       return bot.sendPhoto(USERID, photo).then(resp => {
         assert.ok(is.object(resp));
         assert.ok(is.array(resp.photo));
@@ -738,8 +754,8 @@ describe('TelegramBot', function telegramSuite() {
         assert.ok(is.object(resp.audio));
       });
     });
-    it('should send an audio from request Stream', function test() {
-      const audio = request(`${staticUrl}/audio.mp3`);
+    it('should send an audio from request Stream', async function test() {
+      const audio = await getStreamFromUrl(`${staticUrl}/audio.mp3`);
       return bot.sendAudio(USERID, audio).then(resp => {
         assert.ok(is.object(resp));
         assert.ok(is.object(resp.audio));
@@ -793,8 +809,8 @@ describe('TelegramBot', function telegramSuite() {
         assert.ok(is.object(resp.document));
       });
     });
-    it('should send a document from request Stream', function test() {
-      const document = request(`${staticUrl}/photo.gif`);
+    it('should send a document from request Stream', async function test() {
+      const document = await getStreamFromUrl(`${staticUrl}/photo.gif`);
       return bot.sendDocument(USERID, document).then(resp => {
         assert.ok(is.object(resp));
         assert.ok(is.object(resp.document));
@@ -837,8 +853,8 @@ describe('TelegramBot', function telegramSuite() {
         assert.ok(is.object(resp.video));
       });
     });
-    it('should send a video from request Stream', function test() {
-      const video = request(`${staticUrl}/video.mp4`);
+    it('should send a video from request Stream', async function test() {
+      const video = await getStreamFromUrl(`${staticUrl}/video.mp4`);
       return bot.sendVideo(USERID, video).then(resp => {
         assert.ok(is.object(resp));
         assert.ok(is.object(resp.video));
@@ -893,8 +909,8 @@ describe('TelegramBot', function telegramSuite() {
         assert.ok(is.object(resp.voice));
       });
     });
-    it('should send a voice from request Stream', function test() {
-      const voice = request(`${staticUrl}/voice.ogg`);
+    it('should send a voice from request Stream', async function test() {
+      const voice = await getStreamFromUrl(`${staticUrl}/voice.ogg`);
       return bot.sendVoice(USERID, voice).then(resp => {
         assert.ok(is.object(resp));
         assert.ok(is.object(resp.voice));
@@ -1283,8 +1299,8 @@ describe('TelegramBot', function telegramSuite() {
         assert.strictEqual(resp, true);
       });
     });
-    it('should set a chat photo from request Stream', function test() {
-      const photo = request(`${staticUrl}/chat_photo.png`);
+    it('should set a chat photo from request Stream', async function test() {
+      const photo = await getStreamFromUrl(`${staticUrl}/chat_photo.png`);
       return bot.setChatPhoto(GROUPID, photo).then(resp => {
         assert.strictEqual(resp, true);
       });
@@ -1298,6 +1314,7 @@ describe('TelegramBot', function telegramSuite() {
   });
 
   describe('#deleteChatPhoto', function deleteChatPhotoSuite() {
+    this.timeout(timeout);
     before(function before() {
       utils.handleRatelimit(bot, 'deleteChatPhoto', this);
     });
@@ -1349,6 +1366,7 @@ describe('TelegramBot', function telegramSuite() {
   });
 
   describe('#unpinChatMessage', function unpinChatMessageSuite() {
+    this.timeout(timeout);
     before(function before() {
       utils.handleRatelimit(bot, 'unpinChatMessage', this);
     });
@@ -1622,7 +1640,7 @@ describe('TelegramBot', function telegramSuite() {
       return bot.getMyDefaultAdministratorRights({
         for_channels: false
       }).then(resp => {
-        assert.ok(is.equal(resp, {
+        assert.deepStrictEqual(resp, {
           can_manage_chat: true,
           can_change_info: true,
           can_delete_messages: false,
@@ -1630,13 +1648,14 @@ describe('TelegramBot', function telegramSuite() {
           can_restrict_members: false,
           can_pin_messages: true,
           can_manage_topics: false,
+          can_manage_tags: false,
           can_promote_members: false,
           can_manage_video_chats: false,
           can_post_stories: false,
           can_edit_stories: false,
           can_delete_stories: false,
           is_anonymous: false
-        }));
+        });
       });
     });
   });
@@ -1792,8 +1811,8 @@ describe('TelegramBot', function telegramSuite() {
         assert.ok(is.object(resp.sticker));
       });
     });
-    it('should send a sticker from request Stream', function test() {
-      const sticker = request(`${staticUrl}/sticker.webp`);
+    it('should send a sticker from request Stream', async function test() {
+      const sticker = await getStreamFromUrl(`${staticUrl}/sticker.webp`);
       return bot.sendSticker(USERID, sticker).then(resp => {
         assert.ok(is.object(resp));
         assert.ok(is.object(resp.sticker));
@@ -1828,14 +1847,17 @@ describe('TelegramBot', function telegramSuite() {
       utils.handleRatelimit(bot, 'createNewStickerSet', this);
     });
 
-    it('should create a new sticker set', function test(done) {
+    it('should create a new sticker set', function test() {
       const sticker = `${__dirname}/data/sticker.png`;
       const stickerPackName = `s${CURRENT_TIMESTAMP}_by_${BOT_USERNAME}`;
 
-      bot.createNewStickerSet(USERID, stickerPackName, 'Sticker Pack Title', sticker, '😍').then((resp) => {
+      return bot.createNewStickerSet(USERID, stickerPackName, 'Sticker Pack Title', sticker, '😍').then((resp) => {
         assert.ok(is.boolean(resp));
+        // Store sticker set name for later tests
+        if (!this.stickerPackName) {
+          this.stickerPackName = stickerPackName;
+        }
       });
-      setTimeout(() => done(), 2000);
     });
   });
 
@@ -1898,17 +1920,16 @@ describe('TelegramBot', function telegramSuite() {
       const sticker = `${__dirname}/data/sticker.png`;
       const stickerPackName = `s${CURRENT_TIMESTAMP}_by_${BOT_USERNAME}`;
 
-      bot.addStickerToSet(USERID, stickerPackName, sticker, '😊😍🤔', 'png_sticker').then((resp) => {
+      return bot.addStickerToSet(USERID, stickerPackName, sticker, '😊😍🤔', 'png_sticker').then((resp) => {
         assert.ok(is.boolean(resp));
       });
     });
-    it('should add a sticker to a set using the file Id', function test(done) {
+    it('should add a sticker to a set using the file Id', function test() {
       const stickerPackName = `s${CURRENT_TIMESTAMP}_by_${BOT_USERNAME}`;
 
-      bot.addStickerToSet(USERID, stickerPackName, STICKER_FILE_ID_FROM_SET, '😊🤔', 'png_sticker').then((resp) => {
+      return bot.addStickerToSet(USERID, stickerPackName, STICKER_FILE_ID_FROM_SET, '😊🤔', 'png_sticker').then((resp) => {
         assert.ok(is.boolean(resp));
       });
-      setTimeout(() => done(), 2000);
     });
   });
 
@@ -1939,15 +1960,13 @@ describe('TelegramBot', function telegramSuite() {
       utils.handleRatelimit(bot, 'setStickerEmojiList', this);
     });
 
-    it('should get the list for the given sticker of the bot sticker pack', function test(done) {
+    it('should get the list for the given sticker of the bot sticker pack', function test() {
       const stickerPackName = `s${CURRENT_TIMESTAMP}_by_${BOT_USERNAME}`;
 
-      bot.getStickerSet(stickerPackName).then(resp => {
+      return bot.getStickerSet(stickerPackName).then(resp => {
         STICKERS_FROM_BOT_SET = resp.stickers;
         assert.ok(is.array(STICKERS_FROM_BOT_SET));
       });
-
-      setTimeout(() => done(), 2000);
     });
 
     it('should set a emoji list for the given sticker', function test() {

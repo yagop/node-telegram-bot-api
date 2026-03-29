@@ -80,9 +80,11 @@ exports = module.exports = {
 
 
 const assert = require('assert');
+const fs = require('fs');
 const http = require('http');
-const request = require('@cypress/request-promise');
-const statics = require('node-static');
+const path = require('path');
+const URL = require('url').URL;
+const fetch = require('node-fetch');
 
 const servers = {};
 
@@ -110,12 +112,39 @@ function startMockServer(port, options = {}) {
 
 
 function startStaticServer(port) {
-  const fileServer = new statics.Server(`${__dirname}/data`);
-  http.Server((req, res) => {
-    req.addListener('end', () => {
-      fileServer.serve(req, res);
-    }).resume();
-  }).listen(port);
+  const staticPath = path.join(__dirname, 'data');
+  return new Promise((resolve, reject) => {
+    const server = http.Server((req, res) => {
+      req.addListener('end', () => {
+        const url = new URL(req.url, `http://${req.headers.host}`);
+        const filePath = path.join(staticPath, url.pathname);
+        fs.readFile(filePath, (err, data) => {
+          if (err) {
+            res.writeHead(404);
+            return res.end('Not found');
+          }
+          // Simple mime type detection based on extension
+          const ext = path.extname(filePath).toLowerCase();
+          const mimeTypes = {
+            '.html': 'text/html',
+            '.js': 'application/javascript',
+            '.css': 'text/css',
+            '.json': 'application/json',
+            '.png': 'image/png',
+            '.jpg': 'image/jpeg',
+            '.gif': 'image/gif',
+            '.svg': 'image/svg+xml',
+            '.ico': 'image/x-icon',
+          };
+          const contentType = mimeTypes[ext] || 'application/octet-stream';
+          res.writeHead(200, { 'Content-Type': contentType });
+          res.end(data);
+        });
+      }).resume();
+    });
+    server.on('error', reject);
+    server.listen(port, resolve);
+  });
 }
 
 
@@ -144,11 +173,11 @@ function hasOpenWebHook(port, reverse) {
   assert.ok(port);
   const error = new Error('open-webhook-check failed');
   let connected = false;
-  return request.get(`http://127.0.0.1:${port}`)
+  return fetch(`http://127.0.0.1:${port}`)
     .then(() => {
       connected = true;
     }).catch(e => {
-      if (e.statusCode < 500) connected = true;
+      if (e.response && e.response.status < 500) connected = true;
     }).finally(() => {
       if (reverse) {
         if (connected) throw error;
@@ -164,14 +193,45 @@ function sendWebHookRequest(port, path, options = {}) {
   assert.ok(path);
   const protocol = options.https ? 'https' : 'http';
   const url = `${protocol}://127.0.0.1:${port}${path}`;
-  return request({
-    url,
-    method: options.method || 'POST',
-    body: options.update || {
-      update_id: 1,
-      message: options.message || { text: 'test' }
+  const body = options.update || {
+    update_id: 1,
+    message: options.message || { text: 'test' }
+  };
+  const json = (typeof options.json === 'undefined') ? true : options.json;
+  const method = options.method || 'POST';
+
+  let bodyData;
+  if (json) {
+    bodyData = JSON.stringify(body);
+  } else {
+    // Fallback for URLSearchParams (Node 0.12+ compatible)
+    bodyData = Object.keys(body)
+      .map(key => encodeURIComponent(key) + '=' + encodeURIComponent(body[key]))
+      .join('&');
+  }
+
+  return fetch(url, {
+    method,
+    headers: {
+      'Content-Type': json ? 'application/json' : 'application/x-www-form-urlencoded',
     },
-    json: (typeof options.json === 'undefined') ? true : options.json,
+    body: bodyData,
+  }).then(resp => {
+    // Check if response has content, otherwise return just the response
+    const contentType = resp.headers.get('content-type') || '';
+    if (!resp.ok) {
+      // For error responses, create an error object with statusCode
+      const error = new Error(`HTTP ${resp.status}: ${resp.statusText}`);
+      error.statusCode = resp.status;
+      error.response = resp;
+      throw error;
+    }
+    // For successful responses, try to parse as JSON if content-type indicates it
+    if (contentType.includes('application/json')) {
+      return resp.json();
+    }
+    // Otherwise return as text
+    return resp.text();
   });
 }
 

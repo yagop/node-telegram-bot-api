@@ -6,7 +6,7 @@
 
 const TOKEN = process.env.TELEGRAM_TOKEN || 'YOUR_TELEGRAM_BOT_TOKEN';
 const TelegramBot = require('..');
-const request = require('@cypress/request');
+const fetch = require('node-fetch');
 const options = {
   polling: true
 };
@@ -25,10 +25,15 @@ bot.onText(/\/photo/, function onPhotoText(msg) {
 
 // Matches /audio
 bot.onText(/\/audio/, function onAudioText(msg) {
-  // From HTTP request
+  // From HTTP request - convert response to stream
   const url = 'https://upload.wikimedia.org/wikipedia/commons/c/c8/Example.ogg';
-  const audio = request(url);
-  bot.sendAudio(msg.chat.id, audio);
+  fetch(url)
+    .then(response => {
+      bot.sendAudio(msg.chat.id, response.body);
+    })
+    .catch(err => {
+      console.error('Error fetching audio:', err);
+    });
 });
 
 

@@ -7,8 +7,7 @@ const TelegramBotPolling = require('./telegramPolling');
 const debug = require('debug')('node-telegram-bot-api');
 const EventEmitter = require('eventemitter3');
 const fileType = require('file-type');
-const request = require('@cypress/request-promise');
-const streamedRequest = require('@cypress/request');
+const fetch = require('node-fetch');
 const qs = require('querystring');
 const stream = require('stream');
 const mime = require('mime').default;
@@ -57,6 +56,44 @@ const _messageTypes = [
   'web_app_data',
   'message_reaction'
 ];
+
+/**
+ * Convert request-compatible form data to FormData for node-fetch
+ * @param {Object} form - The form data object
+ * @return {FormData} - FormData instance
+ * @private
+ */
+function createFormData(form) {
+  const FormData = require('form-data');
+  const formData = new FormData();
+
+  Object.keys(form).forEach((key) => {
+    const field = form[key];
+    const value = field.value;
+    const opts = field.options || {};
+    const filename = opts.filename || 'file';
+    const contentType = opts.contentType;
+
+    if (Object.prototype.isPrototypeOf.call(stream.Readable.prototype, value) || value instanceof stream.Stream) {
+      // It's a stream
+      formData.append(key, value, {
+        filename,
+        contentType,
+      });
+    } else if (Buffer.isBuffer(value)) {
+      // It's a buffer
+      formData.append(key, value, {
+        filename,
+        contentType,
+      });
+    } else {
+      // It's a string/number/etc.
+      formData.append(key, value);
+    }
+  });
+
+  return formData;
+}
 
 const _deprecatedMessageTypes = [
   'new_chat_participant', 'left_chat_participant'
@@ -247,15 +284,15 @@ class TelegramBot extends EventEmitter {
       options.thumbnail = options.thumb;
     }
     if (options.thumbnail) {
-      if (opts.formData === null) {
-        opts.formData = {};
+      if (opts.form === null) {
+        opts.form = {};
       }
 
       const attachName = 'photo';
       const [formData] = this._formatSendData(attachName, options.thumbnail.replace('attach://', ''));
 
       if (formData) {
-        opts.formData[attachName] = formData[attachName];
+        opts.form[attachName] = formData[attachName];
         opts.qs.thumbnail = `attach://${attachName}`;
       }
     }
@@ -308,29 +345,104 @@ class TelegramBot extends EventEmitter {
       this._fixReplyParameters(options.qs);
     }
 
-    options.method = 'POST';
-    options.url = this._buildURL(_path);
-    options.simple = false;
-    options.resolveWithFullResponse = true;
-    options.forever = true;
-    debug('HTTP request: %j', options);
-    return request(options)
+    let url = this._buildURL(_path);
+    let body = null;
+    const fetchOptions = {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+    };
+
+    if (options.qs) {
+      // Append query string parameters to URL
+      const queryString = qs.stringify(options.qs);
+      url = `${url}?${queryString}`;
+    }
+
+    if (options.form) {
+      // Check if form has any file content (complex fields with .value that are streams/buffers)
+      const formKeys = Object.keys(options.form);
+      const hasFileContent = formKeys.some(key => {
+        const field = options.form[key];
+        // Check if it's a complex field object with file content
+        return field && typeof field === 'object' && field.value && (
+          field.value instanceof stream.Stream ||
+          Buffer.isBuffer(field.value)
+        );
+      });
+
+      if (hasFileContent) {
+        // Use multipart form data for files
+        body = createFormData(options.form);
+        // Get headers from form-data (includes Content-Type with boundary)
+        const formHeaders = body.getHeaders();
+        fetchOptions.headers = formHeaders;
+      } else {
+        // No files - encode simple fields as URL-form-encoded
+        if (formKeys.length > 0) {
+          // Encode form fields as URL-encoded, handling both simple values and complex objects
+          const formString = formKeys
+            .map(key => {
+              const value = options.form[key];
+              // If it's a complex object (file field), extract the value; otherwise use as-is
+              const fieldValue = value && typeof value === 'object' && !Buffer.isBuffer(value) && !(value instanceof stream.Stream) && value.value
+                ? value.value
+                : value;
+              return `${encodeURIComponent(key)}=${encodeURIComponent(fieldValue)}`;
+            })
+            .join('&');
+          body = formString;
+        } else {
+          // Empty form - just empty body
+          body = '';
+        }
+      }
+    } else {
+      // Send empty body for non-form requests
+      body = '';
+    }
+
+    if (body) {
+      fetchOptions.body = body;
+    }
+
+    debug('HTTP request: %s', url);
+    debug('HTTP headers: %O', fetchOptions.headers);
+    debug('HTTP body type: %s', body ? body.constructor.name : 'none');
+    return fetch(url, fetchOptions)
       .then(resp => {
+        if (!resp.ok) {
+          return resp.text().then(text => {
+            // Try to parse error response as JSON
+            let errorBody;
+            try {
+              errorBody = JSON.parse(text);
+            } catch {
+              errorBody = { error: text };
+            }
+            throw new errors.TelegramError(`${resp.status} ${resp.statusText}`, { body: errorBody, statusCode: resp.status });
+          });
+        }
+        return resp.text();
+      })
+      .then(text => {
         let data;
         try {
-          data = resp.body = JSON.parse(resp.body);
+          data = JSON.parse(text);
         } catch {
-          throw new errors.ParseError(`Error parsing response: ${resp.body}`, resp);
+          throw new errors.ParseError(`Error parsing response: ${text}`, { body: text });
         }
 
         if (data.ok) {
           return data.result;
         }
 
-        throw new errors.TelegramError(`${data.error_code} ${data.description}`, resp);
-      }).catch(error => {
-        // TODO: why can't we do `error instanceof errors.BaseError`?
+        throw new errors.TelegramError(`${data.error_code} ${data.description}`, { body: data, statusCode: 200 });
+      })
+      .catch(error => {
         if (error.response) throw error;
+        if (error instanceof errors.BaseError) throw error;
         throw new errors.FatalError(error);
       });
   }
@@ -578,7 +690,13 @@ class TelegramBot extends EventEmitter {
         fileStream.emit('info', {
           uri: fileURI,
         });
-        pump(streamedRequest(Object.assign({ uri: fileURI }, this.options.request)), fileStream);
+        fetch(fileURI, this.options.request || {})
+          .then(response => {
+            pump(response.body, fileStream);
+          })
+          .catch(error => {
+            fileStream.emit('error', error);
+          });
       })
       .catch((error) => {
         fileStream.emit('error', error);
@@ -983,7 +1101,7 @@ class TelegramBot extends EventEmitter {
     if (cert) {
       try {
         const sendData = this._formatSendData('certificate', cert, fileOptions);
-        opts.formData = sendData[0];
+        opts.form = sendData[0];
         opts.qs.certificate = sendData[1];
       } catch (ex) {
         return Promise.reject(ex);
@@ -1164,7 +1282,7 @@ class TelegramBot extends EventEmitter {
     opts.qs.chat_id = chatId;
     try {
       const sendData = this._formatSendData('photo', photo, fileOptions);
-      opts.formData = sendData[0];
+      opts.form = sendData[0];
       opts.qs.photo = sendData[1];
     } catch (ex) {
       return Promise.reject(ex);
@@ -1195,7 +1313,7 @@ class TelegramBot extends EventEmitter {
 
     try {
       const sendData = this._formatSendData('audio', audio, fileOptions);
-      opts.formData = sendData[0];
+      opts.form = sendData[0];
       opts.qs.audio = sendData[1];
       this._fixAddFileThumbnail(options, opts);
     } catch (ex) {
@@ -1223,7 +1341,7 @@ class TelegramBot extends EventEmitter {
     opts.qs.chat_id = chatId;
     try {
       const sendData = this._formatSendData('document', doc, fileOptions);
-      opts.formData = sendData[0];
+      opts.form = sendData[0];
       opts.qs.document = sendData[1];
       this._fixAddFileThumbnail(options, opts);
     } catch (ex) {
@@ -1252,7 +1370,7 @@ class TelegramBot extends EventEmitter {
     opts.qs.chat_id = chatId;
     try {
       const sendData = this._formatSendData('video', video, fileOptions);
-      opts.formData = sendData[0];
+      opts.form = sendData[0];
       opts.qs.video = sendData[1];
       this._fixAddFileThumbnail(options, opts);
     } catch (ex) {
@@ -1279,7 +1397,7 @@ class TelegramBot extends EventEmitter {
     opts.qs.chat_id = chatId;
     try {
       const sendData = this._formatSendData('animation', animation, fileOptions);
-      opts.formData = sendData[0];
+      opts.form = sendData[0];
       opts.qs.animation = sendData[1];
     } catch (ex) {
       return Promise.reject(ex);
@@ -1307,7 +1425,7 @@ class TelegramBot extends EventEmitter {
     opts.qs.chat_id = chatId;
     try {
       const sendData = this._formatSendData('voice', voice, fileOptions);
-      opts.formData = sendData[0];
+      opts.form = sendData[0];
       opts.qs.voice = sendData[1];
     } catch (ex) {
       return Promise.reject(ex);
@@ -1335,7 +1453,7 @@ class TelegramBot extends EventEmitter {
     opts.qs.chat_id = chatId;
     try {
       const sendData = this._formatSendData('video_note', videoNote, fileOptions);
-      opts.formData = sendData[0];
+      opts.form = sendData[0];
       opts.qs.video_note = sendData[1];
       this._fixAddFileThumbnail(options, opts);
     } catch (ex) {
@@ -1363,11 +1481,11 @@ class TelegramBot extends EventEmitter {
 
     try {
       const inputPaidMedia = [];
-      opts.formData = {};
+      opts.form = {};
 
       const { formData, fileIds } = this._formatSendMultipleData('media', media);
 
-      opts.formData = formData;
+      opts.form = formData;
 
       inputPaidMedia.push(...media.map((item, index) => {
         if (fileIds[index]) {
@@ -1408,7 +1526,7 @@ class TelegramBot extends EventEmitter {
     };
     opts.qs.chat_id = chatId;
 
-    opts.formData = {};
+    opts.form = {};
     const inputMedia = [];
     let index = 0;
     for (const input of media) {
@@ -1419,7 +1537,7 @@ class TelegramBot extends EventEmitter {
         const attachName = String(index);
         const [formData, fileId] = this._formatSendData(attachName, input.media, input.fileOptions);
         if (formData) {
-          opts.formData[attachName] = formData[attachName];
+          opts.form[attachName] = formData[attachName];
           payload.media = `attach://${attachName}`;
         } else {
           payload.media = fileId;
@@ -1581,7 +1699,7 @@ class TelegramBot extends EventEmitter {
     opts.qs.chat_id = chatId;
     try {
       const sendData = this._formatSendData('dice');
-      opts.formData = sendData[0];
+      opts.form = sendData[0];
     } catch (ex) {
       return Promise.reject(ex);
     }
@@ -2030,7 +2148,7 @@ class TelegramBot extends EventEmitter {
     opts.qs.chat_id = chatId;
     try {
       const sendData = this._formatSendData('photo', photo, fileOptions);
-      opts.formData = sendData[0];
+      opts.form = sendData[0];
       opts.qs.photo = sendData[1];
     } catch (ex) {
       return Promise.reject(ex);
@@ -2662,7 +2780,7 @@ class TelegramBot extends EventEmitter {
 
     try {
       const sendData = this._formatSendData('photo', photo);
-      opts.formData = sendData[0];
+      opts.form = sendData[0];
       opts.qs.photo = sendData[1];
     } catch (ex) {
       return Promise.reject(ex);
@@ -2781,7 +2899,7 @@ class TelegramBot extends EventEmitter {
         qs: form,
       };
 
-      opts.formData = {};
+      opts.form = {};
 
       const payload = Object.assign({}, media);
       delete payload.media;
@@ -2795,7 +2913,7 @@ class TelegramBot extends EventEmitter {
         );
 
         if (formData) {
-          opts.formData[attachName] = formData[attachName];
+          opts.form[attachName] = formData[attachName];
           payload.media = `attach://${attachName}`;
         } else {
           throw new errors.FatalError(`Failed to process the replacement action for your ${media.type}`);
@@ -2914,7 +3032,7 @@ class TelegramBot extends EventEmitter {
     opts.qs.chat_id = chatId;
     try {
       const sendData = this._formatSendData('sticker', sticker, fileOptions);
-      opts.formData = sendData[0];
+      opts.form = sendData[0];
       opts.qs.sticker = sendData[1];
     } catch (ex) {
       return Promise.reject(ex);
@@ -2969,7 +3087,7 @@ class TelegramBot extends EventEmitter {
 
     try {
       const sendData = this._formatSendData('sticker', sticker, fileOptions);
-      opts.formData = sendData[0];
+      opts.form = sendData[0];
       opts.qs.sticker = sendData[1];
     } catch (ex) {
       return Promise.reject(ex);
@@ -3007,7 +3125,7 @@ class TelegramBot extends EventEmitter {
     opts.qs.mask_position = stringify(options.mask_position);
     try {
       const sendData = this._formatSendData('png_sticker', pngSticker, fileOptions);
-      opts.formData = sendData[0];
+      opts.form = sendData[0];
       opts.qs.png_sticker = sendData[1];
     } catch (ex) {
       return Promise.reject(ex);
@@ -3053,7 +3171,7 @@ class TelegramBot extends EventEmitter {
 
     try {
       const sendData = this._formatSendData(stickerType, sticker, fileOptions);
-      opts.formData = sendData[0];
+      opts.form = sendData[0];
       opts.qs[stickerType] = sendData[1];
     } catch (ex) {
       return Promise.reject(ex);
@@ -3206,7 +3324,7 @@ class TelegramBot extends EventEmitter {
     opts.qs.mask_position = stringify(options.mask_position);
     try {
       const sendData = this._formatSendData('thumbnail', thumbnail, fileOptions);
-      opts.formData = sendData[0];
+      opts.form = sendData[0];
       opts.qs.thumbnail = sendData[1];
     } catch (ex) {
       return Promise.reject(ex);
@@ -3702,7 +3820,7 @@ class TelegramBot extends EventEmitter {
 
     try {
       const sendData = this._formatSendData('photo', photo);
-      opts.formData = sendData[0];
+      opts.form = sendData[0];
       opts.qs.photo = sendData[1];
     } catch (ex) {
       return Promise.reject(ex);
@@ -3897,7 +4015,7 @@ class TelegramBot extends EventEmitter {
 
     try {
       const inputHistoryContent = content;
-      opts.formData = {};
+      opts.form = {};
 
       if (!content.type) {
         return Promise.reject(new Error('content.type is required'));
@@ -3905,7 +4023,7 @@ class TelegramBot extends EventEmitter {
 
       const { formData, fileIds } = this._formatSendMultipleData(content.type, [content]);
 
-      opts.formData = formData;
+      opts.form = formData;
 
       if (fileIds[0]) {
         inputHistoryContent[content.type] = fileIds[0];
@@ -3965,7 +4083,7 @@ class TelegramBot extends EventEmitter {
 
     try {
       const inputHistoryContent = content;
-      opts.formData = {};
+      opts.form = {};
 
       if (!content.type) {
         return Promise.reject(new Error('content.type is required'));
@@ -3973,7 +4091,7 @@ class TelegramBot extends EventEmitter {
 
       const { formData, fileIds } = this._formatSendMultipleData(content.type, [content]);
 
-      opts.formData = formData;
+      opts.form = formData;
 
       if (fileIds[0]) {
         inputHistoryContent[content.type] = fileIds[0];
