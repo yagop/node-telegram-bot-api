@@ -2617,6 +2617,21 @@ class TelegramBot extends EventEmitter {
   }
 
   /**
+   * Use this method to stores a message that can be sent by a user of a Mini App.
+   *
+   * @param {Number} userId Unique identifier of the target user
+   * @param {KeyboardButton} button A JSON-serialized object describing the button to be saved. The button must be of the type request_users, request_chat, or request_managed_bot.
+   * @param {Object} [options] Optional form data to include in the request
+   * @return {Promise} On success, returns a [PreparedKeyboardButton](https://core.telegram.org/bots/api#preparedkeyboardbutton) object.
+   * @see https://core.telegram.org/bots/api#savepreparedkeyboardbutton
+   */
+  savePreparedKeyboardButton(userId, button, form = {}) {
+    form.user_id = userId;
+    form.button = stringify(button);
+    return this._request('savePreparedKeyboardButton', { form });
+  }
+
+  /**
    * Use this method to get the list of boosts added to a chat by a use.
    * Requires administrator rights in the chat
    *
@@ -2643,6 +2658,32 @@ class TelegramBot extends EventEmitter {
   getBusinessConnection(businessConnectionId, form = {}) {
     form.business_connection_id = businessConnectionId;
     return this._request('getBusinessConnection', { form });
+  }
+
+  /**
+   * Use this method to get the token of a managed bot.
+   *
+   * @param {Number|String} userId  User identifier of the managed bot whose token will be returned
+   * @param {Object} [options] Additional Telegram query options
+   * @return {Promise} On success, returns the token of the managed bot as String
+   * @see https://core.telegram.org/bots/api#getmanagedbottoken
+   */
+  getManagedBotToken(userId, form = {}) {
+    form.user_id = userId;
+    return this._request('getManagedBotToken', { form });
+  }
+
+  /**
+   * Use this method to revoke the current token of a managed bot and generate a new one.
+   *
+   * @param {Number|String} userId  User identifier of the managed bot whose token will be replaced
+   * @param {Object} [options] Additional Telegram query options
+   * @return {Promise} On success, returns the token of the managed bot as String
+   * @see https://core.telegram.org/bots/api#replacemanagedbottoken
+   */
+  replaceManagedBotToken(userId, form = {}) {
+    form.user_id = userId;
+    return this._request('replaceManagedBotToken', { form });
   }
 
   /**

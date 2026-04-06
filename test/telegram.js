@@ -1468,6 +1468,49 @@ describe('TelegramBot', function telegramSuite() {
 
   describe.skip('#answerCallbackQuery', function answerCallbackQuerySuite() { });
 
+  describe('#savePreparedKeyboardButton', function savePreparedKeyboardButtonSuite() {
+    before(function before() {
+      utils.handleRatelimit(bot, 'savePreparedKeyboardButton', this);
+    });
+
+    it('should return a PreparedKeyboardButton object', function test() {
+      const button = {
+        text: 'Request users',
+        request_users: {
+          request_id: 1,
+        },
+      };
+
+      return bot.savePreparedKeyboardButton(USERID, button).then(resp => {
+        assert.ok(is.object(resp));
+      });
+    });
+  });
+
+  describe('#getManagedBotToken', function getManagedBotTokenSuite() {
+    before(function before() {
+      utils.handleRatelimit(bot, 'getManagedBotToken', this);
+    });
+
+    it('should return a managed bot token', function test() {
+      return bot.getManagedBotToken(USERID).then(resp => {
+        assert.ok(is.string(resp));
+      });
+    });
+  });
+
+  describe('#replaceManagedBotToken', function replaceManagedBotTokenSuite() {
+    before(function before() {
+      utils.handleRatelimit(bot, 'replaceManagedBotToken', this);
+    });
+
+    it('should replace and return a new managed bot token', function test() {
+      return bot.replaceManagedBotToken(USERID).then(resp => {
+        assert.ok(is.string(resp));
+      });
+    });
+  });
+
   describe('#setMyCommands', function setMyCommandsSuite() {
     it('should set bot commands', function test() {
       const opts = [

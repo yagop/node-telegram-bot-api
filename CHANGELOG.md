@@ -5,7 +5,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased][Unreleased]
 
-## [0.68.0][0.68.0] - 2026-03-15
+## [0.68.0][0.68.0] - 2026-04-05
 
 Added:
 
@@ -32,6 +32,11 @@ Added:
    * declineSuggestedPost
 
 6. Added more test
+
+7. Support Telegram Bot API v9.6
+   * getManagedBotToken
+   * replaceManagedBotToken
+   * savePreparedKeyboardButton
 
 ## [0.67.0][0.67.0] - 2025-12-13
 
