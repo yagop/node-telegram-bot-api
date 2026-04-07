@@ -133,7 +133,13 @@ class TelegramBotWebHook {
     debug('WebHook request URL: %s', req.url);
     debug('WebHook request headers: %j', req.headers);
 
-    if (req.url.indexOf(this.bot.token) !== -1) {
+    const urlPath = req.url.split('?')[0];
+    const expectedPath = `/bot${this.bot.token}`;
+    const hasValidPath = urlPath === expectedPath;
+    const hasValidSecretToken = !this.options.secretToken
+      || req.headers['x-telegram-bot-api-secret-token'] === this.options.secretToken;
+
+    if (hasValidPath && hasValidSecretToken) {
       if (req.method !== 'POST') {
         debug('WebHook request isn\'t a POST');
         res.statusCode = 418; // I'm a teabot!
