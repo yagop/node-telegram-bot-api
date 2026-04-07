@@ -3,7 +3,6 @@ const debug = require('debug')('node-telegram-bot-api');
 const https = require('https');
 const http = require('http');
 const fs = require('fs');
-const bl = require('bl');
 
 class TelegramBotWebHook {
   /**
@@ -18,6 +17,8 @@ class TelegramBotWebHook {
     this.options.port = this.options.port || 8443;
     this.options.https = this.options.https || {};
     this.options.healthEndpoint = this.options.healthEndpoint || '/healthz';
+    this.options.maxBodySize = this.options.maxBodySize || (10 * 1024 * 1024);
+    this.options.requestTimeout = this.options.requestTimeout || 10000;
     this._healthRegex = new RegExp(this.options.healthEndpoint);
     this._webServer = null;
     this._open = false;
@@ -51,6 +52,7 @@ class TelegramBotWebHook {
       return Promise.resolve();
     }
     return new Promise((resolve, reject) => {
+      this._webServer.setTimeout(this.options.requestTimeout);
       this._webServer.listen(this.options.port, this.options.host, () => {
         debug('WebHook listening on port %s', this.options.port);
         this._open = true;
@@ -139,9 +141,36 @@ class TelegramBotWebHook {
         res.statusCode = 418; // I'm a teabot!
         res.end();
       } else {
-        req
-          .pipe(bl(this._parseBody))
-          .on('finish', () => res.end('OK'));
+        const contentLength = Number(req.headers['content-length']);
+        if (Number.isFinite(contentLength) && contentLength > this.options.maxBodySize) {
+          debug('WebHook request body too large by content-length');
+          res.statusCode = 413;
+          res.end();
+          req.destroy();
+          return;
+        }
+
+        let bodyLength = 0;
+        const chunks = [];
+        req.on('data', (chunk) => {
+          bodyLength += chunk.length;
+          if (bodyLength > this.options.maxBodySize) {
+            debug('WebHook request body too large while streaming');
+            res.statusCode = 413;
+            res.end();
+            req.destroy();
+            return;
+          }
+          chunks.push(chunk);
+        });
+        req.on('end', () => {
+          if (bodyLength > this.options.maxBodySize) return;
+          this._parseBody(null, Buffer.concat(chunks));
+          res.end('OK');
+        });
+        req.on('error', (error) => {
+          this._parseBody(error);
+        });
       }
     } else if (this._healthRegex.test(req.url)) {
       debug('WebHook health check passed');
