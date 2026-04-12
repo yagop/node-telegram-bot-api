@@ -99,6 +99,7 @@ Some things built using this library that might interest you:
 * [beetube-bot](https://github.com/kodjunkie/beetube-bot): A telegram bot for music, videos, movies, EDM tracks, torrent downloads, files and more.
 * [telegram-inline-calendar](https://github.com/VDS13/telegram-inline-calendar): Date and time picker and inline calendar for Node.js telegram bots.
 * [telegram-captcha](https://github.com/VDS13/telegram-captcha): Telegram bot to protect Telegram groups from automatic bots.
+* [@toptl/node-telegram-bot-api](https://github.com/top-tl/node-telegram-bot-api): Plugin for TOP.TL, the Telegram directory. Auto-tracks bot stats and enables vote checking.
 
 
 ## 👥 Contributors
