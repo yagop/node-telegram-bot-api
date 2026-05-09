@@ -8,3 +8,6 @@ output/
 lib/
 lib-doc/
 .DS_Store
+dist
+.claude
+.env

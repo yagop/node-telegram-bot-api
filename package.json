@@ -1,8 +1,22 @@
 {
   "name": "node-telegram-bot-api",
-  "version": "0.68.0",
-  "description": "Telegram Bot API",
-  "main": "./index.js",
+  "version": "1.0.0",
+  "description": "Telegram Bot API — modern TypeScript rewrite with Zod typing",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE.md"
+  ],
   "directories": {
     "example": "examples",
     "test": "test"
@@ -11,57 +25,28 @@
     "telegram",
     "telegram bot",
     "telegram bot api",
-    "bot"
+    "bot",
+    "typescript",
+    "zod"
   ],
   "scripts": {
-    "gen-doc": "echo 'WARNING: `npm run gen-doc` is deprecated. Use `npm run doc` instead.' && npm run doc",
-    "doc": "jsdoc2md --files src/telegram.js --template doc/api.hbs > doc/api.md",
-    "build": "babel -d ./lib src",
-    "prepublishOnly": "npm run build && npm run gen-doc",
-    "eslint": "eslint ./src ./test ./examples",
-    "mocha": "mocha",
-    "pretest": "npm run build",
-    "test": "npm run eslint && istanbul cover ./node_modules/mocha/bin/_mocha"
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc --noEmit",
+    "test": "node --test --test-reporter=spec --import tsx test/unit/*.test.ts",
+    "test:integration": "node --test --test-reporter=spec --import tsx test/integration/telegram.test.ts",
+    "test:bun": "bun test test/unit"
   },
   "author": "Yago Pérez <yagoperezs@gmail.com>",
   "license": "MIT",
   "engines": {
-    "node": ">=0.12"
+    "node": ">=18"
   },
   "dependencies": {
-    "@cypress/request": "^3.0.10",
-    "@cypress/request-promise": "^5.0.0",
-    "array.prototype.findindex": "^2.2.4",
-    "bl": "^1.2.3",
-    "debug": "^3.2.7",
-    "eventemitter3": "^3.0.0",
-    "file-type": "^3.9.0",
-    "mime": "^1.6.0",
-    "pump": "^2.0.0"
+    "zod": "^3.25.0"
   },
   "devDependencies": {
-    "babel-cli": "^6.26.0",
-    "babel-eslint": "^8.0.3",
-    "babel-plugin-transform-class-properties": "^6.24.1",
-    "babel-plugin-transform-es2015-destructuring": "^6.23.0",
-    "babel-plugin-transform-es2015-parameters": "^6.24.1",
-    "babel-plugin-transform-es2015-shorthand-properties": "^6.24.1",
-    "babel-plugin-transform-es2015-spread": "^6.22.0",
-    "babel-plugin-transform-object-rest-spread": "^6.26.0",
-    "babel-plugin-transform-strict-mode": "^6.24.1",
-    "babel-preset-es2015": "^6.24.1",
-    "babel-register": "^6.26.0",
-    "concat-stream": "^1.6.0",
-    "eslint": "^2.13.1",
-    "eslint-config-airbnb": "^6.2.0",
-    "eslint-plugin-mocha": "^4.11.0",
-    "is": "^3.2.1",
-    "is-ci": "^1.0.10",
-    "istanbul": "^1.1.0-alpha.1",
-    "jsdoc-to-markdown": "^9.1.3",
-    "mocha": "^3.5.3",
-    "mocha-lcov-reporter": "^1.3.0",
-    "node-static": "^0.7.10"
+    "tsx": "^4.21.0",
+    "typescript": "^5.7.0"
   },
   "repository": {
     "type": "git",
