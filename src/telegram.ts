@@ -300,8 +300,9 @@ export class TelegramBot extends EventEmitter {
 
   // --- Reply / regexp listeners ------------------------------------------
 
-  onText(regexp: RegExp, callback: TextRegexpEntry["callback"]): void {
-    this._textRegexpCallbacks.push({ regexp, callback });
+  onText(regexp: RegExp | string, callback: TextRegexpEntry["callback"]): void {
+    const compiled = regexp instanceof RegExp ? regexp : new RegExp(regexp);
+    this._textRegexpCallbacks.push({ regexp: compiled, callback });
   }
 
   removeTextListener(regexp: RegExp | string): TextRegexpEntry | null {
@@ -347,7 +348,6 @@ export class TelegramBot extends EventEmitter {
       if (metadata.type) this.emit(metadata.type, m, metadata);
       if (m.text) {
         for (const reg of this._textRegexpCallbacks) {
-          if (!(reg.regexp instanceof RegExp)) reg.regexp = new RegExp(reg.regexp);
           const result = reg.regexp.exec(m.text);
           if (!result) continue;
           reg.regexp.lastIndex = 0;
@@ -684,7 +684,7 @@ export class TelegramBot extends EventEmitter {
     options: Record<string, unknown> = {},
   ): Promise<Message[]> {
     const qs: Record<string, unknown> = { ...options, chat_id: chatId };
-    const formData: Record<string, import("./utils.js").PreparedFile> = {};
+    const formData: Record<string, PreparedFile> = {};
     const inputMedia: Record<string, unknown>[] = [];
     for (let index = 0; index < media.length; index++) {
       const input = media[index]!;

@@ -156,6 +156,24 @@ describe("TelegramBot (unit)", () => {
       assert.equal(matched, "arg1");
     });
 
+    it("onText() compiles a string pattern into a RegExp at registration", () => {
+      const bot = new TelegramBot("TOKEN");
+      let matched: string | null = null;
+      bot.onText("^/echo (.+)", (msg, match) => {
+        matched = match![1] ?? null;
+      });
+      bot.processUpdate({
+        update_id: 1,
+        message: {
+          message_id: 2,
+          date: 0,
+          chat: { id: 1, type: "private" },
+          text: "/echo hello",
+        },
+      });
+      assert.equal(matched, "hello");
+    });
+
     it("invokes reply listeners", () => {
       const bot = new TelegramBot("TOKEN");
       let replied = false;
