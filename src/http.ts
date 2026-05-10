@@ -42,7 +42,16 @@ export type TelegramApiResponse<T> = TelegramApiOk<T> | TelegramApiErr;
 export interface HttpClientOptions {
   baseApiUrl?: string;
   testEnvironment?: boolean;
-  request?: { timeoutMs?: number; headers?: Record<string, string> };
+  request?: {
+    timeoutMs?: number;
+    headers?: Record<string, string>;
+    /**
+     * On `429 Too Many Requests`, sleep for `retry_after` seconds (as
+     * advertised by Telegram) and retry up to this many times. Set to `0`
+     * to opt out. Defaults to `2`.
+     */
+    maxRetriesOn429?: number;
+  };
 }
 
 /**
@@ -129,46 +138,68 @@ export class HttpClient {
     debug("HTTP POST %s qs=%j form=%j", url, opts.qs, opts.form);
 
     const timeoutMs = opts.timeoutMs ?? this.options.request?.timeoutMs;
-    const controller = new AbortController();
-    const userSignal = opts.signal;
-    if (userSignal) {
-      if (userSignal.aborted) controller.abort(userSignal.reason);
-      else userSignal.addEventListener("abort", () => controller.abort(userSignal.reason), { once: true });
+    const maxRetries = this.options.request?.maxRetriesOn429 ?? 2;
+
+    let attempt = 0;
+    while (true) {
+      const controller = new AbortController();
+      const userSignal = opts.signal;
+      if (userSignal) {
+        if (userSignal.aborted) controller.abort(userSignal.reason);
+        else userSignal.addEventListener("abort", () => controller.abort(userSignal.reason), { once: true });
+      }
+      const timer = timeoutMs ? setTimeout(() => controller.abort(new Error("HTTP timeout")), timeoutMs) : null;
+
+      let response: Response;
+      try {
+        response = await fetch(url, {
+          method: "POST",
+          body: body as BodyInit | undefined,
+          headers,
+          signal: controller.signal,
+        });
+      } catch (err) {
+        throw new FatalError(err as Error);
+      } finally {
+        if (timer) clearTimeout(timer);
+      }
+
+      const status = response.status;
+      const text = await response.text();
+      debug("response %s %s", status, text.length > 1000 ? `${text.slice(0, 1000)}…` : text);
+
+      let parsed: TelegramApiResponse<T>;
+      try {
+        parsed = JSON.parse(text) as TelegramApiResponse<T>;
+      } catch {
+        throw new ParseError(`Error parsing response: ${text}`, makeResponseInfo(status, text));
+      }
+
+      if (parsed.ok) return parsed.result;
+
+      const retryAfter = parsed.parameters?.retry_after;
+      if (
+        parsed.error_code === 429 &&
+        typeof retryAfter === "number" &&
+        attempt < maxRetries &&
+        !controller.signal.aborted
+      ) {
+        debug("429 Too Many Requests, sleeping %ds then retrying (attempt %d/%d)", retryAfter, attempt + 1, maxRetries);
+        await sleep((retryAfter + 1) * 1000);
+        attempt++;
+        continue;
+      }
+
+      throw new TelegramError(
+        `${parsed.error_code ?? status} ${parsed.description ?? "Unknown error"}`,
+        makeResponseInfo(status, parsed),
+      );
     }
-    const timer = timeoutMs ? setTimeout(() => controller.abort(new Error("HTTP timeout")), timeoutMs) : null;
-
-    let response: Response;
-    try {
-      response = await fetch(url, {
-        method: "POST",
-        body: body as BodyInit | undefined,
-        headers,
-        signal: controller.signal,
-      });
-    } catch (err) {
-      throw new FatalError(err as Error);
-    } finally {
-      if (timer) clearTimeout(timer);
-    }
-
-    const status = response.status;
-    const text = await response.text();
-    debug("response %s %s", status, text.length > 1000 ? `${text.slice(0, 1000)}…` : text);
-
-    let parsed: TelegramApiResponse<T>;
-    try {
-      parsed = JSON.parse(text) as TelegramApiResponse<T>;
-    } catch {
-      throw new ParseError(`Error parsing response: ${text}`, makeResponseInfo(status, text));
-    }
-
-    if (parsed.ok) return parsed.result;
-
-    throw new TelegramError(
-      `${parsed.error_code ?? status} ${parsed.description ?? "Unknown error"}`,
-      makeResponseInfo(status, parsed),
-    );
   }
+}
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 function makeResponseInfo(status: number, body: unknown): TelegramErrorResponse {
