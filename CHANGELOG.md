@@ -5,6 +5,43 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased][Unreleased]
 
+## [1.0.0] — 2026-05-10
+
+### Rewritten in TypeScript
+
+The library has been rewritten from JavaScript to TypeScript with Zod runtime type validation.
+
+### Added
+
+- **TypeScript** — full type coverage for all API methods, options, and responses
+- **Zod schemas** — runtime validation of Telegram Bot API payloads, exported for reuse (`src/types/schemas.ts`)
+- **ESM** — the package is now ESM-only (`"type": "module"`); `require()` is no longer supported
+- `TelegramBotOptions` type exported from the main entrypoint
+- Type exports: `ChatId`, `ParseMode`, `MessageEntity`, `ReplyMarkup`, `ReplyParameters`, `LinkPreviewOptions`, `SuggestedPostPrice`, `SuggestedPostInfo`, `SuggestedPostParameters`, and all Zod-inferred API types
+- Node.js native test runner replaces Mocha
+- `sendLivePhoto` method
+
+### Changed
+
+- `src/telegram.js` → `src/telegram.ts` (full rewrite)
+- `src/telegramPolling.js` → `src/polling.ts`
+- `src/telegramWebHook.js` → `src/webhook.ts`
+- `src/errors.js` → `src/errors.ts`
+- `src/utils.js` → `src/utils.ts`
+- `test/` rewritten in TypeScript with `node:test` assertions
+- Build output: `lib/` → `dist/`
+
+### Removed
+
+- CJS support — `require('node-telegram-bot-api')` no longer works; use `import`
+- Mocha test infrastructure (`test/mocha.opts`, legacy `test/telegram.js`)
+- Legacy `lib/` output directory
+- `_deprecatedMessageTypes` (`new_chat_participant`, `left_chat_participant`)
+
+### Fixed
+
+- String errors now include timestamps in console output
+
 ## [0.68.0][0.68.0] - 2026-04-05
 
 Added:
