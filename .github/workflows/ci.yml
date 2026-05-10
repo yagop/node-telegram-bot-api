@@ -50,7 +50,7 @@ jobs:
       - name: Install dependencies
         run: npm ci || npm install --no-audit --no-fund
       - name: Run unit tests
-        run: npm test
+        run: npm run test:node:unit
 
   unit-bun:
     name: Unit tests (Bun)
@@ -64,7 +64,7 @@ jobs:
       - name: Install dependencies
         run: bun install --frozen-lockfile || bun install
       - name: Run unit tests with Bun
-        run: bun test test/unit
+        run: npm run test:bun:unit
 
   build:
     name: Build (dist)
@@ -103,4 +103,4 @@ jobs:
       - name: Run integration tests
         env:
           TEST_TELEGRAM_TOKEN: ${{ secrets.TEST_TELEGRAM_TOKEN }}
-        run: npm run test:integration
+        run: npm run test:node:integration
