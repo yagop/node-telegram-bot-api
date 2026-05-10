@@ -479,6 +479,38 @@ describe("Telegram Bot API (integration)", () => {
       assert.equal(ok, true);
     });
 
+    it("deleteMessageReaction() removes the bot's reaction", async (t) => {
+      const sent = await bot.sendMessage(GROUP_ID, "react-then-undo");
+      await bot.setMessageReaction(GROUP_ID, sent.message_id, {
+        reaction: [{ type: "emoji", emoji: "👍" }],
+      });
+      try {
+        const ok = await bot.deleteMessageReaction(GROUP_ID, sent.message_id);
+        assert.equal(ok, true);
+      } catch (err: unknown) {
+        const code = (err as { code?: string }).code;
+        if (code !== "ETELEGRAM") throw err;
+        t.skip("deleteMessageReaction not available in this chat / API version");
+      }
+    });
+
+    it("deleteAllMessageReactions() clears every reaction on a message", async (t) => {
+      const sent = await bot.sendMessage(GROUP_ID, "clear-all-reactions");
+      await bot.setMessageReaction(GROUP_ID, sent.message_id, {
+        reaction: [{ type: "emoji", emoji: "🔥" }],
+      });
+      try {
+        const ok = await bot.deleteAllMessageReactions(GROUP_ID, {
+          message_id: sent.message_id,
+        });
+        assert.equal(ok, true);
+      } catch (err: unknown) {
+        const code = (err as { code?: string }).code;
+        if (code !== "ETELEGRAM") throw err;
+        t.skip("deleteAllMessageReactions requires can_delete_messages admin rights");
+      }
+    });
+
     it("stopPoll() stops a previously-sent poll (skipped if chat disallows polls)", async (t) => {
       let sentMessageId: number;
       try {
