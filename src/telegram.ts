@@ -43,6 +43,8 @@ import type {
   CopyMessagesOptions,
   SendPhotoOptions,
   SendLivePhotoOptions,
+  SendPaidMediaOptions,
+  SendMediaGroupOptions,
   SendAudioOptions,
   SendDocumentOptions,
   SendVideoOptions,
@@ -578,6 +580,36 @@ export class TelegramBot extends EventEmitter {
     return this._sendFile("sendPhoto", "photo", photo, { ...options, chat_id: chatId }, fileOptions);
   }
 
+  async sendLivePhoto(
+    chatId: ChatId,
+    livePhoto: FileInput,
+    photo: FileInput,
+    options: SendLivePhotoOptions = {},
+    fileOptions: FileMeta = {},
+  ): Promise<Message> {
+    const qs: Record<string, unknown> = { ...options, chat_id: chatId };
+    const opts: RequestOptions = { qs };
+
+    const liveResult = await prepareFile(livePhoto, fileOptions, this.options.filepath);
+    if (liveResult.file) {
+      opts.formData = { live_photo: liveResult.file };
+      qs.live_photo = "attach://live_photo";
+    } else if (liveResult.fileId) {
+      qs.live_photo = liveResult.fileId;
+    }
+
+    const photoResult = await prepareFile(photo, {}, this.options.filepath);
+    if (photoResult.file) {
+      opts.formData = opts.formData ?? {};
+      opts.formData.photo = photoResult.file;
+      qs.photo = "attach://photo";
+    } else if (photoResult.fileId) {
+      qs.photo = photoResult.fileId;
+    }
+
+    return this._request<Message>("sendLivePhoto", opts);
+  }
+
   sendAudio(
     chatId: ChatId,
     audio: FileInput,
@@ -590,7 +622,7 @@ export class TelegramBot extends EventEmitter {
       audio,
       { ...options, chat_id: chatId },
       fileOptions,
-      { thumbnail: options.thumbnail as FileInput | undefined, thumb: options.thumb as FileInput | undefined },
+      { thumbnail: options.thumbnail as FileInput | undefined },
     );
   }
 
@@ -606,7 +638,7 @@ export class TelegramBot extends EventEmitter {
       doc,
       { ...options, chat_id: chatId },
       fileOptions,
-      { thumbnail: options.thumbnail as FileInput | undefined, thumb: options.thumb as FileInput | undefined },
+      { thumbnail: options.thumbnail as FileInput | undefined },
     );
   }
 
@@ -622,7 +654,7 @@ export class TelegramBot extends EventEmitter {
       video,
       { ...options, chat_id: chatId },
       fileOptions,
-      { thumbnail: options.thumbnail as FileInput | undefined, thumb: options.thumb as FileInput | undefined },
+      { thumbnail: options.thumbnail as FileInput },
     );
   }
 
@@ -632,7 +664,13 @@ export class TelegramBot extends EventEmitter {
     options: SendAnimationOptions = {},
     fileOptions: FileMeta = {},
   ): Promise<Message> {
-    return this._sendFile("sendAnimation", "animation", animation, { ...options, chat_id: chatId }, fileOptions);
+    return this._sendFile(
+      "sendAnimation",
+      "animation", animation,
+      { ...options, chat_id: chatId },
+      fileOptions,
+      { thumbnail: options.thumbnail as FileInput }
+    );
   }
 
   sendVoice(
@@ -656,15 +694,15 @@ export class TelegramBot extends EventEmitter {
       videoNote,
       { ...options, chat_id: chatId },
       fileOptions,
-      { thumbnail: options.thumbnail as FileInput | undefined, thumb: options.thumb as FileInput | undefined },
+      { thumbnail: options.thumbnail as FileInput | undefined },
     );
   }
 
   async sendPaidMedia(
     chatId: ChatId,
     starCount: number,
-    media: Array<{ type: string; media: FileInput; fileOptions?: FileMeta; [key: string]: unknown }>,
-    options: Record<string, unknown> = {},
+    media: Array<{ type: string; media: FileInput; fileOptions?: FileMeta;[key: string]: unknown }>,
+    options: SendPaidMediaOptions = {},
   ): Promise<Message> {
     const qs: Record<string, unknown> = { ...options, chat_id: chatId, star_count: starCount };
     const { formData, fileIds } = await prepareFiles("media", media, {}, this.options.filepath);
@@ -680,8 +718,8 @@ export class TelegramBot extends EventEmitter {
 
   async sendMediaGroup(
     chatId: ChatId,
-    media: Array<{ media: FileInput; fileOptions?: FileMeta; [key: string]: unknown }>,
-    options: Record<string, unknown> = {},
+    media: Array<{ media: FileInput; fileOptions?: FileMeta;[key: string]: unknown }>,
+    options: SendMediaGroupOptions = {},
   ): Promise<Message[]> {
     const qs: Record<string, unknown> = { ...options, chat_id: chatId };
     const formData: Record<string, PreparedFile> = {};
@@ -1066,7 +1104,7 @@ export class TelegramBot extends EventEmitter {
     return this._form("editMessageCaption", { ...form, caption });
   }
   async editMessageMedia(
-    media: { media: string | FileInput; type: string; fileOptions?: FileMeta; [key: string]: unknown },
+    media: { media: string | FileInput; type: string; fileOptions?: FileMeta;[key: string]: unknown },
     form: Record<string, unknown> = {},
   ): Promise<Message | boolean> {
     const regexAttach = /^attach:\/\/.+/;
@@ -1534,7 +1572,7 @@ export class TelegramBot extends EventEmitter {
 
   async postStory(
     businessConnectionId: string,
-    content: { type: string; [key: string]: unknown },
+    content: { type: string;[key: string]: unknown },
     activePeriod: number,
     options: Record<string, unknown> = {},
   ): Promise<unknown> {
@@ -1569,7 +1607,7 @@ export class TelegramBot extends EventEmitter {
   async editStory(
     businessConnectionId: string,
     storyId: number,
-    content: { type: string; [key: string]: unknown },
+    content: { type: string;[key: string]: unknown },
     options: Record<string, unknown> = {},
   ): Promise<unknown> {
     if (!content.type) throw new FatalError("content.type is required");

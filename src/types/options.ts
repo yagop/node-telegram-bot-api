@@ -83,66 +83,98 @@ export interface CopyMessagesOptions {
   [key: string]: unknown;
 }
 
-export interface SendPhotoOptions extends BaseSendOptions {
-  business_connection_id?: string;
-  caption?: string;
-  parse_mode?: ParseMode;
-  caption_entities?: MessageEntity[];
-  show_caption_above_media?: boolean;
-  message_effect_id?: string;
-  has_spoiler?: boolean;
-}
-
 export interface SuggestedPostParameters {
   price?: SuggestedPostPrice;
   send_date?: number;
   [key: string]: unknown;
 }
 
-export interface SendLivePhotoOptions extends SendPhotoOptions {
+export interface SendPhotoOptions extends BaseSendOptions {
+  business_connection_id?: string;
+  caption?: string;
+  parse_mode?: ParseMode;
+  caption_entities?: MessageEntity[];
+  message_effect_id?: string;
   suggested_post_parameters?: SuggestedPostParameters;
+  show_caption_above_media?: boolean;
+  has_spoiler?: boolean;
 }
 
-export interface SendAudioOptions extends SendPhotoOptions {
+export interface SendLivePhotoOptions extends SendPhotoOptions { }
+
+export interface SendAudioOptions extends BaseSendOptions {
+  business_connection_id?: string;
+  thumbnail?: string;
+  caption?: string;
+  parse_mode?: ParseMode;
+  caption_entities?: MessageEntity[];
+  message_effect_id?: string;
   duration?: number;
   performer?: string;
   title?: string;
   suggested_post_parameters?: SuggestedPostParameters;
-  thumbnail?: string;
 }
 
-export interface SendDocumentOptions extends SendPhotoOptions {
+export interface SendDocumentOptions extends BaseSendOptions {
+  business_connection_id?: string;
+  caption?: string;
   thumbnail?: string;
-  /** @deprecated Use `thumbnail`. */
-  thumb?: string;
+  parse_mode?: ParseMode;
+  caption_entities?: MessageEntity[];
   disable_content_type_detection?: boolean;
+  suggested_post_parameters?: SuggestedPostParameters;
 }
 
 export interface SendVideoOptions extends SendPhotoOptions {
   duration?: number;
   width?: number;
   height?: number;
+  cover?: string;
+  start_timestamp?: number;
   thumbnail?: string;
-  /** @deprecated Use `thumbnail`. */
-  thumb?: string;
   supports_streaming?: boolean;
 }
 
 export interface SendAnimationOptions extends SendVideoOptions { }
 
 export interface SendVoiceOptions extends BaseSendOptions {
+  business_connection_id?: string;
   caption?: string;
   parse_mode?: ParseMode;
   caption_entities?: MessageEntity[];
   duration?: number;
+  suggested_post_parameters?: SuggestedPostParameters;
 }
 
 export interface SendVideoNoteOptions extends BaseSendOptions {
+  business_connection_id?: string;
   duration?: number;
   length?: number;
   thumbnail?: string;
-  /** @deprecated Use `thumbnail`. */
-  thumb?: string;
+  suggested_post_parameters?: SuggestedPostParameters;
+}
+
+export interface SendPaidMediaOptions extends BaseSendOptions {
+  business_connection_id?: string;
+  start_count?: number;
+  payload?: string;
+  caption?: string;
+  parse_mode?: ParseMode;
+  caption_entities?: MessageEntity[];
+  show_caption_above_media?: boolean;
+  suggested_post_parameters?: SuggestedPostParameters;
+}
+
+export interface SendMediaGroupOptions {
+  business_connection_id?: string;
+  message_thread_id?: number;
+  direct_messages_topic_id?: number;
+  disable_notification?: boolean;
+  protect_content?: boolean;
+  allow_paid_broadcast?: boolean;
+  message_effect_id?: string;
+  reply_parameters?: ReplyParameters;
+  [key: string]: unknown;
 }
 
 export interface SendLocationOptions extends BaseSendOptions {

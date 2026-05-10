@@ -10,3 +10,4 @@ lib-doc/
 dist
 .claude
 .env
+.vscode

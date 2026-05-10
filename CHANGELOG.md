@@ -37,6 +37,7 @@ The library has been rewritten from JavaScript to TypeScript with Zod runtime ty
 - Mocha test infrastructure (`test/mocha.opts`, legacy `test/telegram.js`)
 - Legacy `lib/` output directory
 - `_deprecatedMessageTypes` (`new_chat_participant`, `left_chat_participant`)
+- Legacy param `thumb` replace with `thumbnail`
 
 ### Fixed
 

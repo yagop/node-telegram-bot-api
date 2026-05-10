@@ -41,6 +41,8 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const DATA_DIR = path.join(__dirname, "..", "data");
 const PHOTO_PATH = path.join(DATA_DIR, "photo.png");
+const LIVE_PHOTO_PATH = path.join(DATA_DIR, "live_photo.mp4");
+const PHOTO_FOR_LIVE_PHOTO_PATH = path.join(DATA_DIR, "photo_live_photo.jpg");
 const PHOTO_GIF_PATH = path.join(DATA_DIR, "photo.gif");
 const AUDIO_PATH = path.join(DATA_DIR, "audio.mp3");
 const VIDEO_PATH = path.join(DATA_DIR, "video.mp4");
@@ -261,6 +263,13 @@ describe("Telegram Bot API (integration)", () => {
       const sent = await bot.sendPhoto(GROUP_ID, photoFileId);
       MessageSchema.parse(sent);
       assert.ok(Array.isArray(sent.photo));
+    });
+
+    it("sendLivePhoto() from a filesystem path", async () => {
+      const sent = await bot.sendLivePhoto(GROUP_ID, LIVE_PHOTO_PATH, PHOTO_FOR_LIVE_PHOTO_PATH);
+      MessageSchema.parse(sent);
+      assert.ok(Array.isArray(sent.photo));
+      assert.ok(sent.live_photo);
     });
 
     it("sendAudio() from a filesystem path", async () => {
@@ -684,7 +693,7 @@ describe("Telegram Bot API (integration)", () => {
     it("onText() registers and removeTextListener() unregisters a callback", () => {
       const localBot = new TelegramBot(TOKEN);
       const regex = /^\/ping/;
-      const cb = () => {};
+      const cb = () => { };
       localBot.onText(regex, cb);
       const removed = localBot.removeTextListener(regex);
       assert.ok(removed);
@@ -698,7 +707,7 @@ describe("Telegram Bot API (integration)", () => {
 
     it("onReplyToMessage() returns an id; removeReplyListener() returns the entry", () => {
       const localBot = new TelegramBot(TOKEN);
-      const id = localBot.onReplyToMessage(GROUP_ID, 1, () => {});
+      const id = localBot.onReplyToMessage(GROUP_ID, 1, () => { });
       const entry = localBot.removeReplyListener(id);
       assert.ok(entry);
       assert.equal(entry!.id, id);
@@ -706,8 +715,8 @@ describe("Telegram Bot API (integration)", () => {
 
     it("clearReplyListeners() removes all listeners", () => {
       const localBot = new TelegramBot(TOKEN);
-      localBot.onReplyToMessage(GROUP_ID, 1, () => {});
-      localBot.onReplyToMessage(GROUP_ID, 2, () => {});
+      localBot.onReplyToMessage(GROUP_ID, 1, () => { });
+      localBot.onReplyToMessage(GROUP_ID, 2, () => { });
       const cleared = localBot.clearReplyListeners();
       assert.equal(cleared.length, 2);
     });
