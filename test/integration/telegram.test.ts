@@ -78,6 +78,19 @@ function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+/**
+ * Portable test-skip helper. Bun's node:test shim does not yet implement
+ * `t.skip()` and throws `NotImplementedError`; on Bun the test simply
+ * passes with no assertions, which is acceptable for our soft-skips.
+ */
+function softSkip(t: { skip: (reason?: string) => void }, reason: string): void {
+  try {
+    t.skip(reason);
+  } catch {
+    // Bun: skip() is not implemented — let the test pass quietly.
+  }
+}
+
 describe("Telegram Bot API (integration)", () => {
   const bot = new TelegramBot(TOKEN, { request: { timeoutMs: 60_000 } });
 
@@ -216,7 +229,7 @@ describe("Telegram Bot API (integration)", () => {
       } catch (err: unknown) {
         const code = (err as { code?: string }).code;
         if (code !== "ETELEGRAM") throw err;
-        t.skip("chat does not permit polls");
+        softSkip(t, "chat does not permit polls");
       }
     });
   });
@@ -276,7 +289,7 @@ describe("Telegram Bot API (integration)", () => {
       } catch (err: unknown) {
         const code = (err as { code?: string }).code;
         if (code !== "ETELEGRAM") throw err;
-        t.skip("chat does not permit GIFs/animations");
+        softSkip(t, "chat does not permit GIFs/animations");
       }
     });
 
@@ -294,7 +307,7 @@ describe("Telegram Bot API (integration)", () => {
       } catch (err: unknown) {
         const code = (err as { code?: string }).code;
         if (code !== "ETELEGRAM") throw err;
-        t.skip("video_note rejected by Telegram (must be a square video)");
+        softSkip(t, "video_note rejected by Telegram (must be a square video)");
         return;
       }
       MessageSchema.parse(sent);
@@ -311,7 +324,7 @@ describe("Telegram Bot API (integration)", () => {
       } catch (err: unknown) {
         const code = (err as { code?: string }).code;
         if (code !== "ETELEGRAM") throw err;
-        t.skip("chat does not permit stickers");
+        softSkip(t, "chat does not permit stickers");
       }
     });
 
@@ -490,7 +503,7 @@ describe("Telegram Bot API (integration)", () => {
       } catch (err: unknown) {
         const code = (err as { code?: string }).code;
         if (code !== "ETELEGRAM") throw err;
-        t.skip("deleteMessageReaction not available in this chat / API version");
+        softSkip(t, "deleteMessageReaction not available in this chat / API version");
       }
     });
 
@@ -507,7 +520,7 @@ describe("Telegram Bot API (integration)", () => {
       } catch (err: unknown) {
         const code = (err as { code?: string }).code;
         if (code !== "ETELEGRAM") throw err;
-        t.skip("deleteAllMessageReactions requires can_delete_messages admin rights");
+        softSkip(t, "deleteAllMessageReactions requires can_delete_messages admin rights");
       }
     });
 
@@ -519,7 +532,7 @@ describe("Telegram Bot API (integration)", () => {
       } catch (err: unknown) {
         const code = (err as { code?: string }).code;
         if (code !== "ETELEGRAM") throw err;
-        t.skip("chat does not permit polls");
+        softSkip(t, "chat does not permit polls");
         return;
       }
       try {
@@ -531,7 +544,7 @@ describe("Telegram Bot API (integration)", () => {
         // Telegram rejects stopPoll on polls the bot didn't create or that
         // are otherwise un-stoppable in this chat. The roundtrip above
         // already proved the wire format works.
-        t.skip("poll could not be stopped by the bot in this chat");
+        softSkip(t, "poll could not be stopped by the bot in this chat");
       }
     });
   });
@@ -594,7 +607,7 @@ describe("Telegram Bot API (integration)", () => {
         // invite links. Skip rather than fail.
         const code = (err as { code?: string }).code;
         assert.equal(code, "ETELEGRAM");
-        t.skip("invite link APIs require an admin bot in a group/supergroup/channel");
+        softSkip(t, "invite link APIs require an admin bot in a group/supergroup/channel");
         return;
       }
       ChatInviteLinkSchema.parse(created);
@@ -657,7 +670,7 @@ describe("Telegram Bot API (integration)", () => {
 
     it("getCustomEmojiStickers() returns an Array", async (t) => {
       if (!CUSTOM_EMOJI_ID) {
-        t.skip("TEST_CUSTOM_EMOJI_ID not provided");
+        softSkip(t, "TEST_CUSTOM_EMOJI_ID not provided");
         return;
       }
       const stickers = await bot.getCustomEmojiStickers([CUSTOM_EMOJI_ID]);
