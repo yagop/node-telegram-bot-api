@@ -16,6 +16,6 @@ install:
 
 test_script:
   - npm run typecheck
-  - npm test
+  - npm run test:node:unit
 
 build: off
