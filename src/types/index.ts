@@ -1,9 +1,12 @@
 export * from "./schemas.js";
+
 export type {
   BaseSendOptions,
   SendMessageOptions,
   ForwardMessageOptions,
+  ForwardMessagesOptions,
   CopyMessageOptions,
+  CopyMessagesOptions,
   SendPhotoOptions,
   SendAudioOptions,
   SendDocumentOptions,

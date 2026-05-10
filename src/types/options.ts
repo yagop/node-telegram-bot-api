@@ -17,6 +17,7 @@ import type {
   ReplyKeyboardRemove,
   ForceReply,
   ReplyParameters,
+  SuggestedPostPrice,
 } from "./schemas.js";
 
 export type ReplyMarkup =
@@ -26,8 +27,8 @@ export type ReplyMarkup =
   | ForceReply;
 
 export interface BaseSendOptions {
-  business_connection_id?: string;
   message_thread_id?: number;
+  direct_messages_topic_id?: number;
   disable_notification?: boolean;
   protect_content?: boolean;
   allow_paid_broadcast?: boolean;
@@ -38,42 +39,76 @@ export interface BaseSendOptions {
 }
 
 export interface SendMessageOptions extends BaseSendOptions {
+  business_connection_id?: string;
   parse_mode?: ParseMode;
   entities?: MessageEntity[];
   link_preview_options?: LinkPreviewOptions;
-  /** Deprecated alias retained for compatibility with old code. */
-  disable_web_page_preview?: boolean;
+  suggested_post_parameters?: SuggestedPostParameters;
 }
 
 export interface ForwardMessageOptions {
   message_thread_id?: number;
+  direct_messages_topic_id?: number;
+  video_start_timestamp?: number;
+  disable_notification?: boolean;
+  protect_content?: boolean;
+  message_effect_id?: string;
+  suggested_post_parameters?: SuggestedPostParameters;
+  [key: string]: unknown;
+}
+
+export interface ForwardMessagesOptions {
+  message_thread_id?: number;
+  direct_messages_topic_id?: number;
   disable_notification?: boolean;
   protect_content?: boolean;
   [key: string]: unknown;
 }
 
 export interface CopyMessageOptions extends BaseSendOptions {
+  video_start_timestamp?: number;
   caption?: string;
   parse_mode?: ParseMode;
   caption_entities?: MessageEntity[];
   show_caption_above_media?: boolean;
+  suggested_post_parameters?: SuggestedPostParameters;
+}
+
+export interface CopyMessagesOptions {
+  message_thread_id?: number;
+  direct_messages_topic_id?: number;
+  disable_notification?: boolean;
+  protect_content?: boolean;
+  remove_caption?: boolean;
+  [key: string]: unknown;
 }
 
 export interface SendPhotoOptions extends BaseSendOptions {
+  business_connection_id?: string;
   caption?: string;
   parse_mode?: ParseMode;
   caption_entities?: MessageEntity[];
   show_caption_above_media?: boolean;
+  message_effect_id?: string;
   has_spoiler?: boolean;
+}
+
+export interface SuggestedPostParameters {
+  price?: SuggestedPostPrice;
+  send_date?: number;
+  [key: string]: unknown;
+}
+
+export interface SendLivePhotoOptions extends SendPhotoOptions {
+  suggested_post_parameters?: SuggestedPostParameters;
 }
 
 export interface SendAudioOptions extends SendPhotoOptions {
   duration?: number;
   performer?: string;
   title?: string;
+  suggested_post_parameters?: SuggestedPostParameters;
   thumbnail?: string;
-  /** @deprecated Use `thumbnail`. */
-  thumb?: string;
 }
 
 export interface SendDocumentOptions extends SendPhotoOptions {
@@ -93,7 +128,7 @@ export interface SendVideoOptions extends SendPhotoOptions {
   supports_streaming?: boolean;
 }
 
-export interface SendAnimationOptions extends SendVideoOptions {}
+export interface SendAnimationOptions extends SendVideoOptions { }
 
 export interface SendVoiceOptions extends BaseSendOptions {
   caption?: string;

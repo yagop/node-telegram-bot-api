@@ -460,6 +460,23 @@ export const MessageReactionCountUpdatedSchema = obj({
 export type MessageReactionCountUpdated = z.infer<typeof MessageReactionCountUpdatedSchema>;
 
 // ---------------------------------------------------------------------------
+// Payments / Paid Media
+// ---------------------------------------------------------------------------
+
+export const SuggestedPostPriceSchema = obj({
+  currency: z.enum(["XTR", "TON"]),
+  amount: z.number().int(),
+});
+export type SuggestedPostPrice = z.infer<typeof SuggestedPostPriceSchema>;
+
+export const SuggestedPostInfoSchema = obj({
+  state: z.enum(["pending", "approved", "declined"]),
+  price: SuggestedPostPriceSchema.optional(),
+  send_date: z.number().int().optional(),
+});
+export type SuggestedPostInfo = z.infer<typeof SuggestedPostInfoSchema>;
+
+// ---------------------------------------------------------------------------
 // Payments
 // ---------------------------------------------------------------------------
 
@@ -822,6 +839,23 @@ export const UserProfilePhotosSchema = obj({
   photos: z.array(z.array(PhotoSizeSchema)),
 });
 export type UserProfilePhotos = z.infer<typeof UserProfilePhotosSchema>;
+
+export const InputProfilePhotoStaticSchema = obj({
+  type: z.literal("static"),
+  photo: z.string(),
+});
+
+export const InputProfilePhotoAnimatedSchema = obj({
+  type: z.literal("animated"),
+  animation: z.string(),
+  main_frame_timestamp: z.number().optional(),
+});
+
+export const InputProfilePhotoSchema = z.discriminatedUnion("type", [
+  InputProfilePhotoStaticSchema,
+  InputProfilePhotoAnimatedSchema,
+]);
+export type InputProfilePhoto = z.infer<typeof InputProfilePhotoSchema>;
 
 // ---------------------------------------------------------------------------
 // Telegram envelope (raw HTTP response)

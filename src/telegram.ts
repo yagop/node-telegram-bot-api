@@ -9,7 +9,7 @@ import { FatalError } from "./errors.js";
 import { HttpClient, type HttpClientOptions, type RequestOptions } from "./http.js";
 import { TelegramBotPolling, type PollingOptions, type PollingStartOptions, type PollingStopOptions } from "./polling.js";
 import { TelegramBotWebHook, type WebHookOptions } from "./webhook.js";
-import { prepareFile, prepareFiles, stringify, type FileInput, type FileMeta } from "./utils.js";
+import { prepareFile, prepareFiles, stringify, type FileInput, type FileMeta, type PreparedFile } from "./utils.js";
 import {
   MESSAGE_TYPES,
   type ChatId,
@@ -30,14 +30,19 @@ import {
   type Poll,
   type BotCommand,
   type ChatJoinRequest,
+  type InputProfilePhoto,
 } from "./types/schemas.js";
+
 import type {
   GetUpdatesOptions,
   SetWebHookOptions,
   SendMessageOptions,
   ForwardMessageOptions,
+  ForwardMessagesOptions,
   CopyMessageOptions,
+  CopyMessagesOptions,
   SendPhotoOptions,
+  SendLivePhotoOptions,
   SendAudioOptions,
   SendDocumentOptions,
   SendVideoOptions,
@@ -54,6 +59,7 @@ import type {
   AnswerInlineQueryOptions,
   SendInvoiceOptions,
 } from "./types/options.js";
+
 import * as errors from "./errors.js";
 
 const debug = createDebug("node-telegram-bot-api");
@@ -523,7 +529,7 @@ export class TelegramBot extends EventEmitter {
     chatId: ChatId,
     fromChatId: ChatId,
     messageIds: number[],
-    form: ForwardMessageOptions = {},
+    form: ForwardMessagesOptions = {},
   ): Promise<MessageId[]> {
     return this._form("forwardMessages", {
       ...form,
@@ -551,7 +557,7 @@ export class TelegramBot extends EventEmitter {
     chatId: ChatId,
     fromChatId: ChatId,
     messageIds: number[],
-    form: CopyMessageOptions = {},
+    form: CopyMessagesOptions = {},
   ): Promise<MessageId[]> {
     return this._form("copyMessages", {
       ...form,
@@ -1350,7 +1356,12 @@ export class TelegramBot extends EventEmitter {
   deleteMessages(chatId: ChatId, messageIds: number[], form: Record<string, unknown> = {}): Promise<boolean> {
     return this._form("deleteMessages", { ...form, chat_id: chatId, message_ids: stringify(messageIds) });
   }
-
+  deleteMessageReaction(chatId: ChatId, messageId: number, form: Record<string, unknown> = {}): Promise<boolean> {
+    return this._form("deleteMessageReaction", { ...form, chat_id: chatId, message_id: messageId });
+  }
+  deleteAllMessageReactions(chatId: ChatId, form: Record<string, unknown> = {}): Promise<boolean> {
+    return this._form("deleteAllMessageReactions", { ...form, chat_id: chatId });
+  }
   // --- Gifts -----------------------------------------------------------
 
   getAvailableGifts(form: Record<string, unknown> = {}): Promise<unknown> {
