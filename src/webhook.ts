@@ -6,7 +6,7 @@ import type { Server as HttpServer, IncomingMessage, ServerResponse } from "node
 import type { Server as HttpsServer } from "node:https";
 import { Buffer } from "node:buffer";
 
-import { FatalError, ParseError } from "./errors.js";
+import { BaseError, FatalError, ParseError } from "./errors.js";
 import type { TelegramBot } from "./telegram.js";
 import type { Update } from "./types/schemas.js";
 
@@ -40,7 +40,7 @@ async function readBody(req: IncomingMessage): Promise<Buffer> {
     req.on("data", (chunk: Buffer) => {
       total += chunk.length;
       if (total > MAX_PAYLOAD_BYTES) {
-        reject(new FatalError("Webhook payload exceeds 50MB safety cap"));
+        reject(new Error("Webhook payload exceeds 50MB safety cap"));
         req.destroy();
         return;
       }
@@ -56,7 +56,6 @@ export class TelegramBotWebHook {
   public readonly host: string;
   public readonly port: number;
   public readonly healthEndpoint: string;
-  private readonly _healthRegex: RegExp;
   private readonly _secretToken?: string;
   private readonly _server: HttpServer | HttpsServer;
   private _open = false;
@@ -66,7 +65,6 @@ export class TelegramBotWebHook {
     this.host = options.host ?? "0.0.0.0";
     this.port = options.port ?? 8443;
     this.healthEndpoint = options.healthEndpoint ?? "/healthz";
-    this._healthRegex = new RegExp(this.healthEndpoint);
     this._secretToken = options.secretToken;
 
     const httpsOptions: https.ServerOptions = { ...(options.https ?? {}) };
@@ -136,15 +134,16 @@ export class TelegramBotWebHook {
     debug("WebHook request URL: %s", req.url ?? "");
 
     const url = req.url ?? "";
+    const pathname = url.split("?")[0]!;
 
-    if (this._healthRegex.test(url)) {
+    if (pathname === this.healthEndpoint) {
       debug("WebHook health check passed");
       res.statusCode = 200;
       res.end("OK");
       return;
     }
 
-    if (!url.includes(this.bot.token)) {
+    if (!pathname.includes(this.bot.token)) {
       debug("WebHook request unauthorized");
       res.statusCode = 401;
       res.end();
@@ -182,7 +181,7 @@ export class TelegramBotWebHook {
       this.bot.processUpdate(update);
       res.end("OK");
     } catch (err) {
-      this._emitError(new FatalError(err as Error));
+      this._emitError(err instanceof BaseError ? err : new FatalError(err as Error));
       res.statusCode = 500;
       res.end("Server Error");
     }

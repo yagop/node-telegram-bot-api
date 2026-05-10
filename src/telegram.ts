@@ -261,7 +261,7 @@ export class TelegramBot extends EventEmitter {
       const pollingOpts = typeof this.options.polling === "object" ? this.options.polling : {};
       this._polling = new TelegramBotPolling(this, pollingOpts);
     }
-    return this._polling.start({ restart: options.restart ?? true });
+    return this._polling.start({ restart: options.restart ?? false });
   }
 
   /** Stop polling. */
@@ -1533,7 +1533,8 @@ export class TelegramBot extends EventEmitter {
       business_connection_id: businessConnectionId,
       active_period: activePeriod,
     };
-    const { formData, fileIds } = await prepareFiles(content.type, [content as never], {}, this.options.filepath);
+    const fileInput = content[content.type] as FileInput | undefined;
+    const { formData, fileIds } = await prepareFiles(content.type, [{ media: fileInput }], {}, this.options.filepath);
     const inputContent: Record<string, unknown> = { ...content };
     inputContent[content.type] = fileIds[0] ?? `attach://${content.type}_0`;
     qs.content = stringify(inputContent);
@@ -1566,7 +1567,8 @@ export class TelegramBot extends EventEmitter {
       business_connection_id: businessConnectionId,
       story_id: storyId,
     };
-    const { formData, fileIds } = await prepareFiles(content.type, [content as never], {}, this.options.filepath);
+    const fileInput = content[content.type] as FileInput | undefined;
+    const { formData, fileIds } = await prepareFiles(content.type, [{ media: fileInput }], {}, this.options.filepath);
     const inputContent: Record<string, unknown> = { ...content };
     inputContent[content.type] = fileIds[0] ?? `attach://${content.type}_0`;
     qs.content = stringify(inputContent);

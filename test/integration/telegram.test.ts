@@ -45,16 +45,17 @@ if (!TOKEN) {
 
 async function probeLive(): Promise<boolean> {
   if (FORCE_MOCK) return false;
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), 4000);
   try {
-    const ctrl = new AbortController();
-    const timer = setTimeout(() => ctrl.abort(), 4000);
     const response = await fetch(`https://api.telegram.org/bot${TOKEN}/getMe`, {
       signal: ctrl.signal,
     });
-    clearTimeout(timer);
     return response.ok;
   } catch {
     return false;
+  } finally {
+    clearTimeout(timer);
   }
 }
 
