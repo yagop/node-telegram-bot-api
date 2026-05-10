@@ -31,7 +31,7 @@
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
     "typecheck": "tsc --noEmit",
-    "test": "node --test --test-reporter=spec --import tsx test/unit/*.test.ts",
+    "test": "node test/run-unit.mjs",
     "test:integration": "node --test --test-reporter=spec --import tsx test/integration/telegram.test.ts",
     "test:bun": "bun test test/unit"
   },
