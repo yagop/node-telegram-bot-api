@@ -516,15 +516,13 @@ describe("Telegram Bot API (integration)", () => {
       }
     });
 
-    it("deleteAllMessageReactions() clears every reaction on a message", async (t) => {
+    it("deleteAllMessageReactions() clears chat-wide reactions added by the bot", async (t) => {
       const sent = await bot.sendMessage(GROUP_ID, "clear-all-reactions");
       await bot.setMessageReaction(GROUP_ID, sent.message_id, {
         reaction: [{ type: "emoji", emoji: "🔥" }],
       });
       try {
-        const ok = await bot.deleteAllMessageReactions(GROUP_ID, {
-          message_id: sent.message_id,
-        });
+        const ok = await bot.deleteAllMessageReactions(GROUP_ID);
         assert.equal(ok, true);
       } catch (err: unknown) {
         const code = (err as { code?: string }).code;

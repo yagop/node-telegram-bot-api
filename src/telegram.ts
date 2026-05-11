@@ -1576,7 +1576,24 @@ export class TelegramBot extends EventEmitter {
     providerToken: string,
     currency: string,
     prices: Array<{ label: string; amount: number }>,
-    form: Record<string, unknown> = {},
+    form: {
+      business_connection_id?: string;
+      subscription_period?: number;
+      max_tip_amount?: number;
+      suggested_tip_amounts?: number[];
+      provider_data?: string;
+      photo_url?: string;
+      photo_size?: number;
+      photo_width?: number;
+      photo_height?: number;
+      need_name?: boolean;
+      need_phone_number?: boolean;
+      need_email?: boolean;
+      need_shipping_address?: boolean;
+      send_phone_number_to_provider?: boolean;
+      send_email_to_provider?: boolean;
+      is_flexible?: boolean;
+    } = {},
   ): Promise<string> {
     return this._form("createInvoiceLink", {
       ...form,
@@ -1588,27 +1605,35 @@ export class TelegramBot extends EventEmitter {
       prices: stringify(prices),
     });
   }
-  answerShippingQuery(shippingQueryId: string, ok: boolean, form: Record<string, unknown> = {}): Promise<boolean> {
+  answerShippingQuery(
+    shippingQueryId: string,
+    ok: boolean,
+    form: { shipping_options?: Array<Record<string, unknown>>; error_message?: string } = {},
+  ): Promise<boolean> {
     const out: Record<string, unknown> = { ...form, shipping_query_id: shippingQueryId, ok };
     if (out.shipping_options) out.shipping_options = stringify(out.shipping_options);
     return this._form("answerShippingQuery", out);
   }
-  answerPreCheckoutQuery(preCheckoutQueryId: string, ok: boolean, form: Record<string, unknown> = {}): Promise<boolean> {
+  answerPreCheckoutQuery(
+    preCheckoutQueryId: string,
+    ok: boolean,
+    form: { error_message?: string } = {},
+  ): Promise<boolean> {
     return this._form("answerPreCheckoutQuery", { ...form, pre_checkout_query_id: preCheckoutQueryId, ok });
   }
 
   // --- Telegram Stars --------------------------------------------------
 
-  getMyStarBalance(form: Record<string, unknown> = {}): Promise<unknown> {
+  getMyStarBalance(form: {} = {}): Promise<unknown> {
     return this._form("getMyStarBalance", form);
   }
-  getStarTransactions(form: Record<string, unknown> = {}): Promise<unknown> {
+  getStarTransactions(form: { offset?: number; limit?: number } = {}): Promise<unknown> {
     return this._form("getStarTransactions", form);
   }
   refundStarPayment(
     userId: number,
     telegramPaymentChargeId: string,
-    form: Record<string, unknown> = {},
+    form: {} = {},
   ): Promise<boolean> {
     return this._form("refundStarPayment", {
       ...form,
@@ -1620,7 +1645,7 @@ export class TelegramBot extends EventEmitter {
     userId: number,
     telegramPaymentChargeId: string,
     isCanceled: boolean,
-    form: Record<string, unknown> = {},
+    form: {} = {},
   ): Promise<boolean> {
     return this._form("editUserStarSubscription", {
       ...form,
@@ -1632,43 +1657,86 @@ export class TelegramBot extends EventEmitter {
 
   // --- Games -----------------------------------------------------------
 
-  sendGame(chatId: ChatId, gameShortName: string, form: Record<string, unknown> = {}): Promise<Message> {
+  sendGame(
+    chatId: ChatId,
+    gameShortName: string,
+    form: {
+      business_connection_id?: string;
+      message_thread_id?: number;
+      disable_notification?: boolean;
+      protect_content?: boolean;
+      allow_paid_broadcast?: boolean;
+      message_effect_id?: string;
+      reply_parameters?: ReplyParameters;
+      reply_markup?: InlineKeyboardMarkup;
+    } = {},
+  ): Promise<Message> {
     return this._form("sendGame", { ...form, chat_id: chatId, game_short_name: gameShortName });
   }
-  setGameScore(userId: number, score: number, form: Record<string, unknown> = {}): Promise<Message | boolean> {
+  setGameScore(
+    userId: number,
+    score: number,
+    form: {
+      force?: boolean;
+      disable_edit_message?: boolean;
+      chat_id?: number;
+      message_id?: number;
+      inline_message_id?: string;
+    } = {},
+  ): Promise<Message | boolean> {
     return this._form("setGameScore", { ...form, user_id: userId, score });
   }
-  getGameHighScores(userId: number, form: Record<string, unknown> = {}): Promise<unknown[]> {
+  getGameHighScores(
+    userId: number,
+    form: { chat_id?: number; message_id?: number; inline_message_id?: string } = {},
+  ): Promise<unknown[]> {
     return this._form("getGameHighScores", { ...form, user_id: userId });
   }
 
   // --- Delete messages ------------------------------------------------
 
-  deleteMessage(chatId: ChatId, messageId: number, form: Record<string, unknown> = {}): Promise<boolean> {
+  deleteMessage(chatId: ChatId, messageId: number, form: {} = {}): Promise<boolean> {
     return this._form("deleteMessage", { ...form, chat_id: chatId, message_id: messageId });
   }
-  deleteMessages(chatId: ChatId, messageIds: number[], form: Record<string, unknown> = {}): Promise<boolean> {
+  deleteMessages(chatId: ChatId, messageIds: number[], form: {} = {}): Promise<boolean> {
     return this._form("deleteMessages", { ...form, chat_id: chatId, message_ids: stringify(messageIds) });
   }
-  deleteMessageReaction(chatId: ChatId, messageId: number, form: Record<string, unknown> = {}): Promise<boolean> {
+  deleteMessageReaction(
+    chatId: ChatId,
+    messageId: number,
+    form: { user_id?: number; actor_chat_id?: number } = {},
+  ): Promise<boolean> {
     return this._form("deleteMessageReaction", { ...form, chat_id: chatId, message_id: messageId });
   }
-  deleteAllMessageReactions(chatId: ChatId, form: Record<string, unknown> = {}): Promise<boolean> {
+  deleteAllMessageReactions(
+    chatId: ChatId,
+    form: { user_id?: number; actor_chat_id?: number } = {},
+  ): Promise<boolean> {
     return this._form("deleteAllMessageReactions", { ...form, chat_id: chatId });
   }
   // --- Gifts -----------------------------------------------------------
 
-  getAvailableGifts(form: Record<string, unknown> = {}): Promise<unknown> {
+  getAvailableGifts(form: {} = {}): Promise<unknown> {
     return this._form("getAvailableGifts", form);
   }
-  sendGift(giftId: string, form: Record<string, unknown> = {}): Promise<boolean> {
+  sendGift(
+    giftId: string,
+    form: {
+      user_id?: number;
+      chat_id?: ChatId;
+      pay_for_upgrade?: boolean;
+      text?: string;
+      text_parse_mode?: ParseMode;
+      text_entities?: MessageEntity[];
+    } = {},
+  ): Promise<boolean> {
     return this._form("sendGift", { ...form, gift_id: giftId });
   }
   giftPremiumSubscription(
     userId: number,
     monthCount: number,
     starCount: number,
-    form: Record<string, unknown> = {},
+    form: { text?: string; text_parse_mode?: ParseMode; text_entities?: MessageEntity[] } = {},
   ): Promise<boolean> {
     return this._form("giftPremiumSubscription", {
       ...form,
@@ -1680,16 +1748,22 @@ export class TelegramBot extends EventEmitter {
 
   // --- Verification ---------------------------------------------------
 
-  verifyUser(userId: number, form: Record<string, unknown> = {}): Promise<boolean> {
+  verifyUser(
+    userId: number,
+    form: { custom_description?: string } = {},
+  ): Promise<boolean> {
     return this._form("verifyUser", { ...form, user_id: userId });
   }
-  verifyChat(chatId: ChatId, form: Record<string, unknown> = {}): Promise<boolean> {
+  verifyChat(
+    chatId: ChatId,
+    form: { custom_description?: string } = {},
+  ): Promise<boolean> {
     return this._form("verifyChat", { ...form, chat_id: chatId });
   }
-  removeUserVerification(userId: number, form: Record<string, unknown> = {}): Promise<boolean> {
+  removeUserVerification(userId: number, form: {} = {}): Promise<boolean> {
     return this._form("removeUserVerification", { ...form, user_id: userId });
   }
-  removeChatVerification(chatId: ChatId, form: Record<string, unknown> = {}): Promise<boolean> {
+  removeChatVerification(chatId: ChatId, form: {} = {}): Promise<boolean> {
     return this._form("removeChatVerification", { ...form, chat_id: chatId });
   }
 
@@ -1699,7 +1773,7 @@ export class TelegramBot extends EventEmitter {
     businessConnectionId: string,
     chatId: ChatId,
     messageId: number,
-    form: Record<string, unknown> = {},
+    form: {} = {},
   ): Promise<boolean> {
     return this._form("readBusinessMessage", {
       ...form,
@@ -1711,7 +1785,7 @@ export class TelegramBot extends EventEmitter {
   deleteBusinessMessages(
     businessConnectionId: string,
     messageIds: number[],
-    form: Record<string, unknown> = {},
+    form: {} = {},
   ): Promise<boolean> {
     return this._form("deleteBusinessMessages", {
       ...form,
@@ -1722,7 +1796,7 @@ export class TelegramBot extends EventEmitter {
   setBusinessAccountName(
     businessConnectionId: string,
     firstName: string,
-    form: Record<string, unknown> = {},
+    form: { last_name?: string } = {},
   ): Promise<boolean> {
     return this._form("setBusinessAccountName", {
       ...form,
@@ -1730,16 +1804,22 @@ export class TelegramBot extends EventEmitter {
       first_name: firstName,
     });
   }
-  setBusinessAccountUsername(businessConnectionId: string, form: Record<string, unknown> = {}): Promise<boolean> {
+  setBusinessAccountUsername(
+    businessConnectionId: string,
+    form: { username?: string } = {},
+  ): Promise<boolean> {
     return this._form("setBusinessAccountUsername", { ...form, business_connection_id: businessConnectionId });
   }
-  setBusinessAccountBio(businessConnectionId: string, form: Record<string, unknown> = {}): Promise<boolean> {
+  setBusinessAccountBio(
+    businessConnectionId: string,
+    form: { bio?: string } = {},
+  ): Promise<boolean> {
     return this._form("setBusinessAccountBio", { ...form, business_connection_id: businessConnectionId });
   }
   setBusinessAccountProfilePhoto(
     businessConnectionId: string,
     photo: FileInput,
-    options: Record<string, unknown> = {},
+    options: { is_public?: boolean } = {},
   ): Promise<boolean> {
     return this._sendFile("setBusinessAccountProfilePhoto", "photo", photo, {
       ...options,
@@ -1748,7 +1828,7 @@ export class TelegramBot extends EventEmitter {
   }
   removeBusinessAccountProfilePhoto(
     businessConnectionId: string,
-    form: Record<string, unknown> = {},
+    form: { is_public?: boolean } = {},
   ): Promise<boolean> {
     return this._form("removeBusinessAccountProfilePhoto", { ...form, business_connection_id: businessConnectionId });
   }
@@ -1756,7 +1836,7 @@ export class TelegramBot extends EventEmitter {
     businessConnectionId: string,
     showGiftButton: boolean,
     acceptedGiftTypes: Record<string, unknown>,
-    form: Record<string, unknown> = {},
+    form: {} = {},
   ): Promise<boolean> {
     return this._form("setBusinessAccountGiftSettings", {
       ...form,
@@ -1765,13 +1845,13 @@ export class TelegramBot extends EventEmitter {
       accepted_gift_types: acceptedGiftTypes,
     });
   }
-  getBusinessAccountStarBalance(businessConnectionId: string, form: Record<string, unknown> = {}): Promise<unknown> {
+  getBusinessAccountStarBalance(businessConnectionId: string, form: {} = {}): Promise<unknown> {
     return this._form("getBusinessAccountStarBalance", { ...form, business_connection_id: businessConnectionId });
   }
   transferBusinessAccountStars(
     businessConnectionId: string,
     starCount: number,
-    form: Record<string, unknown> = {},
+    form: {} = {},
   ): Promise<boolean> {
     return this._form("transferBusinessAccountStars", {
       ...form,
@@ -1779,19 +1859,59 @@ export class TelegramBot extends EventEmitter {
       star_count: starCount,
     });
   }
-  getBusinessAccountGifts(businessConnectionId: string, form: Record<string, unknown> = {}): Promise<unknown> {
+  getBusinessAccountGifts(
+    businessConnectionId: string,
+    form: {
+      exclude_unsaved?: boolean;
+      exclude_saved?: boolean;
+      exclude_unlimited?: boolean;
+      exclude_limited_upgradable?: boolean;
+      exclude_limited_non_upgradable?: boolean;
+      exclude_unique?: boolean;
+      exclude_from_blockchain?: boolean;
+      sort_by_price?: boolean;
+      offset?: string;
+      limit?: number;
+    } = {},
+  ): Promise<unknown> {
     return this._form("getBusinessAccountGifts", { ...form, business_connection_id: businessConnectionId });
   }
-  getUserGifts(userId: number, form: Record<string, unknown> = {}): Promise<unknown> {
+  getUserGifts(
+    userId: number,
+    form: {
+      exclude_unlimited?: boolean;
+      exclude_limited_upgradable?: boolean;
+      exclude_limited_non_upgradable?: boolean;
+      exclude_from_blockchain?: boolean;
+      exclude_unique?: boolean;
+      sort_by_price?: boolean;
+      offset?: string;
+      limit?: number;
+    } = {},
+  ): Promise<unknown> {
     return this._form("getUserGifts", { ...form, user_id: userId });
   }
-  getChatGifts(chatId: ChatId, form: Record<string, unknown> = {}): Promise<unknown> {
+  getChatGifts(
+    chatId: ChatId,
+    form: {
+      exclude_unsaved?: boolean;
+      exclude_saved?: boolean;
+      exclude_unlimited?: boolean;
+      exclude_limited_upgradable?: boolean;
+      exclude_limited_non_upgradable?: boolean;
+      exclude_unique?: boolean;
+      exclude_from_blockchain?: boolean;
+      sort_by_price?: boolean;
+      offset?: string;
+      limit?: number;
+    } = {},
+  ): Promise<unknown> {
     return this._form("getChatGifts", { ...form, chat_id: chatId });
   }
   convertGiftToStars(
     businessConnectionId: string,
     ownedGiftId: string,
-    form: Record<string, unknown> = {},
+    form: {} = {},
   ): Promise<boolean> {
     return this._form("convertGiftToStars", {
       ...form,
@@ -1802,7 +1922,7 @@ export class TelegramBot extends EventEmitter {
   upgradeGift(
     businessConnectionId: string,
     ownedGiftId: string,
-    form: Record<string, unknown> = {},
+    form: { keep_original_details?: boolean; star_count?: number } = {},
   ): Promise<boolean> {
     return this._form("upgradeGift", {
       ...form,
@@ -1814,7 +1934,7 @@ export class TelegramBot extends EventEmitter {
     businessConnectionId: string,
     ownedGiftId: string,
     newOwnerChatId: number,
-    form: Record<string, unknown> = {},
+    form: { star_count?: number } = {},
   ): Promise<boolean> {
     return this._form("transferGift", {
       ...form,
@@ -1830,7 +1950,14 @@ export class TelegramBot extends EventEmitter {
     businessConnectionId: string,
     content: { type: string;[key: string]: unknown },
     activePeriod: number,
-    options: Record<string, unknown> = {},
+    options: {
+      caption?: string;
+      parse_mode?: ParseMode;
+      caption_entities?: MessageEntity[];
+      areas?: Array<Record<string, unknown>>;
+      post_to_chat_page?: boolean;
+      protect_content?: boolean;
+    } = {},
   ): Promise<unknown> {
     if (!content.type) throw new FatalError("content.type is required");
     const qs: Record<string, unknown> = {
@@ -1850,7 +1977,7 @@ export class TelegramBot extends EventEmitter {
     fromChatId: ChatId,
     fromStoryId: number,
     activePeriod: number,
-    form: Record<string, unknown> = {},
+    form: { post_to_chat_page?: boolean; protect_content?: boolean } = {},
   ): Promise<unknown> {
     return this._form("repostStory", {
       ...form,
@@ -1864,7 +1991,12 @@ export class TelegramBot extends EventEmitter {
     businessConnectionId: string,
     storyId: number,
     content: { type: string;[key: string]: unknown },
-    options: Record<string, unknown> = {},
+    options: {
+      caption?: string;
+      parse_mode?: ParseMode;
+      caption_entities?: MessageEntity[];
+      areas?: Array<Record<string, unknown>>;
+    } = {},
   ): Promise<unknown> {
     if (!content.type) throw new FatalError("content.type is required");
     const qs: Record<string, unknown> = {
@@ -1882,7 +2014,7 @@ export class TelegramBot extends EventEmitter {
   deleteStory(
     businessConnectionId: string,
     storyId: number,
-    form: Record<string, unknown> = {},
+    form: {} = {},
   ): Promise<boolean> {
     return this._form("deleteStory", {
       ...form,
