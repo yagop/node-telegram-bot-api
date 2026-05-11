@@ -31,6 +31,15 @@ import {
   type BotCommand,
   type ChatJoinRequest,
   type InputProfilePhoto,
+  type SentGuestMessage,
+  type BotAccessSettings,
+  type ReplyParameters,
+  type MessageEntity,
+  type LinkPreviewOptions,
+  type ParseMode,
+  type ReactionType,
+  type MaskPosition,
+  type InlineKeyboardMarkup,
 } from "./types/schemas.js";
 
 import type {
@@ -60,6 +69,8 @@ import type {
   AnswerCallbackQueryOptions,
   AnswerInlineQueryOptions,
   SendInvoiceOptions,
+  ReplyMarkup,
+  SuggestedPostParameters,
 } from "./types/options.js";
 
 import * as errors from "./errors.js";
@@ -418,7 +429,7 @@ export class TelegramBot extends EventEmitter {
   // --- Files & downloads -------------------------------------------------
 
   /** Resolve a file id to the public download URL on Telegram's servers. */
-  async getFileLink(fileId: string, options: Record<string, unknown> = {}): Promise<string> {
+  async getFileLink(fileId: string, options: {} = {}): Promise<string> {
     const file = await this.getFile(fileId, options);
     return `${this.options.baseApiUrl}/file/bot${this.token}/${file.file_path}`;
   }
@@ -427,7 +438,7 @@ export class TelegramBot extends EventEmitter {
    * Stream the contents of a Telegram file. The returned stream emits an `info`
    * event with the resolved URI before the bytes start flowing.
    */
-  getFileStream(fileId: string, options: Record<string, unknown> = {}): NodeJS.ReadableStream & { path: string } {
+  getFileStream(fileId: string, options: {} = {}): NodeJS.ReadableStream & { path: string } {
     const out = new PassThrough() as PassThrough & { path: string };
     out.path = fileId;
     void (async () => {
@@ -449,7 +460,7 @@ export class TelegramBot extends EventEmitter {
   /**
    * Download a Telegram file to a local directory and resolve to the resulting path.
    */
-  async downloadFile(fileId: string, downloadDir: string, options: Record<string, unknown> = {}): Promise<string> {
+  async downloadFile(fileId: string, downloadDir: string, options: {} = {}): Promise<string> {
     const uri = await this.getFileLink(fileId, options);
     const fileName = uri.slice(uri.lastIndexOf("/") + 1);
     const filePath = path.join(downloadDir, fileName);
@@ -485,25 +496,25 @@ export class TelegramBot extends EventEmitter {
     return this._request("setWebHook", { qs });
   }
 
-  deleteWebHook(form: Record<string, unknown> = {}): Promise<boolean> {
+  deleteWebHook(form: { drop_pending_updates?: boolean } = {}): Promise<boolean> {
     return this._form("deleteWebhook", form);
   }
 
-  getWebHookInfo(form: Record<string, unknown> = {}): Promise<WebhookInfo> {
+  getWebHookInfo(form: {} = {}): Promise<WebhookInfo> {
     return this._form("getWebhookInfo", form);
   }
 
   // --- Bot identity ------------------------------------------------------
 
-  getMe(form: Record<string, unknown> = {}): Promise<User> {
+  getMe(form: {} = {}): Promise<User> {
     return this._form("getMe", form);
   }
 
-  logOut(form: Record<string, unknown> = {}): Promise<boolean> {
+  logOut(form: {} = {}): Promise<boolean> {
     return this._form("logOut", form);
   }
 
-  close(form: Record<string, unknown> = {}): Promise<boolean> {
+  close(form: {} = {}): Promise<boolean> {
     return this._form("close", form);
   }
 
@@ -750,12 +761,30 @@ export class TelegramBot extends EventEmitter {
   editMessageLiveLocation(
     latitude: number,
     longitude: number,
-    form: Record<string, unknown> = {},
+    form: {
+      business_connection_id?: string;
+      chat_id?: ChatId;
+      message_id?: number;
+      inline_message_id?: string;
+      live_period?: number;
+      horizontal_accuracy?: number;
+      heading?: number;
+      proximity_alert_radius?: number;
+      reply_markup?: InlineKeyboardMarkup;
+    } = {},
   ): Promise<Message | boolean> {
     return this._form("editMessageLiveLocation", { ...form, latitude, longitude });
   }
 
-  stopMessageLiveLocation(form: Record<string, unknown> = {}): Promise<Message | boolean> {
+  stopMessageLiveLocation(
+    form: {
+      business_connection_id?: string;
+      chat_id?: ChatId;
+      message_id?: number;
+      inline_message_id?: string;
+      reply_markup?: InlineKeyboardMarkup;
+    } = {},
+  ): Promise<Message | boolean> {
     return this._form("stopMessageLiveLocation", form);
   }
 
@@ -782,7 +811,13 @@ export class TelegramBot extends EventEmitter {
     businessConnectionId: string,
     chatId: ChatId,
     checklist: Record<string, unknown>,
-    form: Record<string, unknown> = {},
+    form: {
+      disable_notification?: boolean;
+      protect_content?: boolean;
+      message_effect_id?: string;
+      reply_parameters?: ReplyParameters;
+      reply_markup?: InlineKeyboardMarkup;
+    } = {},
   ): Promise<Message> {
     return this._form("sendChecklist", {
       ...form,
@@ -796,7 +831,16 @@ export class TelegramBot extends EventEmitter {
     return this._form("sendDice", { ...options, chat_id: chatId });
   }
 
-  sendMessageDraft(chatId: ChatId, draftId: number, text: string, form: Record<string, unknown> = {}): Promise<boolean> {
+  sendMessageDraft(
+    chatId: ChatId,
+    draftId: number,
+    text: string,
+    form: {
+      message_thread_id?: number;
+      parse_mode?: ParseMode;
+      entities?: MessageEntity[];
+    } = {},
+  ): Promise<boolean> {
     return this._form("sendMessageDraft", { ...form, chat_id: chatId, draft_id: draftId, text });
   }
 
@@ -804,7 +848,14 @@ export class TelegramBot extends EventEmitter {
     return this._form("sendChatAction", { ...form, chat_id: chatId, action });
   }
 
-  setMessageReaction(chatId: ChatId, messageId: number, form: Record<string, unknown> = {}): Promise<boolean> {
+  setMessageReaction(
+    chatId: ChatId,
+    messageId: number,
+    form: {
+      reaction?: ReactionType[];
+      is_big?: boolean;
+    } = {},
+  ): Promise<boolean> {
     const out: Record<string, unknown> = { ...form, chat_id: chatId, message_id: messageId };
     if (out.reaction) out.reaction = stringify(out.reaction);
     return this._form("setMessageReaction", out);
@@ -812,41 +863,92 @@ export class TelegramBot extends EventEmitter {
 
   // --- Users -------------------------------------------------------------
 
-  getUserProfilePhotos(userId: number, form: Record<string, unknown> = {}): Promise<UserProfilePhotos> {
+  getUserProfilePhotos(
+    userId: number,
+    form: { offset?: number; limit?: number } = {},
+  ): Promise<UserProfilePhotos> {
     return this._form("getUserProfilePhotos", { ...form, user_id: userId });
   }
 
-  getUserProfileAudios(userId: number, form: Record<string, unknown> = {}): Promise<unknown> {
+  getUserProfileAudios(
+    userId: number,
+    form: { offset?: number; limit?: number } = {},
+  ): Promise<unknown> {
     return this._form("getUserProfileAudios", { ...form, user_id: userId });
   }
 
-  setUserEmojiStatus(userId: number, form: Record<string, unknown> = {}): Promise<boolean> {
+  setUserEmojiStatus(
+    userId: number,
+    form: { emoji_status_custom_emoji_id?: string; emoji_status_expiration_date?: number } = {},
+  ): Promise<boolean> {
     return this._form("setUserEmojiStatus", { ...form, user_id: userId });
   }
 
-  getFile(fileId: string, form: Record<string, unknown> = {}): Promise<TelegramFile> {
+  getFile(fileId: string, form: {} = {}): Promise<TelegramFile> {
     return this._form("getFile", { ...form, file_id: fileId });
+  }
+
+  getUserPersonalChatMessages(userId: number, limit: number): Promise<Message[]> {
+    return this._form("getUserPersonalChatMessages", { user_id: userId, limit });
   }
 
   // --- Chat membership --------------------------------------------------
 
-  banChatMember(chatId: ChatId, userId: number, form: Record<string, unknown> = {}): Promise<boolean> {
+  banChatMember(
+    chatId: ChatId,
+    userId: number,
+    form: { until_date?: number; revoke_messages?: boolean } = {},
+  ): Promise<boolean> {
     return this._form("banChatMember", { ...form, chat_id: chatId, user_id: userId });
   }
-  unbanChatMember(chatId: ChatId, userId: number, form: Record<string, unknown> = {}): Promise<boolean> {
+  unbanChatMember(
+    chatId: ChatId,
+    userId: number,
+    form: { only_if_banned?: boolean } = {},
+  ): Promise<boolean> {
     return this._form("unbanChatMember", { ...form, chat_id: chatId, user_id: userId });
   }
-  restrictChatMember(chatId: ChatId, userId: number, form: Record<string, unknown> = {}): Promise<boolean> {
+  restrictChatMember(
+    chatId: ChatId,
+    userId: number,
+    form: {
+      permissions?: Record<string, unknown>;
+      use_independent_chat_permissions?: boolean;
+      until_date?: number;
+    } = {},
+  ): Promise<boolean> {
     return this._form("restrictChatMember", { ...form, chat_id: chatId, user_id: userId });
   }
-  promoteChatMember(chatId: ChatId, userId: number, form: Record<string, unknown> = {}): Promise<boolean> {
+  promoteChatMember(
+    chatId: ChatId,
+    userId: number,
+    form: {
+      is_anonymous?: boolean;
+      can_manage_chat?: boolean;
+      can_delete_messages?: boolean;
+      can_manage_video_chats?: boolean;
+      can_restrict_members?: boolean;
+      can_promote_members?: boolean;
+      can_change_info?: boolean;
+      can_invite_users?: boolean;
+      can_post_stories?: boolean;
+      can_edit_stories?: boolean;
+      can_delete_stories?: boolean;
+      can_post_messages?: boolean;
+      can_edit_messages?: boolean;
+      can_pin_messages?: boolean;
+      can_manage_topics?: boolean;
+      can_manage_direct_messages?: boolean;
+      can_manage_tags?: boolean;
+    } = {},
+  ): Promise<boolean> {
     return this._form("promoteChatMember", { ...form, chat_id: chatId, user_id: userId });
   }
   setChatAdministratorCustomTitle(
     chatId: ChatId,
     userId: number,
     customTitle: string,
-    form: Record<string, unknown> = {},
+    form: {} = {},
   ): Promise<boolean> {
     return this._form("setChatAdministratorCustomTitle", {
       ...form,
@@ -855,39 +957,68 @@ export class TelegramBot extends EventEmitter {
       custom_title: customTitle,
     });
   }
-  setChatMemberTag(chatId: ChatId, userId: number, form: Record<string, unknown> = {}): Promise<boolean> {
+  setChatMemberTag(
+    chatId: ChatId,
+    userId: number,
+    form: { tag?: string } = {},
+  ): Promise<boolean> {
     return this._form("setChatMemberTag", { ...form, chat_id: chatId, user_id: userId });
   }
-  banChatSenderChat(chatId: ChatId, senderChatId: number, form: Record<string, unknown> = {}): Promise<boolean> {
+  banChatSenderChat(
+    chatId: ChatId,
+    senderChatId: number,
+    form: {} = {},
+  ): Promise<boolean> {
     return this._form("banChatSenderChat", { ...form, chat_id: chatId, sender_chat_id: senderChatId });
   }
-  unbanChatSenderChat(chatId: ChatId, senderChatId: number, form: Record<string, unknown> = {}): Promise<boolean> {
+  unbanChatSenderChat(
+    chatId: ChatId,
+    senderChatId: number,
+    form: {} = {},
+  ): Promise<boolean> {
     return this._form("unbanChatSenderChat", { ...form, chat_id: chatId, sender_chat_id: senderChatId });
   }
   setChatPermissions(
     chatId: ChatId,
     chatPermissions: Record<string, unknown>,
-    form: Record<string, unknown> = {},
+    form: { use_independent_chat_permissions?: boolean } = {},
   ): Promise<boolean> {
     return this._form("setChatPermissions", { ...form, chat_id: chatId, permissions: stringify(chatPermissions) });
   }
 
   // --- Chat invite links ------------------------------------------------
 
-  exportChatInviteLink(chatId: ChatId, form: Record<string, unknown> = {}): Promise<string> {
+  exportChatInviteLink(chatId: ChatId, form: {} = {}): Promise<string> {
     return this._form("exportChatInviteLink", { ...form, chat_id: chatId });
   }
-  createChatInviteLink(chatId: ChatId, form: Record<string, unknown> = {}): Promise<ChatInviteLink> {
+  createChatInviteLink(
+    chatId: ChatId,
+    form: {
+      name?: string;
+      expire_date?: number;
+      member_limit?: number;
+      creates_join_request?: boolean;
+    } = {},
+  ): Promise<ChatInviteLink> {
     return this._form("createChatInviteLink", { ...form, chat_id: chatId });
   }
-  editChatInviteLink(chatId: ChatId, inviteLink: string, form: Record<string, unknown> = {}): Promise<ChatInviteLink> {
+  editChatInviteLink(
+    chatId: ChatId,
+    inviteLink: string,
+    form: {
+      name?: string;
+      expire_date?: number;
+      member_limit?: number;
+      creates_join_request?: boolean;
+    } = {},
+  ): Promise<ChatInviteLink> {
     return this._form("editChatInviteLink", { ...form, chat_id: chatId, invite_link: inviteLink });
   }
   createChatSubscriptionInviteLink(
     chatId: ChatId,
     subscriptionPeriod: number,
     subscriptionPrice: number,
-    form: Record<string, unknown> = {},
+    form: { name?: string } = {},
   ): Promise<ChatInviteLink> {
     return this._form("createChatSubscriptionInviteLink", {
       ...form,
@@ -899,17 +1030,17 @@ export class TelegramBot extends EventEmitter {
   editChatSubscriptionInviteLink(
     chatId: ChatId,
     inviteLink: string,
-    form: Record<string, unknown> = {},
+    form: { name?: string } = {},
   ): Promise<ChatInviteLink> {
     return this._form("editChatSubscriptionInviteLink", { ...form, chat_id: chatId, invite_link: inviteLink });
   }
-  revokeChatInviteLink(chatId: ChatId, inviteLink: string, form: Record<string, unknown> = {}): Promise<ChatInviteLink> {
+  revokeChatInviteLink(chatId: ChatId, inviteLink: string, form: {} = {}): Promise<ChatInviteLink> {
     return this._form("revokeChatInviteLink", { ...form, chat_id: chatId, invite_link: inviteLink });
   }
-  approveChatJoinRequest(chatId: ChatId, userId: number, form: Record<string, unknown> = {}): Promise<boolean> {
+  approveChatJoinRequest(chatId: ChatId, userId: number, form: {} = {}): Promise<boolean> {
     return this._form("approveChatJoinRequest", { ...form, chat_id: chatId, user_id: userId });
   }
-  declineChatJoinRequest(chatId: ChatId, userId: number, form: Record<string, unknown> = {}): Promise<boolean> {
+  declineChatJoinRequest(chatId: ChatId, userId: number, form: {} = {}): Promise<boolean> {
     return this._form("declineChatJoinRequest", { ...form, chat_id: chatId, user_id: userId });
   }
 
@@ -918,94 +1049,112 @@ export class TelegramBot extends EventEmitter {
   setChatPhoto(
     chatId: ChatId,
     photo: FileInput,
-    options: Record<string, unknown> = {},
+    options: {} = {},
     fileOptions: FileMeta = {},
   ): Promise<boolean> {
     return this._sendFile("setChatPhoto", "photo", photo, { ...options, chat_id: chatId }, fileOptions);
   }
-  deleteChatPhoto(chatId: ChatId, form: Record<string, unknown> = {}): Promise<boolean> {
+  deleteChatPhoto(chatId: ChatId, form: {} = {}): Promise<boolean> {
     return this._form("deleteChatPhoto", { ...form, chat_id: chatId });
   }
-  setChatTitle(chatId: ChatId, title: string, form: Record<string, unknown> = {}): Promise<boolean> {
+  setChatTitle(chatId: ChatId, title: string, form: {} = {}): Promise<boolean> {
     return this._form("setChatTitle", { ...form, chat_id: chatId, title });
   }
-  setChatDescription(chatId: ChatId, description: string, form: Record<string, unknown> = {}): Promise<boolean> {
+  setChatDescription(chatId: ChatId, description: string, form: {} = {}): Promise<boolean> {
     return this._form("setChatDescription", { ...form, chat_id: chatId, description });
   }
-  pinChatMessage(chatId: ChatId, messageId: number, form: Record<string, unknown> = {}): Promise<boolean> {
+  pinChatMessage(
+    chatId: ChatId,
+    messageId: number,
+    form: { business_connection_id?: string; disable_notification?: boolean } = {},
+  ): Promise<boolean> {
     return this._form("pinChatMessage", { ...form, chat_id: chatId, message_id: messageId });
   }
-  unpinChatMessage(chatId: ChatId, form: Record<string, unknown> = {}): Promise<boolean> {
+  unpinChatMessage(
+    chatId: ChatId,
+    form: { business_connection_id?: string; message_id?: number } = {},
+  ): Promise<boolean> {
     return this._form("unpinChatMessage", { ...form, chat_id: chatId });
   }
-  unpinAllChatMessages(chatId: ChatId, form: Record<string, unknown> = {}): Promise<boolean> {
+  unpinAllChatMessages(chatId: ChatId, form: {} = {}): Promise<boolean> {
     return this._form("unpinAllChatMessages", { ...form, chat_id: chatId });
   }
-  leaveChat(chatId: ChatId, form: Record<string, unknown> = {}): Promise<boolean> {
+  leaveChat(chatId: ChatId, form: {} = {}): Promise<boolean> {
     return this._form("leaveChat", { ...form, chat_id: chatId });
   }
-  getChat(chatId: ChatId, form: Record<string, unknown> = {}): Promise<Chat> {
+  getChat(chatId: ChatId, form: {} = {}): Promise<Chat> {
     return this._form("getChat", { ...form, chat_id: chatId });
   }
-  getChatAdministrators(chatId: ChatId, form: Record<string, unknown> = {}): Promise<ChatMember[]> {
+  getChatAdministrators(
+    chatId: ChatId,
+    form: { return_bots?: boolean } = {},
+  ): Promise<ChatMember[]> {
     return this._form("getChatAdministrators", { ...form, chat_id: chatId });
   }
-  getChatMemberCount(chatId: ChatId, form: Record<string, unknown> = {}): Promise<number> {
+  getChatMemberCount(chatId: ChatId, form: {} = {}): Promise<number> {
     return this._form("getChatMemberCount", { ...form, chat_id: chatId });
   }
-  getChatMember(chatId: ChatId, userId: number, form: Record<string, unknown> = {}): Promise<ChatMember> {
+  getChatMember(chatId: ChatId, userId: number, form: {} = {}): Promise<ChatMember> {
     return this._form("getChatMember", { ...form, chat_id: chatId, user_id: userId });
   }
-  setChatStickerSet(chatId: ChatId, stickerSetName: string, form: Record<string, unknown> = {}): Promise<boolean> {
+  setChatStickerSet(chatId: ChatId, stickerSetName: string, form: {} = {}): Promise<boolean> {
     return this._form("setChatStickerSet", { ...form, chat_id: chatId, sticker_set_name: stickerSetName });
   }
-  deleteChatStickerSet(chatId: ChatId, form: Record<string, unknown> = {}): Promise<boolean> {
+  deleteChatStickerSet(chatId: ChatId, form: {} = {}): Promise<boolean> {
     return this._form("deleteChatStickerSet", { ...form, chat_id: chatId });
   }
 
   // --- Forum topics -----------------------------------------------------
 
-  getForumTopicIconStickers(chatId: ChatId, form: Record<string, unknown> = {}): Promise<Sticker[]> {
+  getForumTopicIconStickers(chatId: ChatId, form: {} = {}): Promise<Sticker[]> {
     return this._form("getForumTopicIconStickers", { ...form, chat_id: chatId });
   }
-  createForumTopic(chatId: ChatId, name: string, form: Record<string, unknown> = {}): Promise<ForumTopic> {
+  createForumTopic(
+    chatId: ChatId,
+    name: string,
+    form: { icon_color?: number; icon_custom_emoji_id?: string } = {},
+  ): Promise<ForumTopic> {
     return this._form("createForumTopic", { ...form, chat_id: chatId, name });
   }
-  editForumTopic(chatId: ChatId, messageThreadId: number, form: Record<string, unknown> = {}): Promise<boolean> {
+  editForumTopic(
+    chatId: ChatId,
+    messageThreadId: number,
+    form: { name?: string; icon_custom_emoji_id?: string } = {},
+  ): Promise<boolean> {
     return this._form("editForumTopic", { ...form, chat_id: chatId, message_thread_id: messageThreadId });
   }
-  closeForumTopic(chatId: ChatId, messageThreadId: number, form: Record<string, unknown> = {}): Promise<boolean> {
+  closeForumTopic(chatId: ChatId, messageThreadId: number, form: {} = {}): Promise<boolean> {
     return this._form("closeForumTopic", { ...form, chat_id: chatId, message_thread_id: messageThreadId });
   }
-  reopenForumTopic(chatId: ChatId, messageThreadId: number, form: Record<string, unknown> = {}): Promise<boolean> {
+  reopenForumTopic(chatId: ChatId, messageThreadId: number, form: {} = {}): Promise<boolean> {
     return this._form("reopenForumTopic", { ...form, chat_id: chatId, message_thread_id: messageThreadId });
   }
-  deleteForumTopic(chatId: ChatId, messageThreadId: number, form: Record<string, unknown> = {}): Promise<boolean> {
+  deleteForumTopic(chatId: ChatId, messageThreadId: number, form: {} = {}): Promise<boolean> {
     return this._form("deleteForumTopic", { ...form, chat_id: chatId, message_thread_id: messageThreadId });
   }
-  unpinAllForumTopicMessages(chatId: ChatId, messageThreadId: number, form: Record<string, unknown> = {}): Promise<boolean> {
+  unpinAllForumTopicMessages(chatId: ChatId, messageThreadId: number, form: {} = {}): Promise<boolean> {
     return this._form("unpinAllForumTopicMessages", {
       ...form,
       chat_id: chatId,
       message_thread_id: messageThreadId,
     });
   }
-  editGeneralForumTopic(chatId: ChatId, name: string, form: Record<string, unknown> = {}): Promise<boolean> {
+  editGeneralForumTopic(chatId: ChatId, name: string, form: {} = {}): Promise<boolean> {
     return this._form("editGeneralForumTopic", { ...form, chat_id: chatId, name });
   }
-  closeGeneralForumTopic(chatId: ChatId, form: Record<string, unknown> = {}): Promise<boolean> {
+  closeGeneralForumTopic(chatId: ChatId, form: {} = {}): Promise<boolean> {
     return this._form("closeGeneralForumTopic", { ...form, chat_id: chatId });
   }
-  reopenGeneralForumTopic(chatId: ChatId, form: Record<string, unknown> = {}): Promise<boolean> {
+  reopenGeneralForumTopic(chatId: ChatId, form: {} = {}): Promise<boolean> {
     return this._form("reopenGeneralForumTopic", { ...form, chat_id: chatId });
   }
-  hideGeneralForumTopic(chatId: ChatId, form: Record<string, unknown> = {}): Promise<boolean> {
+  hideGeneralForumTopic(chatId: ChatId, form: {} = {}): Promise<boolean> {
     return this._form("hideGeneralForumTopic", { ...form, chat_id: chatId });
   }
-  unhideGeneralForumTopic(chatId: ChatId, form: Record<string, unknown> = {}): Promise<boolean> {
+  unhideGeneralForumTopic(chatId: ChatId, form: {} = {}): Promise<boolean> {
     return this._form("unhideGeneralForumTopic", { ...form, chat_id: chatId });
   }
-  unpinAllGeneralForumTopicMessages(chatId: ChatId, form: Record<string, unknown> = {}): Promise<boolean> {
+  unpinAllGeneralForumTopicMessages(chatId: ChatId, form: {} = {}): Promise<boolean> {
     return this._form("unpinAllGeneralForumTopicMessages", { ...form, chat_id: chatId });
   }
 
@@ -1014,98 +1163,167 @@ export class TelegramBot extends EventEmitter {
   answerCallbackQuery(callbackQueryId: string, form: AnswerCallbackQueryOptions = {}): Promise<boolean> {
     return this._form("answerCallbackQuery", { ...form, callback_query_id: callbackQueryId });
   }
+  answerGuestQuery(guestQueryId: string, result: Record<string, unknown>): Promise<SentGuestMessage> {
+    return this._form("answerGuestQuery", {
+      guest_query_id: guestQueryId,
+      result: stringify(result),
+    });
+  }
   savePreparedInlineMessage(
     userId: number,
     result: Record<string, unknown>,
-    form: Record<string, unknown> = {},
+    form: {
+      allow_user_chats?: boolean;
+      allow_bot_chats?: boolean;
+      allow_group_chats?: boolean;
+      allow_channel_chats?: boolean;
+    } = {},
   ): Promise<unknown> {
     return this._form("savePreparedInlineMessage", { ...form, user_id: userId, result: stringify(result) });
   }
   savePreparedKeyboardButton(
     userId: number,
     button: Record<string, unknown>,
-    form: Record<string, unknown> = {},
+    form: {} = {},
   ): Promise<unknown> {
     return this._form("savePreparedKeyboardButton", { ...form, user_id: userId, button: stringify(button) });
   }
-  getUserChatBoosts(chatId: ChatId, userId: number, form: Record<string, unknown> = {}): Promise<unknown> {
+  getUserChatBoosts(chatId: ChatId, userId: number, form: {} = {}): Promise<unknown> {
     return this._form("getUserChatBoosts", { ...form, chat_id: chatId, user_id: userId });
   }
-  getBusinessConnection(businessConnectionId: string, form: Record<string, unknown> = {}): Promise<unknown> {
+  getBusinessConnection(businessConnectionId: string, form: {} = {}): Promise<unknown> {
     return this._form("getBusinessConnection", { ...form, business_connection_id: businessConnectionId });
   }
-  getManagedBotToken(userId: number, form: Record<string, unknown> = {}): Promise<string> {
+  getManagedBotToken(userId: number, form: {} = {}): Promise<string> {
     return this._form("getManagedBotToken", { ...form, user_id: userId });
   }
-  replaceManagedBotToken(userId: number, form: Record<string, unknown> = {}): Promise<string> {
+  replaceManagedBotToken(userId: number, form: {} = {}): Promise<string> {
     return this._form("replaceManagedBotToken", { ...form, user_id: userId });
+  }
+  getManagedBotAccessSettings(userId: number): Promise<BotAccessSettings> {
+    return this._form("getManagedBotAccessSettings", { user_id: userId });
+  }
+  setManagedBotAccessSettings(
+    userId: number,
+    isAccessRestricted: boolean,
+    form: { added_user_ids?: number[] } = {},
+  ): Promise<boolean> {
+    const out: Record<string, unknown> = {
+      user_id: userId,
+      is_access_restricted: isAccessRestricted,
+    };
+    if (form.added_user_ids) out.added_user_ids = stringify(form.added_user_ids);
+    return this._form("setManagedBotAccessSettings", out);
   }
 
   // --- Bot identity (self-management) ----------------------------------
 
-  setMyCommands(commands: BotCommand[], form: Record<string, unknown> = {}): Promise<boolean> {
+  setMyCommands(
+    commands: BotCommand[],
+    form: { scope?: Record<string, unknown>; language_code?: string } = {},
+  ): Promise<boolean> {
     const out: Record<string, unknown> = { ...form, commands: stringify(commands) };
     if (out.scope) out.scope = stringify(out.scope);
     return this._form("setMyCommands", out);
   }
-  deleteMyCommands(form: Record<string, unknown> = {}): Promise<boolean> {
+  deleteMyCommands(
+    form: { scope?: Record<string, unknown>; language_code?: string } = {},
+  ): Promise<boolean> {
     const out: Record<string, unknown> = { ...form };
     if (out.scope) out.scope = stringify(out.scope);
     return this._form("deleteMyCommands", out);
   }
-  getMyCommands(form: Record<string, unknown> = {}): Promise<BotCommand[]> {
+  getMyCommands(
+    form: { scope?: Record<string, unknown>; language_code?: string } = {},
+  ): Promise<BotCommand[]> {
     const out: Record<string, unknown> = { ...form };
     if (out.scope) out.scope = stringify(out.scope);
     return this._form("getMyCommands", out);
   }
-  setMyName(form: Record<string, unknown> = {}): Promise<boolean> {
+  setMyName(form: { name?: string; language_code?: string } = {}): Promise<boolean> {
     return this._form("setMyName", form);
   }
-  getMyName(form: Record<string, unknown> = {}): Promise<{ name: string }> {
+  getMyName(form: { language_code?: string } = {}): Promise<{ name: string }> {
     return this._form("getMyName", form);
   }
-  setMyDescription(form: Record<string, unknown> = {}): Promise<boolean> {
+  setMyDescription(form: { description?: string; language_code?: string } = {}): Promise<boolean> {
     return this._form("setMyDescription", form);
   }
-  getMyDescription(form: Record<string, unknown> = {}): Promise<{ description: string }> {
+  getMyDescription(form: { language_code?: string } = {}): Promise<{ description: string }> {
     return this._form("getMyDescription", form);
   }
-  setMyShortDescription(form: Record<string, unknown> = {}): Promise<boolean> {
+  setMyShortDescription(
+    form: { short_description?: string; language_code?: string } = {},
+  ): Promise<boolean> {
     return this._form("setMyShortDescription", form);
   }
-  getMyShortDescription(form: Record<string, unknown> = {}): Promise<{ short_description: string }> {
+  getMyShortDescription(form: { language_code?: string } = {}): Promise<{ short_description: string }> {
     return this._form("getMyShortDescription", form);
   }
-  async setMyProfilePhoto(photo: FileInput, options: Record<string, unknown> = {}): Promise<boolean> {
+  async setMyProfilePhoto(photo: FileInput, options: {} = {}): Promise<boolean> {
     return this._sendFile("setMyProfilePhoto", "photo", photo, { ...options });
   }
-  removeMyProfilePhoto(form: Record<string, unknown> = {}): Promise<boolean> {
+  removeMyProfilePhoto(form: {} = {}): Promise<boolean> {
     return this._form("removeMyProfilePhoto", form);
   }
-  setChatMenuButton(form: Record<string, unknown> = {}): Promise<boolean> {
+  setChatMenuButton(
+    form: { chat_id?: number; menu_button?: Record<string, unknown> } = {},
+  ): Promise<boolean> {
     return this._form("setChatMenuButton", form);
   }
-  getChatMenuButton(form: Record<string, unknown> = {}): Promise<unknown> {
+  getChatMenuButton(form: { chat_id?: number } = {}): Promise<unknown> {
     return this._form("getChatMenuButton", form);
   }
-  setMyDefaultAdministratorRights(form: Record<string, unknown> = {}): Promise<boolean> {
+  setMyDefaultAdministratorRights(
+    form: { rights?: Record<string, unknown>; for_channels?: boolean } = {},
+  ): Promise<boolean> {
     return this._form("setMyDefaultAdministratorRights", form);
   }
-  getMyDefaultAdministratorRights(form: Record<string, unknown> = {}): Promise<unknown> {
+  getMyDefaultAdministratorRights(form: { for_channels?: boolean } = {}): Promise<unknown> {
     return this._form("getMyDefaultAdministratorRights", form);
   }
 
   // --- Editing messages -------------------------------------------------
 
-  editMessageText(text: string, form: Record<string, unknown> = {}): Promise<Message | boolean> {
+  editMessageText(
+    text: string,
+    form: {
+      business_connection_id?: string;
+      chat_id?: ChatId;
+      message_id?: number;
+      inline_message_id?: string;
+      parse_mode?: ParseMode;
+      entities?: MessageEntity[];
+      link_preview_options?: LinkPreviewOptions;
+      reply_markup?: InlineKeyboardMarkup;
+    } = {},
+  ): Promise<Message | boolean> {
     return this._form("editMessageText", { ...form, text });
   }
-  editMessageCaption(caption: string, form: Record<string, unknown> = {}): Promise<Message | boolean> {
+  editMessageCaption(
+    caption: string,
+    form: {
+      business_connection_id?: string;
+      chat_id?: ChatId;
+      message_id?: number;
+      inline_message_id?: string;
+      parse_mode?: ParseMode;
+      caption_entities?: MessageEntity[];
+      show_caption_above_media?: boolean;
+      reply_markup?: InlineKeyboardMarkup;
+    } = {},
+  ): Promise<Message | boolean> {
     return this._form("editMessageCaption", { ...form, caption });
   }
   async editMessageMedia(
-    media: { media: string | FileInput; type: string; fileOptions?: FileMeta;[key: string]: unknown },
-    form: Record<string, unknown> = {},
+    media: { media: string | FileInput; type: string; fileOptions?: FileMeta; [key: string]: unknown },
+    form: {
+      business_connection_id?: string;
+      chat_id?: ChatId;
+      message_id?: number;
+      inline_message_id?: string;
+      reply_markup?: InlineKeyboardMarkup;
+    } = {},
   ): Promise<Message | boolean> {
     const regexAttach = /^attach:\/\/.+/;
     if (typeof media.media === "string" && regexAttach.test(media.media)) {
@@ -1129,7 +1347,7 @@ export class TelegramBot extends EventEmitter {
     chatId: ChatId,
     messageId: number,
     checklist: Record<string, unknown>,
-    form: Record<string, unknown> = {},
+    form: { reply_markup?: InlineKeyboardMarkup } = {},
   ): Promise<Message> {
     return this._form("editMessageChecklist", {
       ...form,
@@ -1140,21 +1358,38 @@ export class TelegramBot extends EventEmitter {
     });
   }
   editMessageReplyMarkup(
-    replyMarkup: Record<string, unknown>,
-    form: Record<string, unknown> = {},
+    replyMarkup: InlineKeyboardMarkup,
+    form: {
+      business_connection_id?: string;
+      chat_id?: ChatId;
+      message_id?: number;
+      inline_message_id?: string;
+    } = {},
   ): Promise<Message | boolean> {
     return this._form("editMessageReplyMarkup", { ...form, reply_markup: replyMarkup });
   }
-  stopPoll(chatId: ChatId, pollId: number, form: Record<string, unknown> = {}): Promise<Poll> {
+  stopPoll(
+    chatId: ChatId,
+    pollId: number,
+    form: { business_connection_id?: string; reply_markup?: InlineKeyboardMarkup } = {},
+  ): Promise<Poll> {
     return this._form("stopPoll", { ...form, chat_id: chatId, message_id: pollId });
   }
 
   // --- Suggested posts --------------------------------------------------
 
-  approveSuggestedPost(chatId: ChatId, messageId: number, form: Record<string, unknown> = {}): Promise<boolean> {
+  approveSuggestedPost(
+    chatId: ChatId,
+    messageId: number,
+    form: { send_date?: number } = {},
+  ): Promise<boolean> {
     return this._form("approveSuggestedPost", { ...form, chat_id: chatId, message_id: messageId });
   }
-  declineSuggestedPost(chatId: ChatId, messageId: number, form: Record<string, unknown> = {}): Promise<boolean> {
+  declineSuggestedPost(
+    chatId: ChatId,
+    messageId: number,
+    form: { comment?: string } = {},
+  ): Promise<boolean> {
     return this._form("declineSuggestedPost", { ...form, chat_id: chatId, message_id: messageId });
   }
 
@@ -1163,22 +1398,34 @@ export class TelegramBot extends EventEmitter {
   sendSticker(
     chatId: ChatId,
     sticker: FileInput,
-    options: Record<string, unknown> = {},
+    options: {
+      business_connection_id?: string;
+      message_thread_id?: number;
+      direct_messages_topic_id?: number;
+      emoji?: string;
+      disable_notification?: boolean;
+      protect_content?: boolean;
+      allow_paid_broadcast?: boolean;
+      message_effect_id?: string;
+      suggested_post_parameters?: SuggestedPostParameters;
+      reply_parameters?: ReplyParameters;
+      reply_markup?: ReplyMarkup;
+    } = {},
     fileOptions: FileMeta = {},
   ): Promise<Message> {
     return this._sendFile("sendSticker", "sticker", sticker, { ...options, chat_id: chatId }, fileOptions);
   }
-  getStickerSet(name: string, form: Record<string, unknown> = {}): Promise<StickerSet> {
+  getStickerSet(name: string, form: {} = {}): Promise<StickerSet> {
     return this._form("getStickerSet", { ...form, name });
   }
-  getCustomEmojiStickers(customEmojiIds: string[], form: Record<string, unknown> = {}): Promise<Sticker[]> {
+  getCustomEmojiStickers(customEmojiIds: string[], form: {} = {}): Promise<Sticker[]> {
     return this._form("getCustomEmojiStickers", { ...form, custom_emoji_ids: stringify(customEmojiIds) });
   }
   uploadStickerFile(
     userId: number,
     sticker: FileInput,
     stickerFormat: "static" | "animated" | "video" = "static",
-    options: Record<string, unknown> = {},
+    options: {} = {},
     fileOptions: FileMeta = {},
   ): Promise<TelegramFile> {
     return this._sendFile(
@@ -1195,7 +1442,7 @@ export class TelegramBot extends EventEmitter {
     title: string,
     pngSticker: FileInput,
     emojis: string,
-    options: Record<string, unknown> = {},
+    options: { mask_position?: MaskPosition; sticker_type?: string; needs_repainting?: boolean } = {},
     fileOptions: FileMeta = {},
   ): Promise<boolean> {
     const qs: Record<string, unknown> = { ...options, user_id: userId, name, title, emojis };
@@ -1208,7 +1455,7 @@ export class TelegramBot extends EventEmitter {
     sticker: FileInput,
     emojis: string,
     stickerType: "png_sticker" | "tgs_sticker" | "webm_sticker" = "png_sticker",
-    options: Record<string, unknown> = {},
+    options: { mask_position?: MaskPosition } = {},
     fileOptions: FileMeta = {},
   ): Promise<boolean> {
     if (!["png_sticker", "tgs_sticker", "webm_sticker"].includes(stickerType)) {
@@ -1218,41 +1465,47 @@ export class TelegramBot extends EventEmitter {
     if (options.mask_position) qs.mask_position = stringify(options.mask_position);
     return this._sendFile("addStickerToSet", stickerType, sticker, qs, fileOptions);
   }
-  setStickerPositionInSet(sticker: string, position: number, form: Record<string, unknown> = {}): Promise<boolean> {
+  setStickerPositionInSet(sticker: string, position: number, form: {} = {}): Promise<boolean> {
     return this._form("setStickerPositionInSet", { ...form, sticker, position });
   }
-  deleteStickerFromSet(sticker: string, form: Record<string, unknown> = {}): Promise<boolean> {
+  deleteStickerFromSet(sticker: string, form: {} = {}): Promise<boolean> {
     return this._form("deleteStickerFromSet", { ...form, sticker });
   }
   replaceStickerInSet(
     userId: number,
     name: string,
     oldSticker: string,
-    form: Record<string, unknown> = {},
+    form: { sticker?: Record<string, unknown> } = {},
   ): Promise<boolean> {
     return this._form("replaceStickerInSet", { ...form, user_id: userId, name, old_sticker: oldSticker });
   }
-  setStickerEmojiList(sticker: string, emojiList: string[], form: Record<string, unknown> = {}): Promise<boolean> {
+  setStickerEmojiList(sticker: string, emojiList: string[], form: {} = {}): Promise<boolean> {
     return this._form("setStickerEmojiList", { ...form, sticker, emoji_list: stringify(emojiList) });
   }
-  setStickerKeywords(sticker: string, form: Record<string, unknown> = {}): Promise<boolean> {
+  setStickerKeywords(
+    sticker: string,
+    form: { keywords?: string[] } = {},
+  ): Promise<boolean> {
     const out: Record<string, unknown> = { ...form, sticker };
     if (out.keywords) out.keywords = stringify(out.keywords);
     return this._form("setStickerKeywords", out);
   }
-  setStickerMaskPosition(sticker: string, form: Record<string, unknown> = {}): Promise<boolean> {
+  setStickerMaskPosition(
+    sticker: string,
+    form: { mask_position?: MaskPosition } = {},
+  ): Promise<boolean> {
     const out: Record<string, unknown> = { ...form, sticker };
     if (out.mask_position) out.mask_position = stringify(out.mask_position);
     return this._form("setStickerMaskPosition", out);
   }
-  setStickerSetTitle(name: string, title: string, form: Record<string, unknown> = {}): Promise<boolean> {
+  setStickerSetTitle(name: string, title: string, form: {} = {}): Promise<boolean> {
     return this._form("setStickerSetTitle", { ...form, name, title });
   }
   setStickerSetThumbnail(
     userId: number,
     name: string,
     thumbnail: FileInput,
-    options: Record<string, unknown> = {},
+    options: { format?: "static" | "animated" | "video" } = {},
     fileOptions: FileMeta = {},
   ): Promise<boolean> {
     return this._sendFile(
@@ -1263,10 +1516,13 @@ export class TelegramBot extends EventEmitter {
       fileOptions,
     );
   }
-  setCustomEmojiStickerSetThumbnail(name: string, form: Record<string, unknown> = {}): Promise<boolean> {
+  setCustomEmojiStickerSetThumbnail(
+    name: string,
+    form: { custom_emoji_id?: string } = {},
+  ): Promise<boolean> {
     return this._form("setCustomEmojiStickerSetThumbnail", { ...form, name });
   }
-  deleteStickerSet(name: string, form: Record<string, unknown> = {}): Promise<boolean> {
+  deleteStickerSet(name: string, form: {} = {}): Promise<boolean> {
     return this._form("deleteStickerSet", { ...form, name });
   }
 
@@ -1282,7 +1538,7 @@ export class TelegramBot extends EventEmitter {
   answerWebAppQuery(
     webAppQueryId: string,
     result: Record<string, unknown>,
-    form: Record<string, unknown> = {},
+    form: {} = {},
   ): Promise<unknown> {
     return this._form("answerWebAppQuery", { ...form, web_app_query_id: webAppQueryId, result: stringify(result) });
   }

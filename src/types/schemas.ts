@@ -857,6 +857,17 @@ export const InputProfilePhotoSchema = z.discriminatedUnion("type", [
 ]);
 export type InputProfilePhoto = z.infer<typeof InputProfilePhotoSchema>;
 
+export const SentGuestMessageSchema = obj({
+  inline_message_id: z.string(),
+});
+export type SentGuestMessage = z.infer<typeof SentGuestMessageSchema>;
+
+export const BotAccessSettingsSchema = obj({
+  is_access_restricted: z.boolean(),
+  added_users: z.array(UserSchema).optional(),
+});
+export type BotAccessSettings = z.infer<typeof BotAccessSettingsSchema>;
+
 // ---------------------------------------------------------------------------
 // Telegram envelope (raw HTTP response)
 // ---------------------------------------------------------------------------

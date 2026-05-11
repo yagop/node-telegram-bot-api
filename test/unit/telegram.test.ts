@@ -199,6 +199,68 @@ describe("TelegramBot (unit)", () => {
     });
   });
 
+  describe("sendLivePhoto()", () => {
+    it("posts both live_photo and photo as fileIds when strings are passed", async () => {
+      stubFetch(() => ({ ok: true, result: { message_id: 1, date: 0, chat: { id: 1, type: "private" } } }));
+      const bot = new TelegramBot("TOKEN", { filepath: false });
+      await bot.sendLivePhoto(42, "live-id-123", "photo-id-456", { caption: "hi" });
+      const last = captured.at(-1)!;
+      assert.equal(last.url, "https://api.telegram.org/botTOKEN/sendLivePhoto");
+      const params = new URLSearchParams(String(last.init.body));
+      assert.equal(params.get("chat_id"), "42");
+      assert.equal(params.get("caption"), "hi");
+      assert.equal(params.get("live_photo"), "live-id-123");
+      assert.equal(params.get("photo"), "photo-id-456");
+    });
+  });
+
+  describe("getUserPersonalChatMessages()", () => {
+    it("posts user_id and limit", async () => {
+      stubFetch(() => ({ ok: true, result: [] }));
+      const bot = new TelegramBot("TOKEN");
+      await bot.getUserPersonalChatMessages(99, 10);
+      const params = new URLSearchParams(String(captured[0]!.init.body));
+      assert.equal(params.get("user_id"), "99");
+      assert.equal(params.get("limit"), "10");
+    });
+  });
+
+  describe("answerGuestQuery()", () => {
+    it("posts guest_query_id and JSON-serialized result", async () => {
+      stubFetch(() => ({ ok: true, result: { inline_message_id: "im_1" } }));
+      const bot = new TelegramBot("TOKEN");
+      const out = await bot.answerGuestQuery("gq_1", { type: "article", id: "1", title: "t", input_message_content: { message_text: "x" } });
+      const params = new URLSearchParams(String(captured[0]!.init.body));
+      assert.equal(params.get("guest_query_id"), "gq_1");
+      const result = JSON.parse(params.get("result")!);
+      assert.equal(result.type, "article");
+      assert.equal(out.inline_message_id, "im_1");
+    });
+  });
+
+  describe("getManagedBotAccessSettings()", () => {
+    it("posts user_id and parses settings", async () => {
+      stubFetch(() => ({ ok: true, result: { is_access_restricted: true, added_users: [] } }));
+      const bot = new TelegramBot("TOKEN");
+      const settings = await bot.getManagedBotAccessSettings(7);
+      const params = new URLSearchParams(String(captured[0]!.init.body));
+      assert.equal(params.get("user_id"), "7");
+      assert.equal(settings.is_access_restricted, true);
+    });
+  });
+
+  describe("setManagedBotAccessSettings()", () => {
+    it("posts user_id, is_access_restricted and JSON-serialized added_user_ids", async () => {
+      stubFetch(() => ({ ok: true, result: true }));
+      const bot = new TelegramBot("TOKEN");
+      await bot.setManagedBotAccessSettings(7, true, { added_user_ids: [1, 2, 3] });
+      const params = new URLSearchParams(String(captured[0]!.init.body));
+      assert.equal(params.get("user_id"), "7");
+      assert.equal(params.get("is_access_restricted"), "true");
+      assert.deepEqual(JSON.parse(params.get("added_user_ids")!), [1, 2, 3]);
+    });
+  });
+
   describe("polling vs webhook safety", () => {
     it("rejects startPolling() while a webhook is open", async () => {
       const bot = new TelegramBot("TOKEN");
