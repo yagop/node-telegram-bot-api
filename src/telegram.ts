@@ -191,10 +191,17 @@ export class TelegramBot extends EventEmitter {
       this._fixEntitiesField(opts.form);
       this._fixReplyParameters(opts.form);
       this._fixMessageIds(opts.form);
+      this._fixSuggestedPostParameters(opts.form);
+      this._fixLinkPreviewOptions(opts.form);
     }
     if (opts.qs) {
       this._fixReplyMarkup(opts.qs);
+      this._fixEntitiesField(opts.qs);
       this._fixReplyParameters(opts.qs);
+      this._fixMessageIds(opts.qs);
+      this._fixSuggestedPostParameters(opts.qs);
+      this._fixLinkPreviewOptions(opts.qs);
+      this._fixStoryAreas(opts.qs);
     }
     return this.http.request<T>(method, opts);
   }
@@ -207,7 +214,7 @@ export class TelegramBot extends EventEmitter {
   }
 
   private _fixEntitiesField(obj: Record<string, unknown>): void {
-    for (const key of ["entities", "caption_entities", "explanation_entities"] as const) {
+    for (const key of ["entities", "caption_entities", "explanation_entities", "description_entities", "question_entities", "title_entities", "text_entities"] as const) {
       const value = obj[key];
       if (value && typeof value !== "string") obj[key] = stringify(value);
     }
@@ -219,6 +226,29 @@ export class TelegramBot extends EventEmitter {
       typeof obj.reply_parameters !== "string"
     ) {
       obj.reply_parameters = stringify(obj.reply_parameters);
+    }
+  }
+
+  private _fixSuggestedPostParameters(obj: Record<string, unknown>): void {
+    if (
+      Object.prototype.hasOwnProperty.call(obj, "suggested_post_parameters") &&
+      typeof obj.suggested_post_parameters !== "string"
+    ) {
+      obj.suggested_post_parameters = stringify(obj.suggested_post_parameters);
+    }
+  }
+
+  private _fixLinkPreviewOptions(obj: Record<string, unknown>): void {
+    const value = obj.link_preview_options;
+    if (value && typeof value !== "string") {
+      obj.link_preview_options = stringify(value);
+    }
+  }
+
+  private _fixStoryAreas(obj: Record<string, unknown>): void {
+    const value = obj.areas;
+    if (value && typeof value !== "string") {
+      obj.areas = stringify(value);
     }
   }
 

@@ -261,6 +261,73 @@ describe("TelegramBot (unit)", () => {
     });
   });
 
+  describe("JSON-serialization of structured params", () => {
+    it("JSON-serializes suggested_post_parameters via sendMessage", async () => {
+      stubFetch(() => ({ ok: true, result: { message_id: 1, date: 0, chat: { id: 1, type: "private" } } }));
+      const bot = new TelegramBot("TOKEN");
+      await bot.sendMessage(1, "hi", {
+        suggested_post_parameters: { send_date: 1715000000, price: { currency: "XTR", amount: 100 } },
+      });
+      const params = new URLSearchParams(String(captured[0]!.init.body));
+      const raw = params.get("suggested_post_parameters");
+      assert.ok(raw);
+      const parsed = JSON.parse(raw!);
+      assert.equal(parsed.send_date, 1715000000);
+      assert.equal(parsed.price.currency, "XTR");
+    });
+
+    it("JSON-serializes link_preview_options via sendMessage", async () => {
+      stubFetch(() => ({ ok: true, result: { message_id: 1, date: 0, chat: { id: 1, type: "private" } } }));
+      const bot = new TelegramBot("TOKEN");
+      await bot.sendMessage(1, "hi", {
+        link_preview_options: { is_disabled: true, url: "https://example.com" },
+      });
+      const params = new URLSearchParams(String(captured[0]!.init.body));
+      const raw = params.get("link_preview_options");
+      assert.ok(raw);
+      const parsed = JSON.parse(raw!);
+      assert.equal(parsed.is_disabled, true);
+      assert.equal(parsed.url, "https://example.com");
+    });
+
+    it("JSON-serializes link_preview_options via editMessageText", async () => {
+      stubFetch(() => ({ ok: true, result: { message_id: 1, date: 0, chat: { id: 1, type: "private" } } }));
+      const bot = new TelegramBot("TOKEN");
+      await bot.editMessageText("new text", {
+        chat_id: 1,
+        message_id: 42,
+        link_preview_options: { prefer_small_media: true },
+      });
+      const params = new URLSearchParams(String(captured[0]!.init.body));
+      const raw = params.get("link_preview_options");
+      assert.ok(raw);
+      const parsed = JSON.parse(raw!);
+      assert.equal(parsed.prefer_small_media, true);
+    });
+
+    it("JSON-serializes text_entities via sendGift", async () => {
+      stubFetch(() => ({ ok: true, result: true }));
+      const bot = new TelegramBot("TOKEN");
+      await bot.sendGift("gift_1", { user_id: 1, text: "hello", text_entities: [{ type: "bold", offset: 0, length: 5 }] });
+      const params = new URLSearchParams(String(captured[0]!.init.body));
+      const raw = params.get("text_entities");
+      assert.ok(raw);
+      const parsed = JSON.parse(raw!);
+      assert.equal(parsed[0].type, "bold");
+    });
+
+    it("leaves already-stringified params untouched", async () => {
+      stubFetch(() => ({ ok: true, result: { message_id: 1, date: 0, chat: { id: 1, type: "private" } } }));
+      const bot = new TelegramBot("TOKEN");
+      const preSerialized = JSON.stringify({ send_date: 1715000000 });
+      await bot.sendMessage(1, "hi", {
+        suggested_post_parameters: preSerialized as unknown as Record<string, unknown>,
+      });
+      const params = new URLSearchParams(String(captured[0]!.init.body));
+      assert.equal(params.get("suggested_post_parameters"), preSerialized);
+    });
+  });
+
   describe("polling vs webhook safety", () => {
     it("rejects startPolling() while a webhook is open", async () => {
       const bot = new TelegramBot("TOKEN");
