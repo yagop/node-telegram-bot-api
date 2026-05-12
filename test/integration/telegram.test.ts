@@ -222,7 +222,7 @@ describe("Telegram Bot API (integration)", () => {
 
     it("sendPoll() returns a Message with a Poll (skipped if chat disallows polls)", async (t) => {
       try {
-        const sent = await bot.sendPoll(GROUP_ID, "Choose:", ["A", "B", "C"], {
+        const sent = await bot.sendPoll(GROUP_ID, "Choose:", [{ text: "A" }, { text: "B" }, { text: "C" }], {
           is_anonymous: true,
         });
         MessageSchema.parse(sent);
@@ -534,7 +534,7 @@ describe("Telegram Bot API (integration)", () => {
     it("stopPoll() stops a previously-sent poll (skipped if chat disallows polls)", async (t) => {
       let sentMessageId: number;
       try {
-        const sent = await bot.sendPoll(GROUP_ID, "stoppable?", ["yes", "no"]);
+        const sent = await bot.sendPoll(GROUP_ID, "stoppable?", [{ text: "yes" }, { text: "no" }]);
         sentMessageId = sent.message_id;
       } catch (err: unknown) {
         const code = (err as { code?: string }).code;

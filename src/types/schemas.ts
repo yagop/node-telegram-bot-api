@@ -857,6 +857,153 @@ export const InputProfilePhotoSchema = z.discriminatedUnion("type", [
 ]);
 export type InputProfilePhoto = z.infer<typeof InputProfilePhotoSchema>;
 
+// ---------------------------------------------------------------------------
+// Input media types
+// ---------------------------------------------------------------------------
+
+export const InputMediaAnimationSchema = obj({
+  type: z.literal("animation"),
+  media: z.string(),
+  thumbnail: z.string().optional(),
+  caption: z.string().optional(),
+  parse_mode: ParseModeSchema.optional(),
+  caption_entities: z.array(MessageEntitySchema).optional(),
+  show_caption_above_media: z.boolean().optional(),
+  width: z.number().int().optional(),
+  height: z.number().int().optional(),
+  duration: z.number().int().optional(),
+  has_spoiler: z.boolean().optional(),
+});
+
+export const InputMediaAudioSchema = obj({
+  type: z.literal("audio"),
+  media: z.string(),
+  thumbnail: z.string().optional(),
+  caption: z.string().optional(),
+  parse_mode: ParseModeSchema.optional(),
+  caption_entities: z.array(MessageEntitySchema).optional(),
+  duration: z.number().int().optional(),
+  performer: z.string().optional(),
+  title: z.string().optional(),
+});
+
+export const InputMediaDocumentSchema = obj({
+  type: z.literal("document"),
+  media: z.string(),
+  thumbnail: z.string().optional(),
+  caption: z.string().optional(),
+  parse_mode: ParseModeSchema.optional(),
+  caption_entities: z.array(MessageEntitySchema).optional(),
+  disable_content_type_detection: z.boolean().optional(),
+});
+
+export const InputMediaLivePhotoSchema = obj({
+  type: z.literal("live_photo"),
+  media: z.string(),
+  photo: z.string(),
+  caption: z.string().optional(),
+  parse_mode: ParseModeSchema.optional(),
+  caption_entities: z.array(MessageEntitySchema).optional(),
+  show_caption_above_media: z.boolean().optional(),
+  has_spoiler: z.boolean().optional(),
+});
+
+export const InputMediaLocationSchema = obj({
+  type: z.literal("location"),
+  latitude: z.number(),
+  longitude: z.number(),
+  horizontal_accuracy: z.number().optional(),
+});
+
+export const InputMediaPhotoSchema = obj({
+  type: z.literal("photo"),
+  media: z.string(),
+  caption: z.string().optional(),
+  parse_mode: ParseModeSchema.optional(),
+  caption_entities: z.array(MessageEntitySchema).optional(),
+  show_caption_above_media: z.boolean().optional(),
+  has_spoiler: z.boolean().optional(),
+});
+
+export const InputMediaStickerSchema = obj({
+  type: z.literal("sticker"),
+  media: z.string(),
+  emoji: z.string().optional(),
+});
+
+export const InputMediaVenueSchema = obj({
+  type: z.literal("venue"),
+  latitude: z.number(),
+  longitude: z.number(),
+  title: z.string(),
+  address: z.string(),
+  foursquare_id: z.string().optional(),
+  foursquare_type: z.string().optional(),
+  google_place_id: z.string().optional(),
+  google_place_type: z.string().optional(),
+});
+
+export const InputMediaVideoSchema = obj({
+  type: z.literal("video"),
+  media: z.string(),
+  thumbnail: z.string().optional(),
+  cover: z.string().optional(),
+  start_timestamp: z.number().int().optional(),
+  caption: z.string().optional(),
+  parse_mode: ParseModeSchema.optional(),
+  caption_entities: z.array(MessageEntitySchema).optional(),
+  show_caption_above_media: z.boolean().optional(),
+  width: z.number().int().optional(),
+  height: z.number().int().optional(),
+  duration: z.number().int().optional(),
+  supports_streaming: z.boolean().optional(),
+  has_spoiler: z.boolean().optional(),
+});
+
+/** All InputMedia variants (used by sendMediaGroup and editMessageMedia). */
+export const InputMediaSchema = z.discriminatedUnion("type", [
+  InputMediaAnimationSchema,
+  InputMediaAudioSchema,
+  InputMediaDocumentSchema,
+  InputMediaLivePhotoSchema,
+  InputMediaLocationSchema,
+  InputMediaPhotoSchema,
+  InputMediaVideoSchema,
+]);
+
+/** Media that can be attached to an individual poll option. */
+export const InputPollOptionMediaSchema = z.discriminatedUnion("type", [
+  InputMediaAnimationSchema,
+  InputMediaLivePhotoSchema,
+  InputMediaLocationSchema,
+  InputMediaPhotoSchema,
+  InputMediaStickerSchema,
+  InputMediaVenueSchema,
+  InputMediaVideoSchema,
+]);
+export type InputPollOptionMedia = z.infer<typeof InputPollOptionMediaSchema>;
+
+/** Media that can be attached to a poll description or quiz explanation. */
+export const InputPollMediaSchema = z.discriminatedUnion("type", [
+  InputMediaAnimationSchema,
+  InputMediaAudioSchema,
+  InputMediaDocumentSchema,
+  InputMediaLivePhotoSchema,
+  InputMediaLocationSchema,
+  InputMediaPhotoSchema,
+  InputMediaVenueSchema,
+  InputMediaVideoSchema,
+]);
+export type InputPollMedia = z.infer<typeof InputPollMediaSchema>;
+
+export const InputPollOptionSchema = obj({
+  text: z.string(),
+  text_parse_mode: ParseModeSchema.optional(),
+  text_entities: z.array(MessageEntitySchema).optional(),
+  media: InputPollOptionMediaSchema.optional(),
+});
+export type InputPollOption = z.infer<typeof InputPollOptionSchema>;
+
 export const SentGuestMessageSchema = obj({
   inline_message_id: z.string(),
 });

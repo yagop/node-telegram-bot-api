@@ -26,6 +26,143 @@ export type ReplyMarkup =
   | ReplyKeyboardRemove
   | ForceReply;
 
+export interface InputMediaAnimation {
+  type: "animation";
+  media: string;
+  thumbnail?: string;
+  caption?: string;
+  parse_mode?: ParseMode;
+  caption_entities?: MessageEntity[];
+  show_caption_above_media?: boolean;
+  width?: number;
+  height?: number;
+  duration?: number;
+  has_spoiler?: boolean;
+  [key: string]: unknown;
+}
+
+export interface InputMediaAudio {
+  type: "audio";
+  media: string;
+  thumbnail?: string;
+  caption?: string;
+  parse_mode?: ParseMode;
+  caption_entities?: MessageEntity[];
+  duration?: number;
+  performer?: string;
+  title?: string;
+  [key: string]: unknown;
+}
+
+export interface InputMediaDocument {
+  type: "document";
+  media: string;
+  thumbnail?: string;
+  caption?: string;
+  parse_mode?: ParseMode;
+  caption_entities?: MessageEntity[];
+  disable_content_type_detection?: boolean;
+  [key: string]: unknown;
+}
+
+export interface InputMediaLivePhoto {
+  type: "live_photo";
+  media: string;
+  photo: string;
+  caption?: string;
+  parse_mode?: ParseMode;
+  caption_entities?: MessageEntity[];
+  show_caption_above_media?: boolean;
+  has_spoiler?: boolean;
+  [key: string]: unknown;
+}
+
+export interface InputMediaLocation {
+  type: "location";
+  latitude: number;
+  longitude: number;
+  horizontal_accuracy?: number;
+  [key: string]: unknown;
+}
+
+export interface InputMediaPhoto {
+  type: "photo";
+  media: string;
+  caption?: string;
+  parse_mode?: ParseMode;
+  caption_entities?: MessageEntity[];
+  show_caption_above_media?: boolean;
+  has_spoiler?: boolean;
+  [key: string]: unknown;
+}
+
+export interface InputMediaSticker {
+  type: "sticker";
+  media: string;
+  emoji?: string;
+  [key: string]: unknown;
+}
+
+export interface InputMediaVenue {
+  type: "venue";
+  latitude: number;
+  longitude: number;
+  title: string;
+  address: string;
+  foursquare_id?: string;
+  foursquare_type?: string;
+  google_place_id?: string;
+  google_place_type?: string;
+  [key: string]: unknown;
+}
+
+export interface InputMediaVideo {
+  type: "video";
+  media: string;
+  thumbnail?: string;
+  cover?: string;
+  start_timestamp?: number;
+  caption?: string;
+  parse_mode?: ParseMode;
+  caption_entities?: MessageEntity[];
+  show_caption_above_media?: boolean;
+  width?: number;
+  height?: number;
+  duration?: number;
+  supports_streaming?: boolean;
+  has_spoiler?: boolean;
+  [key: string]: unknown;
+}
+
+/** Media that can be attached to an individual poll option. */
+export type InputPollOptionMedia =
+  | InputMediaAnimation
+  | InputMediaLivePhoto
+  | InputMediaLocation
+  | InputMediaPhoto
+  | InputMediaSticker
+  | InputMediaVenue
+  | InputMediaVideo;
+
+/** Media that can be attached to a poll description or quiz explanation. */
+export type InputPollMedia =
+  | InputMediaAnimation
+  | InputMediaAudio
+  | InputMediaDocument
+  | InputMediaLivePhoto
+  | InputMediaLocation
+  | InputMediaPhoto
+  | InputMediaVenue
+  | InputMediaVideo;
+
+export interface InputPollOption {
+  text: string;
+  text_parse_mode?: ParseMode;
+  text_entities?: MessageEntity[];
+  media?: InputPollOptionMedia;
+  [key: string]: unknown;
+}
+
 export interface BaseSendOptions {
   message_thread_id?: number;
   direct_messages_topic_id?: number;
@@ -176,39 +313,56 @@ export interface SendMediaGroupOptions {
   reply_parameters?: ReplyParameters;
   [key: string]: unknown;
 }
-
 export interface SendLocationOptions extends BaseSendOptions {
+  business_connection_id?: string;
   horizontal_accuracy?: number;
   live_period?: number;
   heading?: number;
   proximity_alert_radius?: number;
+  suggested_post_parameters?: SuggestedPostParameters;
 }
 
 export interface SendVenueOptions extends BaseSendOptions {
+  business_connection_id?: string;
   foursquare_id?: string;
   foursquare_type?: string;
   google_place_id?: string;
   google_place_type?: string;
+  suggested_post_parameters?: SuggestedPostParameters;
 }
 
 export interface SendContactOptions extends BaseSendOptions {
+  business_connection_id?: string;
   last_name?: string;
   vcard?: string;
+  suggested_post_parameters?: SuggestedPostParameters;
 }
 
 export interface SendPollOptions extends BaseSendOptions {
+  business_connection_id?: string;
   question_parse_mode?: ParseMode;
   question_entities?: MessageEntity[];
   is_anonymous?: boolean;
   type?: "regular" | "quiz";
   allows_multiple_answers?: boolean;
-  correct_option_id?: number;
+  allow_revoting?: boolean;
+  shuffle_options?: boolean;
+  allow_adding_options?: boolean;
+  hide_results_until_closes?: boolean;
+  members_only?: boolean;
+  country_codes?: string[];
+  correct_option_ids?: number[];
   explanation?: string;
   explanation_parse_mode?: ParseMode;
   explanation_entities?: MessageEntity[];
+  explanation_media?: InputPollMedia;
   open_period?: number;
   close_date?: number;
   is_closed?: boolean;
+  description?: string;
+  description_parse_mode?: ParseMode;
+  description_entities?: MessageEntity[];
+  media?: InputPollMedia;
 }
 
 export interface SendDiceOptions extends BaseSendOptions {

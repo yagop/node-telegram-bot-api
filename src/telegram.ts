@@ -71,6 +71,7 @@ import type {
   SendInvoiceOptions,
   ReplyMarkup,
   SuggestedPostParameters,
+  InputPollOption,
 } from "./types/options.js";
 
 import * as errors from "./errors.js";
@@ -788,6 +789,28 @@ export class TelegramBot extends EventEmitter {
     return this._form("sendLocation", { ...form, chat_id: chatId, latitude, longitude });
   }
 
+  sendVenue(
+    chatId: ChatId,
+    latitude: number,
+    longitude: number,
+    title: string,
+    address: string,
+    form: SendVenueOptions = {},
+  ): Promise<Message> {
+    return this._form("sendVenue", { ...form, chat_id: chatId, latitude, longitude, title, address });
+  }
+
+  sendContact(chatId: ChatId, phoneNumber: string, firstName: string, form: SendContactOptions = {}): Promise<Message> {
+    return this._form("sendContact", { ...form, chat_id: chatId, phone_number: phoneNumber, first_name: firstName });
+  }
+
+  sendPoll(chatId: ChatId, question: string, pollOptions: InputPollOption[], form: SendPollOptions = {}): Promise<Message> {
+    const out: Record<string, unknown> = { ...form, chat_id: chatId, question, options: stringify(pollOptions) };
+    if (out.country_codes) out.country_codes = stringify(out.country_codes);
+    if (out.correct_option_ids) out.correct_option_ids = stringify(out.correct_option_ids);
+    return this._form("sendPoll", out);
+  }
+
   editMessageLiveLocation(
     latitude: number,
     longitude: number,
@@ -818,24 +841,6 @@ export class TelegramBot extends EventEmitter {
     return this._form("stopMessageLiveLocation", form);
   }
 
-  sendVenue(
-    chatId: ChatId,
-    latitude: number,
-    longitude: number,
-    title: string,
-    address: string,
-    form: SendVenueOptions = {},
-  ): Promise<Message> {
-    return this._form("sendVenue", { ...form, chat_id: chatId, latitude, longitude, title, address });
-  }
-
-  sendContact(chatId: ChatId, phoneNumber: string, firstName: string, form: SendContactOptions = {}): Promise<Message> {
-    return this._form("sendContact", { ...form, chat_id: chatId, phone_number: phoneNumber, first_name: firstName });
-  }
-
-  sendPoll(chatId: ChatId, question: string, pollOptions: string[], form: SendPollOptions = {}): Promise<Message> {
-    return this._form("sendPoll", { ...form, chat_id: chatId, question, options: stringify(pollOptions) });
-  }
 
   sendChecklist(
     businessConnectionId: string,
@@ -1346,7 +1351,7 @@ export class TelegramBot extends EventEmitter {
     return this._form("editMessageCaption", { ...form, caption });
   }
   async editMessageMedia(
-    media: { media: string | FileInput; type: string; fileOptions?: FileMeta; [key: string]: unknown },
+    media: { media: string | FileInput; type: string; fileOptions?: FileMeta;[key: string]: unknown },
     form: {
       business_connection_id?: string;
       chat_id?: ChatId;
