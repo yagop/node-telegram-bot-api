@@ -1799,6 +1799,20 @@ describe('TelegramBot', function telegramSuite() {
 
   describe.skip('#declineSuggestedPost', function declineSuggestedPostSuite() { });
 
+  describe.skip('#answerGuestQuery', function answerGuestQuerySuite() { });
+
+  describe.skip('#deleteMessageReaction', function deleteMessageReactionSuite() { });
+
+  describe.skip('#deleteAllMessageReactions', function deleteAllMessageReactionsSuite() { });
+
+  describe.skip('#sendLivePhoto', function sendLivePhotoSuite() { });
+
+  describe.skip('#getManagedBotAccessSettings', function getManagedBotAccessSettingsSuite() { });
+
+  describe.skip('#setManagedBotAccessSettings', function setManagedBotAccessSettingsSuite() { });
+
+  describe.skip('#getUserPersonalChatMessages', function getUserPersonalChatMessagesSuite() { });
+
   describe('#deleteMessage', function deleteMessageSuite() {
     let messageId;
     before(function before() {

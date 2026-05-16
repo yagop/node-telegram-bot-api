@@ -5,6 +5,17 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased][Unreleased]
 
+Added:
+
+1. Support Telegram Bot API v10.0
+   * `#answerGuestQuery` (Guest Mode)
+   * `#deleteMessageReaction`
+   * `#deleteAllMessageReactions`
+   * `#sendLivePhoto`
+   * `#getManagedBotAccessSettings`
+   * `#setManagedBotAccessSettings`
+   * `#getUserPersonalChatMessages`
+
 ## [0.68.0][0.68.0] - 2026-04-05
 
 Added:
