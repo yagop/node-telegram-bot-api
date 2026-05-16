@@ -1577,7 +1577,7 @@ class TelegramBot extends EventEmitter {
    *
    * @param {Number|String} chatId  Unique identifier for the group/channel
    * @param {String} question Poll question, 1-300 characters
-   * @param {Array} pollOptions Poll options, between 2-10 options (only 1-100 characters each)
+   * @param {Array} pollOptions Poll options, between 1-10 options (only 1-100 characters each)
    * @param {Object} [options] Additional Telegram query options
    * @return {Promise} On success, the sent [Message](https://core.telegram.org/bots/api#message) object is returned
    * @see https://core.telegram.org/bots/api#sendpoll
