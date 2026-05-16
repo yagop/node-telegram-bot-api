@@ -1177,6 +1177,43 @@ class TelegramBot extends EventEmitter {
   }
 
   /**
+   * Send live photo.
+   *
+   * A live photo is composed of a static photo and a short video. Both fields are required.
+   * Sending live photos by a URL is currently unsupported - use a `file_id` or upload the file via multipart/form-data.
+   *
+   * @param {Number|String} chatId Unique identifier for the target chat or username of the target channel (in the format `@channelusername`)
+   * @param {String|stream.Stream|Buffer} livePhoto Video of the live photo to send. Pass a `file_id` to send a video that exists on the Telegram servers,
+   *   or upload a new video using multipart/form-data. The video must be no longer than 10 seconds and must not exceed 10 MB in size.
+   * @param {String|stream.Stream|Buffer} photo The static photo to send. Pass a `file_id` to send a photo that exists on the Telegram servers,
+   *   or upload a new photo using multipart/form-data.
+   * @param {Object} [options] Additional Telegram query options
+   * @param {Object} [fileOptions] Optional file related meta-data (applied to uploaded files)
+   * @return {Promise} On success, the sent [Message](https://core.telegram.org/bots/api#message) object is returned
+   * @see https://core.telegram.org/bots/api#sendlivephoto
+   * @see https://github.com/yagop/node-telegram-bot-api/blob/master/doc/usage.md#sending-files
+   */
+  sendLivePhoto(chatId, livePhoto, photo, options = {}, fileOptions = {}) {
+    const opts = {
+      qs: options,
+      formData: {},
+    };
+    opts.qs.chat_id = chatId;
+    try {
+      const liveData = this._formatSendData('live_photo', livePhoto, fileOptions);
+      if (liveData[0]) Object.assign(opts.formData, liveData[0]);
+      opts.qs.live_photo = liveData[1];
+
+      const photoData = this._formatSendData('photo', photo, fileOptions);
+      if (photoData[0]) Object.assign(opts.formData, photoData[0]);
+      opts.qs.photo = photoData[1];
+    } catch (ex) {
+      return Promise.reject(ex);
+    }
+    return this._request('sendLivePhoto', opts);
+  }
+
+  /**
   * Send audio
   *
   * **Your audio must be in the .MP3 or .M4A format.**
@@ -1653,6 +1690,39 @@ class TelegramBot extends EventEmitter {
       form.reaction = stringify(form.reaction);
     }
     return this._request('setMessageReaction', { form });
+  }
+
+  /**
+   * Use this method to remove a reaction from a message in a group or a supergroup chat.
+   *
+   * The bot **must have the `can_delete_messages` administrator right** in the chat.
+   *
+   * @param {Number|String} chatId Unique identifier for the target chat or username of the target supergroup (in the format `@supergroupusername`)
+   * @param {Number} messageId Identifier of the target message
+   * @param {Object} [options] Additional Telegram query options
+   * @return {Promise<Boolean>} True on success
+   * @see https://core.telegram.org/bots/api#deletemessagereaction
+   */
+  deleteMessageReaction(chatId, messageId, form = {}) {
+    form.chat_id = chatId;
+    form.message_id = messageId;
+    return this._request('deleteMessageReaction', { form });
+  }
+
+  /**
+   * Use this method to remove up to 10000 recent reactions in a group or a supergroup chat
+   * added by a given user or chat.
+   *
+   * The bot **must have the `can_delete_messages` administrator right** in the chat.
+   *
+   * @param {Number|String} chatId Unique identifier for the target chat or username of the target supergroup (in the format `@supergroupusername`)
+   * @param {Object} [options] Additional Telegram query options
+   * @return {Promise<Boolean>} True on success
+   * @see https://core.telegram.org/bots/api#deleteallmessagereactions
+   */
+  deleteAllMessageReactions(chatId, form = {}) {
+    form.chat_id = chatId;
+    return this._request('deleteAllMessageReactions', { form });
   }
 
   /**
@@ -2213,6 +2283,22 @@ class TelegramBot extends EventEmitter {
   }
 
   /**
+   * Use this method to get the last messages from the personal chat
+   * (i.e., the chat currently added to their profile) of a given user.
+   *
+   * @param {Number} userId Unique identifier for the target user
+   * @param {Number} limit The maximum number of messages to return; 1-20
+   * @param {Object} [options] Additional Telegram query options
+   * @return {Promise} On success, returns an Array of [Message](https://core.telegram.org/bots/api#message) objects
+   * @see https://core.telegram.org/bots/api#getuserpersonalchatmessages
+   */
+  getUserPersonalChatMessages(userId, limit, form = {}) {
+    form.user_id = userId;
+    form.limit = limit;
+    return this._request('getUserPersonalChatMessages', { form });
+  }
+
+  /**
    * Use this method to set a new group sticker set for a supergroup.
    *
    * The bot **must be an administrator in the chat** for this to work and must have the appropriate administrator rights.
@@ -2490,6 +2576,21 @@ class TelegramBot extends EventEmitter {
   }
 
   /**
+   * Use this method to reply to a received guest message.
+   *
+   * @param {String} guestQueryId Unique identifier for the query to be answered
+   * @param {Object} result A JSON-serialized object describing the message to be sent ([InlineQueryResult](https://core.telegram.org/bots/api#inlinequeryresult))
+   * @param {Object} [options] Additional Telegram query options
+   * @return {Promise} On success, a [SentGuestMessage](https://core.telegram.org/bots/api#sentguestmessage) object is returned
+   * @see https://core.telegram.org/bots/api#answerguestquery
+   */
+  answerGuestQuery(guestQueryId, result, form = {}) {
+    form.guest_query_id = guestQueryId;
+    form.result = stringify(result);
+    return this._request('answerGuestQuery', { form });
+  }
+
+  /**
    * Use this method to stores a message that can be sent by a user of a Mini App.
    *
    * @param {Number} userId Unique identifier of the target user
@@ -2572,6 +2673,39 @@ class TelegramBot extends EventEmitter {
   replaceManagedBotToken(userId, form = {}) {
     form.user_id = userId;
     return this._request('replaceManagedBotToken', { form });
+  }
+
+  /**
+   * Use this method to get the access settings of a managed bot.
+   *
+   * @param {Number} userId User identifier of the managed bot whose access settings will be returned
+   * @param {Object} [options] Additional Telegram query options
+   * @return {Promise} On success, returns a [BotAccessSettings](https://core.telegram.org/bots/api#botaccesssettings) object
+   * @see https://core.telegram.org/bots/api#getmanagedbotaccesssettings
+   */
+  getManagedBotAccessSettings(userId, form = {}) {
+    form.user_id = userId;
+    return this._request('getManagedBotAccessSettings', { form });
+  }
+
+  /**
+   * Use this method to change the access settings of a managed bot.
+   *
+   * @param {Number} userId User identifier of the managed bot whose access settings will be changed
+   * @param {Boolean} isAccessRestricted Pass `True`, if only selected users can access the bot. The bot's owner can always access it.
+   * @param {Object} [options] Additional Telegram query options
+   * @param {Array<Number>} [options.added_user_ids] A JSON-serialized list of up to 10 identifiers of users who will have access to the bot
+   *   in addition to its owner. Ignored if `is_access_restricted` is `false`.
+   * @return {Promise<Boolean>} True on success
+   * @see https://core.telegram.org/bots/api#setmanagedbotaccesssettings
+   */
+  setManagedBotAccessSettings(userId, isAccessRestricted, form = {}) {
+    form.user_id = userId;
+    form.is_access_restricted = isAccessRestricted;
+    if (form.added_user_ids) {
+      form.added_user_ids = stringify(form.added_user_ids);
+    }
+    return this._request('setManagedBotAccessSettings', { form });
   }
 
   /**
