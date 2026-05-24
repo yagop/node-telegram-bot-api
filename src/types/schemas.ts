@@ -1016,6 +1016,174 @@ export const BotAccessSettingsSchema = obj({
 export type BotAccessSettings = z.infer<typeof BotAccessSettingsSchema>;
 
 // ---------------------------------------------------------------------------
+// Chat permissions
+// ---------------------------------------------------------------------------
+
+export const ChatPermissionsSchema = obj({
+  can_send_messages: z.boolean().optional(),
+  can_send_audios: z.boolean().optional(),
+  can_send_documents: z.boolean().optional(),
+  can_send_photos: z.boolean().optional(),
+  can_send_videos: z.boolean().optional(),
+  can_send_video_notes: z.boolean().optional(),
+  can_send_voice_notes: z.boolean().optional(),
+  can_send_polls: z.boolean().optional(),
+  can_send_other_messages: z.boolean().optional(),
+  can_add_web_page_previews: z.boolean().optional(),
+  can_react_to_messages: z.boolean().optional(),
+  can_edit_tag: z.boolean().optional(),
+  can_change_info: z.boolean().optional(),
+  can_invite_users: z.boolean().optional(),
+  can_pin_messages: z.boolean().optional(),
+  can_manage_topics: z.boolean().optional(),
+});
+export type ChatPermissions = z.infer<typeof ChatPermissionsSchema>;
+
+// ---------------------------------------------------------------------------
+// Chat photo, location & birthdate
+// ---------------------------------------------------------------------------
+
+export const ChatPhotoSchema = obj({
+  small_file_id: z.string(),
+  small_file_unique_id: z.string(),
+  big_file_id: z.string(),
+  big_file_unique_id: z.string(),
+});
+export type ChatPhoto = z.infer<typeof ChatPhotoSchema>;
+
+export const BirthdateSchema = obj({
+  day: z.number().int(),
+  month: z.number().int(),
+  year: z.number().int().optional(),
+});
+export type Birthdate = z.infer<typeof BirthdateSchema>;
+
+// ---------------------------------------------------------------------------
+// Business account types
+// ---------------------------------------------------------------------------
+
+export const BusinessIntroSchema = obj({
+  title: z.string().optional(),
+  message: z.string().optional(),
+  sticker: StickerSchema.optional(),
+});
+export type BusinessIntro = z.infer<typeof BusinessIntroSchema>;
+
+export const BusinessLocationSchema = obj({
+  address: z.string(),
+  location: LocationSchema.optional(),
+});
+export type BusinessLocation = z.infer<typeof BusinessLocationSchema>;
+
+export const BusinessOpeningHoursIntervalSchema = obj({
+  opening_minute: z.number().int(),
+  closing_minute: z.number().int(),
+});
+export type BusinessOpeningHoursInterval = z.infer<typeof BusinessOpeningHoursIntervalSchema>;
+
+export const BusinessOpeningHoursSchema = obj({
+  time_zone_name: z.string(),
+  opening_hours: z.array(BusinessOpeningHoursIntervalSchema),
+});
+export type BusinessOpeningHours = z.infer<typeof BusinessOpeningHoursSchema>;
+
+// ---------------------------------------------------------------------------
+// Chat location, rating & gift types
+// ---------------------------------------------------------------------------
+
+export const ChatLocationSchema = obj({
+  location: LocationSchema,
+  address: z.string(),
+});
+export type ChatLocation = z.infer<typeof ChatLocationSchema>;
+
+export const UserRatingSchema = obj({
+  level: z.number().int(),
+  rating: z.number().int(),
+  current_level_rating: z.number().int(),
+  next_level_rating: z.number().int().optional(),
+});
+export type UserRating = z.infer<typeof UserRatingSchema>;
+
+export const UniqueGiftColorsSchema = obj({
+  model_custom_emoji_id: z.string(),
+  symbol_custom_emoji_id: z.string(),
+  light_theme_main_color: z.number().int(),
+  light_theme_other_colors: z.array(z.number().int()),
+  dark_theme_main_color: z.number().int(),
+  dark_theme_other_colors: z.array(z.number().int()),
+});
+export type UniqueGiftColors = z.infer<typeof UniqueGiftColorsSchema>;
+
+export const AcceptedGiftTypesSchema = obj({
+  unlimited_gifts: z.boolean(),
+  limited_gifts: z.boolean(),
+  unique_gifts: z.boolean(),
+  premium_subscription: z.boolean(),
+  gifts_from_channels: z.boolean(),
+});
+export type AcceptedGiftTypes = z.infer<typeof AcceptedGiftTypesSchema>;
+
+// ---------------------------------------------------------------------------
+// Chat full info
+// ---------------------------------------------------------------------------
+
+export const ChatFullInfoSchema = obj({
+  id: z.number().int(),
+  type: ChatTypeSchema,
+  title: z.string().optional(),
+  username: z.string().optional(),
+  first_name: z.string().optional(),
+  last_name: z.string().optional(),
+  is_forum: z.boolean().optional(),
+  is_direct_messages: z.boolean().optional(),
+  accent_color_id: z.number().int(),
+  max_reaction_count: z.number().int(),
+  photo: ChatPhotoSchema.optional(),
+  active_usernames: z.array(z.string()).optional(),
+  birthdate: BirthdateSchema.optional(),
+  business_intro: BusinessIntroSchema.optional(),
+  business_location: BusinessLocationSchema.optional(),
+  business_opening_hours: BusinessOpeningHoursSchema.optional(),
+  personal_chat: ChatSchema.optional(),
+  parent_chat: ChatSchema.optional(),
+  available_reactions: z.array(ReactionTypeSchema).optional(),
+  background_custom_emoji_id: z.string().optional(),
+  profile_accent_color_id: z.number().int().optional(),
+  profile_background_custom_emoji_id: z.string().optional(),
+  emoji_status_custom_emoji_id: z.string().optional(),
+  emoji_status_expiration_date: z.number().int().optional(),
+  bio: z.string().optional(),
+  has_private_forwards: z.boolean().optional(),
+  has_restricted_voice_and_video_messages: z.boolean().optional(),
+  join_to_send_messages: z.boolean().optional(),
+  join_by_request: z.boolean().optional(),
+  description: z.string().optional(),
+  invite_link: z.string().optional(),
+  pinned_message: MessageSchema.optional(),
+  permissions: ChatPermissionsSchema.optional(),
+  accepted_gift_types: AcceptedGiftTypesSchema,
+  can_send_paid_media: z.boolean().optional(),
+  slow_mode_delay: z.number().int().optional(),
+  unrestrict_boost_count: z.number().int().optional(),
+  message_auto_delete_time: z.number().int().optional(),
+  has_aggressive_anti_spam_enabled: z.boolean().optional(),
+  has_hidden_members: z.boolean().optional(),
+  has_protected_content: z.boolean().optional(),
+  has_visible_history: z.boolean().optional(),
+  sticker_set_name: z.string().optional(),
+  can_set_sticker_set: z.boolean().optional(),
+  custom_emoji_sticker_set_name: z.string().optional(),
+  linked_chat_id: z.number().int().optional(),
+  location: ChatLocationSchema.optional(),
+  rating: UserRatingSchema.optional(),
+  first_profile_audio: AudioSchema.optional(),
+  unique_gift_colors: UniqueGiftColorsSchema.optional(),
+  paid_message_star_count: z.number().int().optional(),
+});
+export type ChatFullInfo = z.infer<typeof ChatFullInfoSchema>;
+
+// ---------------------------------------------------------------------------
 // Telegram envelope (raw HTTP response)
 // ---------------------------------------------------------------------------
 

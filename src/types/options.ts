@@ -18,6 +18,7 @@ import type {
   ForceReply,
   ReplyParameters,
   SuggestedPostPrice,
+  ReactionType,
 } from "./schemas.js";
 
 export type ReplyMarkup =
@@ -365,13 +366,145 @@ export interface SendPollOptions extends BaseSendOptions {
   media?: InputPollMedia;
 }
 
+export interface sendChecklistOptions {
+  disable_notification?: boolean;
+  protect_content?: boolean;
+  message_effect_id?: string;
+  reply_parameters?: ReplyParameters;
+  reply_markup?: ReplyMarkup;
+  [key: string]: unknown;
+}
 export interface SendDiceOptions extends BaseSendOptions {
   emoji?: string;
+  suggested_post_parameters?: SuggestedPostParameters;
+}
+
+export interface sendMessageDraftOptions {
+  message_thread_id?: number;
+  text?: string;
+  parse_mode?: ParseMode;
+  entities?: MessageEntity[];
+  [key: string]: unknown;
 }
 
 export interface SendChatActionOptions {
   business_connection_id?: string;
   message_thread_id?: number;
+  [key: string]: unknown;
+}
+
+export interface SetMessageReactionOptions {
+  reaction?: ReactionType[];
+  is_big?: boolean;
+  [key: string]: unknown;
+}
+
+export interface GetUserProfilePhotosOptions {
+  offset?: number;
+  limit?: number;
+  [key: string]: unknown;
+}
+
+export interface GetUserProfileAudiosOptions {
+  offset?: number;
+  limit?: number;
+  [key: string]: unknown;
+}
+
+export interface SetUserEmojiStatusOptions {
+  emoji_status_custom_emoji_id?: string;
+  emoji_status_expiration_date?: number;
+  [key: string]: unknown;
+}
+
+export interface BanChatMemberOptions {
+  until_date?: number;
+  revoke_messages?: boolean;
+  [key: string]: unknown;
+}
+
+export interface UnbanChatMemberOptions {
+  only_if_banned?: boolean;
+  [key: string]: unknown;
+}
+
+export interface RestrictChatMemberOptions {
+  use_independent_chat_permissions?: boolean;
+  until_date?: number;
+  [key: string]: unknown;
+}
+
+export interface PromoteChatMemberOptions {
+  is_anonymous?: boolean;
+  can_manage_chat?: boolean;
+  can_delete_messages?: boolean;
+  can_manage_video_chats?: boolean;
+  can_restrict_members?: boolean;
+  can_promote_members?: boolean;
+  can_change_info?: boolean;
+  can_invite_users?: boolean;
+  can_post_stories?: boolean;
+  can_edit_stories?: boolean;
+  can_delete_stories?: boolean;
+  can_post_messages?: boolean;
+  can_edit_messages?: boolean;
+  can_pin_messages?: boolean;
+  can_manage_topics?: boolean;
+  can_manage_direct_messages?: boolean;
+  can_manage_tags?: boolean;
+  [key: string]: unknown;
+}
+
+export interface SetChatMemberTagOptions {
+  tag?: string;
+  [key: string]: unknown;
+}
+
+export interface SetChatPermissionsOptions {
+  use_independent_chat_permissions?: boolean;
+  [key: string]: unknown;
+}
+
+export interface CreateChatInviteLinkOptions {
+  name?: string;
+  expire_date?: number;
+  member_limit?: number;
+  creates_join_request?: boolean;
+  [key: string]: unknown;
+}
+
+export interface EditChatInviteLinkOptions {
+  name?: string;
+  expire_date?: number;
+  member_limit?: number;
+  creates_join_request?: boolean;
+  [key: string]: unknown;
+}
+
+export interface CreateChatSubscriptionInviteLinkOptions {
+  name?: string;
+  [key: string]: unknown;
+}
+
+export interface EditChatSubscriptionInviteLinkOptions {
+  name?: string;
+  [key: string]: unknown;
+}
+
+export interface PinChatMessageOptions {
+  business_connection_id?: string;
+  disable_notification?: boolean;
+  [key: string]: unknown;
+}
+
+export interface UnpinChatMessageOptions {
+  business_connection_id?: string;
+  message_id?: number;
+  [key: string]: unknown;
+}
+
+export interface GetChatAdministratorsOptions {
+  return_bots?: boolean;
   [key: string]: unknown;
 }
 
