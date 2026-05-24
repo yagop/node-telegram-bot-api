@@ -214,6 +214,53 @@ describe("TelegramBot (unit)", () => {
     });
   });
 
+  describe("setMyProfilePhoto()", () => {
+    it("posts static photo with InputProfilePhoto struct and file in formData", async () => {
+      stubFetch(() => ({ ok: true, result: true }));
+      const bot = new TelegramBot("TOKEN");
+      const buf = Buffer.from("fake-jpeg-data");
+      await bot.setMyProfilePhoto({ type: "static", photo: buf });
+      const last = captured.at(-1)!;
+      assert.equal(last.url, "https://api.telegram.org/botTOKEN/setMyProfilePhoto");
+      const fd = last.init.body as FormData;
+      const photoParam = fd.get("photo");
+      assert.ok(photoParam, "photo qs param should be present");
+      const struct = JSON.parse(String(photoParam));
+      assert.equal(struct.type, "static");
+      assert.equal(struct.photo, "attach://photo");
+      // the file blob is also appended under "photo" - getAll returns both
+      const entries = fd.getAll("photo");
+      assert.equal(entries.length, 2, "should have qs struct + file blob");
+    });
+
+    it("posts animated photo with animation field and main_frame_timestamp", async () => {
+      stubFetch(() => ({ ok: true, result: true }));
+      const bot = new TelegramBot("TOKEN");
+      const buf = Buffer.from("fake-mp4-data");
+      await bot.setMyProfilePhoto({ type: "animated", animation: buf, main_frame_timestamp: 1.5 });
+      const last = captured.at(-1)!;
+      assert.equal(last.url, "https://api.telegram.org/botTOKEN/setMyProfilePhoto");
+      const fd = last.init.body as FormData;
+      const photoParam = fd.get("photo");
+      assert.ok(photoParam, "photo qs param should be present");
+      const struct = JSON.parse(String(photoParam));
+      assert.equal(struct.type, "animated");
+      assert.equal(struct.animation, "attach://animation");
+      assert.equal(struct.main_frame_timestamp, 1.5);
+      const fileEntry = fd.getAll("animation");
+      assert.equal(fileEntry.length, 1, "animation file blob should be present");
+    });
+
+    it("throws FatalError when given a fileId string instead of a file", async () => {
+      stubFetch(() => ({ ok: true, result: true }));
+      const bot = new TelegramBot("TOKEN", { filepath: false });
+      await assert.rejects(
+        bot.setMyProfilePhoto({ type: "static", photo: "some-file-id" }),
+        /only supports file uploads/,
+      );
+    });
+  });
+
   describe("getUserPersonalChatMessages()", () => {
     it("posts user_id and limit", async () => {
       stubFetch(() => ({ ok: true, result: [] }));

@@ -480,6 +480,12 @@ export type SuggestedPostInfo = z.infer<typeof SuggestedPostInfoSchema>;
 // Payments
 // ---------------------------------------------------------------------------
 
+export const LabeledPriceSchema = obj({
+  label: z.string(),
+  amount: z.number().int(),
+});
+export type LabeledPrice = z.infer<typeof LabeledPriceSchema>;
+
 export const InvoiceSchema = obj({
   title: z.string(),
   description: z.string(),
@@ -571,6 +577,426 @@ export const ChosenInlineResultSchema = obj({
 export type ChosenInlineResult = z.infer<typeof ChosenInlineResultSchema>;
 
 // ---------------------------------------------------------------------------
+// Inline query results button
+// ---------------------------------------------------------------------------
+
+export const InlineQueryResultsButtonSchema = obj({
+  text: z.string(),
+  web_app: WebAppInfoSchema.optional(),
+  start_parameter: z.string().optional(),
+});
+export type InlineQueryResultsButton = z.infer<typeof InlineQueryResultsButtonSchema>;
+
+// ---------------------------------------------------------------------------
+// InputMessageContent
+// ---------------------------------------------------------------------------
+
+export const InputTextMessageContentSchema = obj({
+  message_text: z.string(),
+  parse_mode: ParseModeSchema.optional(),
+  entities: z.array(MessageEntitySchema).optional(),
+  link_preview_options: LinkPreviewOptionsSchema.optional(),
+});
+export type InputTextMessageContent = z.infer<typeof InputTextMessageContentSchema>;
+
+export const InputLocationMessageContentSchema = obj({
+  latitude: z.number(),
+  longitude: z.number(),
+  horizontal_accuracy: z.number().optional(),
+  live_period: z.number().int().optional(),
+  heading: z.number().int().optional(),
+  proximity_alert_radius: z.number().int().optional(),
+});
+export type InputLocationMessageContent = z.infer<typeof InputLocationMessageContentSchema>;
+
+export const InputVenueMessageContentSchema = obj({
+  latitude: z.number(),
+  longitude: z.number(),
+  title: z.string(),
+  address: z.string(),
+  foursquare_id: z.string().optional(),
+  foursquare_type: z.string().optional(),
+  google_place_id: z.string().optional(),
+  google_place_type: z.string().optional(),
+});
+export type InputVenueMessageContent = z.infer<typeof InputVenueMessageContentSchema>;
+
+export const InputContactMessageContentSchema = obj({
+  phone_number: z.string(),
+  first_name: z.string(),
+  last_name: z.string().optional(),
+  vcard: z.string().optional(),
+});
+export type InputContactMessageContent = z.infer<typeof InputContactMessageContentSchema>;
+
+export const InputInvoiceMessageContentSchema = obj({
+  title: z.string(),
+  description: z.string(),
+  payload: z.string(),
+  provider_token: z.string().optional(),
+  currency: z.string(),
+  prices: z.array(LabeledPriceSchema),
+  max_tip_amount: z.number().int().optional(),
+  suggested_tip_amounts: z.array(z.number().int()).optional(),
+  provider_data: z.string().optional(),
+  photo_url: z.string().optional(),
+  photo_size: z.number().int().optional(),
+  photo_width: z.number().int().optional(),
+  photo_height: z.number().int().optional(),
+  need_name: z.boolean().optional(),
+  need_phone_number: z.boolean().optional(),
+  need_email: z.boolean().optional(),
+  need_shipping_address: z.boolean().optional(),
+  send_phone_number_to_provider: z.boolean().optional(),
+  send_email_to_provider: z.boolean().optional(),
+  is_flexible: z.boolean().optional(),
+});
+export type InputInvoiceMessageContent = z.infer<typeof InputInvoiceMessageContentSchema>;
+
+export const InputMessageContentSchema = z.union([
+  InputTextMessageContentSchema,
+  InputLocationMessageContentSchema,
+  InputVenueMessageContentSchema,
+  InputContactMessageContentSchema,
+  InputInvoiceMessageContentSchema,
+]);
+export type InputMessageContent = z.infer<typeof InputMessageContentSchema>;
+
+// ---------------------------------------------------------------------------
+// InlineQueryResult
+// ---------------------------------------------------------------------------
+
+export const InlineQueryResultArticleSchema = obj({
+  type: z.literal("article"),
+  id: z.string(),
+  title: z.string(),
+  input_message_content: InputMessageContentSchema,
+  reply_markup: InlineKeyboardMarkupSchema.optional(),
+  url: z.string().optional(),
+  description: z.string().optional(),
+  thumbnail_url: z.string().optional(),
+  thumbnail_width: z.number().int().optional(),
+  thumbnail_height: z.number().int().optional(),
+});
+
+export const InlineQueryResultPhotoSchema = obj({
+  type: z.literal("photo"),
+  id: z.string(),
+  photo_url: z.string(),
+  thumbnail_url: z.string(),
+  photo_width: z.number().int().optional(),
+  photo_height: z.number().int().optional(),
+  title: z.string().optional(),
+  description: z.string().optional(),
+  caption: z.string().optional(),
+  parse_mode: ParseModeSchema.optional(),
+  caption_entities: z.array(MessageEntitySchema).optional(),
+  show_caption_above_media: z.boolean().optional(),
+  reply_markup: InlineKeyboardMarkupSchema.optional(),
+  input_message_content: InputMessageContentSchema.optional(),
+});
+
+export const InlineQueryResultGifSchema = obj({
+  type: z.literal("gif"),
+  id: z.string(),
+  gif_url: z.string(),
+  gif_width: z.number().int().optional(),
+  gif_height: z.number().int().optional(),
+  gif_duration: z.number().int().optional(),
+  thumbnail_url: z.string(),
+  thumbnail_mime_type: z.string().optional(),
+  title: z.string().optional(),
+  caption: z.string().optional(),
+  parse_mode: ParseModeSchema.optional(),
+  caption_entities: z.array(MessageEntitySchema).optional(),
+  show_caption_above_media: z.boolean().optional(),
+  reply_markup: InlineKeyboardMarkupSchema.optional(),
+  input_message_content: InputMessageContentSchema.optional(),
+});
+
+export const InlineQueryResultMpeg4GifSchema = obj({
+  type: z.literal("mpeg4_gif"),
+  id: z.string(),
+  mpeg4_url: z.string(),
+  mpeg4_width: z.number().int().optional(),
+  mpeg4_height: z.number().int().optional(),
+  mpeg4_duration: z.number().int().optional(),
+  thumbnail_url: z.string(),
+  thumbnail_mime_type: z.string().optional(),
+  title: z.string().optional(),
+  caption: z.string().optional(),
+  parse_mode: ParseModeSchema.optional(),
+  caption_entities: z.array(MessageEntitySchema).optional(),
+  show_caption_above_media: z.boolean().optional(),
+  reply_markup: InlineKeyboardMarkupSchema.optional(),
+  input_message_content: InputMessageContentSchema.optional(),
+});
+
+export const InlineQueryResultVideoSchema = obj({
+  type: z.literal("video"),
+  id: z.string(),
+  video_url: z.string(),
+  mime_type: z.string(),
+  thumbnail_url: z.string(),
+  title: z.string(),
+  caption: z.string().optional(),
+  parse_mode: ParseModeSchema.optional(),
+  caption_entities: z.array(MessageEntitySchema).optional(),
+  show_caption_above_media: z.boolean().optional(),
+  video_width: z.number().int().optional(),
+  video_height: z.number().int().optional(),
+  video_duration: z.number().int().optional(),
+  description: z.string().optional(),
+  reply_markup: InlineKeyboardMarkupSchema.optional(),
+  input_message_content: InputMessageContentSchema.optional(),
+});
+
+export const InlineQueryResultAudioSchema = obj({
+  type: z.literal("audio"),
+  id: z.string(),
+  audio_url: z.string(),
+  title: z.string(),
+  caption: z.string().optional(),
+  parse_mode: ParseModeSchema.optional(),
+  caption_entities: z.array(MessageEntitySchema).optional(),
+  performer: z.string().optional(),
+  audio_duration: z.number().int().optional(),
+  reply_markup: InlineKeyboardMarkupSchema.optional(),
+  input_message_content: InputMessageContentSchema.optional(),
+});
+
+export const InlineQueryResultVoiceSchema = obj({
+  type: z.literal("voice"),
+  id: z.string(),
+  voice_url: z.string(),
+  title: z.string(),
+  caption: z.string().optional(),
+  parse_mode: ParseModeSchema.optional(),
+  caption_entities: z.array(MessageEntitySchema).optional(),
+  voice_duration: z.number().int().optional(),
+  reply_markup: InlineKeyboardMarkupSchema.optional(),
+  input_message_content: InputMessageContentSchema.optional(),
+});
+
+export const InlineQueryResultDocumentSchema = obj({
+  type: z.literal("document"),
+  id: z.string(),
+  title: z.string(),
+  caption: z.string().optional(),
+  parse_mode: ParseModeSchema.optional(),
+  caption_entities: z.array(MessageEntitySchema).optional(),
+  document_url: z.string(),
+  mime_type: z.string(),
+  description: z.string().optional(),
+  reply_markup: InlineKeyboardMarkupSchema.optional(),
+  input_message_content: InputMessageContentSchema.optional(),
+  thumbnail_url: z.string().optional(),
+  thumbnail_width: z.number().int().optional(),
+  thumbnail_height: z.number().int().optional(),
+});
+
+export const InlineQueryResultLocationSchema = obj({
+  type: z.literal("location"),
+  id: z.string(),
+  latitude: z.number(),
+  longitude: z.number(),
+  title: z.string(),
+  horizontal_accuracy: z.number().optional(),
+  live_period: z.number().int().optional(),
+  heading: z.number().int().optional(),
+  proximity_alert_radius: z.number().int().optional(),
+  reply_markup: InlineKeyboardMarkupSchema.optional(),
+  input_message_content: InputMessageContentSchema.optional(),
+  thumbnail_url: z.string().optional(),
+  thumbnail_width: z.number().int().optional(),
+  thumbnail_height: z.number().int().optional(),
+});
+
+export const InlineQueryResultVenueSchema = obj({
+  type: z.literal("venue"),
+  id: z.string(),
+  latitude: z.number(),
+  longitude: z.number(),
+  title: z.string(),
+  address: z.string(),
+  foursquare_id: z.string().optional(),
+  foursquare_type: z.string().optional(),
+  google_place_id: z.string().optional(),
+  google_place_type: z.string().optional(),
+  reply_markup: InlineKeyboardMarkupSchema.optional(),
+  input_message_content: InputMessageContentSchema.optional(),
+  thumbnail_url: z.string().optional(),
+  thumbnail_width: z.number().int().optional(),
+  thumbnail_height: z.number().int().optional(),
+});
+
+export const InlineQueryResultContactSchema = obj({
+  type: z.literal("contact"),
+  id: z.string(),
+  phone_number: z.string(),
+  first_name: z.string(),
+  last_name: z.string().optional(),
+  vcard: z.string().optional(),
+  reply_markup: InlineKeyboardMarkupSchema.optional(),
+  input_message_content: InputMessageContentSchema.optional(),
+  thumbnail_url: z.string().optional(),
+  thumbnail_width: z.number().int().optional(),
+  thumbnail_height: z.number().int().optional(),
+});
+
+export const InlineQueryResultGameSchema = obj({
+  type: z.literal("game"),
+  id: z.string(),
+  game_short_name: z.string(),
+  reply_markup: InlineKeyboardMarkupSchema.optional(),
+});
+
+export const InlineQueryResultCachedPhotoSchema = obj({
+  type: z.literal("photo"),
+  id: z.string(),
+  photo_file_id: z.string(),
+  title: z.string().optional(),
+  description: z.string().optional(),
+  caption: z.string().optional(),
+  parse_mode: ParseModeSchema.optional(),
+  caption_entities: z.array(MessageEntitySchema).optional(),
+  show_caption_above_media: z.boolean().optional(),
+  reply_markup: InlineKeyboardMarkupSchema.optional(),
+  input_message_content: InputMessageContentSchema.optional(),
+});
+
+export const InlineQueryResultCachedGifSchema = obj({
+  type: z.literal("gif"),
+  id: z.string(),
+  gif_file_id: z.string(),
+  title: z.string().optional(),
+  caption: z.string().optional(),
+  parse_mode: ParseModeSchema.optional(),
+  caption_entities: z.array(MessageEntitySchema).optional(),
+  show_caption_above_media: z.boolean().optional(),
+  reply_markup: InlineKeyboardMarkupSchema.optional(),
+  input_message_content: InputMessageContentSchema.optional(),
+});
+
+export const InlineQueryResultCachedMpeg4GifSchema = obj({
+  type: z.literal("mpeg4_gif"),
+  id: z.string(),
+  mpeg4_file_id: z.string(),
+  title: z.string().optional(),
+  caption: z.string().optional(),
+  parse_mode: ParseModeSchema.optional(),
+  caption_entities: z.array(MessageEntitySchema).optional(),
+  show_caption_above_media: z.boolean().optional(),
+  reply_markup: InlineKeyboardMarkupSchema.optional(),
+  input_message_content: InputMessageContentSchema.optional(),
+});
+
+export const InlineQueryResultCachedStickerSchema = obj({
+  type: z.literal("sticker"),
+  id: z.string(),
+  sticker_file_id: z.string(),
+  reply_markup: InlineKeyboardMarkupSchema.optional(),
+  input_message_content: InputMessageContentSchema.optional(),
+});
+
+export const InlineQueryResultCachedDocumentSchema = obj({
+  type: z.literal("document"),
+  id: z.string(),
+  title: z.string(),
+  document_file_id: z.string(),
+  description: z.string().optional(),
+  caption: z.string().optional(),
+  parse_mode: ParseModeSchema.optional(),
+  caption_entities: z.array(MessageEntitySchema).optional(),
+  reply_markup: InlineKeyboardMarkupSchema.optional(),
+  input_message_content: InputMessageContentSchema.optional(),
+});
+
+export const InlineQueryResultCachedVideoSchema = obj({
+  type: z.literal("video"),
+  id: z.string(),
+  video_file_id: z.string(),
+  title: z.string(),
+  description: z.string().optional(),
+  caption: z.string().optional(),
+  parse_mode: ParseModeSchema.optional(),
+  caption_entities: z.array(MessageEntitySchema).optional(),
+  show_caption_above_media: z.boolean().optional(),
+  reply_markup: InlineKeyboardMarkupSchema.optional(),
+  input_message_content: InputMessageContentSchema.optional(),
+});
+
+export const InlineQueryResultCachedVoiceSchema = obj({
+  type: z.literal("voice"),
+  id: z.string(),
+  voice_file_id: z.string(),
+  title: z.string(),
+  caption: z.string().optional(),
+  parse_mode: ParseModeSchema.optional(),
+  caption_entities: z.array(MessageEntitySchema).optional(),
+  reply_markup: InlineKeyboardMarkupSchema.optional(),
+  input_message_content: InputMessageContentSchema.optional(),
+});
+
+export const InlineQueryResultCachedAudioSchema = obj({
+  type: z.literal("audio"),
+  id: z.string(),
+  audio_file_id: z.string(),
+  caption: z.string().optional(),
+  parse_mode: ParseModeSchema.optional(),
+  caption_entities: z.array(MessageEntitySchema).optional(),
+  reply_markup: InlineKeyboardMarkupSchema.optional(),
+  input_message_content: InputMessageContentSchema.optional(),
+});
+
+export type InlineQueryResult =
+  | z.infer<typeof InlineQueryResultCachedAudioSchema>
+  | z.infer<typeof InlineQueryResultCachedDocumentSchema>
+  | z.infer<typeof InlineQueryResultCachedGifSchema>
+  | z.infer<typeof InlineQueryResultCachedMpeg4GifSchema>
+  | z.infer<typeof InlineQueryResultCachedPhotoSchema>
+  | z.infer<typeof InlineQueryResultCachedStickerSchema>
+  | z.infer<typeof InlineQueryResultCachedVideoSchema>
+  | z.infer<typeof InlineQueryResultCachedVoiceSchema>
+  | z.infer<typeof InlineQueryResultArticleSchema>
+  | z.infer<typeof InlineQueryResultAudioSchema>
+  | z.infer<typeof InlineQueryResultContactSchema>
+  | z.infer<typeof InlineQueryResultGameSchema>
+  | z.infer<typeof InlineQueryResultDocumentSchema>
+  | z.infer<typeof InlineQueryResultGifSchema>
+  | z.infer<typeof InlineQueryResultLocationSchema>
+  | z.infer<typeof InlineQueryResultMpeg4GifSchema>
+  | z.infer<typeof InlineQueryResultPhotoSchema>
+  | z.infer<typeof InlineQueryResultVenueSchema>
+  | z.infer<typeof InlineQueryResultVideoSchema>
+  | z.infer<typeof InlineQueryResultVoiceSchema>;
+
+export const InlineQueryResultSchema: z.ZodType<InlineQueryResult> = z.union([
+  InlineQueryResultCachedAudioSchema,
+  InlineQueryResultCachedDocumentSchema,
+  InlineQueryResultCachedGifSchema,
+  InlineQueryResultCachedMpeg4GifSchema,
+  InlineQueryResultCachedPhotoSchema,
+  InlineQueryResultCachedStickerSchema,
+  InlineQueryResultCachedVideoSchema,
+  InlineQueryResultCachedVoiceSchema,
+  InlineQueryResultArticleSchema,
+  InlineQueryResultAudioSchema,
+  InlineQueryResultContactSchema,
+  InlineQueryResultGameSchema,
+  InlineQueryResultDocumentSchema,
+  InlineQueryResultGifSchema,
+  InlineQueryResultLocationSchema,
+  InlineQueryResultMpeg4GifSchema,
+  InlineQueryResultPhotoSchema,
+  InlineQueryResultVenueSchema,
+  InlineQueryResultVideoSchema,
+  InlineQueryResultVoiceSchema,
+]);
+// Note: InlineQueryResult type is defined above (before the schema) to avoid
+// TS7056 "exceeds the maximum length the compiler will serialize" on the union.
+
+// ---------------------------------------------------------------------------
 // Forum / topics / chat boost / business
 // ---------------------------------------------------------------------------
 
@@ -617,6 +1043,11 @@ export const ChatBoostRemovedSchema = obj({
   remove_date: z.number().int(),
   source: ChatBoostSourceSchema,
 });
+
+export const UserChatBoostsSchema = obj({
+  boosts: z.array(ChatBoostSchema),
+});
+export type UserChatBoosts = z.infer<typeof UserChatBoostsSchema>;
 
 export const ChatJoinRequestSchema = obj({
   chat: ChatSchema,
@@ -808,8 +1239,11 @@ export const BotCommandSchema = obj({ command: z.string(), description: z.string
 export type BotCommand = z.infer<typeof BotCommandSchema>;
 
 export const BotNameSchema = obj({ name: z.string() });
+export type BotName = z.infer<typeof BotNameSchema>;
 export const BotDescriptionSchema = obj({ description: z.string() });
+export type BotDescription = z.infer<typeof BotDescriptionSchema>;
 export const BotShortDescriptionSchema = obj({ short_description: z.string() });
+export type BotShortDescription = z.infer<typeof BotShortDescriptionSchema>;
 
 export const ChatInviteLinkSchema = obj({
   invite_link: z.string(),
@@ -1003,6 +1437,12 @@ export const InputPollOptionSchema = obj({
   media: InputPollOptionMediaSchema.optional(),
 });
 export type InputPollOption = z.infer<typeof InputPollOptionSchema>;
+
+export const SentWebAppMessageSchema = obj({
+  inline_message_id: z.string().optional(),
+});
+
+export type SentWebAppMessage = z.infer<typeof SentWebAppMessageSchema>;
 
 export const SentGuestMessageSchema = obj({
   inline_message_id: z.string(),

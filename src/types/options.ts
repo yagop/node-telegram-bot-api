@@ -10,6 +10,7 @@
 import type {
   ChatId,
   InlineKeyboardMarkup,
+  InlineQueryResultsButton,
   LinkPreviewOptions,
   MessageEntity,
   ParseMode,
@@ -508,6 +509,18 @@ export interface GetChatAdministratorsOptions {
   [key: string]: unknown;
 }
 
+export interface CreateForumTopicOptions {
+  icon_color?: number;
+  icon_custom_emoji_id?: string;
+  [key: string]: unknown;
+}
+
+export interface EditForumTopicOptions {
+  name?: string;
+  icon_custom_emoji_id?: string;
+  [key: string]: unknown;
+}
+
 export interface AnswerCallbackQueryOptions {
   text?: string;
   show_alert?: boolean;
@@ -520,7 +533,62 @@ export interface AnswerInlineQueryOptions {
   cache_time?: number;
   is_personal?: boolean;
   next_offset?: string;
-  button?: { text: string; web_app?: { url: string }; start_parameter?: string };
+  button?: InlineQueryResultsButton;
+  [key: string]: unknown;
+}
+
+export interface SetManagedBotAccessSettingsOptions {
+  added_user_ids?: number[];
+  [key: string]: unknown;
+}
+
+export interface SetMyCommandsOptions {
+  scope?: Record<string, unknown>;
+  language_code?: string;
+  [key: string]: unknown;
+}
+
+export interface DeleteMyCommandsOptions {
+  scope?: Record<string, unknown>;
+  language_code?: string;
+  [key: string]: unknown;
+}
+
+export interface GetMyCommandsOptions {
+  scope?: Record<string, unknown>;
+  language_code?: string;
+  [key: string]: unknown;
+}
+
+export interface SetMyNameOptions {
+  name?: string;
+  [key: string]: unknown;
+}
+
+export interface GetMyNameOptions {
+  language_code?: string;
+  [key: string]: unknown;
+}
+
+export interface SetMyDescriptionOptions {
+  description?: string;
+  language_code?: string;
+  [key: string]: unknown;
+}
+
+export interface GetMyDescriptionOptions {
+  language_code?: string;
+  [key: string]: unknown;
+}
+
+export interface SetMyShortDescriptionOptions {
+  short_description?: string;
+  language_code?: string;
+  [key: string]: unknown;
+}
+
+export interface GetMyShortDescriptionOptions {
+  language_code?: string;
   [key: string]: unknown;
 }
 
