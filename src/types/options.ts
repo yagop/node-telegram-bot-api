@@ -12,6 +12,7 @@ import type {
   InlineKeyboardMarkup,
   InlineQueryResultsButton,
   LinkPreviewOptions,
+  MenuButton,
   MessageEntity,
   ParseMode,
   ReplyKeyboardMarkup,
@@ -589,6 +590,12 @@ export interface SetMyShortDescriptionOptions {
 
 export interface GetMyShortDescriptionOptions {
   language_code?: string;
+  [key: string]: unknown;
+}
+
+export interface SetChatMenuButtonOptions {
+  chat_id?: ChatId;
+  menu_button?: MenuButton;
   [key: string]: unknown;
 }
 

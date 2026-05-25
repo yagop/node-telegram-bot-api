@@ -1291,6 +1291,41 @@ export const InputProfilePhotoSchema = z.discriminatedUnion("type", [
 ]);
 export type InputProfilePhoto = z.infer<typeof InputProfilePhotoSchema>;
 
+/**
+ * Builder type for setMyProfilePhoto / setBusinessAccountProfilePhoto.
+ * Accepts file data (Buffer, Stream, or path) in the photo/animation field
+ * instead of the wire-format `attach://<name>` string. The library builds
+ * the InputProfilePhoto struct and attaches the file automatically.
+ */
+export type InputProfilePhotoInput =
+  | { type: "static"; photo: string | Buffer | NodeJS.ReadableStream; [key: string]: unknown }
+  | { type: "animated"; animation: string | Buffer | NodeJS.ReadableStream; main_frame_timestamp?: number; [key: string]: unknown };
+
+// ---------------------------------------------------------------------------
+// MenuButton
+// ---------------------------------------------------------------------------
+
+export const MenuButtonCommandsSchema = obj({
+  type: z.literal("commands"),
+});
+
+export const MenuButtonWebAppSchema = obj({
+  type: z.literal("web_app"),
+  text: z.string(),
+  web_app: WebAppInfoSchema,
+});
+
+export const MenuButtonDefaultSchema = obj({
+  type: z.literal("default"),
+});
+
+export const MenuButtonSchema = z.discriminatedUnion("type", [
+  MenuButtonCommandsSchema,
+  MenuButtonWebAppSchema,
+  MenuButtonDefaultSchema,
+]);
+export type MenuButton = z.infer<typeof MenuButtonSchema>;
+
 // ---------------------------------------------------------------------------
 // Input media types
 // ---------------------------------------------------------------------------

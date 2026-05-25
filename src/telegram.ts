@@ -30,7 +30,8 @@ import {
   type Poll,
   type BotCommand,
   type ChatJoinRequest,
-  type InputProfilePhoto,
+  type InputProfilePhotoInput,
+  type MenuButton,
   type SentGuestMessage,
   type SentWebAppMessage,
   type BotAccessSettings,
@@ -111,6 +112,7 @@ import type {
   GetMyDescriptionOptions,
   SetMyShortDescriptionOptions,
   GetMyShortDescriptionOptions,
+  SetChatMenuButtonOptions,
 } from "./types/options.js";
 
 import * as errors from "./errors.js";
@@ -1366,7 +1368,7 @@ export class TelegramBot extends EventEmitter {
   }
 
   async setMyProfilePhoto(
-    photo: InputProfilePhoto,
+    photo: InputProfilePhotoInput,
     form: {} = {},
   ): Promise<boolean> {
     const fieldName = photo.type === "static" ? "photo" : "animation";
@@ -1385,14 +1387,21 @@ export class TelegramBot extends EventEmitter {
   removeMyProfilePhoto(form: {} = {}): Promise<boolean> {
     return this._form("removeMyProfilePhoto", form);
   }
+
   setChatMenuButton(
-    form: { chat_id?: number; menu_button?: Record<string, unknown> } = {},
+    form: SetChatMenuButtonOptions = {},
   ): Promise<boolean> {
+    if (form.menu_button) {
+      const serialized = stringify(form.menu_button);
+      return this._form("setChatMenuButton", { ...form, menu_button: serialized });
+    }
     return this._form("setChatMenuButton", form);
   }
-  getChatMenuButton(form: { chat_id?: number } = {}): Promise<unknown> {
+
+  getChatMenuButton(form: { chat_id?: number } = {}): Promise<MenuButton> {
     return this._form("getChatMenuButton", form);
   }
+
   setMyDefaultAdministratorRights(
     form: { rights?: Record<string, unknown>; for_channels?: boolean } = {},
   ): Promise<boolean> {
@@ -1938,7 +1947,7 @@ export class TelegramBot extends EventEmitter {
   }
   async setBusinessAccountProfilePhoto(
     businessConnectionId: string,
-    photo: InputProfilePhoto,
+    photo: InputProfilePhotoInput,
     form: { is_public?: boolean } & Record<string, unknown> = {},
   ): Promise<boolean> {
     const fieldName = photo.type === "static" ? "photo" : "animation";
