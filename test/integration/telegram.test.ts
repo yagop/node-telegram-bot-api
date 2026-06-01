@@ -8,7 +8,7 @@
  *
  * Optional:
  *   - TEST_STICKER_SET_NAME — a known public sticker set name (defaults to "pusheen").
- *   - TEST_CUSTOM_EMOJI_ID  — a custom emoji id (skips the test if unset).
+ *   - TEST_CUSTOM_EMOJI_ID  — a custom emoji id for getCustomEmojiStickers() (has a default).
  *
  * The suite hits api.telegram.org directly. Tests that would mutate
  * irreversible bot configuration (logOut, close, deleteWebHook, setMyName,
@@ -54,7 +54,7 @@ const TOKEN = process.env.NODE_TELEGRAM_TOKEN ?? process.env.TEST_TELEGRAM_TOKEN
 const GROUP_ID_RAW = process.env.TEST_GROUP_ID;
 const USER_ID_RAW = process.env.TEST_USER_ID;
 const STICKER_SET_NAME = process.env.TEST_STICKER_SET_NAME ?? "pusheen";
-const CUSTOM_EMOJI_ID = process.env.TEST_CUSTOM_EMOJI_ID;
+const CUSTOM_EMOJI_ID = process.env.TEST_CUSTOM_EMOJI_ID ?? "5368324170671202286";
 
 if (!TOKEN) {
   throw new Error(
@@ -99,8 +99,11 @@ describe("Telegram Bot API (integration)", () => {
   // Send one photo up front; we reuse its file_id across tests that need
   // a Telegram-hosted file (sendPhoto from id, getFile, getFileLink, ...).
   let photoFileId: string;
+  // The bot's own id, used to address reactions it added by user_id.
+  let botUserId: number;
 
   before(async () => {
+    botUserId = (await bot.getMe()).id;
     const sent = await bot.sendPhoto(GROUP_ID, PHOTO_PATH);
     if (!sent.photo || sent.photo.length === 0) {
       throw new Error("expected sendPhoto to return a non-empty photo array");
@@ -501,34 +504,24 @@ describe("Telegram Bot API (integration)", () => {
       assert.equal(ok, true);
     });
 
-    it("deleteMessageReaction() removes the bot's reaction", async (t) => {
+    it("deleteMessageReaction() removes the bot's reaction", async () => {
       const sent = await bot.sendMessage(GROUP_ID, "react-then-undo");
       await bot.setMessageReaction(GROUP_ID, sent.message_id, {
         reaction: [{ type: "emoji", emoji: "👍" }],
       });
-      try {
-        const ok = await bot.deleteMessageReaction(GROUP_ID, sent.message_id);
-        assert.equal(ok, true);
-      } catch (err: unknown) {
-        const code = (err as { code?: string }).code;
-        if (code !== "ETELEGRAM") throw err;
-        softSkip(t, "deleteMessageReaction not available in this chat / API version");
-      }
+      // The bot's own reaction is a user reaction, so it must be addressed by
+      // user_id. Requires the bot to hold the can_delete_messages admin right.
+      const ok = await bot.deleteMessageReaction(GROUP_ID, sent.message_id, { user_id: botUserId });
+      assert.equal(ok, true);
     });
 
-    it("deleteAllMessageReactions() clears chat-wide reactions added by the bot", async (t) => {
+    it("deleteAllMessageReactions() clears chat-wide reactions added by the bot", async () => {
       const sent = await bot.sendMessage(GROUP_ID, "clear-all-reactions");
       await bot.setMessageReaction(GROUP_ID, sent.message_id, {
         reaction: [{ type: "emoji", emoji: "🔥" }],
       });
-      try {
-        const ok = await bot.deleteAllMessageReactions(GROUP_ID);
-        assert.equal(ok, true);
-      } catch (err: unknown) {
-        const code = (err as { code?: string }).code;
-        if (code !== "ETELEGRAM") throw err;
-        softSkip(t, "deleteAllMessageReactions requires can_delete_messages admin rights");
-      }
+      const ok = await bot.deleteAllMessageReactions(GROUP_ID, { user_id: botUserId });
+      assert.equal(ok, true);
     });
 
     it("stopPoll() stops a previously-sent poll (skipped if chat disallows polls)", async (t) => {
@@ -675,11 +668,7 @@ describe("Telegram Bot API (integration)", () => {
       assert.ok(set.stickers.length > 0);
     });
 
-    it("getCustomEmojiStickers() returns an Array", async (t) => {
-      if (!CUSTOM_EMOJI_ID) {
-        softSkip(t, "TEST_CUSTOM_EMOJI_ID not provided");
-        return;
-      }
+    it("getCustomEmojiStickers() returns an Array", async () => {
       const stickers = await bot.getCustomEmojiStickers([CUSTOM_EMOJI_ID]);
       assert.ok(Array.isArray(stickers));
     });
