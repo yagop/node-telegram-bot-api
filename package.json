@@ -32,7 +32,7 @@
     "build": "tsc -p tsconfig.build.json",
     "typecheck": "tsc --noEmit",
     "test:node:unit": "node test/run-unit.mjs",
-    "test:node:integration": "node --test --test-reporter=spec --import tsx test/integration/telegram.test.ts",
+    "test:node:integration": "node test/run-integration.mjs",
     "test:bun:unit": "bun test test/unit",
     "test:bun:integration": "bun test --timeout 120000 test/integration"
   },
