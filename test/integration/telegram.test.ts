@@ -16,9 +16,10 @@
  *   - TEST_STICKER_SET_NAME — a known public sticker set name (defaults to "pusheen").
  *   - TEST_CUSTOM_EMOJI_ID  — a custom emoji id for getCustomEmojiStickers() (has a default).
  *
- * The suite hits api.telegram.org directly. Tests that would mutate
- * irreversible bot configuration (logOut, close, deleteWebHook) are
- * deliberately skipped.
+ * The suite hits api.telegram.org directly. Methods that would mutate
+ * irreversible bot configuration (logOut, close, deleteWebHook) are not
+ * exercised here. Every test that does run makes a real assertion — there
+ * are no skipped or tolerated cases.
  */
 
 import { after, afterEach, before, describe, it } from "node:test";
@@ -39,6 +40,7 @@ import {
   MessageIdSchema,
   PollSchema,
   StickerSetSchema,
+  TelegramError,
   UserProfilePhotosSchema,
   UserSchema,
   WebhookInfoSchema,
@@ -88,24 +90,6 @@ function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-/**
- * Portable test-skip helper. Bun's node:test shim does not yet implement
- * `t.skip()` and throws `NotImplementedError`; on Bun the test simply
- * passes with no assertions, which is acceptable for our soft-skips.
- */
-function softSkip(t: { skip: (reason?: string) => void }, reason: string): void {
-  try {
-    t.skip(reason);
-  } catch {
-    // Bun: skip() is not implemented — let the test pass quietly.
-  }
-}
-
-/** True for an `ETELEGRAM` API rejection — used to tolerate chat-specific refusals. */
-function isTelegramError(err: unknown): err is { code: string; message: string } {
-  return typeof err === "object" && err !== null && (err as { code?: string }).code === "ETELEGRAM";
-}
-
 describe("Telegram Bot API (integration)", () => {
   const bot = new TelegramBot(TOKEN, { request: { timeoutMs: 60_000 } });
 
@@ -133,10 +117,10 @@ describe("Telegram Bot API (integration)", () => {
 
   after(async () => {
     for (const link of createdLinks) {
-      await bot.revokeChatInviteLink(GROUP_ID, link).catch(() => undefined);
+      await bot.revokeChatInviteLink(GROUP_ID, link);
       await sleep(1100);
     }
-    await bot.stopPolling().catch(() => undefined);
+    await bot.stopPolling();
   });
 
   // --- Bot identity ------------------------------------------------------
@@ -272,18 +256,13 @@ describe("Telegram Bot API (integration)", () => {
   });
 
   describe("sendPoll", () => {
-    it("returns a Message with a Poll (skipped if chat disallows polls)", async (t) => {
-      try {
-        const sent = await bot.sendPoll(GROUP_ID, "Choose:", [{ text: "A" }, { text: "B" }, { text: "C" }], {
-          is_anonymous: true,
-        });
-        MessageSchema.parse(sent);
-        assert.ok(sent.poll);
-        PollSchema.parse(sent.poll);
-      } catch (err: unknown) {
-        if (!isTelegramError(err)) throw err;
-        softSkip(t, "chat does not permit polls");
-      }
+    it("returns a Message with a Poll", async () => {
+      const sent = await bot.sendPoll(GROUP_ID, "Choose:", [{ text: "A" }, { text: "B" }, { text: "C" }], {
+        is_anonymous: true,
+      });
+      MessageSchema.parse(sent);
+      assert.ok(sent.poll);
+      PollSchema.parse(sent.poll);
     });
   });
 
@@ -375,15 +354,10 @@ describe("Telegram Bot API (integration)", () => {
   });
 
   describe("sendAnimation", () => {
-    it("from a filesystem path (gif)", async (t) => {
-      try {
-        const sent = await bot.sendAnimation(GROUP_ID, PHOTO_GIF_PATH);
-        MessageSchema.parse(sent);
-        assert.ok(sent.animation || sent.document);
-      } catch (err: unknown) {
-        if (!isTelegramError(err)) throw err;
-        softSkip(t, "chat does not permit GIFs/animations");
-      }
+    it("from a filesystem path (gif)", async () => {
+      const sent = await bot.sendAnimation(GROUP_ID, PHOTO_GIF_PATH);
+      MessageSchema.parse(sent);
+      assert.ok(sent.animation || sent.document);
     });
   });
 
@@ -396,16 +370,9 @@ describe("Telegram Bot API (integration)", () => {
   });
 
   describe("sendVideoNote", () => {
-    it("from a Buffer (skipped if Telegram rejects the format)", async (t) => {
+    it("from a Buffer", async () => {
       const buf = fs.readFileSync(VIDEO_PATH);
-      let sent;
-      try {
-        sent = await bot.sendVideoNote(GROUP_ID, buf, {}, { filename: "video.mp4" });
-      } catch (err: unknown) {
-        if (!isTelegramError(err)) throw err;
-        softSkip(t, "video_note rejected by Telegram (must be a square video)");
-        return;
-      }
+      const sent = await bot.sendVideoNote(GROUP_ID, buf, {}, { filename: "video.mp4" });
       MessageSchema.parse(sent);
       // Telegram occasionally classifies non-square clips as plain video.
       // Either branch demonstrates the round-trip succeeded.
@@ -414,15 +381,10 @@ describe("Telegram Bot API (integration)", () => {
   });
 
   describe("sendSticker", () => {
-    it("from a filesystem path", async (t) => {
-      try {
-        const sent = await bot.sendSticker(GROUP_ID, STICKER_PATH);
-        MessageSchema.parse(sent);
-        assert.ok(sent.sticker);
-      } catch (err: unknown) {
-        if (!isTelegramError(err)) throw err;
-        softSkip(t, "chat does not permit stickers");
-      }
+    it("from a filesystem path", async () => {
+      const sent = await bot.sendSticker(GROUP_ID, STICKER_PATH);
+      MessageSchema.parse(sent);
+      assert.ok(sent.sticker);
     });
   });
 
@@ -458,12 +420,9 @@ describe("Telegram Bot API (integration)", () => {
   describe("downloadFile", () => {
     it("writes the file under the destination directory", async () => {
       const dir = fs.mkdtempSync(path.join(os.tmpdir(), "tg-int-"));
-      try {
-        const filePath = await bot.downloadFile(photoFileId, dir);
-        assert.ok(fs.statSync(filePath).size > 0);
-      } finally {
-        fs.rmSync(dir, { recursive: true, force: true });
-      }
+      const filePath = await bot.downloadFile(photoFileId, dir);
+      assert.ok(fs.statSync(filePath).size > 0);
+      fs.rmSync(dir, { recursive: true, force: true });
     });
   });
 
@@ -506,19 +465,12 @@ describe("Telegram Bot API (integration)", () => {
   });
 
   describe("forwardMessages", () => {
-    it("forwards an array of message_ids (with disable_notification)", async (t) => {
+    it("forwards an array of message_ids (with disable_notification)", async () => {
       const a = (await bot.sendMessage(GROUP_ID, "fwd-1")).message_id;
       const b = (await bot.sendMessage(GROUP_ID, "fwd-2")).message_id;
-      let results;
-      try {
-        results = await bot.forwardMessages(GROUP_ID, GROUP_ID, [a, b], {
-          disable_notification: true,
-        });
-      } catch (err) {
-        if (!isTelegramError(err)) throw err;
-        softSkip(t, `forwardMessages rejected: ${err.message}`);
-        return;
-      }
+      const results = await bot.forwardMessages(GROUP_ID, GROUP_ID, [a, b], {
+        disable_notification: true,
+      });
       assert.ok(Array.isArray(results));
       assert.equal(results.length, 2);
       for (const r of results) {
@@ -553,19 +505,12 @@ describe("Telegram Bot API (integration)", () => {
   });
 
   describe("copyMessages", () => {
-    it("copies an array of message_ids (with disable_notification)", async (t) => {
+    it("copies an array of message_ids (with disable_notification)", async () => {
       const a = (await bot.sendMessage(GROUP_ID, "cpy-1")).message_id;
       const b = (await bot.sendMessage(GROUP_ID, "cpy-2")).message_id;
-      let results;
-      try {
-        results = await bot.copyMessages(GROUP_ID, GROUP_ID, [a, b], {
-          disable_notification: true,
-        });
-      } catch (err) {
-        if (!isTelegramError(err)) throw err;
-        softSkip(t, `copyMessages rejected: ${err.message}`);
-        return;
-      }
+      const results = await bot.copyMessages(GROUP_ID, GROUP_ID, [a, b], {
+        disable_notification: true,
+      });
       assert.ok(Array.isArray(results));
       assert.equal(results.length, 2);
       for (const r of results) {
@@ -698,39 +643,27 @@ describe("Telegram Bot API (integration)", () => {
   });
 
   describe("editMessageLiveLocation", () => {
-    it("edits then stops a live location (tolerates ETELEGRAM)", async (t) => {
-      let sent;
-      try {
-        sent = await bot.sendLocation(GROUP_ID, 47.5351072, -52.7508537, { live_period: 120 });
-      } catch (err) {
-        if (!isTelegramError(err)) throw err;
-        softSkip(t, `live location unsupported in this chat: ${err.message}`);
-        return;
-      }
+    it("edits then stops a live location", async () => {
+      const sent = await bot.sendLocation(GROUP_ID, 47.5351072, -52.7508537, { live_period: 120 });
       MessageSchema.parse(sent);
 
-      try {
-        const moved = await bot.editMessageLiveLocation(48.0, -53.0, {
-          chat_id: GROUP_ID,
-          message_id: sent.message_id,
-          horizontal_accuracy: 10,
-          heading: 90,
-          proximity_alert_radius: 200,
-          reply_markup: { inline_keyboard: [[{ text: "where", callback_data: "where" }]] },
-        });
-        assert.ok(moved !== true);
-        const movedMsg = MessageSchema.parse(moved);
-        assert.ok(movedMsg.location);
+      const moved = await bot.editMessageLiveLocation(48.0, -53.0, {
+        chat_id: GROUP_ID,
+        message_id: sent.message_id,
+        horizontal_accuracy: 10,
+        heading: 90,
+        proximity_alert_radius: 200,
+        reply_markup: { inline_keyboard: [[{ text: "where", callback_data: "where" }]] },
+      });
+      assert.ok(moved !== true);
+      const movedMsg = MessageSchema.parse(moved);
+      assert.ok(movedMsg.location);
 
-        const stopped = await bot.stopMessageLiveLocation({
-          chat_id: GROUP_ID,
-          message_id: sent.message_id,
-        });
-        assert.ok(stopped === true || typeof stopped === "object");
-      } catch (err) {
-        if (!isTelegramError(err)) throw err;
-        softSkip(t, `editing/stopping live location refused: ${err.message}`);
-      }
+      const stopped = await bot.stopMessageLiveLocation({
+        chat_id: GROUP_ID,
+        message_id: sent.message_id,
+      });
+      assert.ok(stopped === true || typeof stopped === "object");
     });
   });
 
@@ -788,26 +721,10 @@ describe("Telegram Bot API (integration)", () => {
   });
 
   describe("stopPoll", () => {
-    it("stops a previously-sent poll (skipped if chat disallows polls)", async (t) => {
-      let sentMessageId: number;
-      try {
-        const sent = await bot.sendPoll(GROUP_ID, "stoppable?", [{ text: "yes" }, { text: "no" }]);
-        sentMessageId = sent.message_id;
-      } catch (err: unknown) {
-        if (!isTelegramError(err)) throw err;
-        softSkip(t, "chat does not permit polls");
-        return;
-      }
-      try {
-        const stopped = await bot.stopPoll(GROUP_ID, sentMessageId);
-        PollSchema.parse(stopped);
-      } catch (err: unknown) {
-        if (!isTelegramError(err)) throw err;
-        // Telegram rejects stopPoll on polls the bot didn't create or that
-        // are otherwise un-stoppable in this chat. The roundtrip above
-        // already proved the wire format works.
-        softSkip(t, "poll could not be stopped by the bot in this chat");
-      }
+    it("stops a previously-sent poll", async () => {
+      const sent = await bot.sendPoll(GROUP_ID, "stoppable?", [{ text: "yes" }, { text: "no" }]);
+      const stopped = await bot.stopPoll(GROUP_ID, sent.message_id);
+      PollSchema.parse(stopped);
     });
   });
 
@@ -829,34 +746,21 @@ describe("Telegram Bot API (integration)", () => {
   });
 
   describe("getChatAdministrators", () => {
-    it("returns an Array (empty in private chats)", async () => {
-      try {
-        const admins = await bot.getChatAdministrators(GROUP_ID);
-        assert.ok(Array.isArray(admins));
-      } catch (err: unknown) {
-        // Available only for groups/supergroups — soft pass in a private chat.
-        if (!isTelegramError(err)) throw err;
-      }
+    it("returns an Array", async () => {
+      const admins = await bot.getChatAdministrators(GROUP_ID);
+      assert.ok(Array.isArray(admins));
     });
 
     it("accepts the return_bots:true option and returns an Array", async () => {
-      try {
-        const admins = await bot.getChatAdministrators(GROUP_ID, { return_bots: true });
-        assert.ok(Array.isArray(admins));
-      } catch (err: unknown) {
-        if (!isTelegramError(err)) throw err;
-      }
+      const admins = await bot.getChatAdministrators(GROUP_ID, { return_bots: true });
+      assert.ok(Array.isArray(admins));
     });
   });
 
   describe("getChatMemberCount", () => {
-    it("returns an Integer (or rejects on private chats)", async () => {
-      try {
-        const count = await bot.getChatMemberCount(GROUP_ID);
-        assert.equal(typeof count, "number");
-      } catch (err: unknown) {
-        if (!isTelegramError(err)) throw err;
-      }
+    it("returns an Integer", async () => {
+      const count = await bot.getChatMemberCount(GROUP_ID);
+      assert.equal(typeof count, "number");
     });
   });
 
@@ -878,15 +782,10 @@ describe("Telegram Bot API (integration)", () => {
   });
 
   describe("getUserChatBoosts", () => {
-    it("returns boosts or is refused by a non-boost chat", async () => {
-      try {
-        const boosts = await bot.getUserChatBoosts(GROUP_ID, USER_ID);
-        assert.ok(boosts);
-        assert.ok(Array.isArray(boosts.boosts));
-      } catch (err: unknown) {
-        // Many chats do not support boosts (e.g. basic groups) — tolerate.
-        if (!isTelegramError(err)) throw err;
-      }
+    it("returns a UserChatBoosts object with a boosts array", async () => {
+      const boosts = await bot.getUserChatBoosts(GROUP_ID, USER_ID);
+      assert.ok(boosts);
+      assert.ok(Array.isArray(boosts.boosts));
     });
   });
 
@@ -901,23 +800,17 @@ describe("Telegram Bot API (integration)", () => {
 
     after(async () => {
       if (original) {
-        await bot.setChatTitle(GROUP_ID, original).catch((err) => {
-          if (!isTelegramError(err)) throw err;
-        });
+        await bot.setChatTitle(GROUP_ID, original);
       }
     });
 
     it("sets a unique title and getChat reflects it", async () => {
       const newTitle = `ntba-test ${TIMESTAMP}`;
-      try {
-        const ok = await bot.setChatTitle(GROUP_ID, newTitle);
-        assert.equal(ok, true);
-        await sleep(1100);
-        const chat = await bot.getChat(GROUP_ID);
-        assert.equal(chat.title, newTitle);
-      } catch (err) {
-        if (!isTelegramError(err)) throw err;
-      }
+      const ok = await bot.setChatTitle(GROUP_ID, newTitle);
+      assert.equal(ok, true);
+      await sleep(1100);
+      const chat = await bot.getChat(GROUP_ID);
+      assert.equal(chat.title, newTitle);
     });
   });
 
@@ -929,22 +822,17 @@ describe("Telegram Bot API (integration)", () => {
     });
 
     after(async () => {
-      await bot.setChatDescription(GROUP_ID, original).catch((err) => {
-        if (!isTelegramError(err)) throw err;
-      });
+      const ok = await bot.setChatDescription(GROUP_ID, original);
+      assert.equal(ok, true);
     });
 
     it("sets a description and getChat reflects it", async () => {
       const newDescription = `ntba integration test description ${TIMESTAMP}`;
-      try {
-        const ok = await bot.setChatDescription(GROUP_ID, newDescription);
-        assert.equal(ok, true);
-        await sleep(1100);
-        const chat = await bot.getChat(GROUP_ID);
-        assert.equal(chat.description, newDescription);
-      } catch (err) {
-        if (!isTelegramError(err)) throw err;
-      }
+      const ok = await bot.setChatDescription(GROUP_ID, newDescription);
+      assert.equal(ok, true);
+      await sleep(1100);
+      const chat = await bot.getChat(GROUP_ID);
+      assert.equal(chat.description, newDescription);
     });
   });
 
@@ -957,9 +845,7 @@ describe("Telegram Bot API (integration)", () => {
 
     after(async () => {
       if (original) {
-        await bot.setChatPermissions(GROUP_ID, original).catch((err) => {
-          if (!isTelegramError(err)) throw err;
-        });
+        await bot.setChatPermissions(GROUP_ID, original);
       }
     });
 
@@ -970,18 +856,14 @@ describe("Telegram Bot API (integration)", () => {
         can_send_polls: false,
         can_add_web_page_previews: false,
       };
-      try {
-        const ok = await bot.setChatPermissions(GROUP_ID, modified);
-        assert.equal(ok, true);
-        await sleep(1100);
-        const chat = await bot.getChat(GROUP_ID);
-        if (chat.permissions) {
-          const parsed = ChatPermissionsSchema.parse(chat.permissions);
-          assert.equal(parsed.can_send_polls, false);
-          assert.equal(parsed.can_add_web_page_previews, false);
-        }
-      } catch (err) {
-        if (!isTelegramError(err)) throw err;
+      const ok = await bot.setChatPermissions(GROUP_ID, modified);
+      assert.equal(ok, true);
+      await sleep(1100);
+      const chat = await bot.getChat(GROUP_ID);
+      if (chat.permissions) {
+        const parsed = ChatPermissionsSchema.parse(chat.permissions);
+        assert.equal(parsed.can_send_polls, false);
+        assert.equal(parsed.can_add_web_page_previews, false);
       }
     });
   });
@@ -991,181 +873,117 @@ describe("Telegram Bot API (integration)", () => {
       const sent = await bot.sendMessage(GROUP_ID, `pin me ${TIMESTAMP}`);
       assert.equal(typeof sent.message_id, "number");
       await sleep(1100);
-      try {
-        const pinned = await bot.pinChatMessage(GROUP_ID, sent.message_id, {
-          disable_notification: true,
-        });
-        assert.equal(pinned, true);
-        await sleep(1100);
-        const unpinned = await bot.unpinChatMessage(GROUP_ID, { message_id: sent.message_id });
-        assert.equal(unpinned, true);
-      } catch (err) {
-        if (!isTelegramError(err)) throw err;
-      }
+      const pinned = await bot.pinChatMessage(GROUP_ID, sent.message_id, {
+        disable_notification: true,
+      });
+      assert.equal(pinned, true);
+      await sleep(1100);
+      const unpinned = await bot.unpinChatMessage(GROUP_ID, { message_id: sent.message_id });
+      assert.equal(unpinned, true);
     });
   });
 
   describe("unpinAllChatMessages", () => {
     it("returns true", async () => {
-      try {
-        const ok = await bot.unpinAllChatMessages(GROUP_ID);
-        assert.equal(ok, true);
-      } catch (err) {
-        if (!isTelegramError(err)) throw err;
-      }
-    });
-  });
-
-  describe("deleteChatPhoto", () => {
-    it("returns true (tolerated when the chat has no photo)", async () => {
-      try {
-        const ok = await bot.deleteChatPhoto(GROUP_ID);
-        assert.equal(ok, true);
-      } catch (err) {
-        // CHAT_NOT_MODIFIED / no photo set / not allowed → ETELEGRAM is fine.
-        if (!isTelegramError(err)) throw err;
-      }
+      const ok = await bot.unpinAllChatMessages(GROUP_ID);
+      assert.equal(ok, true);
     });
   });
 
   describe("setChatPhoto", () => {
-    it("is skipped — replacing the group avatar is irreversible", (t) => {
-      // setChatPhoto replaces the group's avatar and there is no API to read
-      // back the original image bytes, so the change cannot be cleanly reverted
-      // to the prior photo. Per the suite's policy of never performing
-      // irreversible mutations, this method is left to unit tests.
-      softSkip(t, "setChatPhoto is irreversible — original photo bytes can't be restored");
+    it("sets the chat photo from a filesystem path", async () => {
+      const ok = await bot.setChatPhoto(GROUP_ID, PHOTO_PATH);
+      assert.equal(ok, true);
+      // Leave the chat as found — the group has no avatar outside this test.
+      await sleep(1100);
+      await bot.deleteChatPhoto(GROUP_ID);
     });
   });
 
-  // --- Member moderation (tolerate, never harm a real user) -------------
+  describe("deleteChatPhoto", () => {
+    it("removes a chat photo that was just set", async () => {
+      await bot.setChatPhoto(GROUP_ID, PHOTO_PATH);
+      await sleep(1100);
+      const ok = await bot.deleteChatPhoto(GROUP_ID);
+      assert.equal(ok, true);
+    });
+  });
+
+  // --- Member moderation (assert refusal, never harm a real user) -------
   //
-  // Every method below acts on USER_ID, a REAL user and very likely the chat
-  // owner. Telegram REFUSES to ban/restrict/promote the owner (and the bot
-  // lacks can_promote_members), surfacing an ETELEGRAM error — which is the
-  // EXPECTED, asserted-as-tolerated outcome. On the off chance a call succeeds,
-  // the mutation is reversed immediately so no real member is left moderated.
+  // Every method below acts on USER_ID, a REAL user and the chat owner.
+  // Telegram structurally REFUSES to ban/restrict/promote the chat owner (and
+  // the bot lacks can_promote_members), so each call rejects with a
+  // TelegramError. Asserting the rejection both covers the wire format and
+  // guarantees no real member is ever moderated.
 
   describe("promoteChatMember", () => {
-    it("bot lacks can_promote_members → ETELEGRAM (tolerated)", async (t) => {
-      try {
-        const result = await bot.promoteChatMember(GROUP_ID, USER_ID, {
+    it("is refused — the bot lacks can_promote_members", async () => {
+      await assert.rejects(
+        bot.promoteChatMember(GROUP_ID, USER_ID, {
           can_change_info: true,
           can_pin_messages: true,
-        });
-        assert.equal(typeof result, "boolean");
-        // Extremely unlikely. If it somehow succeeds, clear the rights we set.
-        await bot
-          .promoteChatMember(GROUP_ID, USER_ID, { can_change_info: false, can_pin_messages: false })
-          .catch(() => undefined);
-        softSkip(t, "promoteChatMember unexpectedly succeeded; rights cleared again.");
-      } catch (err) {
-        if (!isTelegramError(err)) throw err;
-      }
+        }),
+        TelegramError,
+      );
     });
   });
 
   describe("restrictChatMember", () => {
-    it("ChatPermissions + until_date → ETELEGRAM for owner (tolerated)", async (t) => {
+    it("is refused for the chat owner (ChatPermissions + until_date)", async () => {
       const restrictedPermissions: ChatPermissions = {
         can_send_messages: false,
         can_send_polls: false,
         can_send_other_messages: false,
         can_add_web_page_previews: false,
       };
-      /** Permissions that fully un-restrict a member — used to reverse any restriction. */
-      const FULL_PERMISSIONS: ChatPermissions = {
-        can_send_messages: true,
-        can_send_audios: true,
-        can_send_documents: true,
-        can_send_photos: true,
-        can_send_videos: true,
-        can_send_video_notes: true,
-        can_send_voice_notes: true,
-        can_send_polls: true,
-        can_send_other_messages: true,
-        can_add_web_page_previews: true,
-        can_change_info: true,
-        can_invite_users: true,
-        can_pin_messages: true,
-      };
       // until_date < 30s or > 366d is treated by Telegram as "forever"; use ~60s.
       const untilDate = Math.floor(Date.now() / 1000) + 60;
-      try {
-        const result = await bot.restrictChatMember(GROUP_ID, USER_ID, restrictedPermissions, {
+      await assert.rejects(
+        bot.restrictChatMember(GROUP_ID, USER_ID, restrictedPermissions, {
           until_date: untilDate,
           use_independent_chat_permissions: true,
-        });
-        assert.equal(typeof result, "boolean");
-        // Restriction unexpectedly applied to a real member — restore immediately.
-        await bot.restrictChatMember(GROUP_ID, USER_ID, FULL_PERMISSIONS).catch(() => undefined);
-        softSkip(t, "restrictChatMember unexpectedly succeeded; full permissions restored.");
-      } catch (err) {
-        if (!isTelegramError(err)) throw err;
-      }
+        }),
+        TelegramError,
+      );
     });
   });
 
   describe("banChatMember", () => {
-    it("ban (until_date / revoke_messages) then unbanChatMember → ETELEGRAM for owner (tolerated)", async (t) => {
+    it("is refused for the chat owner (until_date / revoke_messages)", async () => {
       const untilDate = Math.floor(Date.now() / 1000) + 60;
-      try {
-        const banned = await bot.banChatMember(GROUP_ID, USER_ID, {
+      await assert.rejects(
+        bot.banChatMember(GROUP_ID, USER_ID, {
           until_date: untilDate,
           revoke_messages: false,
-        });
-        assert.equal(typeof banned, "boolean");
-        // A real member was banned — undo it right away.
-        const unbanned = await bot.unbanChatMember(GROUP_ID, USER_ID, { only_if_banned: true });
-        assert.equal(typeof unbanned, "boolean");
-        softSkip(t, "banChatMember unexpectedly succeeded; member unbanned again.");
-      } catch (err) {
-        if (!isTelegramError(err)) throw err;
-      }
+        }),
+        TelegramError,
+      );
     });
   });
 
   describe("banChatSenderChat", () => {
-    it("no real sender chat available → ETELEGRAM (tolerated)", async (t) => {
-      // We have no genuine channel/sender-chat to ban. Try a dummy id and accept
-      // the inevitable ETELEGRAM rejection; on the off chance it works, undo it.
+    it("is refused for a non-existent sender chat", async () => {
+      // We have no genuine channel/sender-chat to ban; a dummy id is rejected.
       const dummySenderChatId = -1_000_000_000_000;
-      try {
-        const banned = await bot.banChatSenderChat(GROUP_ID, dummySenderChatId);
-        assert.equal(typeof banned, "boolean");
-        await bot.unbanChatSenderChat(GROUP_ID, dummySenderChatId).catch(() => undefined);
-        softSkip(t, "banChatSenderChat unexpectedly succeeded with dummy id; reversed.");
-      } catch (err) {
-        if (!isTelegramError(err)) throw err;
-      }
+      await assert.rejects(bot.banChatSenderChat(GROUP_ID, dummySenderChatId), TelegramError);
     });
   });
 
   describe("setChatAdministratorCustomTitle", () => {
-    it("target not promoted by this bot → ETELEGRAM (tolerated)", async (t) => {
-      try {
-        const result = await bot.setChatAdministratorCustomTitle(GROUP_ID, USER_ID, "Test Title");
-        assert.equal(typeof result, "boolean");
-        await bot.setChatAdministratorCustomTitle(GROUP_ID, USER_ID, "").catch(() => undefined);
-        softSkip(t, "setChatAdministratorCustomTitle unexpectedly succeeded; title cleared.");
-      } catch (err) {
-        if (!isTelegramError(err)) throw err;
-      }
+    it("is refused when the target was not promoted by this bot", async () => {
+      await assert.rejects(
+        bot.setChatAdministratorCustomTitle(GROUP_ID, USER_ID, "Test Title"),
+        TelegramError,
+      );
     });
   });
 
   // --- Chat invite links (group/supergroup-only) -----------------------
 
   describe("createChatInviteLink", () => {
-    it("creates, edits and revokes a link (round-trip)", async (t) => {
-      let created: { invite_link: string };
-      try {
-        created = await bot.createChatInviteLink(GROUP_ID, { name: `link-${TIMESTAMP}` });
-      } catch (err: unknown) {
-        if (!isTelegramError(err)) throw err;
-        softSkip(t, "invite link APIs require an admin bot in a group/supergroup/channel");
-        return;
-      }
+    it("creates, edits and revokes a link (round-trip)", async () => {
+      const created = await bot.createChatInviteLink(GROUP_ID, { name: `link-${TIMESTAMP}` });
       ChatInviteLinkSchema.parse(created);
 
       const edited = await bot.editChatInviteLink(GROUP_ID, created.invite_link, {
@@ -1178,22 +996,15 @@ describe("Telegram Bot API (integration)", () => {
       assert.equal(revoked.is_revoked, true);
     });
 
-    it("accepts name + expire_date + member_limit", async (t) => {
+    it("accepts name + expire_date + member_limit", async () => {
       const name = `inv-${TIMESTAMP}-a`;
       const expireDate = Math.floor(Date.now() / 1000) + 3600;
       const memberLimit = 7;
-      let link;
-      try {
-        link = await bot.createChatInviteLink(GROUP_ID, {
-          name,
-          expire_date: expireDate,
-          member_limit: memberLimit,
-        });
-      } catch (err: unknown) {
-        if (!isTelegramError(err)) throw err;
-        softSkip(t, "createChatInviteLink refused by this chat/bot");
-        return;
-      }
+      const link = await bot.createChatInviteLink(GROUP_ID, {
+        name,
+        expire_date: expireDate,
+        member_limit: memberLimit,
+      });
       createdLinks.add(link.invite_link);
       ChatInviteLinkSchema.parse(link);
       assert.equal(typeof link.invite_link, "string");
@@ -1204,16 +1015,9 @@ describe("Telegram Bot API (integration)", () => {
       assert.equal(link.is_revoked, false);
     });
 
-    it("accepts creates_join_request (exclusive of member_limit)", async (t) => {
+    it("accepts creates_join_request (exclusive of member_limit)", async () => {
       const name = `inv-${TIMESTAMP}-b`;
-      let link;
-      try {
-        link = await bot.createChatInviteLink(GROUP_ID, { name, creates_join_request: true });
-      } catch (err: unknown) {
-        if (!isTelegramError(err)) throw err;
-        softSkip(t, "createChatInviteLink (join request) refused by this chat/bot");
-        return;
-      }
+      const link = await bot.createChatInviteLink(GROUP_ID, { name, creates_join_request: true });
       createdLinks.add(link.invite_link);
       ChatInviteLinkSchema.parse(link);
       assert.equal(link.name, name);
@@ -1223,18 +1027,11 @@ describe("Telegram Bot API (integration)", () => {
   });
 
   describe("editChatInviteLink", () => {
-    it("reflects changed name/expire_date/member_limit", async (t) => {
-      let created;
-      try {
-        created = await bot.createChatInviteLink(GROUP_ID, {
-          name: `inv-${TIMESTAMP}-c`,
-          member_limit: 3,
-        });
-      } catch (err: unknown) {
-        if (!isTelegramError(err)) throw err;
-        softSkip(t, "createChatInviteLink refused by this chat/bot");
-        return;
-      }
+    it("reflects changed name/expire_date/member_limit", async () => {
+      const created = await bot.createChatInviteLink(GROUP_ID, {
+        name: `inv-${TIMESTAMP}-c`,
+        member_limit: 3,
+      });
       createdLinks.add(created.invite_link);
       ChatInviteLinkSchema.parse(created);
 
@@ -1255,15 +1052,8 @@ describe("Telegram Bot API (integration)", () => {
   });
 
   describe("exportChatInviteLink", () => {
-    it("returns the primary link url as a string", async (t) => {
-      let url;
-      try {
-        url = await bot.exportChatInviteLink(GROUP_ID);
-      } catch (err: unknown) {
-        if (!isTelegramError(err)) throw err;
-        softSkip(t, "exportChatInviteLink refused by this chat/bot");
-        return;
-      }
+    it("returns the primary link url as a string", async () => {
+      const url = await bot.exportChatInviteLink(GROUP_ID);
       assert.equal(typeof url, "string");
       assert.ok(url.length > 0, "expected a non-empty invite url");
       // The exported (primary) link is regenerated by this call; it is not one
@@ -1272,40 +1062,28 @@ describe("Telegram Bot API (integration)", () => {
   });
 
   describe("createChatSubscriptionInviteLink", () => {
-    it("requires Stars subscriptions (tolerated)", async (t) => {
+    it("is refused when the chat has no Telegram Stars subscriptions", async () => {
       // 30 days, in seconds, is the only currently-allowed subscription period.
       const subscriptionPeriod = 2_592_000;
       const subscriptionPrice = 1; // Telegram Stars
-      let link;
-      try {
-        link = await bot.createChatSubscriptionInviteLink(
-          GROUP_ID,
-          subscriptionPeriod,
-          subscriptionPrice,
-          { name: `sub-${TIMESTAMP}` },
-        );
-      } catch (err: unknown) {
-        if (!isTelegramError(err)) throw err;
-        softSkip(t, "subscription invite links require Telegram Stars subscriptions");
-        return;
-      }
-      createdLinks.add(link.invite_link);
-      ChatInviteLinkSchema.parse(link);
-      assert.equal(typeof link.invite_link, "string");
-      assert.equal(link.subscription_period, subscriptionPeriod);
-      assert.equal(link.subscription_price, subscriptionPrice);
+      await assert.rejects(
+        bot.createChatSubscriptionInviteLink(GROUP_ID, subscriptionPeriod, subscriptionPrice, {
+          name: `sub-${TIMESTAMP}`,
+        }),
+        TelegramError,
+      );
     });
   });
 
   // --- Callback queries -------------------------------------------------
 
   describe("answerCallbackQuery", () => {
-    it("needs a live callback_query id (cannot synthesize)", (t) => {
-      softSkip(
-        t,
-        "answerCallbackQuery requires a real callback_query id produced by a user " +
-          "tapping an inline keyboard button; such an id cannot be synthesized in a " +
-          "non-interactive integration run.",
+    it("is refused for an invalid callback_query id", async () => {
+      // A real callback_query id is produced by a user tapping an inline button
+      // and cannot be synthesized here, so a stale/invalid id is rejected.
+      await assert.rejects(
+        bot.answerCallbackQuery(`invalid-${TIMESTAMP}`, { text: "noop" }),
+        TelegramError,
       );
     });
   });
