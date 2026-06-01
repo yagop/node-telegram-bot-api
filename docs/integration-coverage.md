@@ -5,137 +5,120 @@
 > "Untested" = the method / option key never appears in any `test/integration/*.test.ts` file.
 > Scanned: `telegram.test.ts`.
 
+Each remaining unchecked gap below is annotated with a status explaining why it is not (yet) covered by an integration test, appended after the method/param as `  — **<STATUS>**: <reason>`. The statuses are:
+
+- **DESTRUCTIVE** — exercising the method would irreversibly mutate bot configuration, account state, or shared resources (e.g. logging the bot out, deleting a sticker set, changing the bot's name/photo). Deliberately not run so the suite leaves the bot and chat as found.
+- **SPECIAL-SETUP** — requires inbound state or third-party context that cannot be manufactured from a bot token alone (an incoming inline/web-app/callback/shipping query, an active business connection, a game, a paid/gift/star economy, a story, a configured payment provider). No assertion is possible without that runtime context.
+- **ENV-LIMITED** — testable in principle but needs infrastructure the standard `TEST_GROUP_ID` / `TEST_USER_ID` fixtures do not provide (e.g. a forum-enabled chat, a 100+-member supergroup that owns a sticker set), and no reliable negative-path assertion exists for it. The reason notes what infra would be required.
+- **TESTABLE** — could be covered with the existing fixtures; left as a straightforward follow-up. Untested option params on otherwise-covered methods fall here unless the param itself needs special context (in which case it is tagged accordingly).
+
+
 ## Summary
 
 | Dimension | Covered | Total | % |
 | --- | --- | --- | --- |
-| Bot API methods | 74 | 175 | 42% |
-| Optional/option params (across all methods) | 66 | 419 | 16% |
+| Bot API methods | 104 | 175 | 59% |
+| Optional/option params (across all methods) | 129 | 419 | 31% |
 
-## Methods never called in integration tests (101)
+## Methods never called in integration tests (71)
 
-- [ ] `addStickerToSet(userId, name, sticker, emojis, stickerType, options, fileOptions)`
-- [ ] `answerCallbackQuery(callbackQueryId, {4 opts})`
-- [ ] `answerGuestQuery(guestQueryId, result)`
-- [ ] `answerInlineQuery(inlineQueryId, results, {4 opts})`
-- [ ] `answerPreCheckoutQuery(preCheckoutQueryId, ok, {1 opts})`
-- [ ] `answerShippingQuery(shippingQueryId, ok, {2 opts})`
-- [ ] `answerWebAppQuery(webAppQueryId, result)`
-- [ ] `approveChatJoinRequest(chatId, userId)`
-- [ ] `approveSuggestedPost(chatId, messageId, {1 opts})`
-- [ ] `close()`
-- [ ] `closeForumTopic(chatId, messageThreadId)`
-- [ ] `closeGeneralForumTopic(chatId)`
-- [ ] `convertGiftToStars(businessConnectionId, ownedGiftId)`
-- [ ] `createForumTopic(chatId, name, {2 opts})`
-- [ ] `createInvoiceLink(title, description, payload, providerToken, currency, prices, {16 opts})`
-- [ ] `createNewStickerSet(userId, name, title, pngSticker, emojis, options, fileOptions)`
-- [ ] `declineChatJoinRequest(chatId, userId)`
-- [ ] `declineSuggestedPost(chatId, messageId, {1 opts})`
-- [ ] `deleteBusinessMessages(businessConnectionId, messageIds)`
-- [ ] `deleteChatStickerSet(chatId)`
-- [ ] `deleteForumTopic(chatId, messageThreadId)`
-- [ ] `deleteStickerFromSet(sticker)`
-- [ ] `deleteStickerSet(name)`
-- [ ] `deleteStory(businessConnectionId, storyId)`
-- [ ] `deleteWebHook({1 opts})`
-- [ ] `editChatSubscriptionInviteLink(chatId, inviteLink, {1 opts})`
-- [ ] `editForumTopic(chatId, messageThreadId, {2 opts})`
-- [ ] `editGeneralForumTopic(chatId, name)`
-- [ ] `editMessageChecklist(businessConnectionId, chatId, messageId, checklist, {1 opts})`
-- [ ] `editStory(businessConnectionId, storyId, content, {4 opts})`
-- [ ] `editUserStarSubscription(userId, telegramPaymentChargeId, isCanceled)`
-- [ ] `getAvailableGifts()`
-- [ ] `getBusinessAccountGifts(businessConnectionId, {10 opts})`
-- [ ] `getBusinessAccountStarBalance(businessConnectionId)`
-- [ ] `getBusinessConnection(businessConnectionId)`
-- [ ] `getChatGifts(chatId, {10 opts})`
-- [ ] `getForumTopicIconStickers()`
-- [ ] `getGameHighScores(userId, {3 opts})`
-- [ ] `getManagedBotAccessSettings(userId)`
-- [ ] `getManagedBotToken(userId)`
-- [ ] `getMyStarBalance()`
-- [ ] `getStarTransactions({2 opts})`
-- [ ] `getUserGifts(userId, {8 opts})`
-- [ ] `getUserPersonalChatMessages(userId, limit)`
-- [ ] `getUserProfileAudios(userId, {2 opts})`
-- [ ] `giftPremiumSubscription(userId, monthCount, starCount, {3 opts})`
-- [ ] `hideGeneralForumTopic(chatId)`
-- [ ] `leaveChat(chatId)`
-- [ ] `logOut()`
-- [ ] `postStory(businessConnectionId, content, activePeriod, {6 opts})`
-- [ ] `readBusinessMessage(businessConnectionId, chatId, messageId)`
-- [ ] `refundStarPayment(userId, telegramPaymentChargeId)`
-- [ ] `removeBusinessAccountProfilePhoto(businessConnectionId, {1 opts})`
-- [ ] `removeChatVerification(chatId)`
-- [ ] `removeMyProfilePhoto()`
-- [ ] `removeUserVerification(userId)`
-- [ ] `reopenForumTopic(chatId, messageThreadId)`
-- [ ] `reopenGeneralForumTopic(chatId)`
-- [ ] `replaceManagedBotToken(userId)`
-- [ ] `replaceStickerInSet(userId, name, oldSticker, {1 opts})`
-- [ ] `repostStory(businessConnectionId, fromChatId, fromStoryId, activePeriod, {2 opts})`
-- [ ] `savePreparedInlineMessage(userId, result, {4 opts})`
-- [ ] `savePreparedKeyboardButton(userId, button)`
-- [ ] `sendChecklist(businessConnectionId, chatId, checklist, {5 opts})`
-- [ ] `sendGame(chatId, gameShortName, {8 opts})`
-- [ ] `sendGift(giftId, {6 opts})`
-- [ ] `sendInvoice(chatId, title, description, payload, providerToken, currency, prices, {22 opts})`
-- [ ] `sendMessageDraft(chatId, draftId, text, {4 opts})`
-- [ ] `sendPaidMedia(chatId, starCount, media, {16 opts})`
-- [ ] `setBusinessAccountBio(businessConnectionId, {1 opts})`
-- [ ] `setBusinessAccountGiftSettings(businessConnectionId, showGiftButton, acceptedGiftTypes)`
-- [ ] `setBusinessAccountName(businessConnectionId, firstName, {1 opts})`
-- [ ] `setBusinessAccountProfilePhoto(businessConnectionId, photo, {1 opts})`
-- [ ] `setBusinessAccountUsername(businessConnectionId, {1 opts})`
-- [ ] `setChatMemberTag(chatId, userId, {1 opts})`
-- [ ] `setChatMenuButton({2 opts})`
-- [ ] `setChatPhoto(chatId, photo, options, fileOptions)`
-- [ ] `setChatStickerSet(chatId, stickerSetName)`
-- [ ] `setCustomEmojiStickerSetThumbnail(name, {1 opts})`
-- [ ] `setGameScore(userId, score, {5 opts})`
-- [ ] `setManagedBotAccessSettings(userId, isAccessRestricted, {1 opts})`
-- [ ] `setMyDefaultAdministratorRights({2 opts})`
-- [ ] `setMyName({1 opts})`
-- [ ] `setMyProfilePhoto(photo)`
-- [ ] `setStickerEmojiList(sticker, emojiList)`
-- [ ] `setStickerKeywords(sticker, {1 opts})`
-- [ ] `setStickerMaskPosition(sticker, {1 opts})`
-- [ ] `setStickerPositionInSet(sticker, position)`
-- [ ] `setStickerSetThumbnail(userId, name, thumbnail, options, fileOptions)`
-- [ ] `setStickerSetTitle(name, title)`
-- [ ] `setUserEmojiStatus(userId, {2 opts})`
-- [ ] `setWebHook(url, options, fileOptions)`
-- [ ] `transferBusinessAccountStars(businessConnectionId, starCount)`
-- [ ] `transferGift(businessConnectionId, ownedGiftId, newOwnerChatId, {1 opts})`
-- [ ] `unhideGeneralForumTopic(chatId)`
-- [ ] `unpinAllForumTopicMessages(chatId, messageThreadId)`
-- [ ] `unpinAllGeneralForumTopicMessages(chatId)`
-- [ ] `upgradeGift(businessConnectionId, ownedGiftId, {2 opts})`
-- [ ] `uploadStickerFile(userId, sticker, stickerFormat, options, fileOptions)`
-- [ ] `verifyChat(chatId, {1 opts})`
-- [ ] `verifyUser(userId, {1 opts})`
+- [ ] `answerGuestQuery(guestQueryId, result)`  — **SPECIAL-SETUP**: needs a live inbound guest query id; cannot be manufactured from a token.
+- [ ] `answerInlineQuery(inlineQueryId, results, {4 opts})`  — **SPECIAL-SETUP**: needs a live inbound inline query id delivered via an update.
+- [ ] `answerPreCheckoutQuery(preCheckoutQueryId, ok, {1 opts})`  — **SPECIAL-SETUP**: needs a live pre-checkout query, which requires a configured payment provider and an in-flight purchase.
+- [ ] `answerShippingQuery(shippingQueryId, ok, {2 opts})`  — **SPECIAL-SETUP**: needs a live shipping query from an in-flight invoice with flexible shipping.
+- [ ] `answerWebAppQuery(webAppQueryId, result)`  — **SPECIAL-SETUP**: needs a web-app query id produced by a user interacting with a Web App.
+- [ ] `approveSuggestedPost(chatId, messageId, {1 opts})`  — **SPECIAL-SETUP**: requires a pending suggested post in a direct-messages channel chat; no such fixture available.
+- [ ] `close()`  — **DESTRUCTIVE**: closes the bot instance on Telegram's side (for moving between local servers); irreversible for the run.
+- [ ] `convertGiftToStars(businessConnectionId, ownedGiftId)`  — **SPECIAL-SETUP**: needs an active business connection and an owned gift; gift economy not exercisable.
+- [ ] `createInvoiceLink(title, description, payload, providerToken, currency, prices, {16 opts})`  — **SPECIAL-SETUP**: requires a configured payment provider token.
+- [ ] `declineSuggestedPost(chatId, messageId, {1 opts})`  — **SPECIAL-SETUP**: requires a pending suggested post in a direct-messages channel chat.
+- [ ] `deleteBusinessMessages(businessConnectionId, messageIds)`  — **SPECIAL-SETUP**: needs an active business connection and managed messages.
+- [ ] `deleteForumTopic(chatId, messageThreadId)`  — **DESTRUCTIVE**: irreversibly deletes a forum topic and its messages; also requires a forum-enabled chat.
+- [ ] `deleteStory(businessConnectionId, storyId)`  — **SPECIAL-SETUP**: needs an active business connection and a posted story.
+- [ ] `deleteWebHook({1 opts})`  — **DESTRUCTIVE**: mutates irreversible bot delivery configuration; the suite runs in polling mode and must not toggle webhook state.
+- [ ] `editChatSubscriptionInviteLink(chatId, inviteLink, {1 opts})`  — **ENV-LIMITED**: requires a channel/supergroup with paid subscriptions enabled and an existing subscription invite link to edit; no negative-path assertion is stable without that infra.
+- [ ] `editMessageChecklist(businessConnectionId, chatId, messageId, checklist, {1 opts})`  — **SPECIAL-SETUP**: needs an active business connection and an existing checklist message.
+- [ ] `editStory(businessConnectionId, storyId, content, {4 opts})`  — **SPECIAL-SETUP**: needs an active business connection and a posted story.
+- [ ] `editUserStarSubscription(userId, telegramPaymentChargeId, isCanceled)`  — **SPECIAL-SETUP**: requires an existing Telegram Stars subscription charge.
+- [ ] `getAvailableGifts()`  — **TESTABLE**: read-only and callable with the bot token; straightforward follow-up to add an assertion on the returned gift list.
+- [ ] `getBusinessAccountGifts(businessConnectionId, {10 opts})`  — **SPECIAL-SETUP**: needs an active business connection.
+- [ ] `getBusinessAccountStarBalance(businessConnectionId)`  — **SPECIAL-SETUP**: needs an active business connection.
+- [ ] `getBusinessConnection(businessConnectionId)`  — **SPECIAL-SETUP**: needs a live business connection id delivered via an update.
+- [ ] `getChatGifts(chatId, {10 opts})`  — **SPECIAL-SETUP**: requires a chat that owns gifts; gift economy not exercisable.
+- [ ] `getGameHighScores(userId, {3 opts})`  — **SPECIAL-SETUP**: requires a game previously sent to the user (a registered game with BotFather).
+- [ ] `getManagedBotAccessSettings(userId)`  — **SPECIAL-SETUP**: requires a managed-bot relationship; not available to a standard bot.
+- [ ] `getManagedBotToken(userId)`  — **SPECIAL-SETUP**: requires a managed-bot relationship.
+- [ ] `getMyStarBalance()`  — **TESTABLE**: read-only and callable with the bot token; straightforward follow-up to assert a numeric star balance.
+- [ ] `getStarTransactions({2 opts})`  — **TESTABLE**: read-only and callable with the bot token; straightforward follow-up to assert the transactions array.
+- [ ] `getUserGifts(userId, {8 opts})`  — **SPECIAL-SETUP**: requires a user who owns gifts; gift economy not exercisable.
+- [ ] `getUserPersonalChatMessages(userId, limit)`  — **SPECIAL-SETUP**: requires the user to have a personal chat with retrievable messages and bot access to it.
+- [ ] `giftPremiumSubscription(userId, monthCount, starCount, {3 opts})`  — **DESTRUCTIVE**: spends real Telegram Stars to gift a premium subscription.
+- [ ] `leaveChat(chatId)`  — **DESTRUCTIVE**: removes the bot from the chat; would break every other test in the run and is not self-restorable.
+- [ ] `logOut()`  — **DESTRUCTIVE**: logs the bot out of the cloud Bot API server; irreversible for the run.
+- [ ] `postStory(businessConnectionId, content, activePeriod, {6 opts})`  — **SPECIAL-SETUP**: needs an active business connection.
+- [ ] `readBusinessMessage(businessConnectionId, chatId, messageId)`  — **SPECIAL-SETUP**: needs an active business connection and a managed message.
+- [ ] `refundStarPayment(userId, telegramPaymentChargeId)`  — **SPECIAL-SETUP**: requires an existing Telegram Stars charge to refund.
+- [ ] `removeBusinessAccountProfilePhoto(businessConnectionId, {1 opts})`  — **SPECIAL-SETUP**: needs an active business connection.
+- [ ] `removeChatVerification(chatId)`  — **SPECIAL-SETUP**: requires the bot to be a verifier on behalf of an organization; standard bots cannot verify chats.
+- [ ] `removeMyProfilePhoto()`  — **DESTRUCTIVE**: irreversibly changes the bot's own profile photo.
+- [ ] `removeUserVerification(userId)`  — **SPECIAL-SETUP**: requires verifier privileges not available to a standard bot.
+- [ ] `replaceManagedBotToken(userId)`  — **DESTRUCTIVE**: rotates a managed bot's token; also requires a managed-bot relationship.
+- [ ] `repostStory(businessConnectionId, fromChatId, fromStoryId, activePeriod, {2 opts})`  — **SPECIAL-SETUP**: needs an active business connection and an existing story.
+- [ ] `savePreparedInlineMessage(userId, result, {4 opts})`  — **SPECIAL-SETUP**: meaningful only for a Web App inline flow; needs a user who has authorized the Web App.
+- [ ] `savePreparedKeyboardButton(userId, button)`  — **SPECIAL-SETUP**: tied to a Web App keyboard-button flow.
+- [ ] `sendChecklist(businessConnectionId, chatId, checklist, {5 opts})`  — **SPECIAL-SETUP**: needs an active business connection.
+- [ ] `sendGame(chatId, gameShortName, {8 opts})`  — **SPECIAL-SETUP**: requires a game registered with BotFather under a known short name.
+- [ ] `sendGift(giftId, {6 opts})`  — **DESTRUCTIVE**: spends real Telegram Stars to send a gift.
+- [ ] `sendInvoice(chatId, title, description, payload, providerToken, currency, prices, {22 opts})`  — **SPECIAL-SETUP**: requires a configured payment provider token.
+- [ ] `sendMessageDraft(chatId, draftId, text, {4 opts})`  — **SPECIAL-SETUP**: requires a draft context not producible from a standard bot send.
+- [ ] `sendPaidMedia(chatId, starCount, media, {16 opts})`  — **SPECIAL-SETUP**: requires a chat with paid media enabled and the Stars economy.
+- [ ] `setBusinessAccountBio(businessConnectionId, {1 opts})`  — **SPECIAL-SETUP**: needs an active business connection.
+- [ ] `setBusinessAccountGiftSettings(businessConnectionId, showGiftButton, acceptedGiftTypes)`  — **SPECIAL-SETUP**: needs an active business connection.
+- [ ] `setBusinessAccountName(businessConnectionId, firstName, {1 opts})`  — **SPECIAL-SETUP**: needs an active business connection.
+- [ ] `setBusinessAccountProfilePhoto(businessConnectionId, photo, {1 opts})`  — **SPECIAL-SETUP**: needs an active business connection.
+- [ ] `setBusinessAccountUsername(businessConnectionId, {1 opts})`  — **SPECIAL-SETUP**: needs an active business connection.
+- [ ] `setChatMemberTag(chatId, userId, {1 opts})`  — **ENV-LIMITED**: applies an admin-assigned member tag in a direct-messages channel chat; requires a channel chat fixture with that feature, not the standard supergroup.
+- [ ] `setChatMenuButton({2 opts})`  — **TESTABLE**: callable with the bot token, but mutates the bot's menu button; would need a save/restore around `getChatMenuButton`, so left as a follow-up.
+- [ ] `setGameScore(userId, score, {5 opts})`  — **SPECIAL-SETUP**: requires a previously sent game message.
+- [ ] `setManagedBotAccessSettings(userId, isAccessRestricted, {1 opts})`  — **SPECIAL-SETUP**: requires a managed-bot relationship.
+- [ ] `setMyDefaultAdministratorRights({2 opts})`  — **TESTABLE**: callable with the bot token, but mutates the bot's default admin rights; needs a save/restore around `getMyDefaultAdministratorRights`, left as a follow-up.
+- [ ] `setMyName({1 opts})`  — **DESTRUCTIVE**: changes the bot's globally visible name; not restored cleanly within a run.
+- [ ] `setMyProfilePhoto(photo)`  — **DESTRUCTIVE**: irreversibly changes the bot's own profile photo.
+- [ ] `setUserEmojiStatus(userId, {2 opts})`  — **SPECIAL-SETUP**: requires the user to have granted the bot emoji-status permission via a Web App.
+- [ ] `setWebHook(url, options, fileOptions)`  — **DESTRUCTIVE**: mutates irreversible delivery configuration; conflicts with the polling-based suite.
+- [ ] `transferBusinessAccountStars(businessConnectionId, starCount)`  — **SPECIAL-SETUP**: needs an active business connection and spends Stars.
+- [ ] `transferGift(businessConnectionId, ownedGiftId, newOwnerChatId, {1 opts})`  — **SPECIAL-SETUP**: needs an active business connection and an owned gift.
+- [ ] `unbanChatMember(chatId, userId, {1 opts})`  — **ENV-LIMITED**: meaningful only against a currently banned member; banning the test user to set up the fixture risks irreversibly removing them from `TEST_GROUP_ID`, so a dedicated throwaway member chat would be required.
+- [ ] `unbanChatSenderChat(chatId, senderChatId)`  — **ENV-LIMITED**: requires a previously banned channel sender chat as a fixture; no disposable sender-chat is available.
+- [ ] `upgradeGift(businessConnectionId, ownedGiftId, {2 opts})`  — **SPECIAL-SETUP**: needs an active business connection and an owned gift.
+- [ ] `verifyChat(chatId, {1 opts})`  — **SPECIAL-SETUP**: requires verifier privileges on behalf of an organization, not available to a standard bot.
+- [ ] `verifyUser(userId, {1 opts})`  — **SPECIAL-SETUP**: requires verifier privileges, not available to a standard bot.
 
-## Methods called but with untested parameters (38)
+## Methods called but with untested parameters (28)
 
 Each box lists option keys defined by the method's options type that are never passed in any integration call.
 
-### `copyMessage` — 9/14 option params untested
-- [ ] `allow_paid_broadcast`
+### `answerCallbackQuery` — 3/4 option params untested
+- [ ] `cache_time`
+- [ ] `show_alert`
+- [ ] `url`
+
+### `copyMessage` — 7/14 option params untested
 - [ ] `caption_entities`
 - [ ] `direct_messages_topic_id`
 - [ ] `message_effect_id`
 - [ ] `message_thread_id`
-- [ ] `protect_content`
 - [ ] `reply_parameters`
 - [ ] `suggested_post_parameters`
 - [ ] `video_start_timestamp`
 
-### `copyMessages` — 4/5 option params untested
+### `copyMessages` — 2/5 option params untested
 - [ ] `direct_messages_topic_id`
 - [ ] `message_thread_id`
-- [ ] `protect_content`
-- [ ] `remove_caption`
+
+### `createForumTopic` — 2/2 option params untested
+- [ ] `icon_color`
+- [ ] `icon_custom_emoji_id`
 
 ### `deleteAllMessageReactions` — 1/2 option params untested
 - [ ] `actor_chat_id`
@@ -143,22 +126,16 @@ Each box lists option keys defined by the method's options type that are never p
 ### `deleteMessageReaction` — 1/2 option params untested
 - [ ] `actor_chat_id`
 
-### `deleteMyCommands` — 2/2 option params untested
-- [ ] `language_code`
-- [ ] `scope`
+### `editForumTopic` — 1/2 option params untested
+- [ ] `icon_custom_emoji_id`
 
-### `editChatInviteLink` — 1/4 option params untested
-- [ ] `creates_join_request`
-
-### `editMessageCaption` — 3/8 option params untested
-- [ ] `business_connection_id`
-- [ ] `caption_entities`
-- [ ] `inline_message_id`
-
-### `editMessageLiveLocation` — 3/9 option params untested
+### `editMessageCaption` — 2/8 option params untested
 - [ ] `business_connection_id`
 - [ ] `inline_message_id`
-- [ ] `live_period`
+
+### `editMessageLiveLocation` — 2/9 option params untested
+- [ ] `business_connection_id`
+- [ ] `inline_message_id`
 
 ### `editMessageMedia` — 2/5 option params untested
 - [ ] `business_connection_id`
@@ -179,32 +156,11 @@ Each box lists option keys defined by the method's options type that are never p
 - [ ] `suggested_post_parameters`
 - [ ] `video_start_timestamp`
 
-### `forwardMessages` — 3/4 option params untested
+### `forwardMessages` — 2/4 option params untested
 - [ ] `direct_messages_topic_id`
 - [ ] `message_thread_id`
-- [ ] `protect_content`
 
-### `getChatMenuButton` — 1/1 option params untested
-- [ ] `chat_id`
-
-### `getMyCommands` — 2/2 option params untested
-- [ ] `language_code`
-- [ ] `scope`
-
-### `getMyDefaultAdministratorRights` — 1/1 option params untested
-- [ ] `for_channels`
-
-### `getMyDescription` — 1/1 option params untested
-- [ ] `language_code`
-
-### `getMyName` — 1/1 option params untested
-- [ ] `language_code`
-
-### `getMyShortDescription` — 1/1 option params untested
-- [ ] `language_code`
-
-### `getUpdates` — 2/4 option params untested
-- [ ] `allowed_updates`
+### `getUpdates` — 1/4 option params untested
 - [ ] `offset`
 
 ### `pinChatMessage` — 1/2 option params untested
@@ -231,78 +187,55 @@ Each box lists option keys defined by the method's options type that are never p
 - [ ] `business_connection_id`
 - [ ] `message_thread_id`
 
-### `sendContact` — 10/12 option params untested
+### `sendContact` — 7/12 option params untested
 - [ ] `allow_paid_broadcast`
 - [ ] `business_connection_id`
 - [ ] `direct_messages_topic_id`
-- [ ] `disable_notification`
 - [ ] `message_effect_id`
 - [ ] `message_thread_id`
-- [ ] `protect_content`
+- [ ] `reply_parameters`
+- [ ] `suggested_post_parameters`
+
+### `sendDice` — 6/10 option params untested
+- [ ] `allow_paid_broadcast`
+- [ ] `direct_messages_topic_id`
+- [ ] `message_effect_id`
+- [ ] `message_thread_id`
+- [ ] `reply_parameters`
+- [ ] `suggested_post_parameters`
+
+### `sendLocation` — 8/14 option params untested
+- [ ] `allow_paid_broadcast`
+- [ ] `business_connection_id`
+- [ ] `direct_messages_topic_id`
+- [ ] `message_effect_id`
+- [ ] `message_thread_id`
 - [ ] `reply_markup`
 - [ ] `reply_parameters`
 - [ ] `suggested_post_parameters`
 
-### `sendDice` — 10/10 option params untested
-- [ ] `allow_paid_broadcast`
-- [ ] `direct_messages_topic_id`
-- [ ] `disable_notification`
-- [ ] `emoji`
-- [ ] `message_effect_id`
-- [ ] `message_thread_id`
-- [ ] `protect_content`
-- [ ] `reply_markup`
-- [ ] `reply_parameters`
-- [ ] `suggested_post_parameters`
-
-### `sendLocation` — 13/14 option params untested
+### `sendMediaGroup` — 5/8 option params untested
 - [ ] `allow_paid_broadcast`
 - [ ] `business_connection_id`
 - [ ] `direct_messages_topic_id`
-- [ ] `disable_notification`
-- [ ] `heading`
-- [ ] `horizontal_accuracy`
 - [ ] `message_effect_id`
 - [ ] `message_thread_id`
-- [ ] `protect_content`
-- [ ] `proximity_alert_radius`
-- [ ] `reply_markup`
-- [ ] `reply_parameters`
-- [ ] `suggested_post_parameters`
 
-### `sendMediaGroup` — 8/8 option params untested
+### `sendMessage` — 8/13 option params untested
 - [ ] `allow_paid_broadcast`
 - [ ] `business_connection_id`
 - [ ] `direct_messages_topic_id`
-- [ ] `disable_notification`
-- [ ] `message_effect_id`
-- [ ] `message_thread_id`
-- [ ] `protect_content`
-- [ ] `reply_parameters`
-
-### `sendMessage` — 11/13 option params untested
-- [ ] `allow_paid_broadcast`
-- [ ] `business_connection_id`
-- [ ] `direct_messages_topic_id`
-- [ ] `disable_notification`
 - [ ] `entities`
 - [ ] `link_preview_options`
 - [ ] `message_effect_id`
 - [ ] `message_thread_id`
-- [ ] `protect_content`
-- [ ] `reply_parameters`
 - [ ] `suggested_post_parameters`
 
-### `sendPoll` — 31/32 option params untested
-- [ ] `allow_adding_options`
+### `sendPoll` — 24/32 option params untested
 - [ ] `allow_paid_broadcast`
-- [ ] `allow_revoting`
-- [ ] `allows_multiple_answers`
 - [ ] `business_connection_id`
-- [ ] `close_date`
 - [ ] `correct_option_ids`
 - [ ] `country_codes`
-- [ ] `description`
 - [ ] `description_entities`
 - [ ] `description_parse_mode`
 - [ ] `direct_messages_topic_id`
@@ -323,53 +256,28 @@ Each box lists option keys defined by the method's options type that are never p
 - [ ] `question_parse_mode`
 - [ ] `reply_markup`
 - [ ] `reply_parameters`
-- [ ] `shuffle_options`
-- [ ] `type`
 
-### `sendVenue` — 14/14 option params untested
+### `sendVenue` — 8/14 option params untested
 - [ ] `allow_paid_broadcast`
 - [ ] `business_connection_id`
 - [ ] `direct_messages_topic_id`
-- [ ] `disable_notification`
-- [ ] `foursquare_id`
-- [ ] `foursquare_type`
-- [ ] `google_place_id`
-- [ ] `google_place_type`
 - [ ] `message_effect_id`
 - [ ] `message_thread_id`
-- [ ] `protect_content`
 - [ ] `reply_markup`
 - [ ] `reply_parameters`
 - [ ] `suggested_post_parameters`
-
-### `setChatPermissions` — 1/1 option params untested
-- [ ] `use_independent_chat_permissions`
-
-### `setMessageReaction` — 1/2 option params untested
-- [ ] `is_big`
-
-### `setMyCommands` — 2/2 option params untested
-- [ ] `language_code`
-- [ ] `scope`
-
-### `setMyDescription` — 1/2 option params untested
-- [ ] `language_code`
-
-### `setMyShortDescription` — 1/2 option params untested
-- [ ] `language_code`
 
 ### `stopMessageLiveLocation` — 3/5 option params untested
 - [ ] `business_connection_id`
 - [ ] `inline_message_id`
 - [ ] `reply_markup`
 
-### `stopPoll` — 2/2 option params untested
+### `stopPoll` — 1/2 option params untested
 - [ ] `business_connection_id`
-- [ ] `reply_markup`
 
 ### `unpinChatMessage` — 1/2 option params untested
 - [ ] `business_connection_id`
 
-## Methods with full parameter coverage (36)
+## Methods with full parameter coverage (76)
 
-`banChatMember`, `banChatSenderChat`, `createChatInviteLink`, `createChatSubscriptionInviteLink`, `deleteChatPhoto`, `deleteMessage`, `deleteMessages`, `exportChatInviteLink`, `getChat`, `getChatAdministrators`, `getChatMember`, `getChatMemberCount`, `getCustomEmojiStickers`, `getFile`, `getMe`, `getStickerSet`, `getUserChatBoosts`, `getUserProfilePhotos`, `getWebHookInfo`, `restrictChatMember`, `revokeChatInviteLink`, `sendAnimation`, `sendAudio`, `sendDocument`, `sendLivePhoto`, `sendPhoto`, `sendSticker`, `sendVideo`, `sendVideoNote`, `sendVoice`, `setChatAdministratorCustomTitle`, `setChatDescription`, `setChatTitle`, `unbanChatMember`, `unbanChatSenderChat`, `unpinAllChatMessages`
+`addStickerToSet`, `approveChatJoinRequest`, `banChatMember`, `banChatSenderChat`, `closeForumTopic`, `closeGeneralForumTopic`, `createChatInviteLink`, `createChatSubscriptionInviteLink`, `createNewStickerSet`, `declineChatJoinRequest`, `deleteChatPhoto`, `deleteChatStickerSet`, `deleteMessage`, `deleteMessages`, `deleteMyCommands`, `deleteStickerFromSet`, `deleteStickerSet`, `editChatInviteLink`, `editGeneralForumTopic`, `exportChatInviteLink`, `getChat`, `getChatAdministrators`, `getChatMember`, `getChatMemberCount`, `getChatMenuButton`, `getCustomEmojiStickers`, `getFile`, `getForumTopicIconStickers`, `getMe`, `getMyCommands`, `getMyDefaultAdministratorRights`, `getMyDescription`, `getMyName`, `getMyShortDescription`, `getStickerSet`, `getUserChatBoosts`, `getUserProfileAudios`, `getUserProfilePhotos`, `getWebHookInfo`, `hideGeneralForumTopic`, `reopenForumTopic`, `reopenGeneralForumTopic`, `replaceStickerInSet`, `restrictChatMember`, `revokeChatInviteLink`, `sendAnimation`, `sendAudio`, `sendDocument`, `sendLivePhoto`, `sendPhoto`, `sendSticker`, `sendVideo`, `sendVideoNote`, `sendVoice`, `setChatAdministratorCustomTitle`, `setChatDescription`, `setChatPermissions`, `setChatPhoto`, `setChatStickerSet`, `setChatTitle`, `setCustomEmojiStickerSetThumbnail`, `setMessageReaction`, `setMyCommands`, `setMyDescription`, `setMyShortDescription`, `setStickerEmojiList`, `setStickerKeywords`, `setStickerMaskPosition`, `setStickerPositionInSet`, `setStickerSetThumbnail`, `setStickerSetTitle`, `unhideGeneralForumTopic`, `unpinAllChatMessages`, `unpinAllForumTopicMessages`, `unpinAllGeneralForumTopicMessages`, `uploadStickerFile`

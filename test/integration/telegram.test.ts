@@ -15,6 +15,9 @@
  * Optional:
  *   - TEST_STICKER_SET_NAME — a known public sticker set name (defaults to "pusheen").
  *   - TEST_CUSTOM_EMOJI_ID  — a custom emoji id for getCustomEmojiStickers() (has a default).
+ *   - TEST_SUPERGROUP_100_MEMBERS_ID — a supergroup with >=100 members the bot
+ *       admins and that owns a sticker set; enables the setChatStickerSet /
+ *       deleteChatStickerSet happy-path blocks (omitted entirely when unset).
  *
  * The suite hits api.telegram.org directly. Methods that would mutate
  * irreversible bot configuration (logOut, close, deleteWebHook) are not
@@ -58,6 +61,7 @@ const AUDIO_PATH = path.join(DATA_DIR, "audio.mp3");
 const VIDEO_PATH = path.join(DATA_DIR, "video.mp4");
 const VOICE_PATH = path.join(DATA_DIR, "voice.ogg");
 const STICKER_PATH = path.join(DATA_DIR, "sticker.png");
+const STICKER_WEBP_PATH = path.join(DATA_DIR, "sticker.webp");
 const STICKER_THUMB_PATH = path.join(DATA_DIR, "sticker_thumb.png");
 
 const TOKEN = process.env.NODE_TELEGRAM_TOKEN ?? process.env.TEST_TELEGRAM_TOKEN;
@@ -65,6 +69,10 @@ const GROUP_ID_RAW = process.env.TEST_GROUP_ID;
 const USER_ID_RAW = process.env.TEST_USER_ID;
 const STICKER_SET_NAME = process.env.TEST_STICKER_SET_NAME ?? "pusheen";
 const CUSTOM_EMOJI_ID = process.env.TEST_CUSTOM_EMOJI_ID ?? "5368324170671202286";
+// A supergroup with >=100 members where the bot is admin AND that owns a
+// sticker set. Required for the setChatStickerSet/deleteChatStickerSet happy
+// paths; when unset those describes are omitted entirely.
+const SUPERGROUP_100_MEMBERS_ID = process.env.TEST_SUPERGROUP_100_MEMBERS_ID;
 
 if (!TOKEN) {
   throw new Error(
@@ -139,11 +147,21 @@ describe("Telegram Bot API (integration)", () => {
       const result = await bot.getMyName();
       assert.equal(typeof result.name, "string");
     });
+
+    it("accepts language_code option", async () => {
+      const result = await bot.getMyName({ language_code: "en" });
+      assert.equal(typeof result.name, "string");
+    });
   });
 
   describe("getMyDescription", () => {
     it("returns an object with a description string", async () => {
       const result = await bot.getMyDescription();
+      assert.equal(typeof result.description, "string");
+    });
+
+    it("accepts language_code option", async () => {
+      const result = await bot.getMyDescription({ language_code: "en" });
       assert.equal(typeof result.description, "string");
     });
   });
@@ -153,6 +171,11 @@ describe("Telegram Bot API (integration)", () => {
       const result = await bot.getMyShortDescription();
       assert.equal(typeof result.short_description, "string");
     });
+
+    it("accepts language_code option", async () => {
+      const result = await bot.getMyShortDescription({ language_code: "en" });
+      assert.equal(typeof result.short_description, "string");
+    });
   });
 
   describe("getMyDefaultAdministratorRights", () => {
@@ -160,11 +183,21 @@ describe("Telegram Bot API (integration)", () => {
       const rights = await bot.getMyDefaultAdministratorRights();
       assert.equal(typeof rights, "object");
     });
+
+    it("accepts for_channels option", async () => {
+      const rights = await bot.getMyDefaultAdministratorRights({ for_channels: false });
+      assert.equal(typeof rights, "object");
+    });
   });
 
   describe("getChatMenuButton", () => {
     it("returns a MenuButton object", async () => {
       const button = await bot.getChatMenuButton();
+      assert.equal(typeof button, "object");
+    });
+
+    it("accepts chat_id option", async () => {
+      const button = await bot.getChatMenuButton({ chat_id: GROUP_ID });
       assert.equal(typeof button, "object");
     });
   });
@@ -186,6 +219,15 @@ describe("Telegram Bot API (integration)", () => {
       const updates = await bot.getUpdates({ timeout: 0, limit: 1 });
       assert.ok(Array.isArray(updates));
     });
+
+    it("accepts limit, timeout and allowed_updates options", async () => {
+      const updates = await bot.getUpdates({
+        limit: 1,
+        timeout: 0,
+        allowed_updates: ["message"],
+      });
+      assert.ok(Array.isArray(updates));
+    });
   });
 
   // --- Sending text-like content ----------------------------------------
@@ -205,7 +247,22 @@ describe("Telegram Bot API (integration)", () => {
         },
       });
       MessageSchema.parse(sent);
+      // TODO: add a test for reply_markup
       assert.ok(sent.reply_markup);
+    });
+
+    it("honors disable_notification, protect_content, parse_mode and reply_parameters", async () => {
+      const target = await bot.sendMessage(GROUP_ID, `reply-target ${TIMESTAMP}`);
+      const sent = await bot.sendMessage(GROUP_ID, "**bold**", {
+        parse_mode: "Markdown",
+        disable_notification: true,
+        protect_content: true,
+        reply_parameters: { message_id: target.message_id },
+      });
+      MessageSchema.parse(sent);
+      assert.equal(sent.has_protected_content, true);
+      assert.ok(sent.reply_to_message);
+      assert.equal(sent.reply_to_message!.message_id, target.message_id);
     });
 
     it("rejects with ETELEGRAM when chat_id is 0", async () => {
@@ -231,11 +288,52 @@ describe("Telegram Bot API (integration)", () => {
       assert.ok(sent.dice);
       assert.equal(typeof sent.dice!.value, "number");
     });
+
+    it("honors emoji and disable_notification", async () => {
+      const sent = await bot.sendDice(GROUP_ID, {
+        emoji: "🎲",
+        disable_notification: true,
+      });
+      MessageSchema.parse(sent);
+      assert.ok(sent.dice);
+    });
+
+    it("honors protect_content and reply_markup", async () => {
+      const sent = await bot.sendDice(GROUP_ID, {
+        protect_content: true,
+        reply_markup: {
+          inline_keyboard: [[{ text: "Roll again", callback_data: "roll" }]],
+        },
+      });
+      MessageSchema.parse(sent);
+      assert.ok(sent.reply_markup);
+    });
   });
 
   describe("sendLocation", () => {
     it("returns a Message with a location", async () => {
       const sent = await bot.sendLocation(GROUP_ID, 47.5351072, -52.7508537);
+      MessageSchema.parse(sent);
+      assert.ok(sent.location);
+    });
+
+    it("honors horizontal_accuracy, heading and proximity_alert_radius", async () => {
+      const sent = await bot.sendLocation(GROUP_ID, 40.7128, -74.006, {
+        live_period: 3600,
+        horizontal_accuracy: 100,
+        heading: 90,
+        proximity_alert_radius: 1000,
+      });
+      MessageSchema.parse(sent);
+      assert.ok(sent.location);
+    });
+
+    it("honors live_period and protect_content", async () => {
+      const sent = await bot.sendLocation(GROUP_ID, 51.5074, -0.1278, {
+        live_period: 3600,
+        protect_content: true,
+        disable_notification: true,
+      });
       MessageSchema.parse(sent);
       assert.ok(sent.location);
     });
@@ -253,6 +351,40 @@ describe("Telegram Bot API (integration)", () => {
       MessageSchema.parse(sent);
       assert.ok(sent.venue);
     });
+
+    it("honors foursquare_id and foursquare_type", async () => {
+      const sent = await bot.sendVenue(
+        GROUP_ID,
+        40.758,
+        -73.9855,
+        "Times Square",
+        "Times Square, Manhattan, NY",
+        {
+          foursquare_id: "404b1bf2f9f32fb8",
+          foursquare_type: "poi",
+        },
+      );
+      MessageSchema.parse(sent);
+      assert.ok(sent.venue);
+    });
+
+    it("honors google_place_id, google_place_type and protect_content", async () => {
+      const sent = await bot.sendVenue(
+        GROUP_ID,
+        51.5074,
+        -0.1278,
+        "Big Ben",
+        "Palace of Westminster, London",
+        {
+          google_place_id: "ChIJP3V-FXUFdkgR2xj-A_oYy5s",
+          google_place_type: "point_of_interest",
+          protect_content: true,
+          disable_notification: true,
+        },
+      );
+      MessageSchema.parse(sent);
+      assert.ok(sent.venue);
+    });
   });
 
   describe("sendPoll", () => {
@@ -263,6 +395,31 @@ describe("Telegram Bot API (integration)", () => {
       MessageSchema.parse(sent);
       assert.ok(sent.poll);
       PollSchema.parse(sent.poll);
+    });
+
+    it("honors type, is_anonymous, allows_multiple_answers, allow_revoting", async () => {
+      const sent = await bot.sendPoll(GROUP_ID, "Which?", [{ text: "A" }, { text: "B" }], {
+        type: "regular",
+        is_anonymous: false,
+        allows_multiple_answers: true,
+        allow_revoting: true,
+      });
+      MessageSchema.parse(sent);
+      assert.ok(sent.poll);
+      assert.equal(sent.poll!.type, "regular");
+      assert.equal(sent.poll!.allows_multiple_answers, true);
+    });
+
+    it("honors shuffle_options, allow_adding_options, description and close_date", async () => {
+      const closeDate = Math.floor(Date.now() / 1000) + 3600;
+      const sent = await bot.sendPoll(GROUP_ID, "Rate?", [{ text: "Good" }, { text: "Bad" }], {
+        shuffle_options: true,
+        allow_adding_options: true,
+        description: "Please rate it",
+        close_date: closeDate,
+      });
+      MessageSchema.parse(sent);
+      assert.ok(sent.poll);
     });
   });
 
@@ -287,6 +444,18 @@ describe("Telegram Bot API (integration)", () => {
       assert.equal(sent.contact!.phone_number.replace(/^\+/, ""), "15551234567");
       assert.equal(sent.contact!.first_name, "Inte");
       assert.equal(sent.contact!.last_name, "Tester");
+    });
+
+    it("honors disable_notification, protect_content and reply_markup", async () => {
+      const sent = await bot.sendContact(GROUP_ID, "+15559999999", "Jane", {
+        disable_notification: true,
+        protect_content: true,
+        reply_markup: {
+          inline_keyboard: [[{ text: "Save", callback_data: "save" }]],
+        },
+      });
+      MessageSchema.parse(sent);
+      assert.ok(sent.reply_markup);
     });
   });
 
@@ -398,6 +567,40 @@ describe("Telegram Bot API (integration)", () => {
       assert.equal(sent.length, 2);
       sent.forEach((m) => MessageSchema.parse(m));
     });
+
+    it("honors disable_notification and protect_content", async () => {
+      const sent = await bot.sendMediaGroup(
+        GROUP_ID,
+        [
+          { type: "photo", media: PHOTO_PATH },
+          { type: "photo", media: photoFileId },
+        ],
+        {
+          disable_notification: true,
+          protect_content: true,
+        },
+      );
+      assert.ok(Array.isArray(sent));
+      assert.equal(sent.length, 2);
+      sent.forEach((m) => MessageSchema.parse(m));
+    });
+
+    it("honors reply_parameters", async () => {
+      const target = await bot.sendMessage(GROUP_ID, `media-group-reply ${TIMESTAMP}`);
+      const sent = await bot.sendMediaGroup(
+        GROUP_ID,
+        [
+          { type: "photo", media: photoFileId },
+          { type: "photo", media: PHOTO_PATH },
+        ],
+        {
+          reply_parameters: { message_id: target.message_id },
+        },
+      );
+      assert.ok(Array.isArray(sent));
+      assert.equal(sent.length, 2);
+      sent.forEach((m) => MessageSchema.parse(m));
+    });
   });
 
   // --- File metadata & downloads ---------------------------------------
@@ -478,6 +681,16 @@ describe("Telegram Bot API (integration)", () => {
         assert.equal(typeof id.message_id, "number");
       }
     });
+
+    it("accepts protect_content option", async () => {
+      const a = (await bot.sendMessage(GROUP_ID, "fwd-protect-1")).message_id;
+      const b = (await bot.sendMessage(GROUP_ID, "fwd-protect-2")).message_id;
+      const results = await bot.forwardMessages(GROUP_ID, GROUP_ID, [a, b], {
+        protect_content: true,
+      });
+      assert.ok(Array.isArray(results));
+      assert.equal(results.length, 2);
+    });
   });
 
   describe("copyMessage", () => {
@@ -502,6 +715,16 @@ describe("Telegram Bot API (integration)", () => {
       assert.equal(typeof id.message_id, "number");
       assert.notEqual(id.message_id, source.message_id);
     });
+
+    it("accepts protect_content and allow_paid_broadcast options", async () => {
+      const source = await bot.sendMessage(GROUP_ID, `copy-broadcast ${TIMESTAMP}`);
+      const copied = await bot.copyMessage(GROUP_ID, GROUP_ID, source.message_id, {
+        protect_content: true,
+        allow_paid_broadcast: false,
+      });
+      const id = MessageIdSchema.parse(copied);
+      assert.equal(typeof id.message_id, "number");
+    });
   });
 
   describe("copyMessages", () => {
@@ -516,6 +739,20 @@ describe("Telegram Bot API (integration)", () => {
       for (const r of results) {
         const id = MessageIdSchema.parse(r);
         assert.equal(typeof id.message_id, "number");
+      }
+    });
+
+    it("accepts protect_content and remove_caption options", async () => {
+      const a = (await bot.sendMessage(GROUP_ID, "cpy-protect-1")).message_id;
+      const b = (await bot.sendMessage(GROUP_ID, "cpy-protect-2")).message_id;
+      const results = await bot.copyMessages(GROUP_ID, GROUP_ID, [a, b], {
+        protect_content: true,
+        remove_caption: true,
+      });
+      assert.ok(Array.isArray(results));
+      assert.equal(results.length, 2);
+      for (const r of results) {
+        MessageIdSchema.parse(r);
       }
     });
   });
@@ -594,6 +831,19 @@ describe("Telegram Bot API (integration)", () => {
       assert.equal(msg.show_caption_above_media, true);
       assert.ok(msg.reply_markup);
     });
+
+    it("accepts pre-built caption_entities", async () => {
+      const sent = await bot.sendPhoto(GROUP_ID, photoFileId, { caption: "before" });
+      const edited = await bot.editMessageCaption("link text", {
+        chat_id: GROUP_ID,
+        message_id: sent.message_id,
+        caption_entities: [{ type: "text_link", offset: 0, length: 4, url: "https://example.com" }],
+      });
+      assert.ok(edited !== true);
+      const msg = MessageSchema.parse(edited);
+      assert.equal(msg.caption, "link text");
+      assert.ok(Array.isArray(msg.caption_entities));
+    });
   });
 
   describe("editMessageReplyMarkup", () => {
@@ -665,6 +915,18 @@ describe("Telegram Bot API (integration)", () => {
       });
       assert.ok(stopped === true || typeof stopped === "object");
     });
+
+    it("accepts live_period when editing", async () => {
+      const sent = await bot.sendLocation(GROUP_ID, 47.5351072, -52.7508537, { live_period: 120 });
+      const moved = await bot.editMessageLiveLocation(48.0, -53.0, {
+        chat_id: GROUP_ID,
+        message_id: sent.message_id,
+        live_period: 180,
+        reply_markup: { inline_keyboard: [[{ text: "updated", callback_data: "upd" }]] },
+      });
+      assert.ok(moved !== true);
+      MessageSchema.parse(moved);
+    });
   });
 
   // --- Deleting & reactions --------------------------------------------
@@ -691,6 +953,15 @@ describe("Telegram Bot API (integration)", () => {
       const sent = await bot.sendMessage(GROUP_ID, "react-to-me");
       const ok = await bot.setMessageReaction(GROUP_ID, sent.message_id, {
         reaction: [{ type: "emoji", emoji: "👍" }],
+      });
+      assert.equal(ok, true);
+    });
+
+    it("accepts is_big option", async () => {
+      const sent = await bot.sendMessage(GROUP_ID, "react-big");
+      const ok = await bot.setMessageReaction(GROUP_ID, sent.message_id, {
+        reaction: [{ type: "emoji", emoji: "👍" }],
+        is_big: true,
       });
       assert.equal(ok, true);
     });
@@ -725,6 +996,15 @@ describe("Telegram Bot API (integration)", () => {
       const sent = await bot.sendPoll(GROUP_ID, "stoppable?", [{ text: "yes" }, { text: "no" }]);
       const stopped = await bot.stopPoll(GROUP_ID, sent.message_id);
       PollSchema.parse(stopped);
+    });
+
+    it("accepts reply_markup option", async () => {
+      const poll = await bot.sendPoll(GROUP_ID, "Stop with markup?", [{ text: "Yes" }, { text: "No" }]);
+      const stopped = await bot.stopPoll(GROUP_ID, poll.message_id, {
+        reply_markup: { inline_keyboard: [[{ text: "done", callback_data: "done" }]] },
+      });
+      PollSchema.parse(stopped);
+      assert.ok(stopped.is_closed);
     });
   });
 
@@ -778,6 +1058,20 @@ describe("Telegram Bot API (integration)", () => {
       assert.ok(Array.isArray(photos.photos));
       // limit:1 means at most one photo set is returned (Telegram may return 0).
       assert.ok(photos.photos.length <= 1);
+    });
+  });
+
+  describe("getUserProfileAudios", () => {
+    it("returns audio data for a user", async () => {
+      const result = await bot.getUserProfileAudios(USER_ID);
+      assert.equal(typeof result, "object");
+      assert.ok(result !== null);
+    });
+
+    it("accepts offset/limit parameters", async () => {
+      const result = await bot.getUserProfileAudios(USER_ID, { offset: 0, limit: 1 });
+      assert.equal(typeof result, "object");
+      assert.ok(result !== null);
     });
   });
 
@@ -866,6 +1160,20 @@ describe("Telegram Bot API (integration)", () => {
         assert.equal(parsed.can_add_web_page_previews, false);
       }
     });
+
+    it("accepts use_independent_chat_permissions option", async () => {
+      const perms: ChatPermissions = {
+        can_send_messages: true,
+        can_send_polls: false,
+        can_send_other_messages: false,
+        can_add_web_page_previews: false,
+      };
+      const ok = await bot.setChatPermissions(GROUP_ID, perms, {
+        use_independent_chat_permissions: true,
+      });
+      assert.equal(ok, true);
+      // The block's after() restores the original permissions.
+    });
   });
 
   describe("pinChatMessage", () => {
@@ -909,16 +1217,78 @@ describe("Telegram Bot API (integration)", () => {
     });
   });
 
+  // --- Chat sticker set (needs a >=100-member supergroup that owns a set) --
+  //
+  // setChatStickerSet/deleteChatStickerSet require a supergroup with >=100
+  // members that owns a sticker set; TEST_GROUP_ID can't guarantee that, so the
+  // happy paths are gated behind TEST_SUPERGROUP_100_MEMBERS_ID and omitted when
+  // unset. Each block captures the original sticker_set_name and restores it.
+
+  if (SUPERGROUP_100_MEMBERS_ID) {
+    const stickerGroupId = Number(SUPERGROUP_100_MEMBERS_ID);
+
+    describe("setChatStickerSet", () => {
+      let original: string | undefined;
+
+      before(async () => {
+        original = (await bot.getChat(stickerGroupId)).sticker_set_name;
+      });
+
+      after(async () => {
+        if (original) {
+          await bot.setChatStickerSet(stickerGroupId, original);
+        } else {
+          await bot.deleteChatStickerSet(stickerGroupId);
+        }
+        await sleep(1100);
+      });
+
+      it("sets a sticker set and getChat reflects it", async () => {
+        const ok = await bot.setChatStickerSet(stickerGroupId, STICKER_SET_NAME);
+        assert.equal(ok, true);
+        await sleep(1100);
+        const chat = await bot.getChat(stickerGroupId);
+        assert.equal(chat.sticker_set_name, STICKER_SET_NAME);
+      });
+    });
+
+    describe("deleteChatStickerSet", () => {
+      let original: string | undefined;
+
+      before(async () => {
+        original = (await bot.getChat(stickerGroupId)).sticker_set_name;
+        if (!original) {
+          await bot.setChatStickerSet(stickerGroupId, STICKER_SET_NAME);
+          await sleep(1100);
+        }
+      });
+
+      after(async () => {
+        if (original) {
+          await bot.setChatStickerSet(stickerGroupId, original);
+          await sleep(1100);
+        }
+      });
+
+      it("removes the sticker set and getChat no longer shows it", async () => {
+        const ok = await bot.deleteChatStickerSet(stickerGroupId);
+        assert.equal(ok, true);
+        await sleep(1100);
+        const chat = await bot.getChat(stickerGroupId);
+        assert.equal(chat.sticker_set_name, undefined);
+      });
+    });
+  }
+
   // --- Member moderation (assert refusal, never harm a real user) -------
   //
   // Every method below acts on USER_ID, a REAL user and the chat owner.
-  // Telegram structurally REFUSES to ban/restrict/promote the chat owner (and
-  // the bot lacks can_promote_members), so each call rejects with a
-  // TelegramError. Asserting the rejection both covers the wire format and
-  // guarantees no real member is ever moderated.
+  // Telegram structurally REFUSES to ban/restrict/promote the chat creator, so
+  // each call rejects with a TelegramError. Asserting the rejection both covers
+  // the wire format and guarantees no real member is ever moderated.
 
   describe("promoteChatMember", () => {
-    it("is refused — the bot lacks can_promote_members", async () => {
+    it("is refused for the chat owner", async () => {
       await assert.rejects(
         bot.promoteChatMember(GROUP_ID, USER_ID, {
           can_change_info: true,
@@ -976,6 +1346,30 @@ describe("Telegram Bot API (integration)", () => {
         bot.setChatAdministratorCustomTitle(GROUP_ID, USER_ID, "Test Title"),
         TelegramError,
       );
+    });
+  });
+
+  // --- Join requests ----------------------------------------------------
+  //
+  // The bot cannot create a pending join request, so the happy path is
+  // unreachable. USER_ID is already a participant of GROUP_ID, so approving or
+  // declining a (non-existent) request rejects with ETELEGRAM.
+
+  describe("approveChatJoinRequest", () => {
+    it("rejects with ETELEGRAM when there is no pending request", async () => {
+      await assert.rejects(bot.approveChatJoinRequest(GROUP_ID, USER_ID), (err: unknown) => {
+        assert.equal((err as { code?: string }).code, "ETELEGRAM");
+        return true;
+      });
+    });
+  });
+
+  describe("declineChatJoinRequest", () => {
+    it("rejects with ETELEGRAM when there is no pending request", async () => {
+      await assert.rejects(bot.declineChatJoinRequest(GROUP_ID, USER_ID), (err: unknown) => {
+        assert.equal((err as { code?: string }).code, "ETELEGRAM");
+        return true;
+      });
     });
   });
 
@@ -1049,6 +1443,16 @@ describe("Telegram Bot API (integration)", () => {
       assert.equal(edited.expire_date, newExpire);
       assert.equal(edited.member_limit, newLimit);
     });
+
+    it("accepts creates_join_request option", async () => {
+      const link = await bot.createChatInviteLink(GROUP_ID, { name: `join-req-${TIMESTAMP}` });
+      createdLinks.add(link.invite_link);
+      const edited = await bot.editChatInviteLink(GROUP_ID, link.invite_link, {
+        creates_join_request: true,
+      });
+      ChatInviteLinkSchema.parse(edited);
+      assert.equal(edited.creates_join_request, true);
+    });
   });
 
   describe("exportChatInviteLink", () => {
@@ -1079,8 +1483,9 @@ describe("Telegram Bot API (integration)", () => {
 
   describe("answerCallbackQuery", () => {
     it("is refused for an invalid callback_query id", async () => {
-      // A real callback_query id is produced by a user tapping an inline button
-      // and cannot be synthesized here, so a stale/invalid id is rejected.
+      // A real callback_query id is produced only when a user taps an inline
+      // button — a bot cannot tap (or emulate tapping) one, so the success path
+      // can't be exercised unattended. A stale/invalid id is rejected instead.
       await assert.rejects(
         bot.answerCallbackQuery(`invalid-${TIMESTAMP}`, { text: "noop" }),
         TelegramError,
@@ -1102,6 +1507,33 @@ describe("Telegram Bot API (integration)", () => {
       assert.ok(fetched.some((c) => c.command === "ping"));
       assert.equal(await bot.deleteMyCommands(), true);
     });
+
+    it("setMyCommands accepts scope and language_code options", async () => {
+      const commands = [{ command: "test_cmd", description: "Test command" }];
+      const ok = await bot.setMyCommands(commands, {
+        scope: { type: "default" },
+        language_code: "en",
+      });
+      assert.equal(ok, true);
+      // Restore: clear commands for this scope/language.
+      await bot.deleteMyCommands({ scope: { type: "default" }, language_code: "en" });
+    });
+
+    it("getMyCommands accepts scope and language_code options", async () => {
+      const cmds = await bot.getMyCommands({
+        scope: { type: "default" },
+        language_code: "en",
+      });
+      assert.ok(Array.isArray(cmds));
+    });
+
+    it("deleteMyCommands accepts scope and language_code options", async () => {
+      const ok = await bot.deleteMyCommands({
+        scope: { type: "default" },
+        language_code: "en",
+      });
+      assert.equal(ok, true);
+    });
   });
 
   describe("setMyDescription / getMyDescription round-trip", () => {
@@ -1113,6 +1545,14 @@ describe("Telegram Bot API (integration)", () => {
       assert.equal(updated.description, sample);
       // Restore.
       await bot.setMyDescription({ description: original });
+    });
+
+    it("accepts language_code option", async () => {
+      const original = (await bot.getMyDescription({ language_code: "en" })).description;
+      const ok = await bot.setMyDescription({ description: `desc-en-${TIMESTAMP}`, language_code: "en" });
+      assert.equal(ok, true);
+      // Restore the en-specific description.
+      await bot.setMyDescription({ description: original, language_code: "en" });
     });
   });
 
@@ -1126,6 +1566,17 @@ describe("Telegram Bot API (integration)", () => {
       // Restore.
       await bot.setMyShortDescription({ short_description: original });
     });
+
+    it("accepts language_code option", async () => {
+      const original = (await bot.getMyShortDescription({ language_code: "en" })).short_description;
+      const ok = await bot.setMyShortDescription({
+        short_description: `short-en-${TIMESTAMP}`,
+        language_code: "en",
+      });
+      assert.equal(ok, true);
+      // Restore the en-specific short description.
+      await bot.setMyShortDescription({ short_description: original, language_code: "en" });
+    });
   });
 
   // --- Stickers --------------------------------------------------------
@@ -1138,10 +1589,279 @@ describe("Telegram Bot API (integration)", () => {
     });
   });
 
+  // --- Sticker set management (full create → mutate → delete lifecycle) ---
+  //
+  // These methods need a sticker set the bot owns. Rather than depend on a
+  // pre-existing fixture set, each block creates a throwaway set with
+  // createNewStickerSet (mutating it freely) and removes it with
+  // deleteStickerSet in after(). Sticker set names MUST end with
+  // `_by_<botUsername>`, and the owner USER_ID must have started the bot.
+
+  describe("sticker set lifecycle (createNewStickerSet → … → deleteStickerSet)", () => {
+    // A regular (non-mask, non-custom-emoji) set exercised by most methods.
+    let setName: string;
+    // A file_id obtained from uploadStickerFile, reused for addStickerToSet.
+    let uploadedFileId: string;
+
+    before(async () => {
+      const me = await bot.getMe();
+      setName = `s${TIMESTAMP}_by_${me.username}`;
+      await sleep(1100);
+
+      // uploadStickerFile: stage a file the set can be assembled from.
+      const file = await bot.uploadStickerFile(USER_ID, STICKER_PATH, "static");
+      FileSchema.parse(file);
+      uploadedFileId = file.file_id;
+      assert.ok(uploadedFileId.length > 0);
+      await sleep(1100);
+
+      await bot.createNewStickerSet(USER_ID, setName, "Integration Test Set", STICKER_PATH, "😀");
+    });
+
+    after(async () => {
+      await bot.deleteStickerSet(setName);
+    });
+
+    it("createNewStickerSet produced a retrievable, owned set", async () => {
+      const set = await bot.getStickerSet(setName);
+      StickerSetSchema.parse(set);
+      assert.equal(set.name, setName);
+      assert.ok(set.stickers.length >= 1);
+    });
+
+    it("addStickerToSet appends a sticker", async () => {
+      const ok = await bot.addStickerToSet(USER_ID, setName, STICKER_WEBP_PATH, "🎈");
+      assert.equal(ok, true);
+      const set = await bot.getStickerSet(setName);
+      assert.ok(set.stickers.length >= 2);
+    });
+
+    it("setStickerSetTitle renames the set", async () => {
+      const ok = await bot.setStickerSetTitle(setName, "Renamed Integration Set");
+      assert.equal(ok, true);
+    });
+
+    it("setStickerSetThumbnail sets a static thumbnail", async () => {
+      const ok = await bot.setStickerSetThumbnail(USER_ID, setName, STICKER_THUMB_PATH, {
+        format: "static",
+      });
+      assert.equal(ok, true);
+    });
+
+    it("setStickerPositionInSet moves a sticker to the front", async () => {
+      const set = await bot.getStickerSet(setName);
+      const fileId = set.stickers[set.stickers.length - 1]!.file_id;
+      const ok = await bot.setStickerPositionInSet(fileId, 0);
+      assert.equal(ok, true);
+    });
+
+    it("setStickerEmojiList updates a sticker's emoji", async () => {
+      const set = await bot.getStickerSet(setName);
+      const ok = await bot.setStickerEmojiList(set.stickers[0]!.file_id, ["😎"]);
+      assert.equal(ok, true);
+    });
+
+    it("setStickerKeywords updates a sticker's keywords", async () => {
+      const set = await bot.getStickerSet(setName);
+      const ok = await bot.setStickerKeywords(set.stickers[0]!.file_id, {
+        keywords: ["integration", "test"],
+      });
+      assert.equal(ok, true);
+    });
+
+    it("replaceStickerInSet swaps an existing sticker", async () => {
+      const set = await bot.getStickerSet(setName);
+      const oldSticker = set.stickers[set.stickers.length - 1]!.file_id;
+      const ok = await bot.replaceStickerInSet(USER_ID, setName, oldSticker, {
+        sticker: { sticker: uploadedFileId, format: "static", emoji_list: ["🔁"] },
+      });
+      assert.equal(ok, true);
+    });
+
+    it("deleteStickerFromSet removes a sticker", async () => {
+      const set = await bot.getStickerSet(setName);
+      const fileId = set.stickers[set.stickers.length - 1]!.file_id;
+      const ok = await bot.deleteStickerFromSet(fileId);
+      assert.equal(ok, true);
+    });
+  });
+
+  describe("setStickerMaskPosition", () => {
+    // mask_position is only valid on a mask-type set, so this needs its own
+    // throwaway set created with sticker_type: "mask".
+    let maskSetName: string;
+
+    before(async () => {
+      const me = await bot.getMe();
+      maskSetName = `m${TIMESTAMP}_by_${me.username}`;
+      await sleep(1100);
+      await bot.createNewStickerSet(USER_ID, maskSetName, "Integration Mask Set", STICKER_PATH, "😀", {
+        sticker_type: "mask",
+      });
+    });
+
+    after(async () => {
+      await bot.deleteStickerSet(maskSetName);
+    });
+
+    it("positions a mask over a sticker", async () => {
+      const set = await bot.getStickerSet(maskSetName);
+      const ok = await bot.setStickerMaskPosition(set.stickers[0]!.file_id, {
+        mask_position: { point: "forehead", x_shift: 0, y_shift: 0, scale: 1 },
+      });
+      assert.equal(ok, true);
+    });
+  });
+
+  describe("setCustomEmojiStickerSetThumbnail", () => {
+    // The thumbnail must be a custom emoji from the set, so this needs a
+    // throwaway set created with sticker_type: "custom_emoji".
+    let emojiSetName: string;
+
+    before(async () => {
+      const me = await bot.getMe();
+      emojiSetName = `e${TIMESTAMP}_by_${me.username}`;
+      await sleep(1100);
+      await bot.createNewStickerSet(USER_ID, emojiSetName, "Integration Emoji Set", STICKER_PATH, "😀", {
+        sticker_type: "custom_emoji",
+      });
+    });
+
+    after(async () => {
+      await bot.deleteStickerSet(emojiSetName);
+    });
+
+    it("sets the set's thumbnail to one of its custom emoji", async () => {
+      const set = await bot.getStickerSet(emojiSetName);
+      const customEmojiId = set.stickers[0]!.custom_emoji_id;
+      assert.ok(customEmojiId, "expected the custom-emoji set's sticker to expose a custom_emoji_id");
+      const ok = await bot.setCustomEmojiStickerSetThumbnail(emojiSetName, {
+        custom_emoji_id: customEmojiId,
+      });
+      assert.equal(ok, true);
+    });
+  });
+
   describe("getCustomEmojiStickers", () => {
     it("returns an Array", async () => {
       const stickers = await bot.getCustomEmojiStickers([CUSTOM_EMOJI_ID]);
       assert.ok(Array.isArray(stickers));
+    });
+  });
+
+  describe("getForumTopicIconStickers", () => {
+    it("returns an array of forum topic icon stickers", async () => {
+      const stickers = await bot.getForumTopicIconStickers();
+      assert.ok(Array.isArray(stickers));
+      for (const sticker of stickers) {
+        assert.equal(typeof sticker.file_id, "string");
+        assert.equal(typeof sticker.file_unique_id, "string");
+      }
+    });
+  });
+
+  // --- Forum topics -----------------------------------------------------
+  //
+  // TEST_GROUP_ID is a regular (non-forum) supergroup, so every forum method
+  // below rejects with ETELEGRAM. Exercising the rejection still drives the
+  // full _form/_request/http pipeline and confirms each method is wired.
+
+  describe("createForumTopic", () => {
+    it("rejects with ETELEGRAM when chat is not forum-enabled", async () => {
+      await assert.rejects(bot.createForumTopic(GROUP_ID, "test topic"), (err: unknown) => {
+        assert.equal((err as { code?: string }).code, "ETELEGRAM");
+        return true;
+      });
+    });
+  });
+
+  describe("editForumTopic", () => {
+    it("rejects with ETELEGRAM when forum topic does not exist", async () => {
+      await assert.rejects(bot.editForumTopic(GROUP_ID, 999999, { name: "renamed" }), (err: unknown) => {
+        assert.equal((err as { code?: string }).code, "ETELEGRAM");
+        return true;
+      });
+    });
+  });
+
+  describe("closeForumTopic", () => {
+    it("rejects with ETELEGRAM when forum topic does not exist", async () => {
+      await assert.rejects(bot.closeForumTopic(GROUP_ID, 999999), (err: unknown) => {
+        assert.equal((err as { code?: string }).code, "ETELEGRAM");
+        return true;
+      });
+    });
+  });
+
+  describe("reopenForumTopic", () => {
+    it("rejects with ETELEGRAM when forum topic does not exist", async () => {
+      await assert.rejects(bot.reopenForumTopic(GROUP_ID, 999999), (err: unknown) => {
+        assert.equal((err as { code?: string }).code, "ETELEGRAM");
+        return true;
+      });
+    });
+  });
+
+  describe("unpinAllForumTopicMessages", () => {
+    it("rejects with ETELEGRAM when forum topic does not exist", async () => {
+      await assert.rejects(bot.unpinAllForumTopicMessages(GROUP_ID, 999999), (err: unknown) => {
+        assert.equal((err as { code?: string }).code, "ETELEGRAM");
+        return true;
+      });
+    });
+  });
+
+  describe("closeGeneralForumTopic", () => {
+    it("rejects with ETELEGRAM when chat is not forum-enabled", async () => {
+      await assert.rejects(bot.closeGeneralForumTopic(GROUP_ID), (err: unknown) => {
+        assert.equal((err as { code?: string }).code, "ETELEGRAM");
+        return true;
+      });
+    });
+  });
+
+  describe("reopenGeneralForumTopic", () => {
+    it("rejects with ETELEGRAM when chat is not forum-enabled", async () => {
+      await assert.rejects(bot.reopenGeneralForumTopic(GROUP_ID), (err: unknown) => {
+        assert.equal((err as { code?: string }).code, "ETELEGRAM");
+        return true;
+      });
+    });
+  });
+
+  describe("hideGeneralForumTopic", () => {
+    it("rejects with ETELEGRAM when chat is not forum-enabled", async () => {
+      await assert.rejects(bot.hideGeneralForumTopic(GROUP_ID), (err: unknown) => {
+        assert.equal((err as { code?: string }).code, "ETELEGRAM");
+        return true;
+      });
+    });
+  });
+
+  describe("unhideGeneralForumTopic", () => {
+    it("rejects with ETELEGRAM when chat is not forum-enabled", async () => {
+      await assert.rejects(bot.unhideGeneralForumTopic(GROUP_ID), (err: unknown) => {
+        assert.equal((err as { code?: string }).code, "ETELEGRAM");
+        return true;
+      });
+    });
+  });
+
+  describe("editGeneralForumTopic", () => {
+    it("rejects with ETELEGRAM when chat is not forum-enabled", async () => {
+      await assert.rejects(bot.editGeneralForumTopic(GROUP_ID, "new name"), (err: unknown) => {
+        assert.equal((err as { code?: string }).code, "ETELEGRAM");
+        return true;
+      });
+    });
+  });
+
+  describe("unpinAllGeneralForumTopicMessages", () => {
+    it("rejects with ETELEGRAM when chat is not forum-enabled", async () => {
+      await assert.rejects(bot.unpinAllGeneralForumTopicMessages(GROUP_ID), (err: unknown) => {
+        assert.equal((err as { code?: string }).code, "ETELEGRAM");
+        return true;
+      });
     });
   });
 
