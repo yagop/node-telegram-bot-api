@@ -34,7 +34,8 @@
     "test:node:unit": "node test/run-unit.mjs",
     "test:node:integration": "node --test --test-reporter=spec --import tsx test/integration/telegram.test.ts",
     "test:bun:unit": "bun test test/unit",
-    "test:bun:integration": "bun test --timeout 120000 test/integration"
+    "test:bun:integration": "bun test --timeout 120000 test/integration",
+    "gen:schemas": "tsx scripts/generate-schemas.ts"
   },
   "author": "Yago Pérez <yagoperezs@gmail.com>",
   "license": "MIT",
@@ -46,6 +47,7 @@
   },
   "devDependencies": {
     "@types/node": "^25.6.2",
+    "cheerio": "^1.0.0",
     "tsx": "^4.21.0",
     "typescript": "^5.7.0"
   },

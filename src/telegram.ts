@@ -356,7 +356,7 @@ export class TelegramBot extends EventEmitter {
     debug("Process Update %j", update);
     const m = update.message;
     if (m) {
-      const metadata = { type: TelegramBot.messageTypes.find((t) => (m as Record<string, unknown>)[t]) };
+      const metadata = { type: TelegramBot.messageTypes.find((t) => (m as unknown as Record<string, unknown>)[t]) };
       this.emit("message", m, metadata);
       if (metadata.type) this.emit(metadata.type, m, metadata);
       if (m.text) {

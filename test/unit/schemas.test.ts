@@ -10,6 +10,7 @@ import {
   ReactionTypeSchema,
   TelegramApiResponseSchema,
   MESSAGE_TYPES,
+  parseWithPassthrough,
 } from "../../src/types/schemas.js";
 
 describe("zod schemas", () => {
@@ -24,12 +25,21 @@ describe("zod schemas", () => {
       assert.throws(() => UserSchema.parse({ id: 1 }));
     });
 
-    it("preserves unknown fields via passthrough", () => {
+    it("strips unknown fields by default (strict z.object)", () => {
       const u = UserSchema.parse({
         id: 1,
         is_bot: true,
         first_name: "Bot",
-        // Hypothetical new field added by Telegram in the future
+        future_flag: true,
+      });
+      assert.equal((u as Record<string, unknown>).future_flag, undefined);
+    });
+
+    it("preserves unknown fields when parsed via parseWithPassthrough", () => {
+      const u = parseWithPassthrough(UserSchema, {
+        id: 1,
+        is_bot: true,
+        first_name: "Bot",
         future_flag: true,
       });
       assert.equal((u as Record<string, unknown>).future_flag, true);
