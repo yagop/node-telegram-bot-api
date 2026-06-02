@@ -39,7 +39,10 @@ import {
   ChatMemberSchema,
   ChatPermissionsSchema,
   FileSchema,
+  LinkPreviewOptionsSchema,
+  MenuButtonSchema,
   MessageSchema,
+  MessageEntitySchema,
   MessageIdSchema,
   PollSchema,
   StickerSetSchema,
@@ -48,6 +51,7 @@ import {
   UserSchema,
   WebhookInfoSchema,
   type ChatPermissions,
+  type MenuButton,
 } from "../../src/index.js";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -190,6 +194,59 @@ describe("Telegram Bot API (integration)", () => {
     });
   });
 
+  describe("setMyDefaultAdministratorRights", () => {
+    type AdminRights = Record<string, boolean>;
+    let original: AdminRights;
+
+    before(async () => {
+      original = (await bot.getMyDefaultAdministratorRights({
+        for_channels: false,
+      })) as AdminRights;
+    });
+
+    after(async () => {
+      const ok = await bot.setMyDefaultAdministratorRights({
+        rights: original,
+        for_channels: false,
+      });
+      assert.equal(ok, true);
+    });
+
+    it("sets default administrator rights and getMyDefaultAdministratorRights reflects them", async () => {
+      // Flip can_change_info relative to the saved value so the assertion is
+      // meaningful regardless of the bot's starting configuration. is_anonymous
+      // must stay false (Telegram rejects requesting anonymous rights here).
+      const desired = !original.can_change_info;
+      const rights: AdminRights = {
+        is_anonymous: false,
+        can_manage_chat: true,
+        can_delete_messages: true,
+        can_manage_video_chats: true,
+        can_restrict_members: true,
+        can_promote_members: false,
+        can_change_info: desired,
+        can_invite_users: true,
+        can_post_stories: false,
+        can_edit_stories: false,
+        can_delete_stories: false,
+      };
+
+      const ok = await bot.setMyDefaultAdministratorRights({
+        rights,
+        for_channels: false,
+      });
+      assert.equal(ok, true);
+
+      const updated = (await bot.getMyDefaultAdministratorRights({
+        for_channels: false,
+      })) as AdminRights;
+      assert.equal(typeof updated, "object");
+      assert.equal(updated.can_change_info, desired);
+      assert.equal(updated.can_manage_chat, true);
+      assert.equal(updated.can_invite_users, true);
+    });
+  });
+
   describe("getChatMenuButton", () => {
     it("returns a MenuButton object", async () => {
       const button = await bot.getChatMenuButton();
@@ -199,6 +256,41 @@ describe("Telegram Bot API (integration)", () => {
     it("accepts chat_id option", async () => {
       const button = await bot.getChatMenuButton({ chat_id: GROUP_ID });
       assert.equal(typeof button, "object");
+    });
+  });
+
+  describe("setChatMenuButton", () => {
+    let original: MenuButton;
+
+    before(async () => {
+      original = await bot.getChatMenuButton();
+    });
+
+    after(async () => {
+      await bot.setChatMenuButton({ menu_button: original });
+    });
+
+    it("sets the default menu button and getChatMenuButton reflects it", async () => {
+      const ok = await bot.setChatMenuButton({
+        menu_button: { type: "commands" },
+      });
+      assert.equal(ok, true);
+      const button = await bot.getChatMenuButton();
+      MenuButtonSchema.parse(button);
+      assert.equal(button.type, "commands");
+    });
+
+    it("accepts a default menu button (resolved to the bot default on read)", async () => {
+      const ok = await bot.setChatMenuButton({
+        menu_button: { type: "default" },
+      });
+      assert.equal(ok, true);
+      // Telegram resolves a "default" menu button to the bot's effective
+      // default ("commands") when read back, so assert it validates rather
+      // than that the type is literally "default".
+      const button = await bot.getChatMenuButton();
+      MenuButtonSchema.parse(button);
+      assert.equal(typeof button.type, "string");
     });
   });
 
@@ -226,6 +318,11 @@ describe("Telegram Bot API (integration)", () => {
         timeout: 0,
         allowed_updates: ["message"],
       });
+      assert.ok(Array.isArray(updates));
+    });
+
+    it("accepts a negative offset and returns an Array", async () => {
+      const updates = await bot.getUpdates({ offset: -1, timeout: 0, limit: 1 });
       assert.ok(Array.isArray(updates));
     });
   });
@@ -272,6 +369,30 @@ describe("Telegram Bot API (integration)", () => {
         return true;
       });
     });
+
+    it("honors pre-built entities and a disabled link_preview_options", async () => {
+      const text = `bold-and-link ${TIMESTAMP} https://example.com`;
+      const sent = await bot.sendMessage(GROUP_ID, text, {
+        entities: [{ type: "bold", offset: 0, length: 4 }],
+        link_preview_options: { is_disabled: true },
+      });
+      MessageSchema.parse(sent);
+      assert.equal(sent.text, text);
+      assert.ok(sent.entities);
+      const bold = sent.entities!.find((e) => e.type === "bold");
+      assert.ok(bold);
+      MessageEntitySchema.parse(bold);
+      assert.equal(bold!.offset, 0);
+      assert.equal(bold!.length, 4);
+      // A disabled preview means Telegram returns no link_preview_options
+      // (or an explicitly-disabled one) and never an auto-generated preview.
+      if (sent.link_preview_options) {
+        const preview = LinkPreviewOptionsSchema.parse(sent.link_preview_options);
+        assert.equal(preview.is_disabled, true);
+      } else {
+        assert.equal(sent.link_preview_options, undefined);
+      }
+    });
   });
 
   describe("sendChatAction", () => {
@@ -308,6 +429,17 @@ describe("Telegram Bot API (integration)", () => {
       MessageSchema.parse(sent);
       assert.ok(sent.reply_markup);
     });
+
+    it("honors reply_parameters", async () => {
+      const target = await bot.sendMessage(GROUP_ID, `dice-reply ${TIMESTAMP}`);
+      const sent = await bot.sendDice(GROUP_ID, {
+        reply_parameters: { message_id: target.message_id },
+      });
+      MessageSchema.parse(sent);
+      assert.ok(sent.dice);
+      assert.ok(sent.reply_to_message);
+      assert.equal(sent.reply_to_message!.message_id, target.message_id);
+    });
   });
 
   describe("sendLocation", () => {
@@ -336,6 +468,28 @@ describe("Telegram Bot API (integration)", () => {
       });
       MessageSchema.parse(sent);
       assert.ok(sent.location);
+    });
+
+    it("honors reply_parameters", async () => {
+      const target = await bot.sendMessage(GROUP_ID, `location-reply-target ${TIMESTAMP}`);
+      const sent = await bot.sendLocation(GROUP_ID, 48.8566, 2.3522, {
+        reply_parameters: { message_id: target.message_id },
+      });
+      MessageSchema.parse(sent);
+      assert.ok(sent.location);
+      assert.ok(sent.reply_to_message);
+      assert.equal(sent.reply_to_message!.message_id, target.message_id);
+    });
+
+    it("honors reply_markup", async () => {
+      const sent = await bot.sendLocation(GROUP_ID, 35.6895, 139.6917, {
+        reply_markup: {
+          inline_keyboard: [[{ text: "Open map", callback_data: "map" }]],
+        },
+      });
+      MessageSchema.parse(sent);
+      assert.ok(sent.location);
+      assert.ok(sent.reply_markup);
     });
   });
 
@@ -385,6 +539,43 @@ describe("Telegram Bot API (integration)", () => {
       MessageSchema.parse(sent);
       assert.ok(sent.venue);
     });
+
+    it("honors reply_markup", async () => {
+      const sent = await bot.sendVenue(
+        GROUP_ID,
+        48.8584,
+        2.2945,
+        "Eiffel Tower",
+        "Champ de Mars, 5 Av. Anatole France, Paris",
+        {
+          reply_markup: {
+            inline_keyboard: [[{ text: "directions", callback_data: "dir" }]],
+          },
+        },
+      );
+      MessageSchema.parse(sent);
+      assert.ok(sent.venue);
+      assert.ok(sent.reply_markup);
+      assert.equal(sent.reply_markup!.inline_keyboard?.[0]?.[0]?.text, "directions");
+    });
+
+    it("honors reply_parameters", async () => {
+      const target = await bot.sendMessage(GROUP_ID, `venue-reply-target ${TIMESTAMP}`);
+      const sent = await bot.sendVenue(
+        GROUP_ID,
+        35.6595,
+        139.7005,
+        "Shibuya Crossing",
+        "Shibuya City, Tokyo",
+        {
+          reply_parameters: { message_id: target.message_id },
+        },
+      );
+      MessageSchema.parse(sent);
+      assert.ok(sent.venue);
+      assert.ok(sent.reply_to_message);
+      assert.equal(sent.reply_to_message!.message_id, target.message_id);
+    });
   });
 
   describe("sendPoll", () => {
@@ -421,6 +612,111 @@ describe("Telegram Bot API (integration)", () => {
       MessageSchema.parse(sent);
       assert.ok(sent.poll);
     });
+
+    it("honors quiz type with correct_option_ids, explanation(+parse_mode/entities) and open_period", async () => {
+      const sent = await bot.sendPoll(
+        GROUP_ID,
+        "Capital of France?",
+        [{ text: "Paris" }, { text: "Berlin" }, { text: "Madrid" }],
+        {
+          type: "quiz",
+          is_anonymous: true,
+          correct_option_ids: [0],
+          explanation: "*Paris* is correct",
+          explanation_parse_mode: "MarkdownV2",
+          open_period: 600,
+        },
+      );
+      MessageSchema.parse(sent);
+      assert.ok(sent.poll);
+      PollSchema.parse(sent.poll);
+      assert.equal(sent.poll!.type, "quiz");
+      assert.equal(sent.poll!.correct_option_id, 0);
+      // explanation parse_mode is applied: the returned plain text drops the markup
+      assert.equal(sent.poll!.explanation, "Paris is correct");
+      assert.equal(sent.poll!.open_period, 600);
+      assert.equal(sent.poll!.is_closed, false);
+    });
+
+    it("honors explanation_entities on a quiz poll", async () => {
+      const explanation = "Paris is correct";
+      const sent = await bot.sendPoll(
+        GROUP_ID,
+        "Capital of France (entities)?",
+        [{ text: "Paris" }, { text: "Berlin" }],
+        {
+          type: "quiz",
+          correct_option_ids: [0],
+          explanation,
+          explanation_entities: [{ type: "bold", offset: 0, length: 5 }],
+          open_period: 600,
+        },
+      );
+      MessageSchema.parse(sent);
+      assert.ok(sent.poll);
+      assert.equal(sent.poll!.explanation, explanation);
+    });
+
+    it("honors is_closed", async () => {
+      const sent = await bot.sendPoll(GROUP_ID, "Already closed?", [{ text: "Yes" }, { text: "No" }], {
+        is_closed: true,
+      });
+      MessageSchema.parse(sent);
+      assert.ok(sent.poll);
+      assert.equal(sent.poll!.is_closed, true);
+    });
+
+    it("honors question_parse_mode and question_entities", async () => {
+      const sent = await bot.sendPoll(GROUP_ID, "*Bold* question?", [{ text: "A" }, { text: "B" }], {
+        question_parse_mode: "MarkdownV2",
+      });
+      MessageSchema.parse(sent);
+      assert.ok(sent.poll);
+      // parse_mode strips the markup from the stored question text
+      assert.equal(sent.poll!.question, "Bold question?");
+
+      const sent2 = await bot.sendPoll(GROUP_ID, "Bold question?", [{ text: "A" }, { text: "B" }], {
+        question_entities: [{ type: "bold", offset: 0, length: 4 }],
+      });
+      MessageSchema.parse(sent2);
+      assert.equal(sent2.poll!.question, "Bold question?");
+    });
+
+    it("honors description_parse_mode, description_entities and close_date", async () => {
+      const sent = await bot.sendPoll(GROUP_ID, "Pick one?", [{ text: "A" }, { text: "B" }], {
+        is_anonymous: true,
+        description: "*Important* details",
+        description_parse_mode: "MarkdownV2",
+        close_date: Math.floor(Date.now() / 1000) + 3600,
+      });
+      MessageSchema.parse(sent);
+      assert.ok(sent.poll);
+      PollSchema.parse(sent.poll);
+
+      const sent2 = await bot.sendPoll(GROUP_ID, "Pick again?", [{ text: "A" }, { text: "B" }], {
+        is_anonymous: true,
+        description: "Important details",
+        description_entities: [{ type: "bold", offset: 0, length: 9 }],
+        close_date: Math.floor(Date.now() / 1000) + 3600,
+      });
+      MessageSchema.parse(sent2);
+      assert.ok(sent2.poll);
+    });
+
+    it("honors disable_notification, protect_content, reply_markup and reply_parameters", async () => {
+      const target = await bot.sendMessage(GROUP_ID, `poll-reply-target ${TIMESTAMP}`);
+      const sent = await bot.sendPoll(GROUP_ID, "Reply poll?", [{ text: "A" }, { text: "B" }], {
+        disable_notification: true,
+        protect_content: true,
+        reply_markup: { inline_keyboard: [[{ text: "Info", callback_data: "info" }]] },
+        reply_parameters: { message_id: target.message_id },
+      });
+      MessageSchema.parse(sent);
+      assert.ok(sent.poll);
+      assert.ok(sent.reply_to_message);
+      assert.equal(sent.reply_to_message!.message_id, target.message_id);
+      assert.ok(sent.reply_markup);
+    });
   });
 
   describe("sendContact", () => {
@@ -456,6 +752,17 @@ describe("Telegram Bot API (integration)", () => {
       });
       MessageSchema.parse(sent);
       assert.ok(sent.reply_markup);
+    });
+
+    it("honors reply_parameters", async () => {
+      const target = await bot.sendMessage(GROUP_ID, `contact-reply ${TIMESTAMP}`);
+      const sent = await bot.sendContact(GROUP_ID, "+15559999999", "Reply", {
+        reply_parameters: { message_id: target.message_id },
+      });
+      MessageSchema.parse(sent);
+      assert.ok(sent.contact, "expected the sent message to carry a contact");
+      assert.ok(sent.reply_to_message);
+      assert.equal(sent.reply_to_message!.message_id, target.message_id);
     });
   });
 
@@ -1491,6 +1798,21 @@ describe("Telegram Bot API (integration)", () => {
         TelegramError,
       );
     });
+
+    it("serializes show_alert, url and cache_time on the rejected call", async () => {
+      // The same invalid-id error path is the only one a bot can exercise
+      // unattended, but passing these extra options proves they serialize
+      // onto the form body without breaking the request. The API still
+      // rejects the stale id with a TelegramError.
+      await assert.rejects(
+        bot.answerCallbackQuery(`invalid-${TIMESTAMP}`, {
+          show_alert: true,
+          url: "https://t.me/",
+          cache_time: 5,
+        }),
+        TelegramError,
+      );
+    });
   });
 
   // --- Bot self-management (idempotent operations only) ----------------
@@ -1576,6 +1898,33 @@ describe("Telegram Bot API (integration)", () => {
       assert.equal(ok, true);
       // Restore the en-specific short description.
       await bot.setMyShortDescription({ short_description: original, language_code: "en" });
+    });
+  });
+
+  describe("getMyStarBalance", () => {
+    it("returns a StarAmount object with a numeric star amount", async () => {
+      const balance = (await bot.getMyStarBalance()) as {
+        amount: number;
+        nanostar_amount?: number;
+      };
+      assert.ok(balance !== null && typeof balance === "object");
+      assert.equal(typeof balance.amount, "number");
+      assert.ok(balance.amount >= 0);
+      if (balance.nanostar_amount !== undefined) {
+        assert.equal(typeof balance.nanostar_amount, "number");
+      }
+    });
+  });
+
+  describe("getStarTransactions", () => {
+    it("returns a StarTransactions object with a transactions array", async () => {
+      const result = (await bot.getStarTransactions({ offset: 0, limit: 1 })) as {
+        transactions: unknown[];
+      };
+      assert.equal(typeof result, "object");
+      assert.ok(result !== null);
+      assert.ok(Array.isArray(result.transactions));
+      assert.ok(result.transactions.length <= 1);
     });
   });
 
@@ -1757,6 +2106,18 @@ describe("Telegram Bot API (integration)", () => {
         assert.equal(typeof sticker.file_id, "string");
         assert.equal(typeof sticker.file_unique_id, "string");
       }
+    });
+  });
+
+  // --- Gifts -----------------------------------------------------------
+
+  describe("getAvailableGifts", () => {
+    it("returns a Gifts object with an array of gifts", async () => {
+      const result = (await bot.getAvailableGifts()) as {
+        gifts: Array<{ id: string; star_count: number; sticker: { file_id: string; file_unique_id: string } }>;
+      };
+      assert.equal(typeof result, "object");
+      assert.ok(Array.isArray(result.gifts));
     });
   });
 
