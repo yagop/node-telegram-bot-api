@@ -2,8 +2,7 @@ import createDebug from "./internal/debug.js";
 
 import { FatalError } from "./errors.js";
 import type { TelegramBot } from "./telegram.js";
-import type { GetUpdatesOptions } from "./types/options.js";
-import type { Update } from "./types/schemas.js";
+import type { GetUpdatesParams, Update } from "./types/schemas.js";
 
 const debug = createDebug("node-telegram-bot-api:polling");
 
@@ -15,7 +14,7 @@ export interface PollingOptions {
   /** Whether to start polling automatically when the bot is constructed. */
   autoStart?: boolean;
   /** Parameters forwarded to `getUpdates`. */
-  params?: GetUpdatesOptions;
+  params?: GetUpdatesParams;
   /** @deprecated Use `params.timeout` instead. */
   timeout?: number;
 }
@@ -29,7 +28,7 @@ export interface PollingStopOptions {
   reason?: string;
 }
 
-interface InternalParams extends GetUpdatesOptions {
+interface InternalParams extends GetUpdatesParams {
   offset: number;
   timeout: number;
 }
@@ -47,7 +46,7 @@ export class TelegramBotPolling {
   constructor(bot: TelegramBot, options: PollingOptions = {}) {
     this.bot = bot;
     this.interval = typeof options.interval === "number" ? options.interval : 300;
-    const params: GetUpdatesOptions = options.params ?? {};
+    const params: GetUpdatesParams = options.params ?? {};
     this.params = {
       ...params,
       offset: typeof params.offset === "number" ? params.offset : 0,

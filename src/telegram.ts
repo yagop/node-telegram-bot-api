@@ -10,38 +10,39 @@ import { HttpClient, type HttpClientOptions, type RequestOptions } from "./http.
 import { TelegramBotPolling, type PollingOptions, type PollingStartOptions, type PollingStopOptions } from "./polling.js";
 import { TelegramBotWebHook, type WebHookOptions } from "./webhook.js";
 import { prepareFile, prepareFiles, stringify, type FileInput, type FileMeta, type PreparedFile } from "./utils.js";
-import {
-  MESSAGE_TYPES,
-  type ChatId,
-  type MessageType,
-  type Update,
-  type User,
-  type Message,
-  type MessageId,
-  type WebhookInfo,
-  type Chat,
-  type ChatMember,
-  type ChatInviteLink,
-  type ForumTopic,
-  type UserProfilePhotos,
-  type File as TelegramFile,
-  type Sticker,
-  type StickerSet,
-  type Poll,
-  type BotCommand,
-  type ChatJoinRequest,
-  type InputProfilePhotoInput,
-  type MenuButton,
-  type SentGuestMessage,
-  type SentWebAppMessage,
-  type BotAccessSettings,
-  type ReplyParameters,
-  type MessageEntity,
-  type LinkPreviewOptions,
-  type ParseMode,
-  type ReactionType,
-  type MaskPosition,
-  type InlineKeyboardMarkup,
+import { MESSAGE_TYPES } from "./types/schemas.js";
+import type {
+  // Library helpers + data objects (generated)
+  ChatId,
+  MessageType,
+  Update,
+  User,
+  Message,
+  MessageId,
+  WebhookInfo,
+  Chat,
+  ChatMember,
+  ChatInviteLink,
+  ForumTopic,
+  UserProfilePhotos,
+  File as TelegramFile,
+  Sticker,
+  StickerSet,
+  Poll,
+  BotCommand,
+  ChatJoinRequest,
+  InputProfilePhotoInput,
+  MenuButton,
+  SentGuestMessage,
+  SentWebAppMessage,
+  BotAccessSettings,
+  ReplyParameters,
+  MessageEntity,
+  LinkPreviewOptions,
+  ParseMode,
+  ReactionType,
+  MaskPosition,
+  InlineKeyboardMarkup,
   ChatPermissions,
   ChatFullInfo,
   InlineQueryResult,
@@ -50,70 +51,78 @@ import {
   BotName,
   BotDescription,
   BotShortDescription,
-} from "./types/schemas.js";
-
-import type {
-  GetUpdatesOptions,
-  SetWebHookOptions,
-  SendMessageOptions,
-  ForwardMessageOptions,
-  ForwardMessagesOptions,
-  CopyMessageOptions,
-  CopyMessagesOptions,
-  SendPhotoOptions,
-  SendLivePhotoOptions,
-  SendPaidMediaOptions,
-  SendMediaGroupOptions,
-  SendAudioOptions,
-  SendDocumentOptions,
-  SendVideoOptions,
-  SendAnimationOptions,
-  SendVoiceOptions,
-  SendVideoNoteOptions,
-  SendLocationOptions,
-  SendVenueOptions,
-  SendContactOptions,
-  SendPollOptions,
-  SendDiceOptions,
-  SendChatActionOptions,
-  AnswerCallbackQueryOptions,
-  AnswerInlineQueryOptions,
-  SendInvoiceOptions,
+  UserProfileAudios,
+  PreparedInlineMessage,
+  ChatAdministratorRights,
+  StarAmount,
+  StarTransactions,
+  GameHighScore,
+  Gifts,
+  OwnedGifts,
+  Story,
   ReplyMarkup,
   SuggestedPostParameters,
   InputPollOption,
-  sendChecklistOptions,
-  sendMessageDraftOptions,
-  SetMessageReactionOptions,
-  GetUserProfilePhotosOptions,
-  GetUserProfileAudiosOptions,
-  SetUserEmojiStatusOptions,
-  BanChatMemberOptions,
-  UnbanChatMemberOptions,
-  RestrictChatMemberOptions,
-  SetChatMemberTagOptions,
-  SetChatPermissionsOptions,
-  CreateChatInviteLinkOptions,
-  EditChatInviteLinkOptions,
-  CreateChatSubscriptionInviteLinkOptions,
-  EditChatSubscriptionInviteLinkOptions,
-  PinChatMessageOptions,
-  UnpinChatMessageOptions,
-  GetChatAdministratorsOptions,
-  CreateForumTopicOptions,
-  EditForumTopicOptions,
-  SetManagedBotAccessSettingsOptions,
-  SetMyCommandsOptions,
-  DeleteMyCommandsOptions,
-  GetMyCommandsOptions,
-  SetMyNameOptions,
-  GetMyNameOptions,
-  SetMyDescriptionOptions,
-  GetMyDescriptionOptions,
-  SetMyShortDescriptionOptions,
-  GetMyShortDescriptionOptions,
-  SetChatMenuButtonOptions,
-} from "./types/options.js";
+  // Per-method request params (generated, docs-faithful `<Method>Params`).
+  // Each method's options arg is `Omit<…Params, <positional args>>` inline below.
+  GetUpdatesParams,
+  SetWebhookParams,
+  SendMessageParams,
+  ForwardMessageParams,
+  ForwardMessagesParams,
+  CopyMessageParams,
+  CopyMessagesParams,
+  SendPhotoParams,
+  SendLivePhotoParams,
+  SendPaidMediaParams,
+  SendMediaGroupParams,
+  SendAudioParams,
+  SendDocumentParams,
+  SendVideoParams,
+  SendAnimationParams,
+  SendVoiceParams,
+  SendVideoNoteParams,
+  SendLocationParams,
+  SendVenueParams,
+  SendContactParams,
+  SendPollParams,
+  SendDiceParams,
+  SendChatActionParams,
+  AnswerCallbackQueryParams,
+  AnswerInlineQueryParams,
+  SendInvoiceParams,
+  SendChecklistParams,
+  SendMessageDraftParams,
+  SetMessageReactionParams,
+  GetUserProfilePhotosParams,
+  GetUserProfileAudiosParams,
+  SetUserEmojiStatusParams,
+  BanChatMemberParams,
+  UnbanChatMemberParams,
+  RestrictChatMemberParams,
+  SetChatMemberTagParams,
+  SetChatPermissionsParams,
+  CreateChatInviteLinkParams,
+  EditChatInviteLinkParams,
+  CreateChatSubscriptionInviteLinkParams,
+  EditChatSubscriptionInviteLinkParams,
+  PinChatMessageParams,
+  UnpinChatMessageParams,
+  GetChatAdministratorsParams,
+  CreateForumTopicParams,
+  EditForumTopicParams,
+  SetManagedBotAccessSettingsParams,
+  SetMyCommandsParams,
+  DeleteMyCommandsParams,
+  GetMyCommandsParams,
+  SetMyNameParams,
+  GetMyNameParams,
+  SetMyDescriptionParams,
+  GetMyDescriptionParams,
+  SetMyShortDescriptionParams,
+  GetMyShortDescriptionParams,
+  SetChatMenuButtonParams,
+} from "./types/schemas.js";
 
 import * as errors from "./errors.js";
 
@@ -547,14 +556,14 @@ export class TelegramBot extends EventEmitter {
 
   // --- Updates / webhook -------------------------------------------------
 
-  getUpdates(form: GetUpdatesOptions = {}): Promise<Update[]> {
-    if (form.allowed_updates && Array.isArray(form.allowed_updates)) {
-      form.allowed_updates = stringify(form.allowed_updates);
+  getUpdates(form: GetUpdatesParams = {}): Promise<Update[]> {
+    if (Array.isArray(form.allowed_updates)) {
+      (form as Record<string, unknown>).allowed_updates = stringify(form.allowed_updates);
     }
     return this._form("getUpdates", form);
   }
 
-  async setWebHook(url: string, options: SetWebHookOptions = {}, fileOptions: FileMeta = {}): Promise<boolean> {
+  async setWebHook(url: string, options: Omit<SetWebhookParams, "url"> = {}, fileOptions: FileMeta = {}): Promise<boolean> {
     const { certificate, ...rest } = options;
     const qs: Record<string, unknown> = { ...rest, url };
     if (Array.isArray(qs.allowed_updates)) qs.allowed_updates = stringify(qs.allowed_updates);
@@ -592,7 +601,7 @@ export class TelegramBot extends EventEmitter {
 
   // --- Messages ----------------------------------------------------------
 
-  sendMessage(chatId: ChatId, text: string, form: SendMessageOptions = {}): Promise<Message> {
+  sendMessage(chatId: ChatId, text: string, form: Omit<SendMessageParams, "chat_id" | "text"> = {}): Promise<Message> {
     return this._form("sendMessage", { ...form, chat_id: chatId, text });
   }
 
@@ -600,7 +609,7 @@ export class TelegramBot extends EventEmitter {
     chatId: ChatId,
     fromChatId: ChatId,
     messageId: number,
-    form: ForwardMessageOptions = {},
+    form: Omit<ForwardMessageParams, "chat_id" | "from_chat_id" | "message_id"> = {},
   ): Promise<Message> {
     return this._form("forwardMessage", {
       ...form,
@@ -614,7 +623,7 @@ export class TelegramBot extends EventEmitter {
     chatId: ChatId,
     fromChatId: ChatId,
     messageIds: number[],
-    form: ForwardMessagesOptions = {},
+    form: Omit<ForwardMessagesParams, "chat_id" | "from_chat_id" | "message_ids"> = {},
   ): Promise<MessageId[]> {
     return this._form("forwardMessages", {
       ...form,
@@ -628,7 +637,7 @@ export class TelegramBot extends EventEmitter {
     chatId: ChatId,
     fromChatId: ChatId,
     messageId: number,
-    form: CopyMessageOptions = {},
+    form: Omit<CopyMessageParams, "chat_id" | "from_chat_id" | "message_id"> = {},
   ): Promise<MessageId> {
     return this._form("copyMessage", {
       ...form,
@@ -642,7 +651,7 @@ export class TelegramBot extends EventEmitter {
     chatId: ChatId,
     fromChatId: ChatId,
     messageIds: number[],
-    form: CopyMessagesOptions = {},
+    form: Omit<CopyMessagesParams, "chat_id" | "from_chat_id" | "message_ids"> = {},
   ): Promise<MessageId[]> {
     return this._form("copyMessages", {
       ...form,
@@ -657,7 +666,7 @@ export class TelegramBot extends EventEmitter {
   sendPhoto(
     chatId: ChatId,
     photo: FileInput,
-    options: SendPhotoOptions = {},
+    options: Omit<SendPhotoParams, "chat_id" | "photo"> = {},
     fileOptions: FileMeta = {},
   ): Promise<Message> {
     return this._sendFile("sendPhoto", "photo", photo, { ...options, chat_id: chatId }, fileOptions);
@@ -667,7 +676,7 @@ export class TelegramBot extends EventEmitter {
     chatId: ChatId,
     livePhoto: FileInput,
     photo: FileInput,
-    options: SendLivePhotoOptions = {},
+    options: Omit<SendLivePhotoParams, "chat_id" | "live_photo" | "photo"> = {},
     fileOptions: FileMeta = {},
   ): Promise<Message> {
     const qs: Record<string, unknown> = { ...options, chat_id: chatId };
@@ -696,7 +705,7 @@ export class TelegramBot extends EventEmitter {
   sendAudio(
     chatId: ChatId,
     audio: FileInput,
-    options: SendAudioOptions = {},
+    options: Omit<SendAudioParams, "chat_id" | "audio"> = {},
     fileOptions: FileMeta = {},
   ): Promise<Message> {
     return this._sendFile(
@@ -712,7 +721,7 @@ export class TelegramBot extends EventEmitter {
   sendDocument(
     chatId: ChatId,
     doc: FileInput,
-    options: SendDocumentOptions = {},
+    options: Omit<SendDocumentParams, "chat_id" | "document"> = {},
     fileOptions: FileMeta = {},
   ): Promise<Message> {
     return this._sendFile(
@@ -728,7 +737,7 @@ export class TelegramBot extends EventEmitter {
   sendVideo(
     chatId: ChatId,
     video: FileInput,
-    options: SendVideoOptions = {},
+    options: Omit<SendVideoParams, "chat_id" | "video"> = {},
     fileOptions: FileMeta = {},
   ): Promise<Message> {
     return this._sendFile(
@@ -744,7 +753,7 @@ export class TelegramBot extends EventEmitter {
   sendAnimation(
     chatId: ChatId,
     animation: FileInput,
-    options: SendAnimationOptions = {},
+    options: Omit<SendAnimationParams, "chat_id" | "animation"> = {},
     fileOptions: FileMeta = {},
   ): Promise<Message> {
     return this._sendFile(
@@ -759,7 +768,7 @@ export class TelegramBot extends EventEmitter {
   sendVoice(
     chatId: ChatId,
     voice: FileInput,
-    options: SendVoiceOptions = {},
+    options: Omit<SendVoiceParams, "chat_id" | "voice"> = {},
     fileOptions: FileMeta = {},
   ): Promise<Message> {
     return this._sendFile("sendVoice", "voice", voice, { ...options, chat_id: chatId }, fileOptions);
@@ -768,7 +777,7 @@ export class TelegramBot extends EventEmitter {
   sendVideoNote(
     chatId: ChatId,
     videoNote: FileInput,
-    options: SendVideoNoteOptions = {},
+    options: Omit<SendVideoNoteParams, "chat_id" | "video_note"> = {},
     fileOptions: FileMeta = {},
   ): Promise<Message> {
     return this._sendFile(
@@ -785,7 +794,7 @@ export class TelegramBot extends EventEmitter {
     chatId: ChatId,
     starCount: number,
     media: Array<{ type: string; media: FileInput; fileOptions?: FileMeta;[key: string]: unknown }>,
-    options: SendPaidMediaOptions = {},
+    options: Omit<SendPaidMediaParams, "chat_id" | "star_count" | "media"> = {},
   ): Promise<Message> {
     const qs: Record<string, unknown> = { ...options, chat_id: chatId, star_count: starCount };
     const { formData, fileIds } = await prepareFiles("media", media, {}, this.options.filepath);
@@ -802,7 +811,7 @@ export class TelegramBot extends EventEmitter {
   async sendMediaGroup(
     chatId: ChatId,
     media: Array<{ media: FileInput; fileOptions?: FileMeta;[key: string]: unknown }>,
-    options: SendMediaGroupOptions = {},
+    options: Omit<SendMediaGroupParams, "chat_id" | "media"> = {},
   ): Promise<Message[]> {
     const qs: Record<string, unknown> = { ...options, chat_id: chatId };
     const formData: Record<string, PreparedFile> = {};
@@ -826,7 +835,7 @@ export class TelegramBot extends EventEmitter {
     return this._request("sendMediaGroup", { qs, formData });
   }
 
-  sendLocation(chatId: ChatId, latitude: number, longitude: number, form: SendLocationOptions = {}): Promise<Message> {
+  sendLocation(chatId: ChatId, latitude: number, longitude: number, form: Omit<SendLocationParams, "chat_id" | "latitude" | "longitude"> = {}): Promise<Message> {
     return this._form("sendLocation", { ...form, chat_id: chatId, latitude, longitude });
   }
 
@@ -836,16 +845,16 @@ export class TelegramBot extends EventEmitter {
     longitude: number,
     title: string,
     address: string,
-    form: SendVenueOptions = {},
+    form: Omit<SendVenueParams, "chat_id" | "latitude" | "longitude" | "title" | "address"> = {},
   ): Promise<Message> {
     return this._form("sendVenue", { ...form, chat_id: chatId, latitude, longitude, title, address });
   }
 
-  sendContact(chatId: ChatId, phoneNumber: string, firstName: string, form: SendContactOptions = {}): Promise<Message> {
+  sendContact(chatId: ChatId, phoneNumber: string, firstName: string, form: Omit<SendContactParams, "chat_id" | "phone_number" | "first_name"> = {}): Promise<Message> {
     return this._form("sendContact", { ...form, chat_id: chatId, phone_number: phoneNumber, first_name: firstName });
   }
 
-  sendPoll(chatId: ChatId, question: string, pollOptions: InputPollOption[], form: SendPollOptions = {}): Promise<Message> {
+  sendPoll(chatId: ChatId, question: string, pollOptions: InputPollOption[], form: Omit<SendPollParams, "chat_id" | "question" | "options"> = {}): Promise<Message> {
     const out: Record<string, unknown> = { ...form, chat_id: chatId, question, options: stringify(pollOptions) };
     if (out.country_codes) out.country_codes = stringify(out.country_codes);
     if (out.correct_option_ids) out.correct_option_ids = stringify(out.correct_option_ids);
@@ -856,7 +865,7 @@ export class TelegramBot extends EventEmitter {
     businessConnectionId: string,
     chatId: ChatId,
     checklist: Record<string, unknown>,
-    form: sendChecklistOptions = {},
+    form: Omit<SendChecklistParams, "business_connection_id" | "chat_id" | "checklist"> = {},
   ): Promise<Message> {
     return this._form("sendChecklist", {
       ...form,
@@ -867,7 +876,7 @@ export class TelegramBot extends EventEmitter {
   }
 
 
-  sendDice(chatId: ChatId, options: SendDiceOptions = {}): Promise<Message> {
+  sendDice(chatId: ChatId, options: Omit<SendDiceParams, "chat_id"> = {}): Promise<Message> {
     return this._form("sendDice", { ...options, chat_id: chatId });
   }
 
@@ -875,19 +884,19 @@ export class TelegramBot extends EventEmitter {
     chatId: ChatId,
     draftId: number,
     text: string,
-    form: sendMessageDraftOptions = {},
+    form: Omit<SendMessageDraftParams, "chat_id" | "draft_id" | "text"> = {},
   ): Promise<boolean> {
     return this._form("sendMessageDraft", { ...form, chat_id: chatId, draft_id: draftId, text });
   }
 
-  sendChatAction(chatId: ChatId, action: string, form: SendChatActionOptions = {}): Promise<boolean> {
+  sendChatAction(chatId: ChatId, action: string, form: Omit<SendChatActionParams, "chat_id" | "action"> = {}): Promise<boolean> {
     return this._form("sendChatAction", { ...form, chat_id: chatId, action });
   }
 
   setMessageReaction(
     chatId: ChatId,
     messageId: number,
-    form: SetMessageReactionOptions = {},
+    form: Omit<SetMessageReactionParams, "chat_id" | "message_id"> = {},
   ): Promise<boolean> {
     const out: Record<string, unknown> = { ...form, chat_id: chatId, message_id: messageId };
     if (out.reaction) out.reaction = stringify(out.reaction);
@@ -928,21 +937,21 @@ export class TelegramBot extends EventEmitter {
 
   getUserProfilePhotos(
     userId: number,
-    form: GetUserProfilePhotosOptions = {},
+    form: Omit<GetUserProfilePhotosParams, "user_id"> = {},
   ): Promise<UserProfilePhotos> {
     return this._form("getUserProfilePhotos", { ...form, user_id: userId });
   }
 
   getUserProfileAudios(
     userId: number,
-    form: GetUserProfileAudiosOptions = {},
-  ): Promise<unknown> {
+    form: Omit<GetUserProfileAudiosParams, "user_id"> = {},
+  ): Promise<UserProfileAudios> {
     return this._form("getUserProfileAudios", { ...form, user_id: userId });
   }
 
   setUserEmojiStatus(
     userId: number,
-    form: SetUserEmojiStatusOptions = {},
+    form: Omit<SetUserEmojiStatusParams, "user_id"> = {},
   ): Promise<boolean> {
     return this._form("setUserEmojiStatus", { ...form, user_id: userId });
   }
@@ -960,7 +969,7 @@ export class TelegramBot extends EventEmitter {
   banChatMember(
     chatId: ChatId,
     userId: number,
-    form: BanChatMemberOptions = {},
+    form: Omit<BanChatMemberParams, "chat_id" | "user_id"> = {},
   ): Promise<boolean> {
     return this._form("banChatMember", { ...form, chat_id: chatId, user_id: userId });
   }
@@ -968,7 +977,7 @@ export class TelegramBot extends EventEmitter {
   unbanChatMember(
     chatId: ChatId,
     userId: number,
-    form: UnbanChatMemberOptions = {},
+    form: Omit<UnbanChatMemberParams, "chat_id" | "user_id"> = {},
   ): Promise<boolean> {
     return this._form("unbanChatMember", { ...form, chat_id: chatId, user_id: userId });
   }
@@ -977,7 +986,7 @@ export class TelegramBot extends EventEmitter {
     chatId: ChatId,
     userId: number,
     permissions: ChatPermissions,
-    form: RestrictChatMemberOptions = {},
+    form: Omit<RestrictChatMemberParams, "chat_id" | "user_id" | "permissions"> = {},
   ): Promise<boolean> {
     return this._form("restrictChatMember", { ...form, chat_id: chatId, user_id: userId, permissions: stringify(permissions) });
   }
@@ -1025,7 +1034,7 @@ export class TelegramBot extends EventEmitter {
   setChatMemberTag(
     chatId: ChatId,
     userId: number,
-    form: SetChatMemberTagOptions = {},
+    form: Omit<SetChatMemberTagParams, "chat_id" | "user_id"> = {},
   ): Promise<boolean> {
     return this._form("setChatMemberTag", { ...form, chat_id: chatId, user_id: userId });
   }
@@ -1049,7 +1058,7 @@ export class TelegramBot extends EventEmitter {
   setChatPermissions(
     chatId: ChatId,
     permissions: ChatPermissions,
-    form: SetChatPermissionsOptions = {},
+    form: Omit<SetChatPermissionsParams, "chat_id" | "permissions"> = {},
   ): Promise<boolean> {
     return this._form("setChatPermissions", { ...form, chat_id: chatId, permissions: stringify(permissions) });
   }
@@ -1062,7 +1071,7 @@ export class TelegramBot extends EventEmitter {
 
   createChatInviteLink(
     chatId: ChatId,
-    form: CreateChatInviteLinkOptions = {},
+    form: Omit<CreateChatInviteLinkParams, "chat_id"> = {},
   ): Promise<ChatInviteLink> {
     return this._form("createChatInviteLink", { ...form, chat_id: chatId });
   }
@@ -1070,7 +1079,7 @@ export class TelegramBot extends EventEmitter {
   editChatInviteLink(
     chatId: ChatId,
     inviteLink: string,
-    form: EditChatInviteLinkOptions = {},
+    form: Omit<EditChatInviteLinkParams, "chat_id" | "invite_link"> = {},
   ): Promise<ChatInviteLink> {
     return this._form("editChatInviteLink", { ...form, chat_id: chatId, invite_link: inviteLink });
   }
@@ -1079,7 +1088,7 @@ export class TelegramBot extends EventEmitter {
     chatId: ChatId,
     subscriptionPeriod: number,
     subscriptionPrice: number,
-    form: CreateChatSubscriptionInviteLinkOptions = {},
+    form: Omit<CreateChatSubscriptionInviteLinkParams, "chat_id" | "subscription_period" | "subscription_price"> = {},
   ): Promise<ChatInviteLink> {
     return this._form("createChatSubscriptionInviteLink", {
       ...form,
@@ -1092,7 +1101,7 @@ export class TelegramBot extends EventEmitter {
   editChatSubscriptionInviteLink(
     chatId: ChatId,
     inviteLink: string,
-    form: EditChatSubscriptionInviteLinkOptions = {},
+    form: Omit<EditChatSubscriptionInviteLinkParams, "chat_id" | "invite_link"> = {},
   ): Promise<ChatInviteLink> {
     return this._form("editChatSubscriptionInviteLink", { ...form, chat_id: chatId, invite_link: inviteLink });
   }
@@ -1135,14 +1144,14 @@ export class TelegramBot extends EventEmitter {
   pinChatMessage(
     chatId: ChatId,
     messageId: number,
-    form: PinChatMessageOptions = {},
+    form: Omit<PinChatMessageParams, "chat_id" | "message_id"> = {},
   ): Promise<boolean> {
     return this._form("pinChatMessage", { ...form, chat_id: chatId, message_id: messageId });
   }
 
   unpinChatMessage(
     chatId: ChatId,
-    form: UnpinChatMessageOptions = {},
+    form: Omit<UnpinChatMessageParams, "chat_id"> = {},
   ): Promise<boolean> {
     return this._form("unpinChatMessage", { ...form, chat_id: chatId });
   }
@@ -1161,7 +1170,7 @@ export class TelegramBot extends EventEmitter {
 
   getChatAdministrators(
     chatId: ChatId,
-    form: GetChatAdministratorsOptions = {},
+    form: Omit<GetChatAdministratorsParams, "chat_id"> = {},
   ): Promise<ChatMember[]> {
     return this._form("getChatAdministrators", { ...form, chat_id: chatId });
   }
@@ -1191,7 +1200,7 @@ export class TelegramBot extends EventEmitter {
   createForumTopic(
     chatId: ChatId,
     name: string,
-    form: CreateForumTopicOptions = {},
+    form: Omit<CreateForumTopicParams, "chat_id" | "name"> = {},
   ): Promise<ForumTopic> {
     return this._form("createForumTopic", { ...form, chat_id: chatId, name });
   }
@@ -1199,7 +1208,7 @@ export class TelegramBot extends EventEmitter {
   editForumTopic(
     chatId: ChatId,
     messageThreadId: number,
-    form: EditForumTopicOptions = {},
+    form: Omit<EditForumTopicParams, "chat_id" | "message_thread_id"> = {},
   ): Promise<boolean> {
     return this._form("editForumTopic", { ...form, chat_id: chatId, message_thread_id: messageThreadId });
   }
@@ -1250,7 +1259,7 @@ export class TelegramBot extends EventEmitter {
 
   // --- Callback / inline queries ---------------------------------------
 
-  answerCallbackQuery(callbackQueryId: string, form: AnswerCallbackQueryOptions = {}): Promise<boolean> {
+  answerCallbackQuery(callbackQueryId: string, form: Omit<AnswerCallbackQueryParams, "callback_query_id"> = {}): Promise<boolean> {
     return this._form("answerCallbackQuery", { ...form, callback_query_id: callbackQueryId });
   }
 
@@ -1270,14 +1279,14 @@ export class TelegramBot extends EventEmitter {
       allow_group_chats?: boolean;
       allow_channel_chats?: boolean;
     } = {},
-  ): Promise<unknown> {
+  ): Promise<PreparedInlineMessage> {
     return this._form("savePreparedInlineMessage", { ...form, user_id: userId, result: stringify(result) });
   }
   savePreparedKeyboardButton(
     userId: number,
     button: Record<string, unknown>,
     form: {} = {},
-  ): Promise<unknown> {
+  ): Promise<PreparedInlineMessage> {
     return this._form("savePreparedKeyboardButton", { ...form, user_id: userId, button: stringify(button) });
   }
 
@@ -1304,7 +1313,7 @@ export class TelegramBot extends EventEmitter {
   setManagedBotAccessSettings(
     userId: number,
     isAccessRestricted: boolean,
-    form: SetManagedBotAccessSettingsOptions = {},
+    form: Omit<SetManagedBotAccessSettingsParams, "user_id" | "is_access_restricted"> = {},
   ): Promise<boolean> {
     const out: Record<string, unknown> = {
       user_id: userId,
@@ -1318,7 +1327,7 @@ export class TelegramBot extends EventEmitter {
 
   setMyCommands(
     commands: BotCommand[],
-    form: SetMyCommandsOptions = {},
+    form: Omit<SetMyCommandsParams, "commands"> = {},
   ): Promise<boolean> {
     const out: Record<string, unknown> = { ...form, commands: stringify(commands) };
     if (out.scope) out.scope = stringify(out.scope);
@@ -1326,7 +1335,7 @@ export class TelegramBot extends EventEmitter {
   }
 
   deleteMyCommands(
-    form: DeleteMyCommandsOptions = {},
+    form: DeleteMyCommandsParams = {},
   ): Promise<boolean> {
     const out: Record<string, unknown> = { ...form };
     if (out.scope) out.scope = stringify(out.scope);
@@ -1334,36 +1343,36 @@ export class TelegramBot extends EventEmitter {
   }
 
   getMyCommands(
-    form: GetMyCommandsOptions = {},
+    form: GetMyCommandsParams = {},
   ): Promise<BotCommand[]> {
     const out: Record<string, unknown> = { ...form };
     if (out.scope) out.scope = stringify(out.scope);
     return this._form("getMyCommands", out);
   }
 
-  setMyName(form: SetMyNameOptions = {}): Promise<boolean> {
+  setMyName(form: SetMyNameParams = {}): Promise<boolean> {
     return this._form("setMyName", form);
   }
 
-  getMyName(form: GetMyNameOptions = {}): Promise<BotName> {
+  getMyName(form: GetMyNameParams = {}): Promise<BotName> {
     return this._form("getMyName", form);
   }
 
-  setMyDescription(form: SetMyDescriptionOptions = {}): Promise<boolean> {
+  setMyDescription(form: SetMyDescriptionParams = {}): Promise<boolean> {
     return this._form("setMyDescription", form);
   }
 
-  getMyDescription(form: GetMyDescriptionOptions = {}): Promise<BotDescription> {
+  getMyDescription(form: GetMyDescriptionParams = {}): Promise<BotDescription> {
     return this._form("getMyDescription", form);
   }
 
   setMyShortDescription(
-    form: SetMyShortDescriptionOptions = {},
+    form: SetMyShortDescriptionParams = {},
   ): Promise<boolean> {
     return this._form("setMyShortDescription", form);
   }
 
-  getMyShortDescription(form: GetMyShortDescriptionOptions = {}): Promise<BotShortDescription> {
+  getMyShortDescription(form: GetMyShortDescriptionParams = {}): Promise<BotShortDescription> {
     return this._form("getMyShortDescription", form);
   }
 
@@ -1389,7 +1398,7 @@ export class TelegramBot extends EventEmitter {
   }
 
   setChatMenuButton(
-    form: SetChatMenuButtonOptions = {},
+    form: SetChatMenuButtonParams = {},
   ): Promise<boolean> {
     if (form.menu_button) {
       const serialized = stringify(form.menu_button);
@@ -1407,7 +1416,7 @@ export class TelegramBot extends EventEmitter {
   ): Promise<boolean> {
     return this._form("setMyDefaultAdministratorRights", form);
   }
-  getMyDefaultAdministratorRights(form: { for_channels?: boolean } = {}): Promise<unknown> {
+  getMyDefaultAdministratorRights(form: { for_channels?: boolean } = {}): Promise<ChatAdministratorRights> {
     return this._form("getMyDefaultAdministratorRights", form);
   }
 
@@ -1659,7 +1668,7 @@ export class TelegramBot extends EventEmitter {
   answerInlineQuery(
     inlineQueryId: string,
     results: InlineQueryResult[],
-    form: AnswerInlineQueryOptions = {},
+    form: Omit<AnswerInlineQueryParams, "inline_query_id" | "results"> = {},
   ): Promise<boolean> {
     return this._form("answerInlineQuery", { ...form, inline_query_id: inlineQueryId, results: stringify(results) });
   }
@@ -1682,7 +1691,7 @@ export class TelegramBot extends EventEmitter {
     providerToken: string,
     currency: string,
     prices: Array<{ label: string; amount: number }>,
-    form: SendInvoiceOptions = {},
+    form: Omit<SendInvoiceParams, "chat_id" | "title" | "description" | "payload" | "provider_token" | "currency" | "prices"> = {},
   ): Promise<Message> {
     const out: Record<string, unknown> = {
       ...form,
@@ -1753,10 +1762,10 @@ export class TelegramBot extends EventEmitter {
 
   // --- Telegram Stars --------------------------------------------------
 
-  getMyStarBalance(form: {} = {}): Promise<unknown> {
+  getMyStarBalance(form: {} = {}): Promise<StarAmount> {
     return this._form("getMyStarBalance", form);
   }
-  getStarTransactions(form: { offset?: number; limit?: number } = {}): Promise<unknown> {
+  getStarTransactions(form: { offset?: number; limit?: number } = {}): Promise<StarTransactions> {
     return this._form("getStarTransactions", form);
   }
   refundStarPayment(
@@ -1818,7 +1827,7 @@ export class TelegramBot extends EventEmitter {
   getGameHighScores(
     userId: number,
     form: { chat_id?: number; message_id?: number; inline_message_id?: string } = {},
-  ): Promise<unknown[]> {
+  ): Promise<GameHighScore[]> {
     return this._form("getGameHighScores", { ...form, user_id: userId });
   }
 
@@ -1845,7 +1854,7 @@ export class TelegramBot extends EventEmitter {
   }
   // --- Gifts -----------------------------------------------------------
 
-  getAvailableGifts(form: {} = {}): Promise<unknown> {
+  getAvailableGifts(form: {} = {}): Promise<Gifts> {
     return this._form("getAvailableGifts", form);
   }
   sendGift(
@@ -1981,7 +1990,7 @@ export class TelegramBot extends EventEmitter {
       accepted_gift_types: acceptedGiftTypes,
     });
   }
-  getBusinessAccountStarBalance(businessConnectionId: string, form: {} = {}): Promise<unknown> {
+  getBusinessAccountStarBalance(businessConnectionId: string, form: {} = {}): Promise<StarAmount> {
     return this._form("getBusinessAccountStarBalance", { ...form, business_connection_id: businessConnectionId });
   }
   transferBusinessAccountStars(
@@ -2009,7 +2018,7 @@ export class TelegramBot extends EventEmitter {
       offset?: string;
       limit?: number;
     } = {},
-  ): Promise<unknown> {
+  ): Promise<OwnedGifts> {
     return this._form("getBusinessAccountGifts", { ...form, business_connection_id: businessConnectionId });
   }
   getUserGifts(
@@ -2024,7 +2033,7 @@ export class TelegramBot extends EventEmitter {
       offset?: string;
       limit?: number;
     } = {},
-  ): Promise<unknown> {
+  ): Promise<OwnedGifts> {
     return this._form("getUserGifts", { ...form, user_id: userId });
   }
   getChatGifts(
@@ -2041,7 +2050,7 @@ export class TelegramBot extends EventEmitter {
       offset?: string;
       limit?: number;
     } = {},
-  ): Promise<unknown> {
+  ): Promise<OwnedGifts> {
     return this._form("getChatGifts", { ...form, chat_id: chatId });
   }
   convertGiftToStars(
@@ -2094,7 +2103,7 @@ export class TelegramBot extends EventEmitter {
       post_to_chat_page?: boolean;
       protect_content?: boolean;
     } = {},
-  ): Promise<unknown> {
+  ): Promise<Story> {
     if (!content.type) throw new FatalError("content.type is required");
     const qs: Record<string, unknown> = {
       ...options,
@@ -2114,7 +2123,7 @@ export class TelegramBot extends EventEmitter {
     fromStoryId: number,
     activePeriod: number,
     form: { post_to_chat_page?: boolean; protect_content?: boolean } = {},
-  ): Promise<unknown> {
+  ): Promise<Story> {
     return this._form("repostStory", {
       ...form,
       business_connection_id: businessConnectionId,
@@ -2133,7 +2142,7 @@ export class TelegramBot extends EventEmitter {
       caption_entities?: MessageEntity[];
       areas?: Array<Record<string, unknown>>;
     } = {},
-  ): Promise<unknown> {
+  ): Promise<Story> {
     if (!content.type) throw new FatalError("content.type is required");
     const qs: Record<string, unknown> = {
       ...options,

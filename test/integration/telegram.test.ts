@@ -32,26 +32,23 @@ import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-import {
-  TelegramBot,
-  ChatSchema,
-  ChatInviteLinkSchema,
-  ChatMemberSchema,
-  ChatPermissionsSchema,
-  FileSchema,
-  LinkPreviewOptionsSchema,
-  MenuButtonSchema,
-  MessageSchema,
-  MessageEntitySchema,
-  MessageIdSchema,
-  PollSchema,
-  StickerSetSchema,
-  TelegramError,
-  UserProfilePhotosSchema,
-  UserSchema,
-  WebhookInfoSchema,
-  type ChatPermissions,
-  type MenuButton,
+import { TelegramBot, TelegramError } from "../../src/index.js";
+import type {
+  Chat,
+  ChatInviteLink,
+  ChatMember,
+  ChatPermissions,
+  File as TelegramFile,
+  LinkPreviewOptions,
+  MenuButton,
+  Message,
+  MessageEntity,
+  MessageId,
+  Poll,
+  StickerSet,
+  UserProfilePhotos,
+  User,
+  WebhookInfo,
 } from "../../src/index.js";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -140,7 +137,6 @@ describe("Telegram Bot API (integration)", () => {
   describe("getMe", () => {
     it("returns a User describing the bot", async () => {
       const result = await bot.getMe();
-      UserSchema.parse(result);
       assert.equal(result.is_bot, true);
       assert.equal(typeof result.id, "number");
     });
@@ -276,7 +272,6 @@ describe("Telegram Bot API (integration)", () => {
       });
       assert.equal(ok, true);
       const button = await bot.getChatMenuButton();
-      MenuButtonSchema.parse(button);
       assert.equal(button.type, "commands");
     });
 
@@ -289,7 +284,6 @@ describe("Telegram Bot API (integration)", () => {
       // default ("commands") when read back, so assert it validates rather
       // than that the type is literally "default".
       const button = await bot.getChatMenuButton();
-      MenuButtonSchema.parse(button);
       assert.equal(typeof button.type, "string");
     });
   });
@@ -299,7 +293,6 @@ describe("Telegram Bot API (integration)", () => {
   describe("getWebHookInfo", () => {
     it("returns a WebhookInfo that validates against the schema", async () => {
       const info = await bot.getWebHookInfo();
-      WebhookInfoSchema.parse(info);
       assert.equal(typeof info.url, "string");
       assert.equal(typeof info.has_custom_certificate, "boolean");
       assert.equal(typeof info.pending_update_count, "number");
@@ -332,7 +325,6 @@ describe("Telegram Bot API (integration)", () => {
   describe("sendMessage", () => {
     it("sends a plain text message", async () => {
       const sent = await bot.sendMessage(GROUP_ID, `hello ${TIMESTAMP}`);
-      MessageSchema.parse(sent);
       assert.equal(sent.text, `hello ${TIMESTAMP}`);
     });
 
@@ -343,7 +335,6 @@ describe("Telegram Bot API (integration)", () => {
           inline_keyboard: [[{ text: "btn", callback_data: "noop" }]],
         },
       });
-      MessageSchema.parse(sent);
       // TODO: add a test for reply_markup
       assert.ok(sent.reply_markup);
     });
@@ -356,7 +347,6 @@ describe("Telegram Bot API (integration)", () => {
         protect_content: true,
         reply_parameters: { message_id: target.message_id },
       });
-      MessageSchema.parse(sent);
       assert.equal(sent.has_protected_content, true);
       assert.ok(sent.reply_to_message);
       assert.equal(sent.reply_to_message!.message_id, target.message_id);
@@ -376,18 +366,16 @@ describe("Telegram Bot API (integration)", () => {
         entities: [{ type: "bold", offset: 0, length: 4 }],
         link_preview_options: { is_disabled: true },
       });
-      MessageSchema.parse(sent);
       assert.equal(sent.text, text);
       assert.ok(sent.entities);
       const bold = sent.entities!.find((e) => e.type === "bold");
       assert.ok(bold);
-      MessageEntitySchema.parse(bold);
       assert.equal(bold!.offset, 0);
       assert.equal(bold!.length, 4);
       // A disabled preview means Telegram returns no link_preview_options
       // (or an explicitly-disabled one) and never an auto-generated preview.
       if (sent.link_preview_options) {
-        const preview = LinkPreviewOptionsSchema.parse(sent.link_preview_options);
+        const preview = sent.link_preview_options;
         assert.equal(preview.is_disabled, true);
       } else {
         assert.equal(sent.link_preview_options, undefined);
@@ -405,7 +393,6 @@ describe("Telegram Bot API (integration)", () => {
   describe("sendDice", () => {
     it("returns a Message with a dice value", async () => {
       const sent = await bot.sendDice(GROUP_ID);
-      MessageSchema.parse(sent);
       assert.ok(sent.dice);
       assert.equal(typeof sent.dice!.value, "number");
     });
@@ -415,7 +402,6 @@ describe("Telegram Bot API (integration)", () => {
         emoji: "🎲",
         disable_notification: true,
       });
-      MessageSchema.parse(sent);
       assert.ok(sent.dice);
     });
 
@@ -426,7 +412,6 @@ describe("Telegram Bot API (integration)", () => {
           inline_keyboard: [[{ text: "Roll again", callback_data: "roll" }]],
         },
       });
-      MessageSchema.parse(sent);
       assert.ok(sent.reply_markup);
     });
 
@@ -435,7 +420,6 @@ describe("Telegram Bot API (integration)", () => {
       const sent = await bot.sendDice(GROUP_ID, {
         reply_parameters: { message_id: target.message_id },
       });
-      MessageSchema.parse(sent);
       assert.ok(sent.dice);
       assert.ok(sent.reply_to_message);
       assert.equal(sent.reply_to_message!.message_id, target.message_id);
@@ -445,7 +429,6 @@ describe("Telegram Bot API (integration)", () => {
   describe("sendLocation", () => {
     it("returns a Message with a location", async () => {
       const sent = await bot.sendLocation(GROUP_ID, 47.5351072, -52.7508537);
-      MessageSchema.parse(sent);
       assert.ok(sent.location);
     });
 
@@ -456,7 +439,6 @@ describe("Telegram Bot API (integration)", () => {
         heading: 90,
         proximity_alert_radius: 1000,
       });
-      MessageSchema.parse(sent);
       assert.ok(sent.location);
     });
 
@@ -466,7 +448,6 @@ describe("Telegram Bot API (integration)", () => {
         protect_content: true,
         disable_notification: true,
       });
-      MessageSchema.parse(sent);
       assert.ok(sent.location);
     });
 
@@ -475,7 +456,6 @@ describe("Telegram Bot API (integration)", () => {
       const sent = await bot.sendLocation(GROUP_ID, 48.8566, 2.3522, {
         reply_parameters: { message_id: target.message_id },
       });
-      MessageSchema.parse(sent);
       assert.ok(sent.location);
       assert.ok(sent.reply_to_message);
       assert.equal(sent.reply_to_message!.message_id, target.message_id);
@@ -487,7 +467,6 @@ describe("Telegram Bot API (integration)", () => {
           inline_keyboard: [[{ text: "Open map", callback_data: "map" }]],
         },
       });
-      MessageSchema.parse(sent);
       assert.ok(sent.location);
       assert.ok(sent.reply_markup);
     });
@@ -502,7 +481,6 @@ describe("Telegram Bot API (integration)", () => {
         "Venue Title",
         "Venue Address",
       );
-      MessageSchema.parse(sent);
       assert.ok(sent.venue);
     });
 
@@ -518,7 +496,6 @@ describe("Telegram Bot API (integration)", () => {
           foursquare_type: "poi",
         },
       );
-      MessageSchema.parse(sent);
       assert.ok(sent.venue);
     });
 
@@ -536,7 +513,6 @@ describe("Telegram Bot API (integration)", () => {
           disable_notification: true,
         },
       );
-      MessageSchema.parse(sent);
       assert.ok(sent.venue);
     });
 
@@ -553,7 +529,6 @@ describe("Telegram Bot API (integration)", () => {
           },
         },
       );
-      MessageSchema.parse(sent);
       assert.ok(sent.venue);
       assert.ok(sent.reply_markup);
       assert.equal(sent.reply_markup!.inline_keyboard?.[0]?.[0]?.text, "directions");
@@ -571,7 +546,6 @@ describe("Telegram Bot API (integration)", () => {
           reply_parameters: { message_id: target.message_id },
         },
       );
-      MessageSchema.parse(sent);
       assert.ok(sent.venue);
       assert.ok(sent.reply_to_message);
       assert.equal(sent.reply_to_message!.message_id, target.message_id);
@@ -583,9 +557,7 @@ describe("Telegram Bot API (integration)", () => {
       const sent = await bot.sendPoll(GROUP_ID, "Choose:", [{ text: "A" }, { text: "B" }, { text: "C" }], {
         is_anonymous: true,
       });
-      MessageSchema.parse(sent);
       assert.ok(sent.poll);
-      PollSchema.parse(sent.poll);
     });
 
     it("honors type, is_anonymous, allows_multiple_answers, allow_revoting", async () => {
@@ -593,9 +565,8 @@ describe("Telegram Bot API (integration)", () => {
         type: "regular",
         is_anonymous: false,
         allows_multiple_answers: true,
-        allow_revoting: true,
+        allows_revoting: true,
       });
-      MessageSchema.parse(sent);
       assert.ok(sent.poll);
       assert.equal(sent.poll!.type, "regular");
       assert.equal(sent.poll!.allows_multiple_answers, true);
@@ -609,7 +580,6 @@ describe("Telegram Bot API (integration)", () => {
         description: "Please rate it",
         close_date: closeDate,
       });
-      MessageSchema.parse(sent);
       assert.ok(sent.poll);
     });
 
@@ -627,11 +597,9 @@ describe("Telegram Bot API (integration)", () => {
           open_period: 600,
         },
       );
-      MessageSchema.parse(sent);
       assert.ok(sent.poll);
-      PollSchema.parse(sent.poll);
       assert.equal(sent.poll!.type, "quiz");
-      assert.equal(sent.poll!.correct_option_id, 0);
+      assert.deepEqual(sent.poll!.correct_option_ids, [0]);
       // explanation parse_mode is applied: the returned plain text drops the markup
       assert.equal(sent.poll!.explanation, "Paris is correct");
       assert.equal(sent.poll!.open_period, 600);
@@ -652,7 +620,6 @@ describe("Telegram Bot API (integration)", () => {
           open_period: 600,
         },
       );
-      MessageSchema.parse(sent);
       assert.ok(sent.poll);
       assert.equal(sent.poll!.explanation, explanation);
     });
@@ -661,7 +628,6 @@ describe("Telegram Bot API (integration)", () => {
       const sent = await bot.sendPoll(GROUP_ID, "Already closed?", [{ text: "Yes" }, { text: "No" }], {
         is_closed: true,
       });
-      MessageSchema.parse(sent);
       assert.ok(sent.poll);
       assert.equal(sent.poll!.is_closed, true);
     });
@@ -670,7 +636,6 @@ describe("Telegram Bot API (integration)", () => {
       const sent = await bot.sendPoll(GROUP_ID, "*Bold* question?", [{ text: "A" }, { text: "B" }], {
         question_parse_mode: "MarkdownV2",
       });
-      MessageSchema.parse(sent);
       assert.ok(sent.poll);
       // parse_mode strips the markup from the stored question text
       assert.equal(sent.poll!.question, "Bold question?");
@@ -678,7 +643,6 @@ describe("Telegram Bot API (integration)", () => {
       const sent2 = await bot.sendPoll(GROUP_ID, "Bold question?", [{ text: "A" }, { text: "B" }], {
         question_entities: [{ type: "bold", offset: 0, length: 4 }],
       });
-      MessageSchema.parse(sent2);
       assert.equal(sent2.poll!.question, "Bold question?");
     });
 
@@ -689,9 +653,7 @@ describe("Telegram Bot API (integration)", () => {
         description_parse_mode: "MarkdownV2",
         close_date: Math.floor(Date.now() / 1000) + 3600,
       });
-      MessageSchema.parse(sent);
       assert.ok(sent.poll);
-      PollSchema.parse(sent.poll);
 
       const sent2 = await bot.sendPoll(GROUP_ID, "Pick again?", [{ text: "A" }, { text: "B" }], {
         is_anonymous: true,
@@ -699,7 +661,6 @@ describe("Telegram Bot API (integration)", () => {
         description_entities: [{ type: "bold", offset: 0, length: 9 }],
         close_date: Math.floor(Date.now() / 1000) + 3600,
       });
-      MessageSchema.parse(sent2);
       assert.ok(sent2.poll);
     });
 
@@ -711,7 +672,6 @@ describe("Telegram Bot API (integration)", () => {
         reply_markup: { inline_keyboard: [[{ text: "Info", callback_data: "info" }]] },
         reply_parameters: { message_id: target.message_id },
       });
-      MessageSchema.parse(sent);
       assert.ok(sent.poll);
       assert.ok(sent.reply_to_message);
       assert.equal(sent.reply_to_message!.message_id, target.message_id);
@@ -735,7 +695,6 @@ describe("Telegram Bot API (integration)", () => {
         vcard,
       });
 
-      MessageSchema.parse(sent);
       assert.ok(sent.contact, "expected the sent message to carry a contact");
       assert.equal(sent.contact!.phone_number.replace(/^\+/, ""), "15551234567");
       assert.equal(sent.contact!.first_name, "Inte");
@@ -750,7 +709,6 @@ describe("Telegram Bot API (integration)", () => {
           inline_keyboard: [[{ text: "Save", callback_data: "save" }]],
         },
       });
-      MessageSchema.parse(sent);
       assert.ok(sent.reply_markup);
     });
 
@@ -759,7 +717,6 @@ describe("Telegram Bot API (integration)", () => {
       const sent = await bot.sendContact(GROUP_ID, "+15559999999", "Reply", {
         reply_parameters: { message_id: target.message_id },
       });
-      MessageSchema.parse(sent);
       assert.ok(sent.contact, "expected the sent message to carry a contact");
       assert.ok(sent.reply_to_message);
       assert.equal(sent.reply_to_message!.message_id, target.message_id);
@@ -771,27 +728,23 @@ describe("Telegram Bot API (integration)", () => {
   describe("sendPhoto", () => {
     it("from a filesystem path", async () => {
       const sent = await bot.sendPhoto(GROUP_ID, PHOTO_PATH);
-      MessageSchema.parse(sent);
       assert.ok(Array.isArray(sent.photo));
     });
 
     it("from a Buffer", async () => {
       const buf = fs.readFileSync(PHOTO_PATH);
       const sent = await bot.sendPhoto(GROUP_ID, buf, {}, { filename: "photo.png" });
-      MessageSchema.parse(sent);
       assert.ok(Array.isArray(sent.photo));
     });
 
     it("from a Readable stream", async () => {
       const stream = fs.createReadStream(PHOTO_PATH);
       const sent = await bot.sendPhoto(GROUP_ID, stream);
-      MessageSchema.parse(sent);
       assert.ok(Array.isArray(sent.photo));
     });
 
     it("from a previously-uploaded file_id", async () => {
       const sent = await bot.sendPhoto(GROUP_ID, photoFileId);
-      MessageSchema.parse(sent);
       assert.ok(Array.isArray(sent.photo));
     });
   });
@@ -799,7 +752,6 @@ describe("Telegram Bot API (integration)", () => {
   describe("sendLivePhoto", () => {
     it("from a filesystem path", async () => {
       const sent = await bot.sendLivePhoto(GROUP_ID, LIVE_PHOTO_PATH, PHOTO_FOR_LIVE_PHOTO_PATH);
-      MessageSchema.parse(sent);
       assert.ok(Array.isArray(sent.photo));
       assert.ok(sent.live_photo);
     });
@@ -808,7 +760,6 @@ describe("Telegram Bot API (integration)", () => {
   describe("sendAudio", () => {
     it("from a filesystem path", async () => {
       const sent = await bot.sendAudio(GROUP_ID, AUDIO_PATH);
-      MessageSchema.parse(sent);
       assert.ok(sent.audio);
     });
   });
@@ -816,7 +767,6 @@ describe("Telegram Bot API (integration)", () => {
   describe("sendDocument", () => {
     it("from a filesystem path", async () => {
       const sent = await bot.sendDocument(GROUP_ID, PHOTO_PATH);
-      MessageSchema.parse(sent);
       assert.ok(sent.document);
     });
   });
@@ -824,7 +774,6 @@ describe("Telegram Bot API (integration)", () => {
   describe("sendVideo", () => {
     it("from a filesystem path", async () => {
       const sent = await bot.sendVideo(GROUP_ID, VIDEO_PATH);
-      MessageSchema.parse(sent);
       assert.ok(sent.video);
     });
   });
@@ -832,7 +781,6 @@ describe("Telegram Bot API (integration)", () => {
   describe("sendAnimation", () => {
     it("from a filesystem path (gif)", async () => {
       const sent = await bot.sendAnimation(GROUP_ID, PHOTO_GIF_PATH);
-      MessageSchema.parse(sent);
       assert.ok(sent.animation || sent.document);
     });
   });
@@ -840,7 +788,6 @@ describe("Telegram Bot API (integration)", () => {
   describe("sendVoice", () => {
     it("from a filesystem path", async () => {
       const sent = await bot.sendVoice(GROUP_ID, VOICE_PATH);
-      MessageSchema.parse(sent);
       assert.ok(sent.voice);
     });
   });
@@ -849,7 +796,6 @@ describe("Telegram Bot API (integration)", () => {
     it("from a Buffer", async () => {
       const buf = fs.readFileSync(VIDEO_PATH);
       const sent = await bot.sendVideoNote(GROUP_ID, buf, {}, { filename: "video.mp4" });
-      MessageSchema.parse(sent);
       // Telegram occasionally classifies non-square clips as plain video.
       // Either branch demonstrates the round-trip succeeded.
       assert.ok(sent.video_note || sent.video);
@@ -859,7 +805,6 @@ describe("Telegram Bot API (integration)", () => {
   describe("sendSticker", () => {
     it("from a filesystem path", async () => {
       const sent = await bot.sendSticker(GROUP_ID, STICKER_PATH);
-      MessageSchema.parse(sent);
       assert.ok(sent.sticker);
     });
   });
@@ -872,7 +817,6 @@ describe("Telegram Bot API (integration)", () => {
       ]);
       assert.ok(Array.isArray(sent));
       assert.equal(sent.length, 2);
-      sent.forEach((m) => MessageSchema.parse(m));
     });
 
     it("honors disable_notification and protect_content", async () => {
@@ -889,7 +833,6 @@ describe("Telegram Bot API (integration)", () => {
       );
       assert.ok(Array.isArray(sent));
       assert.equal(sent.length, 2);
-      sent.forEach((m) => MessageSchema.parse(m));
     });
 
     it("honors reply_parameters", async () => {
@@ -906,7 +849,6 @@ describe("Telegram Bot API (integration)", () => {
       );
       assert.ok(Array.isArray(sent));
       assert.equal(sent.length, 2);
-      sent.forEach((m) => MessageSchema.parse(m));
     });
   });
 
@@ -915,7 +857,6 @@ describe("Telegram Bot API (integration)", () => {
   describe("getFile", () => {
     it("returns a TelegramFile that validates", async () => {
       const file = await bot.getFile(photoFileId);
-      FileSchema.parse(file);
       assert.equal(file.file_id, photoFileId);
     });
   });
@@ -958,7 +899,6 @@ describe("Telegram Bot API (integration)", () => {
     it("forwards a single message", async () => {
       const source = await bot.sendMessage(GROUP_ID, `forward-source ${TIMESTAMP}`);
       const sent = await bot.forwardMessage(GROUP_ID, GROUP_ID, source.message_id);
-      MessageSchema.parse(sent);
     });
 
     it("honours disable_notification and protect_content", async () => {
@@ -967,7 +907,7 @@ describe("Telegram Bot API (integration)", () => {
         disable_notification: true,
         protect_content: true,
       });
-      const msg = MessageSchema.parse(forwarded);
+      const msg = forwarded;
       assert.equal(typeof msg.message_id, "number");
       assert.notEqual(msg.message_id, source.message_id);
       assert.ok(msg.forward_origin, "expected forward_origin on a forwarded message");
@@ -984,7 +924,7 @@ describe("Telegram Bot API (integration)", () => {
       assert.ok(Array.isArray(results));
       assert.equal(results.length, 2);
       for (const r of results) {
-        const id = MessageIdSchema.parse(r);
+        const id = r;
         assert.equal(typeof id.message_id, "number");
       }
     });
@@ -1018,7 +958,7 @@ describe("Telegram Bot API (integration)", () => {
           inline_keyboard: [[{ text: "open", url: "https://core.telegram.org/bots/api" }]],
         },
       });
-      const id = MessageIdSchema.parse(copied);
+      const id = copied;
       assert.equal(typeof id.message_id, "number");
       assert.notEqual(id.message_id, source.message_id);
     });
@@ -1029,7 +969,7 @@ describe("Telegram Bot API (integration)", () => {
         protect_content: true,
         allow_paid_broadcast: false,
       });
-      const id = MessageIdSchema.parse(copied);
+      const id = copied;
       assert.equal(typeof id.message_id, "number");
     });
   });
@@ -1044,7 +984,7 @@ describe("Telegram Bot API (integration)", () => {
       assert.ok(Array.isArray(results));
       assert.equal(results.length, 2);
       for (const r of results) {
-        const id = MessageIdSchema.parse(r);
+        const id = r;
         assert.equal(typeof id.message_id, "number");
       }
     });
@@ -1059,7 +999,6 @@ describe("Telegram Bot API (integration)", () => {
       assert.ok(Array.isArray(results));
       assert.equal(results.length, 2);
       for (const r of results) {
-        MessageIdSchema.parse(r);
       }
     });
   });
@@ -1086,7 +1025,7 @@ describe("Telegram Bot API (integration)", () => {
         reply_markup: { inline_keyboard: [[{ text: "open", callback_data: "open" }]] },
       });
       assert.ok(edited !== true, "expected a Message back when editing an owned message");
-      const msg = MessageSchema.parse(edited);
+      const msg = edited as Message;
       assert.ok(Array.isArray(msg.entities) && msg.entities.length > 0);
       assert.ok(msg.reply_markup);
     });
@@ -1101,7 +1040,7 @@ describe("Telegram Bot API (integration)", () => {
         link_preview_options: { is_disabled: true },
       });
       assert.ok(edited !== true);
-      const msg = MessageSchema.parse(edited);
+      const msg = edited as Message;
       assert.equal(msg.text, text);
       assert.ok(
         Array.isArray(msg.entities) &&
@@ -1130,7 +1069,7 @@ describe("Telegram Bot API (integration)", () => {
         reply_markup: { inline_keyboard: [[{ text: "cap", callback_data: "cap" }]] },
       });
       assert.ok(edited !== true, "expected a Message back when editing an owned photo");
-      const msg = MessageSchema.parse(edited);
+      const msg = edited as Message;
       assert.equal(msg.caption, "after caption");
       assert.ok(
         Array.isArray(msg.caption_entities) && msg.caption_entities.some((e) => e.type === "bold"),
@@ -1147,7 +1086,7 @@ describe("Telegram Bot API (integration)", () => {
         caption_entities: [{ type: "text_link", offset: 0, length: 4, url: "https://example.com" }],
       });
       assert.ok(edited !== true);
-      const msg = MessageSchema.parse(edited);
+      const msg = edited as Message;
       assert.equal(msg.caption, "link text");
       assert.ok(Array.isArray(msg.caption_entities));
     });
@@ -1163,7 +1102,7 @@ describe("Telegram Bot API (integration)", () => {
         { chat_id: GROUP_ID, message_id: sent.message_id },
       );
       assert.ok(edited !== true);
-      const msg = MessageSchema.parse(edited);
+      const msg = edited as Message;
       assert.ok(msg.reply_markup);
       assert.equal(msg.reply_markup!.inline_keyboard?.[0]?.[0]?.text, "b");
     });
@@ -1193,7 +1132,7 @@ describe("Telegram Bot API (integration)", () => {
         },
       );
       assert.ok(edited !== true, "expected a Message back when editing owned media");
-      const msg = MessageSchema.parse(edited);
+      const msg = edited as Message;
       assert.ok(msg.photo && msg.photo.length > 0);
       assert.equal(msg.caption, "swapped");
     });
@@ -1202,7 +1141,6 @@ describe("Telegram Bot API (integration)", () => {
   describe("editMessageLiveLocation", () => {
     it("edits then stops a live location", async () => {
       const sent = await bot.sendLocation(GROUP_ID, 47.5351072, -52.7508537, { live_period: 120 });
-      MessageSchema.parse(sent);
 
       const moved = await bot.editMessageLiveLocation(48.0, -53.0, {
         chat_id: GROUP_ID,
@@ -1213,7 +1151,7 @@ describe("Telegram Bot API (integration)", () => {
         reply_markup: { inline_keyboard: [[{ text: "where", callback_data: "where" }]] },
       });
       assert.ok(moved !== true);
-      const movedMsg = MessageSchema.parse(moved);
+      const movedMsg = moved as Message;
       assert.ok(movedMsg.location);
 
       const stopped = await bot.stopMessageLiveLocation({
@@ -1232,7 +1170,6 @@ describe("Telegram Bot API (integration)", () => {
         reply_markup: { inline_keyboard: [[{ text: "updated", callback_data: "upd" }]] },
       });
       assert.ok(moved !== true);
-      MessageSchema.parse(moved);
     });
   });
 
@@ -1302,7 +1239,6 @@ describe("Telegram Bot API (integration)", () => {
     it("stops a previously-sent poll", async () => {
       const sent = await bot.sendPoll(GROUP_ID, "stoppable?", [{ text: "yes" }, { text: "no" }]);
       const stopped = await bot.stopPoll(GROUP_ID, sent.message_id);
-      PollSchema.parse(stopped);
     });
 
     it("accepts reply_markup option", async () => {
@@ -1310,7 +1246,6 @@ describe("Telegram Bot API (integration)", () => {
       const stopped = await bot.stopPoll(GROUP_ID, poll.message_id, {
         reply_markup: { inline_keyboard: [[{ text: "done", callback_data: "done" }]] },
       });
-      PollSchema.parse(stopped);
       assert.ok(stopped.is_closed);
     });
   });
@@ -1320,7 +1255,6 @@ describe("Telegram Bot API (integration)", () => {
   describe("getChat", () => {
     it("returns a Chat object", async () => {
       const chat = await bot.getChat(GROUP_ID);
-      ChatSchema.parse(chat);
       assert.equal(chat.id, GROUP_ID);
     });
   });
@@ -1328,7 +1262,6 @@ describe("Telegram Bot API (integration)", () => {
   describe("getChatMember", () => {
     it("returns a ChatMember", async () => {
       const member = await bot.getChatMember(GROUP_ID, USER_ID);
-      ChatMemberSchema.parse(member);
     });
   });
 
@@ -1354,13 +1287,11 @@ describe("Telegram Bot API (integration)", () => {
   describe("getUserProfilePhotos", () => {
     it("returns a UserProfilePhotos object", async () => {
       const photos = await bot.getUserProfilePhotos(USER_ID);
-      UserProfilePhotosSchema.parse(photos);
       assert.equal(typeof photos.total_count, "number");
     });
 
     it("accepts offset/limit", async () => {
       const photos = await bot.getUserProfilePhotos(USER_ID, { offset: 0, limit: 1 });
-      UserProfilePhotosSchema.parse(photos);
       assert.equal(typeof photos.total_count, "number");
       assert.ok(Array.isArray(photos.photos));
       // limit:1 means at most one photo set is returned (Telegram may return 0).
@@ -1462,7 +1393,7 @@ describe("Telegram Bot API (integration)", () => {
       await sleep(1100);
       const chat = await bot.getChat(GROUP_ID);
       if (chat.permissions) {
-        const parsed = ChatPermissionsSchema.parse(chat.permissions);
+        const parsed = chat.permissions;
         assert.equal(parsed.can_send_polls, false);
         assert.equal(parsed.can_add_web_page_previews, false);
       }
@@ -1685,15 +1616,12 @@ describe("Telegram Bot API (integration)", () => {
   describe("createChatInviteLink", () => {
     it("creates, edits and revokes a link (round-trip)", async () => {
       const created = await bot.createChatInviteLink(GROUP_ID, { name: `link-${TIMESTAMP}` });
-      ChatInviteLinkSchema.parse(created);
 
       const edited = await bot.editChatInviteLink(GROUP_ID, created.invite_link, {
         name: `link-${TIMESTAMP}-edited`,
       });
-      ChatInviteLinkSchema.parse(edited);
 
       const revoked = await bot.revokeChatInviteLink(GROUP_ID, created.invite_link);
-      ChatInviteLinkSchema.parse(revoked);
       assert.equal(revoked.is_revoked, true);
     });
 
@@ -1707,7 +1635,6 @@ describe("Telegram Bot API (integration)", () => {
         member_limit: memberLimit,
       });
       createdLinks.add(link.invite_link);
-      ChatInviteLinkSchema.parse(link);
       assert.equal(typeof link.invite_link, "string");
       assert.equal(link.name, name);
       assert.equal(link.expire_date, expireDate);
@@ -1720,7 +1647,6 @@ describe("Telegram Bot API (integration)", () => {
       const name = `inv-${TIMESTAMP}-b`;
       const link = await bot.createChatInviteLink(GROUP_ID, { name, creates_join_request: true });
       createdLinks.add(link.invite_link);
-      ChatInviteLinkSchema.parse(link);
       assert.equal(link.name, name);
       assert.equal(link.creates_join_request, true);
       assert.equal(link.member_limit, undefined);
@@ -1734,7 +1660,6 @@ describe("Telegram Bot API (integration)", () => {
         member_limit: 3,
       });
       createdLinks.add(created.invite_link);
-      ChatInviteLinkSchema.parse(created);
 
       const newName = `inv-${TIMESTAMP}-c-edited`;
       const newExpire = Math.floor(Date.now() / 1000) + 7200;
@@ -1744,7 +1669,6 @@ describe("Telegram Bot API (integration)", () => {
         expire_date: newExpire,
         member_limit: newLimit,
       });
-      ChatInviteLinkSchema.parse(edited);
       assert.equal(edited.invite_link, created.invite_link);
       assert.equal(edited.name, newName);
       assert.equal(edited.expire_date, newExpire);
@@ -1757,7 +1681,6 @@ describe("Telegram Bot API (integration)", () => {
       const edited = await bot.editChatInviteLink(GROUP_ID, link.invite_link, {
         creates_join_request: true,
       });
-      ChatInviteLinkSchema.parse(edited);
       assert.equal(edited.creates_join_request, true);
     });
   });
@@ -1933,7 +1856,6 @@ describe("Telegram Bot API (integration)", () => {
   describe("getStickerSet", () => {
     it("returns a StickerSet for a known public set", async () => {
       const set = await bot.getStickerSet(STICKER_SET_NAME);
-      StickerSetSchema.parse(set);
       assert.ok(set.stickers.length > 0);
     });
   });
@@ -1959,7 +1881,6 @@ describe("Telegram Bot API (integration)", () => {
 
       // uploadStickerFile: stage a file the set can be assembled from.
       const file = await bot.uploadStickerFile(USER_ID, STICKER_PATH, "static");
-      FileSchema.parse(file);
       uploadedFileId = file.file_id;
       assert.ok(uploadedFileId.length > 0);
       await sleep(1100);
@@ -1973,7 +1894,6 @@ describe("Telegram Bot API (integration)", () => {
 
     it("createNewStickerSet produced a retrievable, owned set", async () => {
       const set = await bot.getStickerSet(setName);
-      StickerSetSchema.parse(set);
       assert.equal(set.name, setName);
       assert.ok(set.stickers.length >= 1);
     });

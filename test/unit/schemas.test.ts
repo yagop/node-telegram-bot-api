@@ -1,51 +1,51 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 
-import {
-  UpdateSchema,
-  MessageSchema,
-  UserSchema,
-  ChatSchema,
-  CallbackQuerySchema,
-  ReactionTypeSchema,
-  TelegramApiResponseSchema,
-  MESSAGE_TYPES,
+import { MESSAGE_TYPES } from "../../src/types/schemas.js";
+import type {
+  Update,
+  Message,
+  User,
+  Chat,
+  CallbackQuery,
+  ReactionType,
 } from "../../src/types/schemas.js";
 
-describe("zod schemas", () => {
-  describe("UserSchema", () => {
+/**
+ * The generated types carry no runtime validation (Zod was removed), so these
+ * are compile-time assertions: each typed declaration below fails `tsc` if the
+ * literal doesn't conform to its generated type.
+ */
+describe("generated types", () => {
+  describe("User", () => {
     it("accepts a minimal valid User", () => {
-      const u = UserSchema.parse({ id: 42, is_bot: false, first_name: "Alice" });
+      const u: User = { id: 42, is_bot: false, first_name: "Alice" };
       assert.equal(u.id, 42);
       assert.equal(u.first_name, "Alice");
     });
 
-    it("rejects when required fields are missing", () => {
-      assert.throws(() => UserSchema.parse({ id: 1 }));
-    });
-
-    it("preserves unknown fields via passthrough", () => {
-      const u = UserSchema.parse({
+    it("allows the optional fields", () => {
+      const u: User = {
         id: 1,
         is_bot: true,
         first_name: "Bot",
-        // Hypothetical new field added by Telegram in the future
-        future_flag: true,
-      });
-      assert.equal((u as Record<string, unknown>).future_flag, true);
+        username: "bot",
+        can_join_groups: true,
+      };
+      assert.equal(u.username, "bot");
     });
   });
 
-  describe("ChatSchema", () => {
-    it("validates the chat type enum", () => {
-      ChatSchema.parse({ id: -1, type: "supergroup" });
-      assert.throws(() => ChatSchema.parse({ id: 1, type: "unknown" }));
+  describe("Chat", () => {
+    it("types the chat type field", () => {
+      const c: Chat = { id: -1, type: "supergroup" };
+      assert.equal(c.type, "supergroup");
     });
   });
 
-  describe("MessageSchema", () => {
-    it("recursively validates pinned/replied messages", () => {
-      const msg = MessageSchema.parse({
+  describe("Message", () => {
+    it("recursively types pinned/replied messages", () => {
+      const msg: Message = {
         message_id: 1,
         date: 1700000000,
         chat: { id: 1, type: "private" },
@@ -56,14 +56,14 @@ describe("zod schemas", () => {
           chat: { id: 1, type: "private" },
           text: "older",
         },
-      });
+      };
       assert.equal(msg.reply_to_message?.text, "older");
     });
   });
 
-  describe("UpdateSchema", () => {
-    it("validates a polling getUpdates result entry", () => {
-      const update = UpdateSchema.parse({
+  describe("Update", () => {
+    it("types a polling getUpdates result entry", () => {
+      const update: Update = {
         update_id: 1234,
         message: {
           message_id: 1,
@@ -71,13 +71,13 @@ describe("zod schemas", () => {
           chat: { id: 7, type: "private" },
           text: "hello",
         },
-      });
+      };
       assert.equal(update.update_id, 1234);
       assert.equal(update.message?.text, "hello");
     });
 
-    it("validates a callback_query update", () => {
-      const update = UpdateSchema.parse({
+    it("types a callback_query update", () => {
+      const update: Update = {
         update_id: 1,
         callback_query: {
           id: "abc",
@@ -85,46 +85,30 @@ describe("zod schemas", () => {
           chat_instance: "abc",
           data: "ping",
         },
-      });
+      };
       assert.equal(update.callback_query?.data, "ping");
     });
   });
 
-  describe("CallbackQuerySchema", () => {
-    it("requires id, from and chat_instance", () => {
-      assert.throws(() =>
-        CallbackQuerySchema.parse({
-          id: "1",
-          from: { id: 1, is_bot: false, first_name: "X" },
-        }),
-      );
+  describe("CallbackQuery", () => {
+    it("types id, from and chat_instance", () => {
+      const q: CallbackQuery = {
+        id: "1",
+        from: { id: 1, is_bot: false, first_name: "X" },
+        chat_instance: "ci",
+      };
+      assert.equal(q.id, "1");
     });
   });
 
-  describe("ReactionTypeSchema", () => {
-    it("discriminates by `type`", () => {
-      const emoji = ReactionTypeSchema.parse({ type: "emoji", emoji: "👍" });
+  describe("ReactionType", () => {
+    it("is a union over `type`", () => {
+      const emoji: ReactionType = { type: "emoji", emoji: "👍" };
       assert.equal(emoji.type, "emoji");
-      const custom = ReactionTypeSchema.parse({ type: "custom_emoji", custom_emoji_id: "1" });
+      const custom: ReactionType = { type: "custom_emoji", custom_emoji_id: "1" };
       assert.equal(custom.type, "custom_emoji");
-      const paid = ReactionTypeSchema.parse({ type: "paid" });
+      const paid: ReactionType = { type: "paid" };
       assert.equal(paid.type, "paid");
-    });
-  });
-
-  describe("TelegramApiResponseSchema", () => {
-    it("accepts ok=true with arbitrary result", () => {
-      const r = TelegramApiResponseSchema.parse({ ok: true, result: { id: 1 } });
-      assert.equal(r.ok, true);
-    });
-
-    it("accepts ok=false with description and error_code", () => {
-      const r = TelegramApiResponseSchema.parse({
-        ok: false,
-        error_code: 400,
-        description: "Bad Request: chat not found",
-      });
-      assert.equal(r.error_code, 400);
     });
   });
 

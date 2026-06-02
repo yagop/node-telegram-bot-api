@@ -1,7 +1,7 @@
 {
   "name": "node-telegram-bot-api",
   "version": "1.0.0",
-  "description": "Telegram Bot API — modern TypeScript rewrite with Zod typing",
+  "description": "Telegram Bot API — modern TypeScript rewrite with generated types",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -25,12 +25,12 @@
     "telegram bot",
     "telegram bot api",
     "bot",
-    "typescript",
-    "zod"
+    "typescript"
   ],
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
     "typecheck": "tsc --noEmit",
+    "generate:types": "bun scripts/api-parser.ts",
     "test:node:unit": "node test/run-unit.mjs",
     "test:node:integration": "node test/run-integration.mjs",
     "test:bun:unit": "bun test test/unit",
@@ -40,9 +40,6 @@
   "license": "MIT",
   "engines": {
     "node": ">=18"
-  },
-  "dependencies": {
-    "zod": "^3.25.0"
   },
   "devDependencies": {
     "@types/node": "^25.6.2",

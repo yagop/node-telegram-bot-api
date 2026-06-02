@@ -4,7 +4,7 @@
  * Provides:
  *   - The {@link TelegramBot} class (default export, for legacy compatibility).
  *   - Polling and Webhook helper classes (advanced use).
- *   - The full set of Zod schemas and inferred types.
+ *   - The full set of generated request/reply types (from scripts/api-parser.ts).
  *   - The error hierarchy.
  */
 
