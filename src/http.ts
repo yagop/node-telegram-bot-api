@@ -12,6 +12,15 @@ import { streamToBuffer, type PreparedFile } from "./utils.js";
 
 const debug = createDebug("node-telegram-bot-api:http");
 
+/** Telegram error code for `Too Many Requests` — the only retryable status. */
+const ERROR_CODE_TOO_MANY_REQUESTS = 429;
+/** Default number of automatic retries on a `429` response. */
+const DEFAULT_MAX_RETRIES_ON_429 = 2;
+/** Default ceiling (seconds) on how long a single `429` retry will sleep. */
+const DEFAULT_MAX_RETRY_AFTER_SECONDS = 60;
+/** Extra second added to the advertised `retry_after` before sleeping. */
+const RETRY_AFTER_BUFFER_SECONDS = 1;
+
 export interface RequestOptions {
   /** Form fields (x-www-form-urlencoded) */
   form?: Record<string, unknown>;
@@ -51,6 +60,14 @@ export interface HttpClientOptions {
      * to opt out. Defaults to `2`.
      */
     maxRetriesOn429?: number;
+    /**
+     * Ceiling (in seconds) on how long a single `429` retry will sleep. When
+     * Telegram's advertised `retry_after` is larger, the client still retries
+     * but waits only this long, so a long flood-wait can't block the process
+     * for minutes. Set to `Infinity` to always honor the full `retry_after`.
+     * Defaults to `60`.
+     */
+    maxRetryAfterSeconds?: number;
   };
 }
 
@@ -138,55 +155,25 @@ export class HttpClient {
     debug("HTTP POST %s qs=%j form=%j", url, opts.qs, opts.form);
 
     const timeoutMs = opts.timeoutMs ?? this.options.request?.timeoutMs;
-    const maxRetries = this.options.request?.maxRetriesOn429 ?? 2;
+    const maxRetries = this.options.request?.maxRetriesOn429 ?? DEFAULT_MAX_RETRIES_ON_429;
+    const maxRetryAfter = this.options.request?.maxRetryAfterSeconds ?? DEFAULT_MAX_RETRY_AFTER_SECONDS;
 
-    let attempt = 0;
-    while (true) {
-      const controller = new AbortController();
-      const userSignal = opts.signal;
-      if (userSignal) {
-        if (userSignal.aborted) controller.abort(userSignal.reason);
-        else userSignal.addEventListener("abort", () => controller.abort(userSignal.reason), { once: true });
-      }
-      const timer = timeoutMs ? setTimeout(() => controller.abort(new Error("HTTP timeout")), timeoutMs) : null;
-
-      let response: Response;
-      try {
-        response = await fetch(url, {
-          method: "POST",
-          body: body as BodyInit | undefined,
-          headers,
-          signal: controller.signal,
-        });
-      } catch (err) {
-        throw new FatalError(err as Error);
-      } finally {
-        if (timer) clearTimeout(timer);
-      }
-
-      const status = response.status;
-      const text = await response.text();
-      debug("response %s %s", status, text.length > 1000 ? `${text.slice(0, 1000)}…` : text);
-
-      let parsed: TelegramApiResponse<T>;
-      try {
-        parsed = JSON.parse(text) as TelegramApiResponse<T>;
-      } catch {
-        throw new ParseError(`Error parsing response: ${text}`, makeResponseInfo(status, text));
-      }
-
+    for (let attempt = 0; ; attempt++) {
+      const { status, parsed } = await this._attempt<T>(url, body, headers, timeoutMs, opts.signal);
       if (parsed.ok) return parsed.result;
 
+      // Retry only on 429, honoring `retry_after` but capping the wait so a long
+      // flood-wait can't block the process.
       const retryAfter = parsed.parameters?.retry_after;
-      if (
-        parsed.error_code === 429 &&
+      const canRetry =
+        parsed.error_code === ERROR_CODE_TOO_MANY_REQUESTS &&
         typeof retryAfter === "number" &&
         attempt < maxRetries &&
-        !controller.signal.aborted
-      ) {
-        debug("429 Too Many Requests, sleeping %ds then retrying (attempt %d/%d)", retryAfter, attempt + 1, maxRetries);
-        await sleep((retryAfter + 1) * 1000);
-        attempt++;
+        !opts.signal?.aborted;
+      if (canRetry) {
+        const delayMs = Math.min(retryAfter + RETRY_AFTER_BUFFER_SECONDS, maxRetryAfter) * 1000;
+        debug("429 Too Many Requests, sleeping %dms then retrying (attempt %d/%d)", delayMs, attempt + 1, maxRetries);
+        await sleep(delayMs);
         continue;
       }
 
@@ -196,6 +183,53 @@ export class HttpClient {
       );
     }
   }
+
+  /**
+   * Perform a single HTTP attempt: fire the request (honoring the per-call
+   * timeout and abort signal) and parse Telegram's envelope. Throws
+   * {@link FatalError} on a transport failure and {@link ParseError} on an
+   * unparseable body; otherwise returns the HTTP status and parsed envelope
+   * (ok or not) for the caller's retry/throw decision.
+   */
+  private async _attempt<T>(
+    url: string,
+    body: FormData | string | undefined,
+    headers: Record<string, string>,
+    timeoutMs: number | undefined,
+    signal: AbortSignal | undefined,
+  ): Promise<{ status: number; parsed: TelegramApiResponse<T> }> {
+    const controller = new AbortController();
+    if (signal) {
+      if (signal.aborted) controller.abort(signal.reason);
+      else signal.addEventListener("abort", () => controller.abort(signal.reason), { once: true });
+    }
+    const timer = timeoutMs ? setTimeout(() => controller.abort(new Error("HTTP timeout")), timeoutMs) : null;
+
+    let response: Response;
+    try {
+      response = await fetch(url, {
+        method: "POST",
+        body: body as BodyInit | undefined,
+        headers,
+        signal: controller.signal,
+      });
+    } catch (err) {
+      throw new FatalError(err as Error);
+    } finally {
+      if (timer) clearTimeout(timer);
+    }
+
+    const status = response.status;
+    const text = await response.text();
+    debug("response %s %s", status, text.length > 1000 ? `${text.slice(0, 1000)}…` : text);
+
+    try {
+      return { status, parsed: JSON.parse(text) as TelegramApiResponse<T> };
+    } catch {
+      throw new ParseError(`Error parsing response: ${text}`, makeResponseInfo(status, text));
+    }
+  }
+
 }
 
 function sleep(ms: number): Promise<void> {
