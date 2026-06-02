@@ -251,7 +251,9 @@ describe("Telegram Bot API (integration)", () => {
     });
 
     it("accepts chat_id option", async () => {
-      const button = await bot.getChatMenuButton({ chat_id: GROUP_ID });
+      // getChatMenuButton's chat_id targets a private chat only (a group/supergroup
+      // id is rejected with "invalid chat_id specified"), so use the test user.
+      const button = await bot.getChatMenuButton({ chat_id: USER_ID });
       assert.equal(typeof button, "object");
     });
   });
@@ -576,6 +578,10 @@ describe("Telegram Bot API (integration)", () => {
     it("honors shuffle_options, allow_adding_options, description and close_date", async () => {
       const closeDate = Math.floor(Date.now() / 1000) + 3600;
       const sent = await bot.sendPoll(GROUP_ID, "Rate?", [{ text: "Good" }, { text: "Bad" }], {
+        // allow_adding_options requires a non-anonymous poll (added options are
+        // attributed to the user who adds them), else Telegram returns
+        // ANONYMOUS_OPEN_INVALID.
+        is_anonymous: false,
         shuffle_options: true,
         allow_adding_options: true,
         description: "Please rate it",
