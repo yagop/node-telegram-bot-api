@@ -65,6 +65,8 @@ const VOICE_PATH = path.join(DATA_DIR, "voice.ogg");
 const STICKER_PATH = path.join(DATA_DIR, "sticker.png");
 const STICKER_WEBP_PATH = path.join(DATA_DIR, "sticker.webp");
 const STICKER_THUMB_PATH = path.join(DATA_DIR, "sticker_thumb.png");
+const PROFILE_PHOTO_JPEG_PATH = path.join(DATA_DIR, "chat_photo.jpeg");
+const PROFILE_PHOTO_PNG_PATH = path.join(DATA_DIR, "chat_photo.png");
 
 const TOKEN = process.env.NODE_TELEGRAM_TOKEN ?? process.env.TEST_TELEGRAM_TOKEN;
 const GROUP_ID_RAW = process.env.TEST_GROUP_ID;
@@ -261,6 +263,43 @@ describe("Telegram Bot API (integration)", () => {
       assert.equal(ok, true);
       const got = await bot.getMyName();
       assert.equal(got.name, desired);
+    });
+  });
+
+  describe("setMyProfilePhoto", () => {
+    // Unlike setMyName there is no API to read back the bot's current photo
+    // bytes, so this can't be a save/restore round-trip. The block sets a
+    // static .jpeg and then clears it with removeMyProfilePhoto, which also
+    // removes any pre-existing photo — acceptable for a dedicated test bot.
+    after(async () => {
+      await bot.removeMyProfilePhoto();
+    });
+
+    it("uploads a static .jpeg as the bot profile photo", async () => {
+      const ok = await bot.setMyProfilePhoto({
+        type: "static",
+        photo: PROFILE_PHOTO_JPEG_PATH,
+      });
+      assert.equal(ok, true);
+    });
+
+    it("rejects a static .png (Telegram requires JPEG)", async () => {
+      // A static profile photo must be JPEG. No layer in the client stack
+      // (this library, the Bot API server, or TDLib) validates or converts the
+      // format — the raw bytes go straight to Telegram's `photos.uploadProfilePhoto`
+      // backend, which only accepts JPEG. A PNG comes back as a gateway error
+      // (504) or stalls the upstream call; either way it never resolves to `true`.
+      // A short-timeout bot bounds the stall so it can't hang the suite.
+      const boundedBot = new TelegramBot(TOKEN, { request: { timeoutMs: 20_000 } });
+      await assert.rejects(
+        () => boundedBot.setMyProfilePhoto({ type: "static", photo: PROFILE_PHOTO_PNG_PATH }),
+        (err: unknown) => {
+          assert.ok(err instanceof Error);
+          // ETELEGRAM (e.g. 504 Gateway Timeout) or EFATAL (client-side timeout on a stall).
+          assert.match((err as { code?: string }).code ?? "", /^(ETELEGRAM|EFATAL)$/);
+          return true;
+        },
+      );
     });
   });
 

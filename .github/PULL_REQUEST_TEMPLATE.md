@@ -59,7 +59,7 @@ configuration (e.g. `logOut`, `close`, `deleteWebHook`, `setMyName`,
 | Var | Default | Purpose |
 | --- | --- | --- |
 | `TEST_STICKER_SET_NAME` | `pusheen` | Name of a public sticker set used in sticker tests. |
-| `TEST_CUSTOM_EMOJI_ID` | _(unset)_ | A custom emoji id; the related test is skipped if unset. |
+| `TEST_CUSTOM_EMOJI_ID` | `5368324170671202286` | A custom emoji id used by `getCustomEmojiStickers()`. |
 
 ```bash
 NODE_TELEGRAM_TOKEN="<your-bot-token>" \

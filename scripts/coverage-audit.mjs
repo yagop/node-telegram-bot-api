@@ -7,7 +7,7 @@
  *   - which methods are actually called in test/integration/telegram.test.ts
  *   - which option keys are actually passed in those calls
  *
- * Output: docs/integration-coverage.md (a checklist).
+ * Output: doc/integration-coverage.md (a checklist).
  */
 import { createRequire } from "node:module";
 import { writeFileSync, readdirSync } from "node:fs";
@@ -183,7 +183,7 @@ lines.push("");
 lines.push(fullyCovered.map((m) => `\`${m}\``).join(", ") || "_none_");
 lines.push("");
 
-const OUT = path.join(ROOT, "docs/integration-coverage.md");
+const OUT = path.join(ROOT, "doc/integration-coverage.md");
 writeFileSync(OUT, lines.join("\n"));
 console.log(`methods: ${testedMethods.length}/${allMethods.length} tested, ${untestedMethods.length} untested`);
 console.log(`option params: ${testedOptionParams}/${totalOptionParams} tested`);
