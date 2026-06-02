@@ -17,6 +17,23 @@ import type {
   MessageType,
   Update,
   Message,
+  // Event payload types (see TelegramBotEvents)
+  CallbackQuery,
+  InlineQuery,
+  ChosenInlineResult,
+  ShippingQuery,
+  PreCheckoutQuery,
+  PaidMediaPurchased,
+  Poll,
+  PollAnswer,
+  ChatMemberUpdated,
+  ChatJoinRequest,
+  ChatBoostUpdated,
+  ChatBoostRemoved,
+  BusinessConnection,
+  BusinessMessagesDeleted,
+  MessageReactionUpdated,
+  MessageReactionCountUpdated,
   Chat,
   BotCommand,
   InputProfilePhotoInput,
@@ -404,6 +421,53 @@ export interface TelegramBotOptions {
   badRejection?: boolean;
 }
 
+/** Second argument passed to `message` and message-subtype listeners. */
+export interface EventMetadata {
+  type?: MessageType;
+}
+
+/**
+ * Maps each emitted event name to the tuple of arguments its listeners receive.
+ * Powers the typed {@link TelegramBot.on} overloads.
+ *
+ * `poll` and `message_reaction` can each be emitted in two shapes (as a message
+ * sub-type and as a dedicated update); they are typed here as the dedicated
+ * update payload, which is what listeners almost always want.
+ */
+export type TelegramBotEvents =
+  { [K in Exclude<MessageType, "poll" | "message_reaction">]: [message: Message, metadata: EventMetadata] } & {
+    message: [message: Message, metadata: EventMetadata];
+    edited_message: [message: Message];
+    edited_message_text: [message: Message];
+    edited_message_caption: [message: Message];
+    channel_post: [post: Message];
+    edited_channel_post: [post: Message];
+    edited_channel_post_text: [post: Message];
+    edited_channel_post_caption: [post: Message];
+    business_connection: [connection: BusinessConnection];
+    business_message: [message: Message];
+    edited_business_message: [message: Message];
+    deleted_business_messages: [messages: BusinessMessagesDeleted];
+    message_reaction: [reaction: MessageReactionUpdated];
+    message_reaction_count: [reaction: MessageReactionCountUpdated];
+    inline_query: [query: InlineQuery];
+    chosen_inline_result: [result: ChosenInlineResult];
+    callback_query: [query: CallbackQuery];
+    shipping_query: [query: ShippingQuery];
+    pre_checkout_query: [query: PreCheckoutQuery];
+    purchased_paid_media: [media: PaidMediaPurchased];
+    poll: [poll: Poll];
+    poll_answer: [answer: PollAnswer];
+    chat_member: [update: ChatMemberUpdated];
+    my_chat_member: [update: ChatMemberUpdated];
+    chat_join_request: [request: ChatJoinRequest];
+    chat_boost: [boost: ChatBoostUpdated];
+    removed_chat_boost: [boost: ChatBoostRemoved];
+    polling_error: [error: Error];
+    webhook_error: [error: Error];
+    error: [error: Error];
+  };
+
 interface TextRegexpEntry {
   regexp: RegExp;
   callback: (msg: Message, match: RegExpExecArray | null) => void;
@@ -482,7 +546,9 @@ export class TelegramBot extends EventEmitter {
     }
   }
 
-  override on(event: string | symbol, listener: (...args: unknown[]) => void): this {
+  override on<E extends keyof TelegramBotEvents>(event: E, listener: (...args: TelegramBotEvents[E]) => void): this;
+  override on(event: string | symbol, listener: (...args: any[]) => void): this;
+  override on(event: string | symbol, listener: (...args: any[]) => void): this {
     if (_deprecatedMessageTypes.includes(event as string)) {
       const url = "https://github.com/yagop/node-telegram-bot-api/blob/master/doc/usage.md#events";
       // eslint-disable-next-line no-console
@@ -1845,6 +1911,17 @@ export class TelegramBot extends EventEmitter {
     return this._form("getMyShortDescription", form);
   }
 
+  /**
+   * Set the bot's profile photo.
+   *
+   * ⚠️ A `static` photo **must be a JPEG**. Telegram's backend
+   * (`photos.uploadProfilePhoto`) only accepts JPEG and no layer in the stack
+   * — this library, the Bot API server, or TDLib — validates or converts the
+   * format, so the raw bytes are forwarded as-is. A non-JPEG (e.g. PNG) is not
+   * rejected cleanly: the upstream call typically returns `504 Gateway Timeout`
+   * (an `ETELEGRAM` error) or stalls until the request times out. Convert to
+   * JPEG before calling.
+   */
   async setMyProfilePhoto(
     photo: InputProfilePhotoInput,
     form: {} = {},

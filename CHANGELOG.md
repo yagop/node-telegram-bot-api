@@ -9,15 +9,16 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Rewritten in TypeScript
 
-The library has been rewritten from JavaScript to TypeScript with Zod runtime type validation.
+The library has been rewritten from JavaScript to TypeScript. See the
+[migration guide](doc/migration.md) for the full list of breaking changes.
 
 ### Added
 
-- **TypeScript** — full type coverage for all API methods, options, and responses
-- **Zod schemas** — runtime validation of Telegram Bot API payloads, exported for reuse (`src/types/schemas.ts`)
+- **TypeScript** — full type coverage for all API methods, options, and responses, bundled with the package (no separate `@types/...` install)
+- **Generated types** — `src/types/schemas.ts` is generated from the live Bot API docs (`npm run generate:types`) as plain `type` aliases; the types are docs-faithful and carry no runtime validation
 - **ESM** — the package is now ESM-only (`"type": "module"`); `require()` is no longer supported
 - `TelegramBotOptions` type exported from the main entrypoint
-- Type exports: `ChatId`, `ParseMode`, `MessageEntity`, `ReplyMarkup`, `ReplyParameters`, `LinkPreviewOptions`, `SuggestedPostPrice`, `SuggestedPostInfo`, `SuggestedPostParameters`, and all Zod-inferred API types
+- Type exports: `ChatId`, `ParseMode`, `MessageEntity`, `ReplyMarkup`, `ReplyParameters`, `LinkPreviewOptions`, `SuggestedPostPrice`, `SuggestedPostInfo`, `SuggestedPostParameters`, and all generated API types
 - Node.js native test runner replaces Mocha
 - `sendLivePhoto` method
 
@@ -36,8 +37,10 @@ The library has been rewritten from JavaScript to TypeScript with Zod runtime ty
 - CJS support — `require('node-telegram-bot-api')` no longer works; use `import`
 - Mocha test infrastructure (`test/mocha.opts`, legacy `test/telegram.js`)
 - Legacy `lib/` output directory
-- `_deprecatedMessageTypes` (`new_chat_participant`, `left_chat_participant`)
-- Legacy param `thumb` replace with `thumbnail`
+- Legacy file-option param `thumb` — replaced by `thumbnail`
+- Deprecated request option `reply_to_message_id` — use `reply_parameters`
+- Legacy `answerCallbackQuery(id, text, showAlert)` / `answerCallbackQuery([options])` signatures — use `answerCallbackQuery(id, options)`
+- `NTBA_FIX_350` environment flag — `filename`/`contentType` are now always auto-resolved
 
 ### Fixed
 

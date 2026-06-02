@@ -8,7 +8,7 @@
  *   - The error hierarchy.
  */
 
-export { TelegramBot, type TelegramBotOptions } from "./telegram.js";
+export { TelegramBot, type TelegramBotOptions, type TelegramBotEvents, type EventMetadata } from "./telegram.js";
 export { TelegramBotPolling, type PollingOptions, type PollingStartOptions, type PollingStopOptions } from "./polling.js";
 export { TelegramBotWebHook, type WebHookOptions } from "./webhook.js";
 export { HttpClient, type HttpClientOptions, type RequestOptions } from "./http.js";

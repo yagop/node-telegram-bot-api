@@ -160,9 +160,8 @@ bot.sendAudio(chatId, data, {}, fileOptions);
 ### File Options (metadata)
 
 When sending files, the library automatically resolves
-the `filename` and `contentType` properties.
-**For now, this has to be manually activated using environment
-variable `NTBA_FIX_350`.**
+the `filename` and `contentType` properties. (This is always on; the legacy
+`NTBA_FIX_350` environment flag was removed in `1.0.0`.)
 
 In order of highest-to-lowest precedence in searching for
 a value, when resolving the `filename`:
@@ -215,11 +214,13 @@ Every `Error` object we pass back has the properties:
   * value is `EFATAL` if error was fatal e.g. network error
   * value is `EPARSE` if response body could **not** be parsed
   * value is `ETELEGRAM` if error was returned from Telegram servers
-* `response` ([http.IncomingMessage](https://nodejs.org/api/http.html#http_class_http_incomingmessage)):
-  * available if `error.code` is **not** `EFATAL`
-* `response.body` (String|Object): Error response from Telegram
-  * type is `String` if `error.code` is `EPARSE`
-  * type is `Object` if `error.code` is `ETELEGRAM`
+* `response` (`TelegramErrorResponse`): available if `error.code` is **not** `EFATAL`
+  * `response.status` (Number): the HTTP status code (was `response.statusCode` in `0.6x`)
+  * `response.body` (String|Object): error response from Telegram
+    * type is `String` if `error.code` is `EPARSE`
+    * type is `Object` if `error.code` is `ETELEGRAM`
+  * `response.headers` (Object): response headers
+  * `response.raw`: the underlying `fetch` `Response`, when available
 
 For example, sending message to a non-existent user:
 
