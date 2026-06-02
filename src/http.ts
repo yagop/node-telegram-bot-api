@@ -16,8 +16,6 @@ const debug = createDebug("node-telegram-bot-api:http");
 const ERROR_CODE_TOO_MANY_REQUESTS = 429;
 /** Default number of automatic retries on a `429` response. */
 const DEFAULT_MAX_RETRIES_ON_429 = 2;
-/** Default ceiling (seconds) on how long a single `429` retry will sleep. */
-const DEFAULT_MAX_RETRY_AFTER_SECONDS = 60;
 /** Extra second added to the advertised `retry_after` before sleeping. */
 const RETRY_AFTER_BUFFER_SECONDS = 1;
 
@@ -60,14 +58,6 @@ export interface HttpClientOptions {
      * to opt out. Defaults to `2`.
      */
     maxRetriesOn429?: number;
-    /**
-     * Ceiling (in seconds) on how long a single `429` retry will sleep. When
-     * Telegram's advertised `retry_after` is larger, the client still retries
-     * but waits only this long, so a long flood-wait can't block the process
-     * for minutes. Set to `Infinity` to always honor the full `retry_after`.
-     * Defaults to `60`.
-     */
-    maxRetryAfterSeconds?: number;
   };
 }
 
@@ -156,14 +146,12 @@ export class HttpClient {
 
     const timeoutMs = opts.timeoutMs ?? this.options.request?.timeoutMs;
     const maxRetries = this.options.request?.maxRetriesOn429 ?? DEFAULT_MAX_RETRIES_ON_429;
-    const maxRetryAfter = this.options.request?.maxRetryAfterSeconds ?? DEFAULT_MAX_RETRY_AFTER_SECONDS;
 
     for (let attempt = 0; ; attempt++) {
       const { status, parsed } = await this._attempt<T>(url, body, headers, timeoutMs, opts.signal);
       if (parsed.ok) return parsed.result;
 
-      // Retry only on 429, honoring `retry_after` but capping the wait so a long
-      // flood-wait can't block the process.
+      // Retry only on 429, sleeping for the advertised `retry_after`.
       const retryAfter = parsed.parameters?.retry_after;
       const canRetry =
         parsed.error_code === ERROR_CODE_TOO_MANY_REQUESTS &&
@@ -171,7 +159,7 @@ export class HttpClient {
         attempt < maxRetries &&
         !opts.signal?.aborted;
       if (canRetry) {
-        const delayMs = Math.min(retryAfter + RETRY_AFTER_BUFFER_SECONDS, maxRetryAfter) * 1000;
+        const delayMs = (retryAfter + RETRY_AFTER_BUFFER_SECONDS) * 1000;
         debug("429 Too Many Requests, sleeping %dms then retrying (attempt %d/%d)", delayMs, attempt + 1, maxRetries);
         await sleep(delayMs);
         continue;

@@ -49,24 +49,21 @@ describe("HttpClient 429 handling", () => {
     assert.equal(calls, 2, "should retry once then succeed");
   });
 
-  it("caps the sleep at maxRetryAfterSeconds for a large retry_after, then retries", async () => {
-    // retry_after is huge, but the cap (0s) means the client retries almost
-    // immediately instead of sleeping for the advertised ~31 minutes.
-    stubResponses([tooMany(1847), ok]);
-    const client = new HttpClient("TOKEN", { request: { maxRetryAfterSeconds: 0 } });
-    const start = Date.now();
-    const result = await client.request<{ id: number }>("getMe");
-    assert.deepEqual(result, { id: 1 });
-    assert.equal(calls, 2, "should still retry, just without the long sleep");
-    assert.ok(Date.now() - start < 1000, "must not sleep for the advertised retry_after");
-  });
-
-  it("honors maxRetryAfterSeconds: Infinity by retrying any retry_after", async () => {
-    stubResponses([tooMany(0), ok]);
-    const client = new HttpClient("TOKEN", { request: { maxRetryAfterSeconds: Infinity } });
-    const result = await client.request<{ id: number }>("getMe");
-    assert.deepEqual(result, { id: 1 });
-    assert.equal(calls, 2);
+  it("stops retrying after maxRetriesOn429 and throws the 429", async () => {
+    // Always 429 (retry_after 0 keeps the per-retry sleep tiny); after the
+    // 2 retries it gives up and throws, exposing retry_after on the error.
+    stubResponses([tooMany(0)]);
+    const client = new HttpClient("TOKEN", { request: { maxRetriesOn429: 2 } });
+    await assert.rejects(
+      () => client.request("getMe"),
+      (err: unknown) => {
+        assert.ok(err instanceof TelegramError);
+        const body = err.response?.body as { parameters?: { retry_after?: number } } | undefined;
+        assert.equal(body?.parameters?.retry_after, 0);
+        return true;
+      },
+    );
+    assert.equal(calls, 3, "1 initial attempt + 2 retries");
   });
 
   it("does not retry when maxRetriesOn429 is 0", async () => {
