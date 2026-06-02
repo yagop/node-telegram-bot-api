@@ -35,6 +35,7 @@ import { fileURLToPath } from "node:url";
 import { TelegramBot, TelegramError } from "../../src/index.js";
 import type {
   Chat,
+  ChatAdministratorRights,
   ChatInviteLink,
   ChatMember,
   ChatPermissions,
@@ -191,7 +192,7 @@ describe("Telegram Bot API (integration)", () => {
   });
 
   describe("setMyDefaultAdministratorRights", () => {
-    type AdminRights = Record<string, boolean>;
+    type AdminRights = ChatAdministratorRights;
     let original: AdminRights;
 
     before(async () => {
