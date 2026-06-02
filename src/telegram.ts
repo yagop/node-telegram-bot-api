@@ -140,6 +140,8 @@ import type {
   GetCustomEmojiStickersParams,
   SetStickerEmojiListParams,
   DeleteBusinessMessagesParams,
+  SetPassportDataErrorsParams,
+  PassportElementError,
   GetWebhookInfoParams,
   GetMeParams,
   LogOutParams,
@@ -355,6 +357,7 @@ import type {
   SetMyNameResult,
   SetMyProfilePhotoResult,
   SetMyShortDescriptionResult,
+  SetPassportDataErrorsResult,
   SetStickerEmojiListResult,
   SetStickerKeywordsResult,
   SetStickerMaskPositionResult,
@@ -579,6 +582,7 @@ export class TelegramBot extends EventEmitter {
       "checklist",
       "custom_emoji_ids",
       "emoji_list",
+      "errors",
       "keywords",
       "mask_position",
       "results",
@@ -2242,6 +2246,20 @@ export class TelegramBot extends EventEmitter {
       pre_checkout_query_id: preCheckoutQueryId,
       ok,
     } satisfies AnswerPreCheckoutQueryParams);
+  }
+
+  // --- Telegram Passport ------------------------------------------------
+
+  setPassportDataErrors(
+    userId: number,
+    errors: PassportElementError[],
+    form: {} = {},
+  ): Promise<SetPassportDataErrorsResult> {
+    return this._form("setPassportDataErrors", {
+      ...form,
+      user_id: userId,
+      errors,
+    } satisfies SetPassportDataErrorsParams);
   }
 
   // --- Telegram Stars --------------------------------------------------
