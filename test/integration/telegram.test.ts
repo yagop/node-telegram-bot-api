@@ -244,6 +244,26 @@ describe("Telegram Bot API (integration)", () => {
     });
   });
 
+  describe("setMyName", () => {
+    let original: string;
+
+    before(async () => {
+      original = (await bot.getMyName()).name;
+    });
+
+    after(async () => {
+      await bot.setMyName({ name: original });
+    });
+
+    it("sets the bot name and getMyName reflects it", async () => {
+      const desired = `NTBA Test ${Date.now() % 100000}`;
+      const ok = await bot.setMyName({ name: desired });
+      assert.equal(ok, true);
+      const got = await bot.getMyName();
+      assert.equal(got.name, desired);
+    });
+  });
+
   describe("getChatMenuButton", () => {
     it("returns a MenuButton object", async () => {
       const button = await bot.getChatMenuButton();
