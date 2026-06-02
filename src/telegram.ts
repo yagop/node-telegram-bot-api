@@ -177,6 +177,58 @@ import type {
   EditStoryParams,
   SavePreparedInlineMessageParams,
   SavePreparedKeyboardButtonParams,
+  // Params for satisfies-typed _form payloads (positional-only methods).
+  ApproveChatJoinRequestParams,
+  BanChatSenderChatParams,
+  CloseForumTopicParams,
+  CloseGeneralForumTopicParams,
+  ConvertGiftToStarsParams,
+  DeclineChatJoinRequestParams,
+  DeleteAllMessageReactionsParams,
+  DeleteChatPhotoParams,
+  DeleteChatStickerSetParams,
+  DeleteForumTopicParams,
+  DeleteMessageParams,
+  DeleteMessageReactionParams,
+  DeleteStickerFromSetParams,
+  DeleteStickerSetParams,
+  DeleteStoryParams,
+  EditGeneralForumTopicParams,
+  EditUserStarSubscriptionParams,
+  ExportChatInviteLinkParams,
+  GetBusinessAccountStarBalanceParams,
+  GetBusinessConnectionParams,
+  GetChatMemberCountParams,
+  GetChatMemberParams,
+  GetChatParams,
+  GetFileParams,
+  GetGameHighScoresParams,
+  GetManagedBotAccessSettingsParams,
+  GetManagedBotTokenParams,
+  GetStickerSetParams,
+  GetUserChatBoostsParams,
+  HideGeneralForumTopicParams,
+  LeaveChatParams,
+  ReadBusinessMessageParams,
+  RefundStarPaymentParams,
+  RemoveChatVerificationParams,
+  RemoveUserVerificationParams,
+  ReopenForumTopicParams,
+  ReopenGeneralForumTopicParams,
+  ReplaceManagedBotTokenParams,
+  RevokeChatInviteLinkParams,
+  SetChatAdministratorCustomTitleParams,
+  SetChatDescriptionParams,
+  SetChatStickerSetParams,
+  SetChatTitleParams,
+  SetStickerPositionInSetParams,
+  SetStickerSetTitleParams,
+  TransferBusinessAccountStarsParams,
+  UnbanChatSenderChatParams,
+  UnhideGeneralForumTopicParams,
+  UnpinAllChatMessagesParams,
+  UnpinAllForumTopicMessagesParams,
+  UnpinAllGeneralForumTopicMessagesParams,
   // Per-method reply types (generated `<Method>Result`).
   AddStickerToSetResult,
   AnswerCallbackQueryResult,
@@ -833,7 +885,11 @@ export class TelegramBot extends EventEmitter {
   // --- Messages ----------------------------------------------------------
 
   sendMessage(chatId: ChatId, text: string, form: Omit<SendMessageParams, "chat_id" | "text"> = {}): Promise<SendMessageResult> {
-    return this._form("sendMessage", { ...form, chat_id: chatId, text });
+    return this._form("sendMessage", {
+      ...form,
+      chat_id: chatId,
+      text,
+    } satisfies SendMessageParams);
   }
 
   forwardMessage(
@@ -847,7 +903,7 @@ export class TelegramBot extends EventEmitter {
       chat_id: chatId,
       from_chat_id: fromChatId,
       message_id: messageId,
-    });
+    } satisfies ForwardMessageParams);
   }
 
   forwardMessages(
@@ -861,7 +917,7 @@ export class TelegramBot extends EventEmitter {
       chat_id: chatId,
       from_chat_id: fromChatId,
       message_ids: messageIds,
-    });
+    } satisfies ForwardMessagesParams);
   }
 
   copyMessage(
@@ -875,7 +931,7 @@ export class TelegramBot extends EventEmitter {
       chat_id: chatId,
       from_chat_id: fromChatId,
       message_id: messageId,
-    });
+    } satisfies CopyMessageParams);
   }
 
   copyMessages(
@@ -1067,7 +1123,12 @@ export class TelegramBot extends EventEmitter {
   }
 
   sendLocation(chatId: ChatId, latitude: number, longitude: number, form: Omit<SendLocationParams, "chat_id" | "latitude" | "longitude"> = {}): Promise<SendLocationResult> {
-    return this._form("sendLocation", { ...form, chat_id: chatId, latitude, longitude });
+    return this._form("sendLocation", {
+      ...form,
+      chat_id: chatId,
+      latitude,
+      longitude,
+    } satisfies SendLocationParams);
   }
 
   sendVenue(
@@ -1078,11 +1139,23 @@ export class TelegramBot extends EventEmitter {
     address: string,
     form: Omit<SendVenueParams, "chat_id" | "latitude" | "longitude" | "title" | "address"> = {},
   ): Promise<SendVenueResult> {
-    return this._form("sendVenue", { ...form, chat_id: chatId, latitude, longitude, title, address });
+    return this._form("sendVenue", {
+      ...form,
+      chat_id: chatId,
+      latitude,
+      longitude,
+      title,
+      address,
+    } satisfies SendVenueParams);
   }
 
   sendContact(chatId: ChatId, phoneNumber: string, firstName: string, form: Omit<SendContactParams, "chat_id" | "phone_number" | "first_name"> = {}): Promise<SendContactResult> {
-    return this._form("sendContact", { ...form, chat_id: chatId, phone_number: phoneNumber, first_name: firstName });
+    return this._form("sendContact", {
+      ...form,
+      chat_id: chatId,
+      phone_number: phoneNumber,
+      first_name: firstName,
+    } satisfies SendContactParams);
   }
 
   sendPoll(chatId: ChatId, question: string, pollOptions: InputPollOption[], form: Omit<SendPollParams, "chat_id" | "question" | "options"> = {}): Promise<SendPollResult> {
@@ -1108,7 +1181,10 @@ export class TelegramBot extends EventEmitter {
 
 
   sendDice(chatId: ChatId, options: Omit<SendDiceParams, "chat_id"> = {}): Promise<SendDiceResult> {
-    return this._form("sendDice", { ...options, chat_id: chatId });
+    return this._form("sendDice", {
+      ...options,
+      chat_id: chatId,
+    } satisfies SendDiceParams);
   }
 
   sendMessageDraft(
@@ -1117,11 +1193,20 @@ export class TelegramBot extends EventEmitter {
     text: string,
     form: Omit<SendMessageDraftParams, "chat_id" | "draft_id" | "text"> = {},
   ): Promise<SendMessageDraftResult> {
-    return this._form("sendMessageDraft", { ...form, chat_id: chatId, draft_id: draftId, text });
+    return this._form("sendMessageDraft", {
+      ...form,
+      chat_id: chatId,
+      draft_id: draftId,
+      text,
+    });
   }
 
   sendChatAction(chatId: ChatId, action: string, form: Omit<SendChatActionParams, "chat_id" | "action"> = {}): Promise<SendChatActionResult> {
-    return this._form("sendChatAction", { ...form, chat_id: chatId, action });
+    return this._form("sendChatAction", {
+      ...form,
+      chat_id: chatId,
+      action,
+    } satisfies SendChatActionParams);
   }
 
   setMessageReaction(
@@ -1139,7 +1224,11 @@ export class TelegramBot extends EventEmitter {
     longitude: number,
     form: Omit<EditMessageLiveLocationParams, "latitude" | "longitude"> = {},
   ): Promise<EditMessageLiveLocationResult> {
-    return this._form("editMessageLiveLocation", { ...form, latitude, longitude });
+    return this._form("editMessageLiveLocation", {
+      ...form,
+      latitude,
+      longitude,
+    } satisfies EditMessageLiveLocationParams);
   }
 
   stopMessageLiveLocation(
@@ -1154,29 +1243,44 @@ export class TelegramBot extends EventEmitter {
     userId: number,
     form: Omit<GetUserProfilePhotosParams, "user_id"> = {},
   ): Promise<GetUserProfilePhotosResult> {
-    return this._form("getUserProfilePhotos", { ...form, user_id: userId });
+    return this._form("getUserProfilePhotos", {
+      ...form,
+      user_id: userId,
+    } satisfies GetUserProfilePhotosParams);
   }
 
   getUserProfileAudios(
     userId: number,
     form: Omit<GetUserProfileAudiosParams, "user_id"> = {},
   ): Promise<GetUserProfileAudiosResult> {
-    return this._form("getUserProfileAudios", { ...form, user_id: userId });
+    return this._form("getUserProfileAudios", {
+      ...form,
+      user_id: userId,
+    } satisfies GetUserProfileAudiosParams);
   }
 
   setUserEmojiStatus(
     userId: number,
     form: Omit<SetUserEmojiStatusParams, "user_id"> = {},
   ): Promise<SetUserEmojiStatusResult> {
-    return this._form("setUserEmojiStatus", { ...form, user_id: userId });
+    return this._form("setUserEmojiStatus", {
+      ...form,
+      user_id: userId,
+    } satisfies SetUserEmojiStatusParams);
   }
 
   getFile(fileId: string, form: {} = {}): Promise<GetFileResult> {
-    return this._form("getFile", { ...form, file_id: fileId });
+    return this._form("getFile", {
+      ...form,
+      file_id: fileId,
+    } satisfies GetFileParams);
   }
 
   getUserPersonalChatMessages(userId: number, limit: number): Promise<GetUserPersonalChatMessagesResult> {
-    return this._form("getUserPersonalChatMessages", { user_id: userId, limit });
+    return this._form("getUserPersonalChatMessages", {
+      user_id: userId,
+      limit,
+    });
   }
 
   // --- Chat membership --------------------------------------------------
@@ -1186,7 +1290,11 @@ export class TelegramBot extends EventEmitter {
     userId: number,
     form: Omit<BanChatMemberParams, "chat_id" | "user_id"> = {},
   ): Promise<BanChatMemberResult> {
-    return this._form("banChatMember", { ...form, chat_id: chatId, user_id: userId });
+    return this._form("banChatMember", {
+      ...form,
+      chat_id: chatId,
+      user_id: userId,
+    } satisfies BanChatMemberParams);
   }
 
   unbanChatMember(
@@ -1194,7 +1302,11 @@ export class TelegramBot extends EventEmitter {
     userId: number,
     form: Omit<UnbanChatMemberParams, "chat_id" | "user_id"> = {},
   ): Promise<UnbanChatMemberResult> {
-    return this._form("unbanChatMember", { ...form, chat_id: chatId, user_id: userId });
+    return this._form("unbanChatMember", {
+      ...form,
+      chat_id: chatId,
+      user_id: userId,
+    } satisfies UnbanChatMemberParams);
   }
 
   restrictChatMember(
@@ -1203,7 +1315,12 @@ export class TelegramBot extends EventEmitter {
     permissions: ChatPermissions,
     form: Omit<RestrictChatMemberParams, "chat_id" | "user_id" | "permissions"> = {},
   ): Promise<RestrictChatMemberResult> {
-    return this._form("restrictChatMember", { ...form, chat_id: chatId, user_id: userId, permissions: stringify(permissions) });
+    return this._form("restrictChatMember", {
+      ...form,
+      chat_id: chatId,
+      user_id: userId,
+      permissions: stringify(permissions),
+    });
   }
 
   promoteChatMember(
@@ -1211,7 +1328,11 @@ export class TelegramBot extends EventEmitter {
     userId: number,
     form: Omit<PromoteChatMemberParams, "chat_id" | "user_id"> = {},
   ): Promise<PromoteChatMemberResult> {
-    return this._form("promoteChatMember", { ...form, chat_id: chatId, user_id: userId });
+    return this._form("promoteChatMember", {
+      ...form,
+      chat_id: chatId,
+      user_id: userId,
+    } satisfies PromoteChatMemberParams);
   }
 
 
@@ -1226,7 +1347,7 @@ export class TelegramBot extends EventEmitter {
       chat_id: chatId,
       user_id: userId,
       custom_title: customTitle,
-    });
+    } satisfies SetChatAdministratorCustomTitleParams);
   }
 
   setChatMemberTag(
@@ -1234,7 +1355,11 @@ export class TelegramBot extends EventEmitter {
     userId: number,
     form: Omit<SetChatMemberTagParams, "chat_id" | "user_id"> = {},
   ): Promise<SetChatMemberTagResult> {
-    return this._form("setChatMemberTag", { ...form, chat_id: chatId, user_id: userId });
+    return this._form("setChatMemberTag", {
+      ...form,
+      chat_id: chatId,
+      user_id: userId,
+    } satisfies SetChatMemberTagParams);
   }
 
   banChatSenderChat(
@@ -1242,7 +1367,11 @@ export class TelegramBot extends EventEmitter {
     senderChatId: number,
     form: {} = {},
   ): Promise<BanChatSenderChatResult> {
-    return this._form("banChatSenderChat", { ...form, chat_id: chatId, sender_chat_id: senderChatId });
+    return this._form("banChatSenderChat", {
+      ...form,
+      chat_id: chatId,
+      sender_chat_id: senderChatId,
+    } satisfies BanChatSenderChatParams);
   }
 
   unbanChatSenderChat(
@@ -1250,7 +1379,11 @@ export class TelegramBot extends EventEmitter {
     senderChatId: number,
     form: {} = {},
   ): Promise<UnbanChatSenderChatResult> {
-    return this._form("unbanChatSenderChat", { ...form, chat_id: chatId, sender_chat_id: senderChatId });
+    return this._form("unbanChatSenderChat", {
+      ...form,
+      chat_id: chatId,
+      sender_chat_id: senderChatId,
+    } satisfies UnbanChatSenderChatParams);
   }
 
   setChatPermissions(
@@ -1258,20 +1391,30 @@ export class TelegramBot extends EventEmitter {
     permissions: ChatPermissions,
     form: Omit<SetChatPermissionsParams, "chat_id" | "permissions"> = {},
   ): Promise<SetChatPermissionsResult> {
-    return this._form("setChatPermissions", { ...form, chat_id: chatId, permissions: stringify(permissions) });
+    return this._form("setChatPermissions", {
+      ...form,
+      chat_id: chatId,
+      permissions: stringify(permissions),
+    });
   }
 
   // --- Chat invite links ------------------------------------------------
 
   exportChatInviteLink(chatId: ChatId, form: {} = {}): Promise<ExportChatInviteLinkResult> {
-    return this._form("exportChatInviteLink", { ...form, chat_id: chatId });
+    return this._form("exportChatInviteLink", {
+      ...form,
+      chat_id: chatId,
+    } satisfies ExportChatInviteLinkParams);
   }
 
   createChatInviteLink(
     chatId: ChatId,
     form: Omit<CreateChatInviteLinkParams, "chat_id"> = {},
   ): Promise<CreateChatInviteLinkResult> {
-    return this._form("createChatInviteLink", { ...form, chat_id: chatId });
+    return this._form("createChatInviteLink", {
+      ...form,
+      chat_id: chatId,
+    } satisfies CreateChatInviteLinkParams);
   }
 
   editChatInviteLink(
@@ -1279,7 +1422,11 @@ export class TelegramBot extends EventEmitter {
     inviteLink: string,
     form: Omit<EditChatInviteLinkParams, "chat_id" | "invite_link"> = {},
   ): Promise<EditChatInviteLinkResult> {
-    return this._form("editChatInviteLink", { ...form, chat_id: chatId, invite_link: inviteLink });
+    return this._form("editChatInviteLink", {
+      ...form,
+      chat_id: chatId,
+      invite_link: inviteLink,
+    } satisfies EditChatInviteLinkParams);
   }
 
   createChatSubscriptionInviteLink(
@@ -1293,7 +1440,7 @@ export class TelegramBot extends EventEmitter {
       chat_id: chatId,
       subscription_period: subscriptionPeriod,
       subscription_price: subscriptionPrice,
-    });
+    } satisfies CreateChatSubscriptionInviteLinkParams);
   }
 
   editChatSubscriptionInviteLink(
@@ -1301,19 +1448,35 @@ export class TelegramBot extends EventEmitter {
     inviteLink: string,
     form: Omit<EditChatSubscriptionInviteLinkParams, "chat_id" | "invite_link"> = {},
   ): Promise<EditChatSubscriptionInviteLinkResult> {
-    return this._form("editChatSubscriptionInviteLink", { ...form, chat_id: chatId, invite_link: inviteLink });
+    return this._form("editChatSubscriptionInviteLink", {
+      ...form,
+      chat_id: chatId,
+      invite_link: inviteLink,
+    } satisfies EditChatSubscriptionInviteLinkParams);
   }
 
   revokeChatInviteLink(chatId: ChatId, inviteLink: string, form: {} = {}): Promise<RevokeChatInviteLinkResult> {
-    return this._form("revokeChatInviteLink", { ...form, chat_id: chatId, invite_link: inviteLink });
+    return this._form("revokeChatInviteLink", {
+      ...form,
+      chat_id: chatId,
+      invite_link: inviteLink,
+    } satisfies RevokeChatInviteLinkParams);
   }
 
   approveChatJoinRequest(chatId: ChatId, userId: number, form: {} = {}): Promise<ApproveChatJoinRequestResult> {
-    return this._form("approveChatJoinRequest", { ...form, chat_id: chatId, user_id: userId });
+    return this._form("approveChatJoinRequest", {
+      ...form,
+      chat_id: chatId,
+      user_id: userId,
+    } satisfies ApproveChatJoinRequestParams);
   }
 
   declineChatJoinRequest(chatId: ChatId, userId: number, form: {} = {}): Promise<DeclineChatJoinRequestResult> {
-    return this._form("declineChatJoinRequest", { ...form, chat_id: chatId, user_id: userId });
+    return this._form("declineChatJoinRequest", {
+      ...form,
+      chat_id: chatId,
+      user_id: userId,
+    } satisfies DeclineChatJoinRequestParams);
   }
 
   // --- Chat metadata ---------------------------------------------------
@@ -1328,15 +1491,26 @@ export class TelegramBot extends EventEmitter {
   }
 
   deleteChatPhoto(chatId: ChatId, form: {} = {}): Promise<DeleteChatPhotoResult> {
-    return this._form("deleteChatPhoto", { ...form, chat_id: chatId });
+    return this._form("deleteChatPhoto", {
+      ...form,
+      chat_id: chatId,
+    } satisfies DeleteChatPhotoParams);
   }
 
   setChatTitle(chatId: ChatId, title: string, form: {} = {}): Promise<SetChatTitleResult> {
-    return this._form("setChatTitle", { ...form, chat_id: chatId, title });
+    return this._form("setChatTitle", {
+      ...form,
+      chat_id: chatId,
+      title,
+    } satisfies SetChatTitleParams);
   }
 
   setChatDescription(chatId: ChatId, description: string, form: {} = {}): Promise<SetChatDescriptionResult> {
-    return this._form("setChatDescription", { ...form, chat_id: chatId, description });
+    return this._form("setChatDescription", {
+      ...form,
+      chat_id: chatId,
+      description,
+    } satisfies SetChatDescriptionParams);
   }
 
   pinChatMessage(
@@ -1344,49 +1518,82 @@ export class TelegramBot extends EventEmitter {
     messageId: number,
     form: Omit<PinChatMessageParams, "chat_id" | "message_id"> = {},
   ): Promise<PinChatMessageResult> {
-    return this._form("pinChatMessage", { ...form, chat_id: chatId, message_id: messageId });
+    return this._form("pinChatMessage", {
+      ...form,
+      chat_id: chatId,
+      message_id: messageId,
+    } satisfies PinChatMessageParams);
   }
 
   unpinChatMessage(
     chatId: ChatId,
     form: Omit<UnpinChatMessageParams, "chat_id"> = {},
   ): Promise<UnpinChatMessageResult> {
-    return this._form("unpinChatMessage", { ...form, chat_id: chatId });
+    return this._form("unpinChatMessage", {
+      ...form,
+      chat_id: chatId,
+    } satisfies UnpinChatMessageParams);
   }
 
   unpinAllChatMessages(chatId: ChatId, form: {} = {}): Promise<UnpinAllChatMessagesResult> {
-    return this._form("unpinAllChatMessages", { ...form, chat_id: chatId });
+    return this._form("unpinAllChatMessages", {
+      ...form,
+      chat_id: chatId,
+    } satisfies UnpinAllChatMessagesParams);
   }
 
   leaveChat(chatId: ChatId, form: {} = {}): Promise<LeaveChatResult> {
-    return this._form("leaveChat", { ...form, chat_id: chatId });
+    return this._form("leaveChat", {
+      ...form,
+      chat_id: chatId,
+    } satisfies LeaveChatParams);
   }
 
   getChat(chatId: ChatId, form: {} = {}): Promise<GetChatResult> {
-    return this._form("getChat", { ...form, chat_id: chatId });
+    return this._form("getChat", {
+      ...form,
+      chat_id: chatId,
+    } satisfies GetChatParams);
   }
 
   getChatAdministrators(
     chatId: ChatId,
     form: Omit<GetChatAdministratorsParams, "chat_id"> = {},
   ): Promise<GetChatAdministratorsResult> {
-    return this._form("getChatAdministrators", { ...form, chat_id: chatId });
+    return this._form("getChatAdministrators", {
+      ...form,
+      chat_id: chatId,
+    } satisfies GetChatAdministratorsParams);
   }
 
   getChatMemberCount(chatId: ChatId, form: {} = {}): Promise<GetChatMemberCountResult> {
-    return this._form("getChatMemberCount", { ...form, chat_id: chatId });
+    return this._form("getChatMemberCount", {
+      ...form,
+      chat_id: chatId,
+    } satisfies GetChatMemberCountParams);
   }
 
   getChatMember(chatId: ChatId, userId: number, form: {} = {}): Promise<GetChatMemberResult> {
-    return this._form("getChatMember", { ...form, chat_id: chatId, user_id: userId });
+    return this._form("getChatMember", {
+      ...form,
+      chat_id: chatId,
+      user_id: userId,
+    } satisfies GetChatMemberParams);
   }
 
   setChatStickerSet(chatId: ChatId, stickerSetName: string, form: {} = {}): Promise<SetChatStickerSetResult> {
-    return this._form("setChatStickerSet", { ...form, chat_id: chatId, sticker_set_name: stickerSetName });
+    return this._form("setChatStickerSet", {
+      ...form,
+      chat_id: chatId,
+      sticker_set_name: stickerSetName,
+    } satisfies SetChatStickerSetParams);
   }
 
   deleteChatStickerSet(chatId: ChatId, form: {} = {}): Promise<DeleteChatStickerSetResult> {
-    return this._form("deleteChatStickerSet", { ...form, chat_id: chatId });
+    return this._form("deleteChatStickerSet", {
+      ...form,
+      chat_id: chatId,
+    } satisfies DeleteChatStickerSetParams);
   }
 
   // --- Forum topics -----------------------------------------------------
@@ -1400,7 +1607,11 @@ export class TelegramBot extends EventEmitter {
     name: string,
     form: Omit<CreateForumTopicParams, "chat_id" | "name"> = {},
   ): Promise<CreateForumTopicResult> {
-    return this._form("createForumTopic", { ...form, chat_id: chatId, name });
+    return this._form("createForumTopic", {
+      ...form,
+      chat_id: chatId,
+      name,
+    } satisfies CreateForumTopicParams);
   }
 
   editForumTopic(
@@ -1408,19 +1619,35 @@ export class TelegramBot extends EventEmitter {
     messageThreadId: number,
     form: Omit<EditForumTopicParams, "chat_id" | "message_thread_id"> = {},
   ): Promise<EditForumTopicResult> {
-    return this._form("editForumTopic", { ...form, chat_id: chatId, message_thread_id: messageThreadId });
+    return this._form("editForumTopic", {
+      ...form,
+      chat_id: chatId,
+      message_thread_id: messageThreadId,
+    } satisfies EditForumTopicParams);
   }
 
   closeForumTopic(chatId: ChatId, messageThreadId: number, form: {} = {}): Promise<CloseForumTopicResult> {
-    return this._form("closeForumTopic", { ...form, chat_id: chatId, message_thread_id: messageThreadId });
+    return this._form("closeForumTopic", {
+      ...form,
+      chat_id: chatId,
+      message_thread_id: messageThreadId,
+    } satisfies CloseForumTopicParams);
   }
 
   reopenForumTopic(chatId: ChatId, messageThreadId: number, form: {} = {}): Promise<ReopenForumTopicResult> {
-    return this._form("reopenForumTopic", { ...form, chat_id: chatId, message_thread_id: messageThreadId });
+    return this._form("reopenForumTopic", {
+      ...form,
+      chat_id: chatId,
+      message_thread_id: messageThreadId,
+    } satisfies ReopenForumTopicParams);
   }
 
   deleteForumTopic(chatId: ChatId, messageThreadId: number, form: {} = {}): Promise<DeleteForumTopicResult> {
-    return this._form("deleteForumTopic", { ...form, chat_id: chatId, message_thread_id: messageThreadId });
+    return this._form("deleteForumTopic", {
+      ...form,
+      chat_id: chatId,
+      message_thread_id: messageThreadId,
+    } satisfies DeleteForumTopicParams);
   }
 
   unpinAllForumTopicMessages(chatId: ChatId, messageThreadId: number, form: {} = {}): Promise<UnpinAllForumTopicMessagesResult> {
@@ -1428,37 +1655,59 @@ export class TelegramBot extends EventEmitter {
       ...form,
       chat_id: chatId,
       message_thread_id: messageThreadId,
-    });
+    } satisfies UnpinAllForumTopicMessagesParams);
   }
 
   editGeneralForumTopic(chatId: ChatId, name: string, form: {} = {}): Promise<EditGeneralForumTopicResult> {
-    return this._form("editGeneralForumTopic", { ...form, chat_id: chatId, name });
+    return this._form("editGeneralForumTopic", {
+      ...form,
+      chat_id: chatId,
+      name,
+    } satisfies EditGeneralForumTopicParams);
   }
 
   closeGeneralForumTopic(chatId: ChatId, form: {} = {}): Promise<CloseGeneralForumTopicResult> {
-    return this._form("closeGeneralForumTopic", { ...form, chat_id: chatId });
+    return this._form("closeGeneralForumTopic", {
+      ...form,
+      chat_id: chatId,
+    } satisfies CloseGeneralForumTopicParams);
   }
 
   reopenGeneralForumTopic(chatId: ChatId, form: {} = {}): Promise<ReopenGeneralForumTopicResult> {
-    return this._form("reopenGeneralForumTopic", { ...form, chat_id: chatId });
+    return this._form("reopenGeneralForumTopic", {
+      ...form,
+      chat_id: chatId,
+    } satisfies ReopenGeneralForumTopicParams);
   }
 
   hideGeneralForumTopic(chatId: ChatId, form: {} = {}): Promise<HideGeneralForumTopicResult> {
-    return this._form("hideGeneralForumTopic", { ...form, chat_id: chatId });
+    return this._form("hideGeneralForumTopic", {
+      ...form,
+      chat_id: chatId,
+    } satisfies HideGeneralForumTopicParams);
   }
 
   unhideGeneralForumTopic(chatId: ChatId, form: {} = {}): Promise<UnhideGeneralForumTopicResult> {
-    return this._form("unhideGeneralForumTopic", { ...form, chat_id: chatId });
+    return this._form("unhideGeneralForumTopic", {
+      ...form,
+      chat_id: chatId,
+    } satisfies UnhideGeneralForumTopicParams);
   }
 
   unpinAllGeneralForumTopicMessages(chatId: ChatId, form: {} = {}): Promise<UnpinAllGeneralForumTopicMessagesResult> {
-    return this._form("unpinAllGeneralForumTopicMessages", { ...form, chat_id: chatId });
+    return this._form("unpinAllGeneralForumTopicMessages", {
+      ...form,
+      chat_id: chatId,
+    } satisfies UnpinAllGeneralForumTopicMessagesParams);
   }
 
   // --- Callback / inline queries ---------------------------------------
 
   answerCallbackQuery(callbackQueryId: string, form: Omit<AnswerCallbackQueryParams, "callback_query_id"> = {}): Promise<AnswerCallbackQueryResult> {
-    return this._form("answerCallbackQuery", { ...form, callback_query_id: callbackQueryId });
+    return this._form("answerCallbackQuery", {
+      ...form,
+      callback_query_id: callbackQueryId,
+    } satisfies AnswerCallbackQueryParams);
   }
 
   answerGuestQuery(guestQueryId: string, result: InlineQueryResult): Promise<AnswerGuestQueryResult> {
@@ -1473,34 +1722,59 @@ export class TelegramBot extends EventEmitter {
     result: InlineQueryResult,
     form: Omit<SavePreparedInlineMessageParams, "user_id" | "result"> = {},
   ): Promise<SavePreparedInlineMessageResult> {
-    return this._form("savePreparedInlineMessage", { ...form, user_id: userId, result: stringify(result) });
+    return this._form("savePreparedInlineMessage", {
+      ...form,
+      user_id: userId,
+      result: stringify(result),
+    });
   }
+
   savePreparedKeyboardButton(
     userId: number,
     button: KeyboardButton,
     form: Omit<SavePreparedKeyboardButtonParams, "user_id" | "button"> = {},
   ): Promise<SavePreparedKeyboardButtonResult> {
-    return this._form("savePreparedKeyboardButton", { ...form, user_id: userId, button: stringify(button) });
+    return this._form("savePreparedKeyboardButton", {
+      ...form,
+      user_id: userId,
+      button: stringify(button),
+    });
   }
 
   getUserChatBoosts(chatId: ChatId, userId: number, form: {} = {}): Promise<GetUserChatBoostsResult> {
-    return this._form("getUserChatBoosts", { ...form, chat_id: chatId, user_id: userId });
+    return this._form("getUserChatBoosts", {
+      ...form,
+      chat_id: chatId,
+      user_id: userId,
+    } satisfies GetUserChatBoostsParams);
   }
 
   getBusinessConnection(businessConnectionId: string, form: {} = {}): Promise<GetBusinessConnectionResult> {
-    return this._form("getBusinessConnection", { ...form, business_connection_id: businessConnectionId });
+    return this._form("getBusinessConnection", {
+      ...form,
+      business_connection_id: businessConnectionId,
+    } satisfies GetBusinessConnectionParams);
   }
 
   getManagedBotToken(userId: number, form: {} = {}): Promise<GetManagedBotTokenResult> {
-    return this._form("getManagedBotToken", { ...form, user_id: userId });
+    return this._form("getManagedBotToken", {
+      ...form,
+      user_id: userId,
+    } satisfies GetManagedBotTokenParams);
   }
 
   replaceManagedBotToken(userId: number, form: {} = {}): Promise<ReplaceManagedBotTokenResult> {
-    return this._form("replaceManagedBotToken", { ...form, user_id: userId });
+    return this._form("replaceManagedBotToken", {
+      ...form,
+      user_id: userId,
+    } satisfies ReplaceManagedBotTokenParams);
   }
 
   getManagedBotAccessSettings(userId: number, form: {} = {}): Promise<GetManagedBotAccessSettingsResult> {
-    return this._form("getManagedBotAccessSettings", { ...form, user_id: userId });
+    return this._form("getManagedBotAccessSettings", {
+      ...form,
+      user_id: userId,
+    } satisfies GetManagedBotAccessSettingsParams);
   }
 
   setManagedBotAccessSettings(
@@ -1595,7 +1869,10 @@ export class TelegramBot extends EventEmitter {
   ): Promise<SetChatMenuButtonResult> {
     if (form.menu_button) {
       const serialized = stringify(form.menu_button);
-      return this._form("setChatMenuButton", { ...form, menu_button: serialized });
+      return this._form("setChatMenuButton", {
+        ...form,
+        menu_button: serialized,
+      });
     }
     return this._form("setChatMenuButton", form);
   }
@@ -1619,13 +1896,19 @@ export class TelegramBot extends EventEmitter {
     text: string,
     form: Omit<EditMessageTextParams, "text"> = {},
   ): Promise<EditMessageTextResult> {
-    return this._form("editMessageText", { ...form, text });
+    return this._form("editMessageText", {
+      ...form,
+      text,
+    } satisfies EditMessageTextParams);
   }
   editMessageCaption(
     caption: string,
     form: Omit<EditMessageCaptionParams, "caption"> = {},
   ): Promise<EditMessageCaptionResult> {
-    return this._form("editMessageCaption", { ...form, caption });
+    return this._form("editMessageCaption", {
+      ...form,
+      caption,
+    } satisfies EditMessageCaptionParams);
   }
   async editMessageMedia(
     media: InputMedia & { fileOptions?: FileMeta },
@@ -1648,6 +1931,7 @@ export class TelegramBot extends EventEmitter {
     const out: Record<string, unknown> = { ...form, media: stringify(media) };
     return this._form("editMessageMedia", out);
   }
+
   editMessageChecklist(
     businessConnectionId: string,
     chatId: ChatId,
@@ -1663,18 +1947,27 @@ export class TelegramBot extends EventEmitter {
       checklist: stringify(checklist),
     });
   }
+
   editMessageReplyMarkup(
     replyMarkup: InlineKeyboardMarkup,
     form: Omit<EditMessageReplyMarkupParams, "reply_markup"> = {},
   ): Promise<EditMessageReplyMarkupResult> {
-    return this._form("editMessageReplyMarkup", { ...form, reply_markup: replyMarkup });
+    return this._form("editMessageReplyMarkup", {
+      ...form,
+      reply_markup: replyMarkup,
+    } satisfies EditMessageReplyMarkupParams);
   }
+
   stopPoll(
     chatId: ChatId,
     pollId: number,
     form: Omit<StopPollParams, "chat_id" | "message_id"> = {},
   ): Promise<StopPollResult> {
-    return this._form("stopPoll", { ...form, chat_id: chatId, message_id: pollId });
+    return this._form("stopPoll", {
+      ...form,
+      chat_id: chatId,
+      message_id: pollId,
+    } satisfies StopPollParams);
   }
 
   // --- Suggested posts --------------------------------------------------
@@ -1684,14 +1977,23 @@ export class TelegramBot extends EventEmitter {
     messageId: number,
     form: Omit<ApproveSuggestedPostParams, "chat_id" | "message_id"> = {},
   ): Promise<ApproveSuggestedPostResult> {
-    return this._form("approveSuggestedPost", { ...form, chat_id: chatId, message_id: messageId });
+    return this._form("approveSuggestedPost", {
+      ...form,
+      chat_id: chatId,
+      message_id: messageId,
+    });
   }
+
   declineSuggestedPost(
     chatId: ChatId,
     messageId: number,
     form: Omit<DeclineSuggestedPostParams, "chat_id" | "message_id"> = {},
   ): Promise<DeclineSuggestedPostResult> {
-    return this._form("declineSuggestedPost", { ...form, chat_id: chatId, message_id: messageId });
+    return this._form("declineSuggestedPost", {
+      ...form,
+      chat_id: chatId,
+      message_id: messageId,
+    });
   }
 
   // --- Stickers --------------------------------------------------------
@@ -1705,11 +2007,19 @@ export class TelegramBot extends EventEmitter {
     return this._sendFile("sendSticker", "sticker", sticker, { ...options, chat_id: chatId }, fileOptions);
   }
   getStickerSet(name: string, form: {} = {}): Promise<GetStickerSetResult> {
-    return this._form("getStickerSet", { ...form, name });
+    return this._form("getStickerSet", {
+      ...form,
+      name,
+    } satisfies GetStickerSetParams);
   }
+
   getCustomEmojiStickers(customEmojiIds: string[], form: {} = {}): Promise<GetCustomEmojiStickersResult> {
-    return this._form("getCustomEmojiStickers", { ...form, custom_emoji_ids: stringify(customEmojiIds) });
+    return this._form("getCustomEmojiStickers", {
+      ...form,
+      custom_emoji_ids: stringify(customEmojiIds),
+    });
   }
+
   uploadStickerFile(
     userId: number,
     sticker: FileInput,
@@ -1738,6 +2048,7 @@ export class TelegramBot extends EventEmitter {
     if (options.mask_position) qs.mask_position = stringify(options.mask_position);
     return this._sendFile("createNewStickerSet", "png_sticker", pngSticker, qs, fileOptions);
   }
+
   addStickerToSet(
     userId: number,
     name: string,
@@ -1754,23 +2065,44 @@ export class TelegramBot extends EventEmitter {
     if (options.mask_position) qs.mask_position = stringify(options.mask_position);
     return this._sendFile("addStickerToSet", stickerType, sticker, qs, fileOptions);
   }
+
   setStickerPositionInSet(sticker: string, position: number, form: {} = {}): Promise<SetStickerPositionInSetResult> {
-    return this._form("setStickerPositionInSet", { ...form, sticker, position });
+    return this._form("setStickerPositionInSet", {
+      ...form,
+      sticker,
+      position,
+    } satisfies SetStickerPositionInSetParams);
   }
+
   deleteStickerFromSet(sticker: string, form: {} = {}): Promise<DeleteStickerFromSetResult> {
-    return this._form("deleteStickerFromSet", { ...form, sticker });
+    return this._form("deleteStickerFromSet", {
+      ...form,
+      sticker,
+    } satisfies DeleteStickerFromSetParams);
   }
+
   replaceStickerInSet(
     userId: number,
     name: string,
     oldSticker: string,
     form: { sticker?: InputSticker } = {},
   ): Promise<ReplaceStickerInSetResult> {
-    return this._form("replaceStickerInSet", { ...form, user_id: userId, name, old_sticker: oldSticker });
+    return this._form("replaceStickerInSet", {
+      ...form,
+      user_id: userId,
+      name,
+      old_sticker: oldSticker,
+    });
   }
+
   setStickerEmojiList(sticker: string, emojiList: string[], form: {} = {}): Promise<SetStickerEmojiListResult> {
-    return this._form("setStickerEmojiList", { ...form, sticker, emoji_list: stringify(emojiList) });
+    return this._form("setStickerEmojiList", {
+      ...form,
+      sticker,
+      emoji_list: stringify(emojiList),
+    });
   }
+
   setStickerKeywords(
     sticker: string,
     form: Omit<SetStickerKeywordsParams, "sticker"> = {},
@@ -1779,6 +2111,7 @@ export class TelegramBot extends EventEmitter {
     if (out.keywords) out.keywords = stringify(out.keywords);
     return this._form("setStickerKeywords", out);
   }
+
   setStickerMaskPosition(
     sticker: string,
     form: Omit<SetStickerMaskPositionParams, "sticker"> = {},
@@ -1787,8 +2120,13 @@ export class TelegramBot extends EventEmitter {
     if (out.mask_position) out.mask_position = stringify(out.mask_position);
     return this._form("setStickerMaskPosition", out);
   }
+
   setStickerSetTitle(name: string, title: string, form: {} = {}): Promise<SetStickerSetTitleResult> {
-    return this._form("setStickerSetTitle", { ...form, name, title });
+    return this._form("setStickerSetTitle", {
+      ...form,
+      name,
+      title,
+    } satisfies SetStickerSetTitleParams);
   }
   setStickerSetThumbnail(
     userId: number,
@@ -1805,14 +2143,21 @@ export class TelegramBot extends EventEmitter {
       fileOptions,
     );
   }
+
   setCustomEmojiStickerSetThumbnail(
     name: string,
     form: Omit<SetCustomEmojiStickerSetThumbnailParams, "name"> = {},
   ): Promise<SetCustomEmojiStickerSetThumbnailResult> {
-    return this._form("setCustomEmojiStickerSetThumbnail", { ...form, name });
+    return this._form("setCustomEmojiStickerSetThumbnail", {
+      ...form,
+      name,
+    } satisfies SetCustomEmojiStickerSetThumbnailParams);
   }
   deleteStickerSet(name: string, form: {} = {}): Promise<DeleteStickerSetResult> {
-    return this._form("deleteStickerSet", { ...form, name });
+    return this._form("deleteStickerSet", {
+      ...form,
+      name,
+    } satisfies DeleteStickerSetParams);
   }
 
   // --- Inline / web app -------------------------------------------------
@@ -1822,7 +2167,11 @@ export class TelegramBot extends EventEmitter {
     results: InlineQueryResult[],
     form: Omit<AnswerInlineQueryParams, "inline_query_id" | "results"> = {},
   ): Promise<AnswerInlineQueryResult> {
-    return this._form("answerInlineQuery", { ...form, inline_query_id: inlineQueryId, results: stringify(results) });
+    return this._form("answerInlineQuery", {
+      ...form,
+      inline_query_id: inlineQueryId,
+      results: stringify(results),
+    });
   }
 
   answerWebAppQuery(
@@ -1830,7 +2179,11 @@ export class TelegramBot extends EventEmitter {
     result: InlineQueryResult,
     form: Omit<AnswerWebAppQueryParams, "web_app_query_id" | "result"> = {},
   ): Promise<AnswerWebAppQueryResult> {
-    return this._form("answerWebAppQuery", { ...form, web_app_query_id: webAppQueryId, result: stringify(result) });
+    return this._form("answerWebAppQuery", {
+      ...form,
+      web_app_query_id: webAppQueryId,
+      result: stringify(result),
+    });
   }
 
   // --- Payments --------------------------------------------------------
@@ -1895,7 +2248,11 @@ export class TelegramBot extends EventEmitter {
     ok: boolean,
     form: Omit<AnswerPreCheckoutQueryParams, "pre_checkout_query_id" | "ok"> = {},
   ): Promise<AnswerPreCheckoutQueryResult> {
-    return this._form("answerPreCheckoutQuery", { ...form, pre_checkout_query_id: preCheckoutQueryId, ok });
+    return this._form("answerPreCheckoutQuery", {
+      ...form,
+      pre_checkout_query_id: preCheckoutQueryId,
+      ok,
+    } satisfies AnswerPreCheckoutQueryParams);
   }
 
   // --- Telegram Stars --------------------------------------------------
@@ -1915,7 +2272,7 @@ export class TelegramBot extends EventEmitter {
       ...form,
       user_id: userId,
       telegram_payment_charge_id: telegramPaymentChargeId,
-    });
+    } satisfies RefundStarPaymentParams);
   }
   editUserStarSubscription(
     userId: number,
@@ -1928,7 +2285,7 @@ export class TelegramBot extends EventEmitter {
       user_id: userId,
       telegram_payment_charge_id: telegramPaymentChargeId,
       is_canceled: isCanceled,
-    });
+    } satisfies EditUserStarSubscriptionParams);
   }
 
   // --- Games -----------------------------------------------------------
@@ -1938,42 +2295,68 @@ export class TelegramBot extends EventEmitter {
     gameShortName: string,
     form: Omit<SendGameParams, "chat_id" | "game_short_name"> = {},
   ): Promise<SendGameResult> {
-    return this._form("sendGame", { ...form, chat_id: chatId, game_short_name: gameShortName });
+    return this._form("sendGame", {
+      ...form,
+      chat_id: chatId,
+      game_short_name: gameShortName,
+    } satisfies SendGameParams);
   }
   setGameScore(
     userId: number,
     score: number,
     form: Omit<SetGameScoreParams, "user_id" | "score"> = {},
   ): Promise<SetGameScoreResult> {
-    return this._form("setGameScore", { ...form, user_id: userId, score });
+    return this._form("setGameScore", {
+      ...form,
+      user_id: userId,
+      score,
+    } satisfies SetGameScoreParams);
   }
   getGameHighScores(
     userId: number,
     form: { chat_id?: number; message_id?: number; inline_message_id?: string } = {},
   ): Promise<GetGameHighScoresResult> {
-    return this._form("getGameHighScores", { ...form, user_id: userId });
+    return this._form("getGameHighScores", {
+      ...form,
+      user_id: userId,
+    } satisfies GetGameHighScoresParams);
   }
 
   // --- Delete messages ------------------------------------------------
 
   deleteMessage(chatId: ChatId, messageId: number, form: {} = {}): Promise<DeleteMessageResult> {
-    return this._form("deleteMessage", { ...form, chat_id: chatId, message_id: messageId });
+    return this._form("deleteMessage", {
+      ...form,
+      chat_id: chatId,
+      message_id: messageId,
+    } satisfies DeleteMessageParams);
   }
   deleteMessages(chatId: ChatId, messageIds: number[], form: {} = {}): Promise<DeleteMessagesResult> {
-    return this._form("deleteMessages", { ...form, chat_id: chatId, message_ids: stringify(messageIds) });
+    return this._form("deleteMessages", {
+      ...form,
+      chat_id: chatId,
+      message_ids: stringify(messageIds),
+    });
   }
   deleteMessageReaction(
     chatId: ChatId,
     messageId: number,
     form: { user_id?: number; actor_chat_id?: number } = {},
   ): Promise<DeleteMessageReactionResult> {
-    return this._form("deleteMessageReaction", { ...form, chat_id: chatId, message_id: messageId });
+    return this._form("deleteMessageReaction", {
+      ...form,
+      chat_id: chatId,
+      message_id: messageId,
+    } satisfies DeleteMessageReactionParams);
   }
   deleteAllMessageReactions(
     chatId: ChatId,
     form: { user_id?: number; actor_chat_id?: number } = {},
   ): Promise<DeleteAllMessageReactionsResult> {
-    return this._form("deleteAllMessageReactions", { ...form, chat_id: chatId });
+    return this._form("deleteAllMessageReactions", {
+      ...form,
+      chat_id: chatId,
+    } satisfies DeleteAllMessageReactionsParams);
   }
   // --- Gifts -----------------------------------------------------------
 
@@ -1984,7 +2367,10 @@ export class TelegramBot extends EventEmitter {
     giftId: string,
     form: Omit<SendGiftParams, "gift_id"> = {},
   ): Promise<SendGiftResult> {
-    return this._form("sendGift", { ...form, gift_id: giftId });
+    return this._form("sendGift", {
+      ...form,
+      gift_id: giftId,
+    } satisfies SendGiftParams);
   }
   giftPremiumSubscription(
     userId: number,
@@ -1997,7 +2383,7 @@ export class TelegramBot extends EventEmitter {
       user_id: userId,
       month_count: monthCount,
       star_count: starCount,
-    });
+    } satisfies GiftPremiumSubscriptionParams);
   }
 
   // --- Verification ---------------------------------------------------
@@ -2006,19 +2392,31 @@ export class TelegramBot extends EventEmitter {
     userId: number,
     form: Omit<VerifyUserParams, "user_id"> = {},
   ): Promise<VerifyUserResult> {
-    return this._form("verifyUser", { ...form, user_id: userId });
+    return this._form("verifyUser", {
+      ...form,
+      user_id: userId,
+    } satisfies VerifyUserParams);
   }
   verifyChat(
     chatId: ChatId,
     form: Omit<VerifyChatParams, "chat_id"> = {},
   ): Promise<VerifyChatResult> {
-    return this._form("verifyChat", { ...form, chat_id: chatId });
+    return this._form("verifyChat", {
+      ...form,
+      chat_id: chatId,
+    } satisfies VerifyChatParams);
   }
   removeUserVerification(userId: number, form: {} = {}): Promise<RemoveUserVerificationResult> {
-    return this._form("removeUserVerification", { ...form, user_id: userId });
+    return this._form("removeUserVerification", {
+      ...form,
+      user_id: userId,
+    } satisfies RemoveUserVerificationParams);
   }
   removeChatVerification(chatId: ChatId, form: {} = {}): Promise<RemoveChatVerificationResult> {
-    return this._form("removeChatVerification", { ...form, chat_id: chatId });
+    return this._form("removeChatVerification", {
+      ...form,
+      chat_id: chatId,
+    } satisfies RemoveChatVerificationParams);
   }
 
   // --- Business accounts ----------------------------------------------
@@ -2056,19 +2454,25 @@ export class TelegramBot extends EventEmitter {
       ...form,
       business_connection_id: businessConnectionId,
       first_name: firstName,
-    });
+    } satisfies SetBusinessAccountNameParams);
   }
   setBusinessAccountUsername(
     businessConnectionId: string,
     form: Omit<SetBusinessAccountUsernameParams, "business_connection_id"> = {},
   ): Promise<SetBusinessAccountUsernameResult> {
-    return this._form("setBusinessAccountUsername", { ...form, business_connection_id: businessConnectionId });
+    return this._form("setBusinessAccountUsername", {
+      ...form,
+      business_connection_id: businessConnectionId,
+    } satisfies SetBusinessAccountUsernameParams);
   }
   setBusinessAccountBio(
     businessConnectionId: string,
     form: Omit<SetBusinessAccountBioParams, "business_connection_id"> = {},
   ): Promise<SetBusinessAccountBioResult> {
-    return this._form("setBusinessAccountBio", { ...form, business_connection_id: businessConnectionId });
+    return this._form("setBusinessAccountBio", {
+      ...form,
+      business_connection_id: businessConnectionId,
+    } satisfies SetBusinessAccountBioParams);
   }
   async setBusinessAccountProfilePhoto(
     businessConnectionId: string,
@@ -2091,7 +2495,10 @@ export class TelegramBot extends EventEmitter {
     businessConnectionId: string,
     form: Omit<RemoveBusinessAccountProfilePhotoParams, "business_connection_id"> = {},
   ): Promise<RemoveBusinessAccountProfilePhotoResult> {
-    return this._form("removeBusinessAccountProfilePhoto", { ...form, business_connection_id: businessConnectionId });
+    return this._form("removeBusinessAccountProfilePhoto", {
+      ...form,
+      business_connection_id: businessConnectionId,
+    } satisfies RemoveBusinessAccountProfilePhotoParams);
   }
   setBusinessAccountGiftSettings(
     businessConnectionId: string,
@@ -2104,10 +2511,13 @@ export class TelegramBot extends EventEmitter {
       business_connection_id: businessConnectionId,
       show_gift_button: showGiftButton,
       accepted_gift_types: acceptedGiftTypes,
-    });
+    } satisfies SetBusinessAccountGiftSettingsParams);
   }
   getBusinessAccountStarBalance(businessConnectionId: string, form: {} = {}): Promise<GetBusinessAccountStarBalanceResult> {
-    return this._form("getBusinessAccountStarBalance", { ...form, business_connection_id: businessConnectionId });
+    return this._form("getBusinessAccountStarBalance", {
+      ...form,
+      business_connection_id: businessConnectionId,
+    } satisfies GetBusinessAccountStarBalanceParams);
   }
   transferBusinessAccountStars(
     businessConnectionId: string,
@@ -2118,25 +2528,34 @@ export class TelegramBot extends EventEmitter {
       ...form,
       business_connection_id: businessConnectionId,
       star_count: starCount,
-    });
+    } satisfies TransferBusinessAccountStarsParams);
   }
   getBusinessAccountGifts(
     businessConnectionId: string,
     form: Omit<GetBusinessAccountGiftsParams, "business_connection_id"> = {},
   ): Promise<GetBusinessAccountGiftsResult> {
-    return this._form("getBusinessAccountGifts", { ...form, business_connection_id: businessConnectionId });
+    return this._form("getBusinessAccountGifts", {
+      ...form,
+      business_connection_id: businessConnectionId,
+    } satisfies GetBusinessAccountGiftsParams);
   }
   getUserGifts(
     userId: number,
     form: Omit<GetUserGiftsParams, "user_id"> = {},
   ): Promise<GetUserGiftsResult> {
-    return this._form("getUserGifts", { ...form, user_id: userId });
+    return this._form("getUserGifts", {
+      ...form,
+      user_id: userId,
+    } satisfies GetUserGiftsParams);
   }
   getChatGifts(
     chatId: ChatId,
     form: Omit<GetChatGiftsParams, "chat_id"> = {},
   ): Promise<GetChatGiftsResult> {
-    return this._form("getChatGifts", { ...form, chat_id: chatId });
+    return this._form("getChatGifts", {
+      ...form,
+      chat_id: chatId,
+    } satisfies GetChatGiftsParams);
   }
   convertGiftToStars(
     businessConnectionId: string,
@@ -2147,7 +2566,7 @@ export class TelegramBot extends EventEmitter {
       ...form,
       business_connection_id: businessConnectionId,
       owned_gift_id: ownedGiftId,
-    });
+    } satisfies ConvertGiftToStarsParams);
   }
   upgradeGift(
     businessConnectionId: string,
@@ -2158,7 +2577,7 @@ export class TelegramBot extends EventEmitter {
       ...form,
       business_connection_id: businessConnectionId,
       owned_gift_id: ownedGiftId,
-    });
+    } satisfies UpgradeGiftParams);
   }
   transferGift(
     businessConnectionId: string,
@@ -2171,7 +2590,7 @@ export class TelegramBot extends EventEmitter {
       business_connection_id: businessConnectionId,
       owned_gift_id: ownedGiftId,
       new_owner_chat_id: newOwnerChatId,
-    });
+    } satisfies TransferGiftParams);
   }
 
   // --- Stories --------------------------------------------------------
@@ -2238,7 +2657,7 @@ export class TelegramBot extends EventEmitter {
       ...form,
       business_connection_id: businessConnectionId,
       story_id: storyId,
-    });
+    } satisfies DeleteStoryParams);
   }
 }
 
