@@ -248,13 +248,18 @@ describe("Telegram Bot API (integration)", () => {
 
   describe("setMyName", () => {
     let original: string;
+    let originalEs: string;
 
     before(async () => {
       original = (await bot.getMyName()).name;
+      // Localized name for `es`; usually empty unless previously set.
+      originalEs = (await bot.getMyName({ language_code: "es" })).name;
     });
 
     after(async () => {
       await bot.setMyName({ name: original });
+      // Setting an empty name for a language_code clears that localized override.
+      await bot.setMyName({ name: originalEs, language_code: "es" });
     });
 
     it("sets the bot name and getMyName reflects it", async () => {
@@ -262,6 +267,14 @@ describe("Telegram Bot API (integration)", () => {
       const ok = await bot.setMyName({ name: desired });
       assert.equal(ok, true);
       const got = await bot.getMyName();
+      assert.equal(got.name, desired);
+    });
+
+    it("honors language_code: the localized name round-trips through getMyName", async () => {
+      const desired = `NTBA ${Date.now() % 100000}`;
+      const ok = await bot.setMyName({ name: desired, language_code: "es" });
+      assert.equal(ok, true);
+      const got = await bot.getMyName({ language_code: "es" });
       assert.equal(got.name, desired);
     });
   });
@@ -743,6 +756,18 @@ describe("Telegram Bot API (integration)", () => {
       assert.equal(sent.reply_to_message!.message_id, target.message_id);
       assert.ok(sent.reply_markup);
     });
+
+    it("honors country_codes and hide_results_until_closes", async () => {
+      // hide_results_until_closes is only valid on a poll that closes, so pair
+      // it with open_period (which also auto-closes the poll — no cleanup).
+      const sent = await bot.sendPoll(GROUP_ID, "Hidden until close?", [{ text: "A" }, { text: "B" }], {
+        is_anonymous: false,
+        country_codes: ["US", "GB"],
+        hide_results_until_closes: true,
+        open_period: 60,
+      });
+      assert.ok(sent.poll);
+    });
   });
 
   describe("sendContact", () => {
@@ -1038,6 +1063,29 @@ describe("Telegram Bot API (integration)", () => {
       const id = copied;
       assert.equal(typeof id.message_id, "number");
     });
+
+    it("honours caption_entities, reply_parameters and video_start_timestamp", async () => {
+      // caption_entities applies to a media caption: copy a photo, overriding
+      // its caption with an explicit bold entity.
+      const photoSource = await bot.sendPhoto(GROUP_ID, photoFileId, { caption: "orig" });
+      const withEntities = await bot.copyMessage(GROUP_ID, GROUP_ID, photoSource.message_id, {
+        caption: "Copied caption",
+        caption_entities: [{ type: "bold", offset: 0, length: 6 }],
+      });
+      assert.equal(typeof withEntities.message_id, "number");
+
+      const withReply = await bot.copyMessage(GROUP_ID, GROUP_ID, photoSource.message_id, {
+        reply_parameters: { message_id: photoSource.message_id },
+      });
+      assert.equal(typeof withReply.message_id, "number");
+
+      // video_start_timestamp only applies when copying a video message.
+      const video = await bot.sendVideo(GROUP_ID, VIDEO_PATH);
+      const withTimestamp = await bot.copyMessage(GROUP_ID, GROUP_ID, video.message_id, {
+        video_start_timestamp: 1,
+      });
+      assert.equal(typeof withTimestamp.message_id, "number");
+    });
   });
 
   describe("copyMessages", () => {
@@ -1223,6 +1271,7 @@ describe("Telegram Bot API (integration)", () => {
       const stopped = await bot.stopMessageLiveLocation({
         chat_id: GROUP_ID,
         message_id: sent.message_id,
+        reply_markup: { inline_keyboard: [[{ text: "done", callback_data: "done" }]] },
       });
       assert.ok(stopped === true || typeof stopped === "object");
     });
@@ -1633,6 +1682,15 @@ describe("Telegram Bot API (integration)", () => {
         }),
         TelegramError,
       );
+    });
+  });
+
+  describe("unbanChatMember", () => {
+    it("is a safe no-op for a member that is not banned (only_if_banned)", async () => {
+      // only_if_banned makes this a no-op when the user isn't banned, so it
+      // never actually removes anyone from TEST_GROUP_ID.
+      const ok = await bot.unbanChatMember(GROUP_ID, USER_ID, { only_if_banned: true });
+      assert.equal(ok, true);
     });
   });
 
@@ -2104,6 +2162,34 @@ describe("Telegram Bot API (integration)", () => {
       };
       assert.equal(typeof result, "object");
       assert.ok(Array.isArray(result.gifts));
+    });
+  });
+
+  describe("getChatGifts", () => {
+    it("returns the chat's received-gifts payload (read-only)", async () => {
+      const result = await bot.getChatGifts(GROUP_ID);
+      assert.equal(typeof result, "object");
+    });
+  });
+
+  // --- Payments (no fixture needed) -------------------------------------
+  //
+  // createInvoiceLink genuinely succeeds with Telegram Stars (currency "XTR"),
+  // which need no provider token, so this is a real happy path.
+
+  describe("createInvoiceLink", () => {
+    it("returns a t.me invoice link for an XTR (Stars) invoice", async () => {
+      // Telegram Stars (currency "XTR") require no provider_token.
+      const link = await bot.createInvoiceLink(
+        "Test item",
+        "A test invoice",
+        `payload-${TIMESTAMP}`,
+        "",
+        "XTR",
+        [{ label: "Item", amount: 1 }],
+      );
+      assert.equal(typeof link, "string");
+      assert.match(link, /^https:\/\/t\.me\//);
     });
   });
 
