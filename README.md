@@ -70,11 +70,9 @@ More runnable examples live in the [`examples/`](./examples) directory.
 * [Help Information][help]
 * [API Reference][api] — generated from source; the package also ships its own TypeScript types, and method signatures mirror the [official Bot API][bot-api]
 * [Contributing to the Project][contributing]
-* [Experimental Features][experimental]
 
-_**Note**: Development is done against the **development** branch.
-Code for the latest release resides on the **master** branch.
-Experimental features reside on the **experimental** branch._
+_**Note**: Code for the latest release resides on the **master** branch, and
+pull requests should target **master**._
 
 
 ## 💭 Community
@@ -125,6 +123,5 @@ Copyright © 2019 Yago
 [tutorials]:https://github.com/yagop/node-telegram-bot-api/tree/master/doc/tutorials.md
 [contributing]:https://github.com/yagop/node-telegram-bot-api/tree/master/CONTRIBUTING.md
 [contributors]:https://github.com/yagop/node-telegram-bot-api/graphs/contributors
-[experimental]:https://github.com/yagop/node-telegram-bot-api/tree/master/doc/experimental.md
 [tg-channel]:https://telegram.me/node_telegram_bot_api
 [tg-group]:https://t.me/+UTbprHdcw0JdZdbL
