@@ -9,8 +9,76 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Rewritten in TypeScript
 
-The library has been rewritten from JavaScript to TypeScript. See the
-[migration guide](doc/migration.md) for the full list of breaking changes.
+The library has been rewritten from JavaScript to TypeScript and now requires
+**Node.js ≥ 18**. The public surface — the `TelegramBot` class, its method
+names, their positional arguments, and the emitted events — is otherwise
+unchanged, so most bots keep working after the breaking changes below.
+
+### Migrating from v0.67.x
+
+- **ESM-only.** The package is `"type": "module"`; `require()` no longer works —
+  use `import TelegramBot from "node-telegram-bot-api"`. The class is both the
+  default and a named export. If you are stuck on CommonJS, load it with a
+  dynamic import: `const { default: TelegramBot } = await import("node-telegram-bot-api")`.
+- **`answerCallbackQuery`** — the legacy `answerCallbackQuery(id, text, showAlert)`
+  and `answerCallbackQuery([options])` forms are removed; use
+  `answerCallbackQuery(id, { text, show_alert })`.
+- **`thumb` → `thumbnail`** on `sendAudio` / `sendDocument` / `sendVideo` /
+  `sendAnimation` / `sendVoice` and the sticker methods.
+- **`reply_to_message_id` → `reply_parameters`:**
+  `{ reply_parameters: { message_id } }`.
+- **Reply-keyboard string shorthand removed.** `KeyboardButton` is an object only;
+  use `keyboard: [[{ text: "Yes" }]]` instead of `keyboard: [["Yes"]]`.
+  (`reply_markup` is still serialized for you, or you may pass a pre-stringified value.)
+- **Error `response` shape.** Errors still expose `code`
+  (`EFATAL` / `EPARSE` / `ETELEGRAM`) and `response`, but `response` is now a plain
+  object, not the raw `http.IncomingMessage`: read `error.response.status`
+  (was `response.statusCode`); `error.response.body` is unchanged.
+- **`NTBA_FIX_350` removed.** `filename` / `contentType` are always auto-resolved
+  (including magic-byte sniffing of `Buffer`s); override per call via the
+  file-options argument.
+- **`request` constructor option** still exists but feeds the internal `fetch`-based
+  `HttpClient` (timeouts, default headers) rather than the old `request` library —
+  review any proxy/agent configuration.
+- **Build output** moved from `lib/` to `dist/`.
+
+### Breaking changes for `@types/node-telegram-bot-api` users
+
+The bundled types replace the community `@types/node-telegram-bot-api`
+(DefinitelyTyped) package. Uninstall `@types/node-telegram-bot-api`; the
+following differences affect existing typed code:
+
+- **Types are no longer namespaced.** The old package exposed everything under a
+  `TelegramBot.*` namespace (`TelegramBot.Message`, `TelegramBot.ChatId`, …).
+  Types are now flat named exports — replace `TelegramBot.Message` with a named
+  import: `import TelegramBot, { type Message } from "node-telegram-bot-api"`.
+  The default import of the class is unchanged.
+- **`*Options` interfaces are now `*Params` types.** Per-method option interfaces
+  (`SendMessageOptions`, `SendPhotoOptions`, …) are replaced by docs-faithful
+  `<Method>Params` types that include the positional arguments; each method types
+  its trailing argument as `Omit<<Method>Params, …>`. There are no aliases under
+  the old names.
+- **Renamed types:** `ConstructorOptions` → `TelegramBotOptions`,
+  `StartPollingOptions` → `PollingStartOptions`,
+  `StopPollingOptions` → `PollingStopOptions`, `FileOptions` → `FileMeta`,
+  `Metadata` → `EventMetadata`, `TelegramEvents` → `TelegramBotEvents`.
+  `TextListener` / `ReplyListener` are no longer exported.
+- **`restrictChatMember(chatId, userId, permissions, options?)`** — `permissions`
+  is now a required positional argument, not an option field.
+- **`sendPoll`** — `pollOptions` changed from `string[]` to `InputPollOption[]`
+  (`{ text, … }` objects), matching the current Bot API.
+- **`setStickerSetThumb` → `setStickerSetThumbnail`** (method renamed; adds a
+  `format` option).
+- **Removed legacy option fields** (the generated params are docs-faithful):
+  `disable_web_page_preview` (use `link_preview_options`),
+  top-level `allow_sending_without_reply` (use `reply_parameters`),
+  and `answerInlineQuery`'s `switch_pm_text` / `switch_pm_parameter` (use `button`).
+- **Constructor `request` option** is no longer the `request` library's `Options`
+  type — the client is `fetch`-based and the dependency is dropped.
+- **`PollingOptions.interval`** is `number` only (was `string | number`).
+- Array arguments (`answerInlineQuery` results, `sendMediaGroup` media,
+  `sendInvoice` prices, `setMyCommands` commands) no longer accept `readonly`
+  arrays.
 
 ### Added
 

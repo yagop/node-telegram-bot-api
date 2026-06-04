@@ -24,7 +24,7 @@ npm i node-telegram-bot-api
 > ✍️ **Note:** This package is **ESM-only** and requires **Node.js ≥ 18**. Use
 > `import` (not `require`). **TypeScript types are bundled** — do **not** install
 > `@types/node-telegram-bot-api` (it would shadow the bundled, more accurate
-> types). Upgrading from `0.6x`? See the [migration guide][migration].
+> types). Upgrading from `0.6x`? See the [migration notes in the changelog][migration].
 
 ## 🚀 Usage
 
@@ -118,7 +118,7 @@ Copyright © 2019 Yago
 
 [usage]:https://github.com/yagop/node-telegram-bot-api/tree/master/doc/usage.md
 [examples]:https://github.com/yagop/node-telegram-bot-api/tree/master/examples
-[migration]:https://github.com/yagop/node-telegram-bot-api/tree/master/doc/migration.md
+[migration]:https://github.com/yagop/node-telegram-bot-api/blob/master/CHANGELOG.md#migrating-from-v067x
 [bot-api]:https://core.telegram.org/bots/api
 [help]:https://github.com/yagop/node-telegram-bot-api/tree/master/doc/help.md
 [tutorials]:https://github.com/yagop/node-telegram-bot-api/tree/master/doc/tutorials.md
