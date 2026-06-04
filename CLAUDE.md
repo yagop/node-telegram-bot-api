@@ -11,28 +11,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ```bash
 npm run build            # tsc -p tsconfig.build.json → dist/ (src only)
 npm run typecheck        # tsc --noEmit over BOTH src/ and test/
-
-npm run test:node:unit   # unit tests on Node (no network)
-npm run test:bun:unit    # same suite on Bun
-npm run test:node:integration   # hits api.telegram.org; needs env vars (below)
+npm run generate:types   # bun scripts/api-parser.ts → regenerate src/types/schemas.ts
 ```
 
 There is **no separate lint step** — `npm run typecheck` under `strict` is the static-analysis gate. (The instructions in `test/README.md` mentioning `mocha`/`eslint` are stale; the suite is built on `node:test`.)
 
-### Running a single test / file
+### Tests
 
-Unit tests run via `node --test --import tsx`. `test/run-unit.mjs` exists only because native glob support landed in Node 22 — to target one file or test, invoke the runner directly:
-
-```bash
-# one file
-node --test --import tsx test/unit/utils.test.ts
-# one test (or describe) by name, across a file
-node --test --import tsx --test-name-pattern='sendMessage' test/unit/telegram.test.ts
-```
-
-### Integration env vars
-
-`test:node:integration` throws unless these are set: `NODE_TELEGRAM_TOKEN` (or `TEST_TELEGRAM_TOKEN`), `TEST_GROUP_ID`, `TEST_USER_ID`. The bot must be an admin in `TEST_GROUP_ID` with the relevant rights, or capability-dependent tests will fail. `TEST_STICKER_SET_NAME` and `TEST_CUSTOM_EMOJI_ID` have built-in defaults. `TEST_SUPERGROUP_100_MEMBERS_ID` is optional — a supergroup with ≥100 members the bot admins and that owns a sticker set; it enables the `setChatStickerSet`/`deleteChatStickerSet` happy-path blocks (omitted entirely when unset).
+**See the `run-tests` skill** (`.claude/skills/run-tests/SKILL.md`) for how to run the unit and integration suites. In short: prefer `bun` (it auto-loads `.env`), `node` also works; integration tests hit `api.telegram.org` and require `NODE_TELEGRAM_TOKEN`, `TEST_GROUP_ID`, `TEST_USER_ID` (readable from `.env`). The full integration suite is slow — scope a run to the method you changed with `bun test -t '<method>' test/integration/telegram.test.ts`, and only run the whole suite when you touch a core/shared part of the request pipeline. Some methods need special chat conditions (e.g. a forum-enabled `TEST_GROUP_ID`).
 
 ## Module system gotchas
 
@@ -77,3 +63,5 @@ The whole public surface is re-exported from `src/index.ts`: the `TelegramBot` c
 ## Testing approach
 
 Unit tests **stub `globalThis.fetch`** to capture outgoing requests and assert the wire format (URL, body params, that structured fields were serialized, that uploads built the right `FormData`) — no network, no token. Integration tests run the real thing against `api.telegram.org`, throttle ~1.1s between calls to respect rate limits, and deliberately skip irreversible mutations (`logOut`, `close`, `setMyName`, profile-photo changes, sticker-set deletion, …).
+
+For how to actually run, scope, and credential the suites — and which changes require a full-suite run — see the **`run-tests` skill** (`.claude/skills/run-tests/SKILL.md`).

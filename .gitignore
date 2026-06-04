@@ -8,6 +8,8 @@ lib/
 lib-doc/
 .DS_Store
 dist
-.claude
+.claude/*
+!.claude/skills/
 .env
 .vscode
+
