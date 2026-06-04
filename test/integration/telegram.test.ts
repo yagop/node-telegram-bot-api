@@ -65,6 +65,9 @@ const VOICE_PATH = path.join(DATA_DIR, "voice.ogg");
 const STICKER_PATH = path.join(DATA_DIR, "sticker.png");
 const STICKER_WEBP_PATH = path.join(DATA_DIR, "sticker.webp");
 const STICKER_THUMB_PATH = path.join(DATA_DIR, "sticker_thumb.png");
+// Custom-emoji stickers must be exactly 100x100 (unlike regular stickers, which
+// are 512 on one side), so the custom_emoji set uses its own correctly-sized fixture.
+const STICKER_EMOJI_PATH = path.join(DATA_DIR, "sticker_emoji.png");
 const PROFILE_PHOTO_JPEG_PATH = path.join(DATA_DIR, "chat_photo.jpeg");
 const PROFILE_PHOTO_PNG_PATH = path.join(DATA_DIR, "chat_photo.png");
 
@@ -2240,7 +2243,7 @@ describe("Telegram Bot API (integration)", () => {
       const me = await bot.getMe();
       emojiSetName = `e${TIMESTAMP}_by_${me.username}`;
       await sleep(1100);
-      await bot.createNewStickerSet(USER_ID, emojiSetName, "Integration Emoji Set", STICKER_PATH, "😀", {
+      await bot.createNewStickerSet(USER_ID, emojiSetName, "Integration Emoji Set", STICKER_EMOJI_PATH, "😀", {
         sticker_type: "custom_emoji",
       });
     });
