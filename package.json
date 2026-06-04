@@ -31,6 +31,7 @@
     "build": "tsc -p tsconfig.build.json",
     "typecheck": "tsc --noEmit",
     "generate:types": "bun scripts/api-parser.ts",
+    "generate:docs": "bun scripts/api-doc.ts",
     "test:node:unit": "node test/run-unit.mjs",
     "test:node:integration": "node test/run-integration.mjs",
     "test:bun:unit": "bun test test/unit",

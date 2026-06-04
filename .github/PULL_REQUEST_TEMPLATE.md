@@ -7,6 +7,7 @@ Note the 'x' in between the square brackets '[]'
 - [ ] All unit tests pass (`npm run test:node:unit`)
 - [ ] All integration tests pass (`npm run test:node:integration`)
 - [ ] `npm run typecheck` is clean
+- [ ] `doc/api.md` is up to date (`bun run generate:docs` leaves no diff — required when a `TelegramBot` method signature changed)
 
 ### Description
 
