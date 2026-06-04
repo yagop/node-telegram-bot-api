@@ -2195,106 +2195,229 @@ describe("Telegram Bot API (integration)", () => {
 
   // --- Forum topics -----------------------------------------------------
   //
-  // TEST_GROUP_ID is a regular (non-forum) supergroup, so every forum method
-  // below rejects with ETELEGRAM. Exercising the rejection still drives the
-  // full _form/_request/http pipeline and confirms each method is wired.
+  // TEST_GROUP_ID is a real forum supergroup and the bot is an admin with the
+  // can_manage_topics right, so every forum method below is exercised on its
+  // happy path. Per-topic blocks create a fresh throwaway topic in before() and
+  // delete it in after(); General-topic blocks restore General to its default
+  // (open, unhidden, name "General") in after().
 
   describe("createForumTopic", () => {
-    it("rejects with ETELEGRAM when chat is not forum-enabled", async () => {
-      await assert.rejects(bot.createForumTopic(GROUP_ID, "test topic"), (err: unknown) => {
-        assert.equal((err as { code?: string }).code, "ETELEGRAM");
-        return true;
+    let threadId: number;
+
+    after(async () => {
+      try {
+        await bot.deleteForumTopic(GROUP_ID, threadId);
+      } catch (err) {
+        if ((err as { code?: string }).code !== "ETELEGRAM") throw err;
+      }
+    });
+
+    it("creates a forum topic with an icon color and custom emoji", async () => {
+      const stickers = await bot.getForumTopicIconStickers();
+      assert.ok(stickers.length > 0, "expected at least one forum topic icon sticker");
+      const emoji = stickers[0]!.custom_emoji_id;
+      assert.ok(emoji, "expected the icon sticker to expose a custom_emoji_id");
+      await sleep(1100);
+      const topic = await bot.createForumTopic(GROUP_ID, `it-createForumTopic-${TIMESTAMP}`, {
+        icon_color: 0x6fb9f0,
+        icon_custom_emoji_id: emoji,
       });
+      threadId = topic.message_thread_id;
+      assert.equal(typeof topic.message_thread_id, "number");
+      assert.equal(typeof topic.name, "string");
+      assert.equal(typeof topic.icon_color, "number");
     });
   });
 
   describe("editForumTopic", () => {
-    it("rejects with ETELEGRAM when forum topic does not exist", async () => {
-      await assert.rejects(bot.editForumTopic(GROUP_ID, 999999, { name: "renamed" }), (err: unknown) => {
-        assert.equal((err as { code?: string }).code, "ETELEGRAM");
-        return true;
+    let threadId: number;
+
+    before(async () => {
+      const topic = await bot.createForumTopic(GROUP_ID, `it-editForumTopic-${TIMESTAMP}`);
+      threadId = topic.message_thread_id;
+    });
+
+    after(async () => {
+      try {
+        await bot.deleteForumTopic(GROUP_ID, threadId);
+      } catch (err) {
+        if ((err as { code?: string }).code !== "ETELEGRAM") throw err;
+      }
+    });
+
+    it("edits a forum topic's name and icon", async () => {
+      const stickers = await bot.getForumTopicIconStickers();
+      assert.ok(stickers.length > 0, "expected at least one forum topic icon sticker");
+      const emoji = stickers[0]!.custom_emoji_id;
+      assert.ok(emoji, "expected the icon sticker to expose a custom_emoji_id");
+      await sleep(1100);
+      const result = await bot.editForumTopic(GROUP_ID, threadId, {
+        name: `it-editForumTopic-renamed-${TIMESTAMP}`,
+        icon_custom_emoji_id: emoji,
       });
+      assert.equal(result, true);
     });
   });
 
   describe("closeForumTopic", () => {
-    it("rejects with ETELEGRAM when forum topic does not exist", async () => {
-      await assert.rejects(bot.closeForumTopic(GROUP_ID, 999999), (err: unknown) => {
-        assert.equal((err as { code?: string }).code, "ETELEGRAM");
-        return true;
-      });
+    let threadId: number;
+
+    before(async () => {
+      const topic = await bot.createForumTopic(GROUP_ID, `it-closeForumTopic-${TIMESTAMP}`);
+      threadId = topic.message_thread_id;
+    });
+
+    after(async () => {
+      try {
+        await bot.deleteForumTopic(GROUP_ID, threadId);
+      } catch (err) {
+        if ((err as { code?: string }).code !== "ETELEGRAM") throw err;
+      }
+    });
+
+    it("closes an open forum topic", async () => {
+      const result = await bot.closeForumTopic(GROUP_ID, threadId);
+      assert.equal(result, true);
     });
   });
 
   describe("reopenForumTopic", () => {
-    it("rejects with ETELEGRAM when forum topic does not exist", async () => {
-      await assert.rejects(bot.reopenForumTopic(GROUP_ID, 999999), (err: unknown) => {
-        assert.equal((err as { code?: string }).code, "ETELEGRAM");
-        return true;
-      });
+    let threadId: number;
+
+    before(async () => {
+      const topic = await bot.createForumTopic(GROUP_ID, `it-reopenForumTopic-${TIMESTAMP}`);
+      threadId = topic.message_thread_id;
+      await sleep(1100);
+      await bot.closeForumTopic(GROUP_ID, threadId);
+    });
+
+    after(async () => {
+      try {
+        await bot.deleteForumTopic(GROUP_ID, threadId);
+      } catch (err) {
+        if ((err as { code?: string }).code !== "ETELEGRAM") throw err;
+      }
+    });
+
+    it("reopens a closed forum topic", async () => {
+      const result = await bot.reopenForumTopic(GROUP_ID, threadId);
+      assert.equal(result, true);
     });
   });
 
   describe("unpinAllForumTopicMessages", () => {
-    it("rejects with ETELEGRAM when forum topic does not exist", async () => {
-      await assert.rejects(bot.unpinAllForumTopicMessages(GROUP_ID, 999999), (err: unknown) => {
-        assert.equal((err as { code?: string }).code, "ETELEGRAM");
-        return true;
-      });
+    let threadId: number;
+
+    before(async () => {
+      const topic = await bot.createForumTopic(GROUP_ID, `it-unpinAllForumTopicMessages-${TIMESTAMP}`);
+      threadId = topic.message_thread_id;
+    });
+
+    after(async () => {
+      try {
+        await bot.deleteForumTopic(GROUP_ID, threadId);
+      } catch (err) {
+        if ((err as { code?: string }).code !== "ETELEGRAM") throw err;
+      }
+    });
+
+    it("unpins all messages in a forum topic (even when none are pinned)", async () => {
+      const result = await bot.unpinAllForumTopicMessages(GROUP_ID, threadId);
+      assert.equal(result, true);
     });
   });
 
+  describe("deleteForumTopic", () => {
+    let threadId: number;
+
+    before(async () => {
+      const topic = await bot.createForumTopic(GROUP_ID, `it-deleteForumTopic-${TIMESTAMP}`);
+      threadId = topic.message_thread_id;
+    });
+
+    it("deletes a forum topic", async () => {
+      const result = await bot.deleteForumTopic(GROUP_ID, threadId);
+      assert.equal(result, true);
+    });
+  });
+
+  // General-topic blocks. Hiding General auto-closes it, and unhiding does NOT
+  // reopen it, so the full restore sequence is: unhide -> reopen -> rename to
+  // "General". Each restore step is idempotent: when the state is already
+  // correct the call throws ETELEGRAM 400 "TOPIC_NOT_MODIFIED", which is
+  // harmless and tolerated.
+  const restoreGeneral = async () => {
+    for (const step of [
+      () => bot.unhideGeneralForumTopic(GROUP_ID),
+      () => bot.reopenGeneralForumTopic(GROUP_ID),
+      () => bot.editGeneralForumTopic(GROUP_ID, "General"),
+    ]) {
+      try {
+        await step();
+      } catch (err) {
+        if ((err as { code?: string }).code !== "ETELEGRAM") throw err;
+      }
+      await sleep(1100);
+    }
+  };
+
   describe("closeGeneralForumTopic", () => {
-    it("rejects with ETELEGRAM when chat is not forum-enabled", async () => {
-      await assert.rejects(bot.closeGeneralForumTopic(GROUP_ID), (err: unknown) => {
-        assert.equal((err as { code?: string }).code, "ETELEGRAM");
-        return true;
-      });
+    after(restoreGeneral);
+
+    it("closes the open, unhidden General topic", async () => {
+      const result = await bot.closeGeneralForumTopic(GROUP_ID);
+      assert.equal(result, true);
     });
   });
 
   describe("reopenGeneralForumTopic", () => {
-    it("rejects with ETELEGRAM when chat is not forum-enabled", async () => {
-      await assert.rejects(bot.reopenGeneralForumTopic(GROUP_ID), (err: unknown) => {
-        assert.equal((err as { code?: string }).code, "ETELEGRAM");
-        return true;
-      });
+    before(async () => {
+      await bot.closeGeneralForumTopic(GROUP_ID);
+    });
+
+    after(restoreGeneral);
+
+    it("reopens the closed General topic", async () => {
+      const result = await bot.reopenGeneralForumTopic(GROUP_ID);
+      assert.equal(result, true);
     });
   });
 
   describe("hideGeneralForumTopic", () => {
-    it("rejects with ETELEGRAM when chat is not forum-enabled", async () => {
-      await assert.rejects(bot.hideGeneralForumTopic(GROUP_ID), (err: unknown) => {
-        assert.equal((err as { code?: string }).code, "ETELEGRAM");
-        return true;
-      });
+    after(restoreGeneral);
+
+    it("hides the General topic", async () => {
+      const result = await bot.hideGeneralForumTopic(GROUP_ID);
+      assert.equal(result, true);
     });
   });
 
   describe("unhideGeneralForumTopic", () => {
-    it("rejects with ETELEGRAM when chat is not forum-enabled", async () => {
-      await assert.rejects(bot.unhideGeneralForumTopic(GROUP_ID), (err: unknown) => {
-        assert.equal((err as { code?: string }).code, "ETELEGRAM");
-        return true;
-      });
+    before(async () => {
+      await bot.hideGeneralForumTopic(GROUP_ID);
+    });
+
+    after(restoreGeneral);
+
+    it("unhides the hidden General topic", async () => {
+      const result = await bot.unhideGeneralForumTopic(GROUP_ID);
+      assert.equal(result, true);
     });
   });
 
   describe("editGeneralForumTopic", () => {
-    it("rejects with ETELEGRAM when chat is not forum-enabled", async () => {
-      await assert.rejects(bot.editGeneralForumTopic(GROUP_ID, "new name"), (err: unknown) => {
-        assert.equal((err as { code?: string }).code, "ETELEGRAM");
-        return true;
-      });
+    after(restoreGeneral);
+
+    it("renames the General topic", async () => {
+      const result = await bot.editGeneralForumTopic(GROUP_ID, `it-editGeneralForumTopic-${TIMESTAMP}`);
+      assert.equal(result, true);
     });
   });
 
   describe("unpinAllGeneralForumTopicMessages", () => {
-    it("rejects with ETELEGRAM when chat is not forum-enabled", async () => {
-      await assert.rejects(bot.unpinAllGeneralForumTopicMessages(GROUP_ID), (err: unknown) => {
-        assert.equal((err as { code?: string }).code, "ETELEGRAM");
-        return true;
-      });
+    it("unpins all messages in the General topic (even when none are pinned)", async () => {
+      const result = await bot.unpinAllGeneralForumTopicMessages(GROUP_ID);
+      assert.equal(result, true);
     });
   });
 
