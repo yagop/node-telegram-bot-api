@@ -68,7 +68,7 @@ More runnable examples live in the [`examples/`](./examples) directory.
 * [Migration guide (0.6x → 1.0)][migration]
 * [Tutorials][tutorials]
 * [Help Information][help]
-* API Reference — the package ships its own TypeScript types; method signatures mirror the [official Bot API][bot-api]
+* [API Reference][api] — generated from source; the package also ships its own TypeScript types, and method signatures mirror the [official Bot API][bot-api]
 * [Contributing to the Project][contributing]
 * [Experimental Features][experimental]
 
@@ -119,6 +119,7 @@ Copyright © 2019 Yago
 [usage]:https://github.com/yagop/node-telegram-bot-api/tree/master/doc/usage.md
 [examples]:https://github.com/yagop/node-telegram-bot-api/tree/master/examples
 [migration]:https://github.com/yagop/node-telegram-bot-api/blob/master/CHANGELOG.md#migrating-from-v067x
+[api]:https://github.com/yagop/node-telegram-bot-api/tree/master/doc/api.md
 [bot-api]:https://core.telegram.org/bots/api
 [help]:https://github.com/yagop/node-telegram-bot-api/tree/master/doc/help.md
 [tutorials]:https://github.com/yagop/node-telegram-bot-api/tree/master/doc/tutorials.md
