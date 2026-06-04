@@ -361,6 +361,26 @@ describe("Telegram Bot API (integration)", () => {
       const button = await bot.getChatMenuButton();
       assert.equal(typeof button.type, "string");
     });
+
+    it("accepts a chat_id targeting a private chat and getChatMenuButton reflects it", async () => {
+      // chat_id targets a private chat only (a group/supergroup id is rejected
+      // with "invalid chat_id specified"), so use the test user. Set the menu
+      // button for that chat, read it back to confirm, then reset to default.
+      const ok = await bot.setChatMenuButton({
+        chat_id: USER_ID,
+        menu_button: { type: "commands" },
+      });
+      assert.equal(ok, true);
+      await sleep(1100);
+      const button = await bot.getChatMenuButton({ chat_id: USER_ID });
+      assert.equal(button.type, "commands");
+      // Leave the per-chat menu button as found (cleared to the bot default).
+      await sleep(1100);
+      await bot.setChatMenuButton({
+        chat_id: USER_ID,
+        menu_button: { type: "default" },
+      });
+    });
   });
 
   // --- Webhook / updates -------------------------------------------------
@@ -456,6 +476,14 @@ describe("Telegram Bot API (integration)", () => {
         assert.equal(sent.link_preview_options, undefined);
       }
     });
+
+    it("accepts allow_paid_broadcast: false", async () => {
+      const text = `paid-broadcast ${TIMESTAMP}`;
+      const sent = await bot.sendMessage(GROUP_ID, text, {
+        allow_paid_broadcast: false,
+      });
+      assert.equal(sent.text, text);
+    });
   });
 
   describe("sendChatAction", () => {
@@ -498,6 +526,14 @@ describe("Telegram Bot API (integration)", () => {
       assert.ok(sent.dice);
       assert.ok(sent.reply_to_message);
       assert.equal(sent.reply_to_message!.message_id, target.message_id);
+    });
+
+    it("honors allow_paid_broadcast", async () => {
+      const sent = await bot.sendDice(GROUP_ID, {
+        allow_paid_broadcast: false,
+      });
+      assert.ok(sent.dice);
+      assert.equal(typeof sent.dice!.value, "number");
     });
   });
 
@@ -544,6 +580,13 @@ describe("Telegram Bot API (integration)", () => {
       });
       assert.ok(sent.location);
       assert.ok(sent.reply_markup);
+    });
+
+    it("honors allow_paid_broadcast", async () => {
+      const sent = await bot.sendLocation(GROUP_ID, 41.9028, 12.4964, {
+        allow_paid_broadcast: false,
+      });
+      assert.ok(sent.location);
     });
   });
 
@@ -624,6 +667,20 @@ describe("Telegram Bot API (integration)", () => {
       assert.ok(sent.venue);
       assert.ok(sent.reply_to_message);
       assert.equal(sent.reply_to_message!.message_id, target.message_id);
+    });
+
+    it("honors allow_paid_broadcast", async () => {
+      const sent = await bot.sendVenue(
+        GROUP_ID,
+        37.8199,
+        -122.4783,
+        "Golden Gate Bridge",
+        "Golden Gate Bridge, San Francisco",
+        {
+          allow_paid_broadcast: false,
+        },
+      );
+      assert.ok(sent.venue);
     });
   });
 
@@ -768,6 +825,13 @@ describe("Telegram Bot API (integration)", () => {
       });
       assert.ok(sent.poll);
     });
+
+    it("honors allow_paid_broadcast set to false", async () => {
+      const sent = await bot.sendPoll(GROUP_ID, "Paid broadcast off?", [{ text: "A" }, { text: "B" }], {
+        allow_paid_broadcast: false,
+      });
+      assert.ok(sent.poll);
+    });
   });
 
   describe("sendContact", () => {
@@ -811,6 +875,14 @@ describe("Telegram Bot API (integration)", () => {
       assert.ok(sent.contact, "expected the sent message to carry a contact");
       assert.ok(sent.reply_to_message);
       assert.equal(sent.reply_to_message!.message_id, target.message_id);
+    });
+
+    it("accepts allow_paid_broadcast", async () => {
+      const sent = await bot.sendContact(GROUP_ID, "+15553334444", "Paid", {
+        allow_paid_broadcast: false,
+      });
+      assert.ok(sent.contact, "expected the sent message to carry a contact");
+      assert.equal(sent.contact!.first_name, "Paid");
     });
   });
 
@@ -941,6 +1013,21 @@ describe("Telegram Bot API (integration)", () => {
       assert.ok(Array.isArray(sent));
       assert.equal(sent.length, 2);
     });
+
+    it("honors allow_paid_broadcast", async () => {
+      const sent = await bot.sendMediaGroup(
+        GROUP_ID,
+        [
+          { type: "photo", media: PHOTO_PATH },
+          { type: "photo", media: photoFileId },
+        ],
+        {
+          allow_paid_broadcast: false,
+        },
+      );
+      assert.ok(Array.isArray(sent));
+      assert.equal(sent.length, 2);
+    });
   });
 
   // --- File metadata & downloads ---------------------------------------
@@ -1003,6 +1090,16 @@ describe("Telegram Bot API (integration)", () => {
       assert.notEqual(msg.message_id, source.message_id);
       assert.ok(msg.forward_origin, "expected forward_origin on a forwarded message");
     });
+
+    it("honours video_start_timestamp when forwarding a video message", async () => {
+      const video = await bot.sendVideo(GROUP_ID, VIDEO_PATH);
+      await sleep(1100);
+      const forwarded = await bot.forwardMessage(GROUP_ID, GROUP_ID, video.message_id, {
+        video_start_timestamp: 1,
+      });
+      assert.equal(typeof forwarded.message_id, "number");
+      assert.ok(forwarded.forward_origin, "expected forward_origin on a forwarded message");
+    });
   });
 
   describe("forwardMessages", () => {
@@ -1029,6 +1126,7 @@ describe("Telegram Bot API (integration)", () => {
       assert.ok(Array.isArray(results));
       assert.equal(results.length, 2);
     });
+
   });
 
   describe("copyMessage", () => {
@@ -1113,6 +1211,7 @@ describe("Telegram Bot API (integration)", () => {
       assert.ok(Array.isArray(results));
       assert.equal(results.length, 2);
       for (const r of results) {
+        assert.equal(typeof r.message_id, "number");
       }
     });
   });
@@ -1650,6 +1749,32 @@ describe("Telegram Bot API (integration)", () => {
         TelegramError,
       );
     });
+
+    it("is refused for the chat owner (every can_* flag + is_anonymous)", async () => {
+      // USER_ID is the chat owner and cannot be promoted, so this rejects with a
+      // TelegramError. Passing every flag exercises the full wire format while
+      // keeping the assertion true and non-mutating.
+      await assert.rejects(
+        bot.promoteChatMember(GROUP_ID, USER_ID, {
+          is_anonymous: true,
+          can_manage_chat: true,
+          can_delete_messages: true,
+          can_manage_video_chats: true,
+          can_restrict_members: true,
+          can_promote_members: true,
+          can_change_info: true,
+          can_invite_users: true,
+          can_pin_messages: true,
+          can_post_messages: true,
+          can_edit_messages: true,
+          can_post_stories: true,
+          can_edit_stories: true,
+          can_delete_stories: true,
+          can_manage_topics: true,
+        }),
+        TelegramError,
+      );
+    });
   });
 
   describe("restrictChatMember", () => {
@@ -2170,6 +2295,28 @@ describe("Telegram Bot API (integration)", () => {
       const result = await bot.getChatGifts(GROUP_ID);
       assert.equal(typeof result, "object");
     });
+
+    it("accepts every exclude_* gift filter flag (read-only)", async () => {
+      const result = await bot.getChatGifts(GROUP_ID, {
+        exclude_unsaved: true,
+        exclude_saved: true,
+        exclude_unlimited: true,
+        exclude_limited_upgradable: true,
+        exclude_limited_non_upgradable: true,
+        exclude_unique: true,
+        exclude_from_blockchain: true,
+      });
+      assert.equal(typeof result, "object");
+    });
+
+    it("accepts sort_by_price, offset and limit (read-only)", async () => {
+      const result = await bot.getChatGifts(GROUP_ID, {
+        sort_by_price: true,
+        offset: "",
+        limit: 5,
+      });
+      assert.equal(typeof result, "object");
+    });
   });
 
   // --- Payments (no fixture needed) -------------------------------------
@@ -2187,6 +2334,48 @@ describe("Telegram Bot API (integration)", () => {
         "",
         "XTR",
         [{ label: "Item", amount: 1 }],
+      );
+      assert.equal(typeof link, "string");
+      assert.match(link, /^https:\/\/t\.me\//);
+    });
+
+    it("accepts the photo_* options on an XTR invoice", async () => {
+      // With currency "XTR" (Telegram Stars) no provider_token is needed and the
+      // photo_url/photo_size/photo_width/photo_height fields are accepted. The
+      // need_*/send_*_to_provider fields are NOT valid for a Stars invoice (the
+      // API rejects them with STARS_INVOICE_INVALID), so they are not exercised
+      // here.
+      const link = await bot.createInvoiceLink(
+        "Test item with extras",
+        "A test invoice exercising the optional fields",
+        `payload-extras-${TIMESTAMP}`,
+        "",
+        "XTR",
+        [{ label: "Item", amount: 1 }],
+        {
+          photo_url: "https://telegram.org/img/t_logo.png",
+          photo_size: 1024,
+          photo_width: 512,
+          photo_height: 512,
+        },
+      );
+      assert.equal(typeof link, "string");
+      assert.match(link, /^https:\/\/t\.me\//);
+    });
+
+    it("accepts a subscription_period on an XTR (Stars subscription) invoice", async () => {
+      // A Stars subscription requires currency "XTR" and a subscription_period of
+      // exactly 2592000 seconds (30 days); the amount must be at most 10000 Stars.
+      const link = await bot.createInvoiceLink(
+        "Test subscription",
+        "A recurring Stars subscription invoice",
+        `payload-sub-${TIMESTAMP}`,
+        "",
+        "XTR",
+        [{ label: "Monthly", amount: 1 }],
+        {
+          subscription_period: 2592000,
+        },
       );
       assert.equal(typeof link, "string");
       assert.match(link, /^https:\/\/t\.me\//);

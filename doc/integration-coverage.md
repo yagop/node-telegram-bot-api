@@ -9,10 +9,10 @@
 
 | Dimension | Covered | Total | % |
 | --- | --- | --- | --- |
-| Bot API methods | 112 | 176 | 64% |
-| Optional/option params (across all methods) | 161 | 419 | 38% |
+| Bot API methods | 116 | 176 | 66% |
+| Optional/option params (across all methods) | 209 | 419 | 50% |
 
-## Methods never called in integration tests (64)
+## Methods never called in integration tests (60)
 
 - [ ] `answerGuestQuery(guestQueryId, result)`
 - [ ] `answerInlineQuery(inlineQueryId, results, {4 opts})`
@@ -22,10 +22,8 @@
 - [ ] `approveSuggestedPost(chatId, messageId, {1 opts})`
 - [ ] `close()`
 - [ ] `convertGiftToStars(businessConnectionId, ownedGiftId)`
-- [ ] `createInvoiceLink(title, description, payload, providerToken, currency, prices, {16 opts})`
 - [ ] `declineSuggestedPost(chatId, messageId, {1 opts})`
 - [ ] `deleteBusinessMessages(businessConnectionId, messageIds)`
-- [ ] `deleteForumTopic(chatId, messageThreadId)`
 - [ ] `deleteStory(businessConnectionId, storyId)`
 - [ ] `deleteWebHook({1 opts})`
 - [ ] `editChatSubscriptionInviteLink(chatId, inviteLink, {1 opts})`
@@ -35,7 +33,6 @@
 - [ ] `getBusinessAccountGifts(businessConnectionId, {10 opts})`
 - [ ] `getBusinessAccountStarBalance(businessConnectionId)`
 - [ ] `getBusinessConnection(businessConnectionId)`
-- [ ] `getChatGifts(chatId, {10 opts})`
 - [ ] `getGameHighScores(userId, {3 opts})`
 - [ ] `getManagedBotAccessSettings(userId)`
 - [ ] `getManagedBotToken(userId)`
@@ -73,41 +70,43 @@
 - [ ] `setWebHook(url, options, fileOptions)`
 - [ ] `transferBusinessAccountStars(businessConnectionId, starCount)`
 - [ ] `transferGift(businessConnectionId, ownedGiftId, newOwnerChatId, {1 opts})`
-- [ ] `unbanChatMember(chatId, userId, {1 opts})`
 - [ ] `unbanChatSenderChat(chatId, senderChatId)`
 - [ ] `upgradeGift(businessConnectionId, ownedGiftId, {2 opts})`
 - [ ] `verifyChat(chatId, {1 opts})`
 - [ ] `verifyUser(userId, {1 opts})`
 
-## Methods called but with untested parameters (28)
+## Methods called but with untested parameters (25)
 
 Each box lists option keys defined by the method's options type that are never passed in any integration call.
 
-### `copyMessage` — 7/14 option params untested
-- [ ] `caption_entities`
+### `copyMessage` — 4/14 option params untested
 - [ ] `direct_messages_topic_id`
 - [ ] `message_effect_id`
 - [ ] `message_thread_id`
-- [ ] `reply_parameters`
 - [ ] `suggested_post_parameters`
-- [ ] `video_start_timestamp`
 
 ### `copyMessages` — 2/5 option params untested
 - [ ] `direct_messages_topic_id`
 - [ ] `message_thread_id`
 
-### `createForumTopic` — 2/2 option params untested
-- [ ] `icon_color`
-- [ ] `icon_custom_emoji_id`
+### `createInvoiceLink` — 11/16 option params untested
+- [ ] `business_connection_id`
+- [ ] `is_flexible`
+- [ ] `max_tip_amount`
+- [ ] `need_email`
+- [ ] `need_name`
+- [ ] `need_phone_number`
+- [ ] `need_shipping_address`
+- [ ] `provider_data`
+- [ ] `send_email_to_provider`
+- [ ] `send_phone_number_to_provider`
+- [ ] `suggested_tip_amounts`
 
 ### `deleteAllMessageReactions` — 1/2 option params untested
 - [ ] `actor_chat_id`
 
 ### `deleteMessageReaction` — 1/2 option params untested
 - [ ] `actor_chat_id`
-
-### `editForumTopic` — 1/2 option params untested
-- [ ] `icon_custom_emoji_id`
 
 ### `editMessageCaption` — 2/8 option params untested
 - [ ] `business_connection_id`
@@ -129,12 +128,11 @@ Each box lists option keys defined by the method's options type that are never p
 - [ ] `business_connection_id`
 - [ ] `inline_message_id`
 
-### `forwardMessage` — 5/7 option params untested
+### `forwardMessage` — 4/7 option params untested
 - [ ] `direct_messages_topic_id`
 - [ ] `message_effect_id`
 - [ ] `message_thread_id`
 - [ ] `suggested_post_parameters`
-- [ ] `video_start_timestamp`
 
 ### `forwardMessages` — 2/4 option params untested
 - [ ] `direct_messages_topic_id`
@@ -143,95 +141,66 @@ Each box lists option keys defined by the method's options type that are never p
 ### `pinChatMessage` — 1/2 option params untested
 - [ ] `business_connection_id`
 
-### `promoteChatMember` — 15/17 option params untested
-- [ ] `can_delete_messages`
-- [ ] `can_delete_stories`
-- [ ] `can_edit_messages`
-- [ ] `can_edit_stories`
-- [ ] `can_invite_users`
-- [ ] `can_manage_chat`
+### `promoteChatMember` — 2/17 option params untested
 - [ ] `can_manage_direct_messages`
 - [ ] `can_manage_tags`
-- [ ] `can_manage_topics`
-- [ ] `can_manage_video_chats`
-- [ ] `can_post_messages`
-- [ ] `can_post_stories`
-- [ ] `can_promote_members`
-- [ ] `can_restrict_members`
-- [ ] `is_anonymous`
 
 ### `sendChatAction` — 2/2 option params untested
 - [ ] `business_connection_id`
 - [ ] `message_thread_id`
 
-### `sendContact` — 6/12 option params untested
-- [ ] `allow_paid_broadcast`
+### `sendContact` — 5/12 option params untested
 - [ ] `business_connection_id`
 - [ ] `direct_messages_topic_id`
 - [ ] `message_effect_id`
 - [ ] `message_thread_id`
 - [ ] `suggested_post_parameters`
 
-### `sendDice` — 6/11 option params untested
-- [ ] `allow_paid_broadcast`
+### `sendDice` — 5/11 option params untested
 - [ ] `business_connection_id`
 - [ ] `direct_messages_topic_id`
 - [ ] `message_effect_id`
 - [ ] `message_thread_id`
 - [ ] `suggested_post_parameters`
 
-### `sendLocation` — 6/14 option params untested
-- [ ] `allow_paid_broadcast`
+### `sendLocation` — 5/14 option params untested
 - [ ] `business_connection_id`
 - [ ] `direct_messages_topic_id`
 - [ ] `message_effect_id`
 - [ ] `message_thread_id`
 - [ ] `suggested_post_parameters`
 
-### `sendMediaGroup` — 5/8 option params untested
-- [ ] `allow_paid_broadcast`
+### `sendMediaGroup` — 4/8 option params untested
 - [ ] `business_connection_id`
 - [ ] `direct_messages_topic_id`
 - [ ] `message_effect_id`
 - [ ] `message_thread_id`
 
-### `sendMessage` — 6/13 option params untested
-- [ ] `allow_paid_broadcast`
+### `sendMessage` — 5/13 option params untested
 - [ ] `business_connection_id`
 - [ ] `direct_messages_topic_id`
 - [ ] `message_effect_id`
 - [ ] `message_thread_id`
 - [ ] `suggested_post_parameters`
 
-### `sendPoll` — 9/31 option params untested
-- [ ] `allow_paid_broadcast`
+### `sendPoll` — 6/31 option params untested
 - [ ] `business_connection_id`
-- [ ] `country_codes`
 - [ ] `explanation_media`
-- [ ] `hide_results_until_closes`
 - [ ] `media`
 - [ ] `members_only`
 - [ ] `message_effect_id`
 - [ ] `message_thread_id`
 
-### `sendVenue` — 6/14 option params untested
-- [ ] `allow_paid_broadcast`
+### `sendVenue` — 5/14 option params untested
 - [ ] `business_connection_id`
 - [ ] `direct_messages_topic_id`
 - [ ] `message_effect_id`
 - [ ] `message_thread_id`
 - [ ] `suggested_post_parameters`
 
-### `setChatMenuButton` — 1/2 option params untested
-- [ ] `chat_id`
-
-### `setMyName` — 1/2 option params untested
-- [ ] `language_code`
-
-### `stopMessageLiveLocation` — 3/5 option params untested
+### `stopMessageLiveLocation` — 2/5 option params untested
 - [ ] `business_connection_id`
 - [ ] `inline_message_id`
-- [ ] `reply_markup`
 
 ### `stopPoll` — 1/2 option params untested
 - [ ] `business_connection_id`
@@ -239,6 +208,6 @@ Each box lists option keys defined by the method's options type that are never p
 ### `unpinChatMessage` — 1/2 option params untested
 - [ ] `business_connection_id`
 
-## Methods with full parameter coverage (84)
+## Methods with full parameter coverage (91)
 
-`addStickerToSet`, `answerCallbackQuery`, `approveChatJoinRequest`, `banChatMember`, `banChatSenderChat`, `closeForumTopic`, `closeGeneralForumTopic`, `createChatInviteLink`, `createChatSubscriptionInviteLink`, `createNewStickerSet`, `declineChatJoinRequest`, `deleteChatPhoto`, `deleteChatStickerSet`, `deleteMessage`, `deleteMessages`, `deleteMyCommands`, `deleteStickerFromSet`, `deleteStickerSet`, `editChatInviteLink`, `editGeneralForumTopic`, `exportChatInviteLink`, `getAvailableGifts`, `getChat`, `getChatAdministrators`, `getChatMember`, `getChatMemberCount`, `getChatMenuButton`, `getCustomEmojiStickers`, `getFile`, `getForumTopicIconStickers`, `getMe`, `getMyCommands`, `getMyDefaultAdministratorRights`, `getMyDescription`, `getMyName`, `getMyShortDescription`, `getMyStarBalance`, `getStarTransactions`, `getStickerSet`, `getUpdates`, `getUserChatBoosts`, `getUserProfileAudios`, `getUserProfilePhotos`, `getWebHookInfo`, `hideGeneralForumTopic`, `removeMyProfilePhoto`, `reopenForumTopic`, `reopenGeneralForumTopic`, `replaceStickerInSet`, `restrictChatMember`, `revokeChatInviteLink`, `sendAnimation`, `sendAudio`, `sendDocument`, `sendLivePhoto`, `sendPhoto`, `sendSticker`, `sendVideo`, `sendVideoNote`, `sendVoice`, `setChatAdministratorCustomTitle`, `setChatDescription`, `setChatPermissions`, `setChatPhoto`, `setChatStickerSet`, `setChatTitle`, `setCustomEmojiStickerSetThumbnail`, `setMessageReaction`, `setMyCommands`, `setMyDefaultAdministratorRights`, `setMyDescription`, `setMyProfilePhoto`, `setMyShortDescription`, `setStickerEmojiList`, `setStickerKeywords`, `setStickerMaskPosition`, `setStickerPositionInSet`, `setStickerSetThumbnail`, `setStickerSetTitle`, `unhideGeneralForumTopic`, `unpinAllChatMessages`, `unpinAllForumTopicMessages`, `unpinAllGeneralForumTopicMessages`, `uploadStickerFile`
+`addStickerToSet`, `answerCallbackQuery`, `approveChatJoinRequest`, `banChatMember`, `banChatSenderChat`, `closeForumTopic`, `closeGeneralForumTopic`, `createChatInviteLink`, `createChatSubscriptionInviteLink`, `createForumTopic`, `createNewStickerSet`, `declineChatJoinRequest`, `deleteChatPhoto`, `deleteChatStickerSet`, `deleteForumTopic`, `deleteMessage`, `deleteMessages`, `deleteMyCommands`, `deleteStickerFromSet`, `deleteStickerSet`, `editChatInviteLink`, `editForumTopic`, `editGeneralForumTopic`, `exportChatInviteLink`, `getAvailableGifts`, `getChat`, `getChatAdministrators`, `getChatGifts`, `getChatMember`, `getChatMemberCount`, `getChatMenuButton`, `getCustomEmojiStickers`, `getFile`, `getForumTopicIconStickers`, `getMe`, `getMyCommands`, `getMyDefaultAdministratorRights`, `getMyDescription`, `getMyName`, `getMyShortDescription`, `getMyStarBalance`, `getStarTransactions`, `getStickerSet`, `getUpdates`, `getUserChatBoosts`, `getUserProfileAudios`, `getUserProfilePhotos`, `getWebHookInfo`, `hideGeneralForumTopic`, `removeMyProfilePhoto`, `reopenForumTopic`, `reopenGeneralForumTopic`, `replaceStickerInSet`, `restrictChatMember`, `revokeChatInviteLink`, `sendAnimation`, `sendAudio`, `sendDocument`, `sendLivePhoto`, `sendPhoto`, `sendSticker`, `sendVideo`, `sendVideoNote`, `sendVoice`, `setChatAdministratorCustomTitle`, `setChatDescription`, `setChatMenuButton`, `setChatPermissions`, `setChatPhoto`, `setChatStickerSet`, `setChatTitle`, `setCustomEmojiStickerSetThumbnail`, `setMessageReaction`, `setMyCommands`, `setMyDefaultAdministratorRights`, `setMyDescription`, `setMyName`, `setMyProfilePhoto`, `setMyShortDescription`, `setStickerEmojiList`, `setStickerKeywords`, `setStickerMaskPosition`, `setStickerPositionInSet`, `setStickerSetThumbnail`, `setStickerSetTitle`, `unbanChatMember`, `unhideGeneralForumTopic`, `unpinAllChatMessages`, `unpinAllForumTopicMessages`, `unpinAllGeneralForumTopicMessages`, `uploadStickerFile`
