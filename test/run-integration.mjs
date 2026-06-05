@@ -16,9 +16,18 @@ const files = readdirSync(integrationDir)
   .sort()
   .map((name) => join(integrationDir, name));
 
+// Match the bun runner's per-test cap (test:bun:integration uses --timeout 300000).
+// node:test defaults to NO timeout, so a flood-limited call would otherwise run
+// until the HttpClient exhausts its retries. `--test-timeout` only exists on
+// Node >= 20.18 / 22.7 / 23, so gate it to keep older engines working.
+const [major, minor] = process.versions.node.split(".").map(Number);
+const supportsTestTimeout =
+  major >= 23 || (major === 22 && minor >= 7) || (major === 20 && minor >= 18);
+const timeoutArgs = supportsTestTimeout ? ["--test-timeout=300000"] : [];
+
 const result = spawnSync(
   process.execPath,
-  ["--test", "--test-reporter=spec", "--import", "tsx", ...files],
+  ["--test", "--test-reporter=spec", ...timeoutArgs, "--import", "tsx", ...files],
   { stdio: "inherit" },
 );
 

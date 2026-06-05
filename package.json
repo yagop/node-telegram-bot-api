@@ -35,7 +35,7 @@
     "test:node:unit": "node test/run-unit.mjs",
     "test:node:integration": "node test/run-integration.mjs",
     "test:bun:unit": "bun test test/unit",
-    "test:bun:integration": "bun test --timeout 120000 test/integration"
+    "test:bun:integration": "bun test --timeout 300000 test/integration"
   },
   "author": "Yago Pérez <yagoperezs@gmail.com>",
   "license": "MIT",

@@ -1295,6 +1295,9 @@ Download a Telegram file to a local directory and resolve to the resulting path.
 <a name="TelegramBot+setChatPhoto"></a>
 
 ### telegramBot.setChatPhoto(chatId, photo, [options], [fileOptions]) ⇒ <code>Promise</code>
+Set the chat photo. The photo must be a JPEG: Telegram's chat-photo backend
+silently stalls on a non-JPEG (e.g. a PNG) until the request times out
+(EFATAL); no layer here validates or converts, so the caller must pass a JPEG.
 
 **Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
 

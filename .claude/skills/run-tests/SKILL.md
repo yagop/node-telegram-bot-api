@@ -21,7 +21,7 @@ The static-analysis gate is `npm run typecheck` (`tsc --noEmit` over BOTH `src/`
 | | bun (preferred) | node |
 | --- | --- | --- |
 | Unit, all | `bun test test/unit` | `npm run test:node:unit` |
-| Integration, all | `bun test --timeout 120000 test/integration` | `npm run test:node:integration` |
+| Integration, all | `bun test --timeout 300000 test/integration` | `npm run test:node:integration` |
 | One file | `bun test test/unit/utils.test.ts` | `node --test --import tsx test/unit/utils.test.ts` |
 | One test/describe by name | `bun test -t '<pattern>' <file>` | `node --test --import tsx --test-name-pattern='<pattern>' <file>` |
 
@@ -52,7 +52,7 @@ The full integration suite is ~180 throttled calls and takes several minutes, so
 
 ```bash
 # bun (preferred)
-bun test --timeout 120000 -t 'sendDice' test/integration/telegram.test.ts
+bun test --timeout 300000 -t 'sendDice' test/integration/telegram.test.ts
 # node
 node --test --import tsx --test-name-pattern='sendDice' test/integration/telegram.test.ts
 ```
@@ -69,6 +69,22 @@ Some integration blocks only pass when the target chat has a specific capability
 - **`setChatStickerSet` / `deleteChatStickerSet`**: require `TEST_SUPERGROUP_100_MEMBERS_ID` (set, with the bot as admin, owning a sticker set).
 - **`createInvoiceLink` `need_*` / `send_*_to_provider`**: not exercisable with an XTR (Stars) invoice - a Stars invoice has no provider and collects no buyer info (`STARS_INVOICE_INVALID`). They need a real provider token.
 - **Owner-targeted admin methods** (`promoteChatMember`, `setChatAdministratorCustomTitle`): `TEST_USER_ID` is the chat owner and cannot be promoted/restricted, so those tests assert the expected `TelegramError` rejection rather than a happy path.
+- **`setChatPhoto` / `deleteChatPhoto`**: the uploaded photo must be a **JPEG**. Telegram's chat-photo backend silently **stalls** on a non-JPEG (e.g. a PNG) until the request hits the 60s `timeoutMs` and aborts with `EFATAL`, so the fixture must be a `.jpeg` (`PROFILE_PHOTO_JPEG_PATH` / `chat_photo.jpeg`), never `PHOTO_PATH` (a PNG). Same JPEG-only backend as `setMyProfilePhoto`.
+
+## Diagnosing failures: flood limits, HTTP timeouts, DEBUG
+
+A clean full integration run takes **~25 min**, and against a recently-hammered bot/group Telegram **flood-limits** hard. In practice almost every integration failure is a **timeout, not an assertion failure** - confirm the cause before suspecting the code.
+
+- **Do NOT immediately re-run a flood-limited suite.** Back-to-back runs *compound* the flood limit instead of clearing it (an immediate re-run of 9 failures once took 37 min and all 9 still failed). Let the bot sit **idle ~30 min** so the limit resets, then re-run.
+- **Two different timeouts, easy to confuse:**
+  - **Test-runner cap** (`bun test --timeout <ms>`, `node --test-timeout=<ms>`): kills the test itself. A flood-limited call sleeps through `retry_after` up to `maxRetriesOn429` times (the integration bot sets `10`), so the cumulative wait easily blows a 120s cap. `test:bun:integration` and `run-integration.mjs` now use **300000** (5 min) for this reason.
+  - **Per-request `timeoutMs`** (on the bot, default 60s): aborts one HTTP request with `FatalError: EFATAL: HTTP timeout`. A 60s stall with **no server response** is usually a bad request (e.g. the JPEG note above), not flood - flood returns a fast `429`.
+- **Use `DEBUG` to see the wire.** `DEBUG="node-telegram-bot-api:*"` (or `DEBUG=*`) prints every `HTTP POST <method>` and its `response <code> <body>` - the fastest way to tell apart a `429`+`retry_after` (flood), a `400`/`ETELEGRAM` (real API rejection), and a POST with no response line that ends in `EFATAL` (a stalled/malformed request). The repo's `node` is a bun shim without `--env-file`, so use a real Node for that form:
+  ```bash
+  DEBUG=* <real-node> --env-file=.env --test --test-name-pattern='<method>' --import tsx test/integration/telegram.test.ts
+  # or the preferred bun runner (auto-loads .env):
+  DEBUG=* bun test -t '<method>' test/integration/telegram.test.ts
+  ```
 
 ## When to run the FULL suite
 
@@ -82,7 +98,7 @@ Scope-to-one-method applies to a leaf method. If you change a **core / shared** 
 
 ```bash
 bun test test/unit                              # always after a core change
-bun test --timeout 120000 test/integration      # when wire behavior changed (slow)
+bun test --timeout 300000 test/integration      # when wire behavior changed (slow)
 npm run typecheck
 ```
 

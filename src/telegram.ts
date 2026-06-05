@@ -1549,6 +1549,11 @@ export class TelegramBot extends EventEmitter {
 
   // --- Chat metadata ---------------------------------------------------
 
+  /**
+   * Set the chat photo. The photo must be a JPEG: Telegram's chat-photo backend
+   * silently stalls on a non-JPEG (e.g. a PNG) until the request times out
+   * (EFATAL); no layer here validates or converts, so the caller must pass a JPEG.
+   */
   setChatPhoto(
     chatId: ChatId,
     photo: FileInput,
