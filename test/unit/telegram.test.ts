@@ -7,6 +7,7 @@ import { afterEach, beforeEach, describe, it } from "node:test";
 import assert from "node:assert/strict";
 
 import { TelegramBot } from "../../src/telegram.js";
+import { UPDATE_TYPES, type Update } from "../../src/types/schemas.js";
 
 interface CapturedRequest {
   url: string;
@@ -196,6 +197,102 @@ describe("TelegramBot (unit)", () => {
         },
       });
       assert.equal(replied, true);
+    });
+
+    it("dispatches guest_message updates (Bot API 10.0 guest mode)", () => {
+      const bot = new TelegramBot("TOKEN");
+      let messageId: number | null = null;
+      bot.on("guest_message", (msg) => {
+        messageId = msg.message_id;
+      });
+      bot.processUpdate({
+        update_id: 1,
+        guest_message: {
+          message_id: 7,
+          date: 0,
+          chat: { id: 1, type: "private" },
+          text: "hi from a guest",
+        },
+      });
+      assert.equal(messageId, 7);
+    });
+
+    it("dispatches managed_bot updates", () => {
+      const bot = new TelegramBot("TOKEN");
+      let botId: number | null = null;
+      bot.on("managed_bot", (update) => {
+        botId = update.bot.id;
+      });
+      bot.processUpdate({
+        update_id: 1,
+        managed_bot: {
+          user: { id: 1, is_bot: false, first_name: "Owner" },
+          bot: { id: 2, is_bot: true, first_name: "ManagedBot" },
+        },
+      });
+      assert.equal(botId, 2);
+    });
+
+    it("emits 'poll' in both shapes: a poll message and a dedicated poll update", () => {
+      const bot = new TelegramBot("TOKEN");
+      const poll = {
+        id: "p",
+        question: "Q?",
+        options: [],
+        total_voter_count: 0,
+        is_closed: false,
+        is_anonymous: true,
+        type: "regular",
+        allows_multiple_answers: false,
+        allows_revoting: false,
+        members_only: false,
+      };
+      const seen: { kind: string; id: string | number; type?: string }[] = [];
+      // The listener param is `Poll | Message`; consumers discriminate on it.
+      bot.on("poll", (payload, metadata) => {
+        if ("message_id" in payload) {
+          seen.push({ kind: "message", id: payload.message_id, type: metadata?.type });
+        } else {
+          seen.push({ kind: "poll", id: payload.id });
+        }
+      });
+
+      // 1. A message carrying a poll -> (message, metadata) via the message path.
+      bot.processUpdate({
+        update_id: 1,
+        message: {
+          message_id: 3,
+          date: 0,
+          chat: { id: 1, type: "private" },
+          poll: { ...poll, id: "p-msg" },
+        },
+      });
+      // 2. A dedicated poll-state update -> (poll) via the direct dispatch table.
+      bot.processUpdate({
+        update_id: 2,
+        poll: { ...poll, id: "p-update", is_closed: true },
+      });
+
+      assert.deepEqual(seen, [
+        { kind: "message", id: 3, type: "poll" },
+        { kind: "poll", id: "p-update" },
+      ]);
+    });
+
+    it("emits an event for every UPDATE_TYPES entry (no update kind is silently dropped)", () => {
+      // Guards the dispatch loop against ever again forgetting an update kind:
+      // every generated UPDATE_TYPES key must reach a listener.
+      for (const key of UPDATE_TYPES) {
+        if (key === "message") continue; // exercised via the message-path tests above
+        const bot = new TelegramBot("TOKEN");
+        let received: unknown;
+        bot.once(key, (value) => {
+          received = value;
+        });
+        const payload = { _marker: key };
+        bot.processUpdate({ update_id: 1, [key]: payload } as unknown as Update);
+        assert.deepEqual(received, payload, `processUpdate did not emit "${key}"`);
+      }
     });
   });
 

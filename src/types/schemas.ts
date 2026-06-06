@@ -77,6 +77,43 @@ export const MESSAGE_TYPES = [
 export type MessageType = (typeof MESSAGE_TYPES)[number];
 
 
+/** `Update` field names dispatched as events by `processUpdate` (every `Update` field except `update_id`). */
+export const UPDATE_TYPES = [
+  "message",
+  "edited_message",
+  "channel_post",
+  "edited_channel_post",
+  "business_connection",
+  "business_message",
+  "edited_business_message",
+  "deleted_business_messages",
+  "guest_message",
+  "message_reaction",
+  "message_reaction_count",
+  "inline_query",
+  "chosen_inline_result",
+  "callback_query",
+  "shipping_query",
+  "pre_checkout_query",
+  "purchased_paid_media",
+  "poll",
+  "poll_answer",
+  "my_chat_member",
+  "chat_member",
+  "chat_join_request",
+  "chat_boost",
+  "removed_chat_boost",
+  "managed_bot",
+] as const satisfies readonly Exclude<keyof Update, "update_id">[];
+export type UpdateType = (typeof UPDATE_TYPES)[number];
+
+// Compile-time proof that UPDATE_TYPES stays in lockstep with `Update`: the
+// `satisfies` above rejects any entry that is not an `Update` field, and this
+// rejects the reverse - an `Update` field that is missing from UPDATE_TYPES.
+type _AssertNever<T extends never> = T;
+type _UpdateTypesAreExhaustive = _AssertNever<Exclude<Exclude<keyof Update, "update_id">, UpdateType>>;
+
+
 // ---------------------------------------------------------------------------
 // Objects
 // ---------------------------------------------------------------------------

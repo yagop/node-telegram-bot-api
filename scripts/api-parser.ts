@@ -434,6 +434,24 @@ out.push(`/* eslint-disable */
 `);
 out.push(PRELUDE);
 
+// `Update`'s field names, emitted as a runtime list so `processUpdate` can
+// iterate every dispatchable update kind instead of mirroring the type by hand.
+const updateDef = types.find((t) => t.name === "Update");
+if (!updateDef) throw new Error("Could not find the `Update` object in the parsed docs");
+const updateKeys = updateDef.fields.map((f) => f.name).filter((n) => n !== "update_id");
+out.push(
+  `\n/** \`Update\` field names dispatched as events by \`processUpdate\` (every \`Update\` field except \`update_id\`). */\n` +
+    `export const UPDATE_TYPES = [\n` +
+    updateKeys.map((n) => `  ${JSON.stringify(n)},`).join("\n") +
+    `\n] as const satisfies readonly Exclude<keyof Update, "update_id">[];\n` +
+    `export type UpdateType = (typeof UPDATE_TYPES)[number];\n` +
+    `\n// Compile-time proof that UPDATE_TYPES stays in lockstep with \`Update\`: the\n` +
+    `// \`satisfies\` above rejects any entry that is not an \`Update\` field, and this\n` +
+    `// rejects the reverse - an \`Update\` field that is missing from UPDATE_TYPES.\n` +
+    `type _AssertNever<T extends never> = T;\n` +
+    `type _UpdateTypesAreExhaustive = _AssertNever<Exclude<Exclude<keyof Update, "update_id">, UpdateType>>;\n`,
+);
+
 out.push(`\n// ---------------------------------------------------------------------------
 // Objects
 // ---------------------------------------------------------------------------\n`);

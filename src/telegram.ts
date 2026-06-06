@@ -10,7 +10,7 @@ import { HttpClient, type HttpClientOptions, type RequestOptions } from "./http.
 import { TelegramBotPolling, type PollingOptions, type PollingStartOptions, type PollingStopOptions } from "./polling.js";
 import { TelegramBotWebHook, type WebHookOptions } from "./webhook.js";
 import { prepareFile, prepareFiles, stringify, type FileInput, type FileMeta, type PreparedFile } from "./utils.js";
-import { MESSAGE_TYPES } from "./types/schemas.js";
+import { MESSAGE_TYPES, UPDATE_TYPES } from "./types/schemas.js";
 import type {
   // Library helpers + data objects (generated)
   ChatId,
@@ -34,6 +34,7 @@ import type {
   BusinessMessagesDeleted,
   MessageReactionUpdated,
   MessageReactionCountUpdated,
+  ManagedBotUpdated,
   Chat,
   BotCommand,
   InputProfilePhotoInput,
@@ -430,9 +431,12 @@ export interface EventMetadata {
  * Maps each emitted event name to the tuple of arguments its listeners receive.
  * Powers the typed {@link TelegramBot.on} overloads.
  *
- * `poll` and `message_reaction` can each be emitted in two shapes (as a message
- * sub-type and as a dedicated update); they are typed here as the dedicated
- * update payload, which is what listeners almost always want.
+ * `poll` is emitted in two shapes: as a message sub-type when a poll message
+ * arrives (`(message, metadata)`, since `Message` carries a `poll` field) and
+ * as a dedicated poll-state update (`(poll)`). It is therefore typed as the
+ * union of both shapes, and listeners must discriminate on the payload.
+ * `message_reaction` is only ever emitted as the dedicated update (there is no
+ * `message_reaction` field on `Message`), so it keeps a single shape.
  */
 export type TelegramBotEvents =
   { [K in Exclude<MessageType, "poll" | "message_reaction">]: [message: Message, metadata: EventMetadata] } & {
@@ -448,6 +452,7 @@ export type TelegramBotEvents =
     business_message: [message: Message];
     edited_business_message: [message: Message];
     deleted_business_messages: [messages: BusinessMessagesDeleted];
+    guest_message: [message: Message];
     message_reaction: [reaction: MessageReactionUpdated];
     message_reaction_count: [reaction: MessageReactionCountUpdated];
     inline_query: [query: InlineQuery];
@@ -456,13 +461,14 @@ export type TelegramBotEvents =
     shipping_query: [query: ShippingQuery];
     pre_checkout_query: [query: PreCheckoutQuery];
     purchased_paid_media: [media: PaidMediaPurchased];
-    poll: [poll: Poll];
+    poll: [poll: Poll] | [message: Message, metadata: EventMetadata];
     poll_answer: [answer: PollAnswer];
     chat_member: [update: ChatMemberUpdated];
     my_chat_member: [update: ChatMemberUpdated];
     chat_join_request: [request: ChatJoinRequest];
     chat_boost: [boost: ChatBoostUpdated];
     removed_chat_boost: [boost: ChatBoostRemoved];
+    managed_bot: [update: ManagedBotUpdated];
     polling_error: [error: Error];
     webhook_error: [error: Error];
     error: [error: Error];
@@ -809,48 +815,29 @@ export class TelegramBot extends EventEmitter {
       }
       return;
     }
-    const direct: { key: keyof Update; event: string }[] = [
-      { key: "edited_message", event: "edited_message" },
-      { key: "channel_post", event: "channel_post" },
-      { key: "edited_channel_post", event: "edited_channel_post" },
-      { key: "business_connection", event: "business_connection" },
-      { key: "business_message", event: "business_message" },
-      { key: "edited_business_message", event: "edited_business_message" },
-      { key: "deleted_business_messages", event: "deleted_business_messages" },
-      { key: "message_reaction", event: "message_reaction" },
-      { key: "message_reaction_count", event: "message_reaction_count" },
-      { key: "inline_query", event: "inline_query" },
-      { key: "chosen_inline_result", event: "chosen_inline_result" },
-      { key: "callback_query", event: "callback_query" },
-      { key: "shipping_query", event: "shipping_query" },
-      { key: "pre_checkout_query", event: "pre_checkout_query" },
-      { key: "purchased_paid_media", event: "purchased_paid_media" },
-      { key: "poll", event: "poll" },
-      { key: "poll_answer", event: "poll_answer" },
-      { key: "chat_member", event: "chat_member" },
-      { key: "my_chat_member", event: "my_chat_member" },
-      { key: "chat_join_request", event: "chat_join_request" },
-      { key: "chat_boost", event: "chat_boost" },
-      { key: "removed_chat_boost", event: "removed_chat_boost" },
-    ];
-    for (const { key, event } of direct) {
+    // Every non-message update maps 1:1 to an event of the same name. Iterating
+    // the generated UPDATE_TYPES (every `Update` field) keeps this exhaustive by
+    // construction: a newly documented update kind is dispatched automatically
+    // once the types are regenerated, with no hand-maintained mirror to forget.
+    // `message` needs no special skip here - when it is present we return above,
+    // and when it is absent `update.message` is undefined and falls through.
+    for (const key of UPDATE_TYPES) {
       const value = update[key];
-      if (value !== undefined) {
-        debug("Process Update %s %j", event, value);
-        this.emit(event, value);
-        // Special-case sub-events for edited messages
-        if (event === "edited_message") {
-          const em = value as Message;
-          if (em.text) this.emit("edited_message_text", em);
-          if (em.caption) this.emit("edited_message_caption", em);
-        }
-        if (event === "edited_channel_post") {
-          const ep = value as Message;
-          if (ep.text) this.emit("edited_channel_post_text", ep);
-          if (ep.caption) this.emit("edited_channel_post_caption", ep);
-        }
-        return;
+      if (value === undefined) continue;
+      debug("Process Update %s %j", key, value);
+      this.emit(key, value);
+      // Special-case sub-events for edited messages
+      if (key === "edited_message") {
+        const em = value as Message;
+        if (em.text) this.emit("edited_message_text", em);
+        if (em.caption) this.emit("edited_message_caption", em);
       }
+      if (key === "edited_channel_post") {
+        const ep = value as Message;
+        if (ep.text) this.emit("edited_channel_post_text", ep);
+        if (ep.caption) this.emit("edited_channel_post_caption", ep);
+      }
+      return;
     }
   }
 
