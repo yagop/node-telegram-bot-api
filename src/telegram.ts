@@ -403,11 +403,8 @@ import * as errors from "./errors.js";
 
 const debug = createDebug("node-telegram-bot-api");
 
-export interface TelegramBotOptions {
-  /** Enable polling. `true` uses defaults; an object passes options through to `TelegramBotPolling`. */
-  polling?: boolean | PollingOptions;
-  /** Enable webhook. `true` uses defaults; an object passes options through to `TelegramBotWebHook`. */
-  webHook?: boolean | WebHookOptions;
+/** Options shared by both transports and general client configuration. */
+export interface BotOptionsBase {
   /** Telegram API base URL — useful for proxying or testing against a mock server. */
   baseApiUrl?: string;
   /** Use Telegram's test environment (`/bot<token>/test/...`). */
@@ -421,6 +418,22 @@ export interface TelegramBotOptions {
   /** Forward-compat flag: see `TelegramBotPolling._poll()` for details. */
   badRejection?: boolean;
 }
+
+/**
+ * Constructor options.
+ *
+ * `polling` and `webHook` select the two update transports (`true` uses
+ * defaults; an object is passed through to `TelegramBotPolling` /
+ * `TelegramBotWebHook`). They are **mutually exclusive** — enable at most one.
+ * Passing both truthy is a type error; the constructor's runtime guard prefers
+ * polling if it happens anyway (e.g. a JS caller bypassing the types).
+ */
+export type TelegramBotOptions = BotOptionsBase &
+  (
+    | { polling: true | PollingOptions; webHook?: false }
+    | { webHook: true | WebHookOptions; polling?: false }
+    | { polling?: false; webHook?: false }
+  );
 
 /** Second argument passed to `message` and message-subtype listeners. */
 export interface EventMetadata {
@@ -508,8 +521,11 @@ export class TelegramBot extends EventEmitter {
 
   /** The Telegram Bot API token. */
   public readonly token: string;
-  /** The bot configuration as supplied at construction time. */
-  public readonly options: TelegramBotOptions;
+  /** The fully-resolved bot configuration (both transport flags always present). */
+  public readonly options: BotOptionsBase & {
+    polling: boolean | PollingOptions;
+    webHook: boolean | WebHookOptions;
+  };
   /** Underlying HTTP client. Accessible for advanced extensions. */
   public readonly http: HttpClient;
 
@@ -542,9 +558,9 @@ export class TelegramBot extends EventEmitter {
       const autoStart = pollingOpts.autoStart ?? true;
       this._polling = new TelegramBotPolling(this, pollingOpts);
       if (autoStart) void this._polling.start();
-    }
-
-    if (this.options.webHook) {
+    } else if (this.options.webHook) {
+      // `else if`: polling and webHook are mutually exclusive, so a config with
+      // both (e.g. a JS caller bypassing the typed options) starts polling only.
       const webhookOpts = typeof this.options.webHook === "boolean" ? {} : this.options.webHook;
       const autoOpen = webhookOpts.autoOpen ?? true;
       this._webHook = new TelegramBotWebHook(this, webhookOpts);

@@ -6,7 +6,7 @@
 import { afterEach, beforeEach, describe, it } from "node:test";
 import assert from "node:assert/strict";
 
-import { TelegramBot } from "../../src/telegram.js";
+import { TelegramBot, type TelegramBotOptions } from "../../src/telegram.js";
 import { UPDATE_TYPES, type Update } from "../../src/types/schemas.js";
 
 interface CapturedRequest {
@@ -47,6 +47,35 @@ describe("TelegramBot (unit)", () => {
     assert.ok(Array.isArray(TelegramBot.messageTypes));
     assert.ok(TelegramBot.messageTypes.includes("text"));
     assert.ok(TelegramBot.messageTypes.includes("photo"));
+  });
+
+  describe("constructor: polling / webHook mutual exclusion", () => {
+    it("type-rejects enabling both polling and webHook", () => {
+      // This file is type-checked (`npm run typecheck`), so @ts-expect-error is a
+      // real assertion: if the union ever stopped rejecting both, the unused
+      // directive would fail the build.
+      // @ts-expect-error - polling and webHook are mutually exclusive
+      const both: TelegramBotOptions = { polling: true, webHook: true };
+      // Single-transport configs (incl. explicitly disabling the other) still compile:
+      const onlyPolling: TelegramBotOptions = { polling: true, webHook: false };
+      const onlyWebhook: TelegramBotOptions = { webHook: true };
+      const neither: TelegramBotOptions = { polling: false, webHook: false };
+      void both;
+      void onlyPolling;
+      void onlyWebhook;
+      void neither;
+    });
+
+    it("at runtime prefers polling when both are passed (JS callers)", async () => {
+      // Stub so polling's getUpdates loop never touches the network.
+      stubFetch(() => ({ ok: true, result: [] }));
+      // The cast simulates a JS caller / dynamically-built options bypassing the
+      // typed guard above.
+      const bot = new TelegramBot("TOKEN", { polling: true, webHook: true } as unknown as TelegramBotOptions);
+      assert.equal(bot.isPolling(), true);
+      assert.equal(bot.hasOpenWebHook(), false);
+      await bot.stopPolling({ cancel: true });
+    });
   });
 
   describe("sendMessage()", () => {
