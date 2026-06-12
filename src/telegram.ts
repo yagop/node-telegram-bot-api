@@ -1212,6 +1212,12 @@ export class TelegramBot extends EventEmitter {
     );
   }
 
+  /**
+   * Send paid media. Each item's file fields are widened to accept uploads: the
+   * primary `media` plus any `thumbnail` / `cover` (video) or `photo` (live photo)
+   * may be a Buffer / stream / local path (uploaded as a multipart part) or a
+   * file_id / URL string (passed through). {@link _buildMediaItems} resolves them.
+   */
   async sendPaidMedia(
     chatId: ChatId,
     starCount: number,
@@ -1224,6 +1230,14 @@ export class TelegramBot extends EventEmitter {
     return this._request("sendPaidMedia", { form, formData });
   }
 
+  /**
+   * Send a group of photos / videos / etc as an album. Each item's file fields are
+   * widened to accept uploads: the primary `media` plus any `thumbnail` / `cover`
+   * (video) or `photo` (live photo) may be a Buffer / stream / local path (uploaded
+   * as a multipart part) or a file_id / URL string (passed through).
+   * {@link _buildMediaItems} resolves every file field of every item - unlike
+   * {@link editMessageMedia}, whose secondary fields are string-only.
+   */
   async sendMediaGroup(
     chatId: ChatId,
     media: SendMediaGroupMedia[],
@@ -2032,11 +2046,23 @@ export class TelegramBot extends EventEmitter {
       caption,
     } satisfies EditMessageCaptionParams);
   }
+  /**
+   * Edit a message's media. Unlike {@link sendMediaGroup} / {@link sendPaidMedia},
+   * the `media` argument is the docs-faithful `InputMedia`, so every file field is
+   * typed `string` and NOT widened to accept uploads:
+   *   - Secondary fields (`thumbnail` / `cover` / `photo`) must be file_id / URL
+   *     strings; they pass through untouched. Uploading a *new* secondary file is
+   *     not supported here (the method attaches only the single primary part).
+   *   - The primary `media` is uploaded only when given as `attach://<local-path>`;
+   *     a plain file_id / URL is sent as-is.
+   */
   async editMessageMedia(
     media: InputMedia & { fileOptions?: FileMeta },
     form: Omit<EditMessageMediaParams, "media"> = {},
   ): Promise<EditMessageMediaResult> {
     const regexAttach = /^attach:\/\/.+/;
+    // `attach://<local-path>` => upload that one file as part "0"; any thumbnail /
+    // cover / photo on the item are already strings and ride along in the payload.
     if (typeof media.media === "string" && regexAttach.test(media.media)) {
       const out: Omit<EditMessageMediaParams, "media"> & { media?: string } = { ...form };
       const payload: Record<string, unknown> = { ...media };
@@ -2050,6 +2076,7 @@ export class TelegramBot extends EventEmitter {
       out.media = stringify(payload);
       return this._request("editMessageMedia", { form: out, formData: { [attachName]: file } });
     }
+    // Plain file_id / URL: no upload, just JSON-serialize the whole InputMedia.
     const out: Omit<EditMessageMediaParams, "media"> & { media: string } = { ...form, media: stringify(media) };
     return this._form("editMessageMedia", out);
   }
