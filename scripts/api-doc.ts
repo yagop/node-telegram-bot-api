@@ -100,6 +100,7 @@ interface MethodDoc {
   ret: string;
   api?: string; // matching Telegram Bot API method name, if any
   summary: string;
+  deprecated?: boolean;
 }
 
 function isPublic(m: ts.HasModifiers): boolean {
@@ -109,18 +110,21 @@ function isPublic(m: ts.HasModifiers): boolean {
   );
 }
 
-function jsDocOf(node: ts.Node): { summary: string; params: Record<string, string> } {
+function jsDocOf(node: ts.Node): { summary: string; params: Record<string, string>; deprecated: boolean } {
   const docs = (node as unknown as { jsDoc?: ts.JSDoc[] }).jsDoc;
   const params: Record<string, string> = {};
-  if (!docs?.length) return { summary: "", params };
+  if (!docs?.length) return { summary: "", params, deprecated: false };
   const jd = docs[docs.length - 1]!;
   const summary = ts.getTextOfJSDocComment(jd.comment) ?? "";
+  let deprecated = false;
   for (const tag of jd.tags ?? []) {
     if (ts.isJSDocParameterTag(tag)) {
       params[tag.name.getText(sf)] = ts.getTextOfJSDocComment(tag.comment) ?? "";
+    } else if (tag.tagName.getText(sf) === "deprecated") {
+      deprecated = true;
     }
   }
-  return { summary, params };
+  return { summary, params, deprecated };
 }
 
 // The Telegram method name is the first string literal passed to the request
@@ -143,7 +147,7 @@ function paramDescription(name: string, optionsBag: boolean, fromDoc: string): s
 }
 
 function buildMethod(m: ts.MethodDeclaration): MethodDoc {
-  const { summary, params: paramDocs } = jsDocOf(m);
+  const { summary, params: paramDocs, deprecated } = jsDocOf(m);
   const params: Param[] = m.parameters.map((p) => {
     const name = p.name.getText(sf);
     const bag = isOptionsBag(p);
@@ -162,6 +166,7 @@ function buildMethod(m: ts.MethodDeclaration): MethodDoc {
     ret: displayReturn(m.type?.getText(sf)),
     api: apiMethodName(m),
     summary,
+    deprecated,
   };
 }
 
@@ -224,7 +229,8 @@ out.push("* [TelegramBot](#TelegramBot)");
 out.push("    * [new TelegramBot(token, [options])](#new_TelegramBot_new)");
 out.push("    * _instance_");
 for (const d of methodList) {
-  out.push(`        * [.${d.name}(${sig(d)})](#${anchor(d.name)})${arrow(d.ret)}`);
+  const text = d.deprecated ? `~~.${d.name}(${sig(d)})~~` : `.${d.name}(${sig(d)})`;
+  out.push(`        * [${text}](#${anchor(d.name)})${arrow(d.ret)}`);
 }
 if (staticProps.length) {
   out.push("    * _static_");
@@ -238,7 +244,7 @@ out.push("");
 out.push('<a name="new_TelegramBot_new"></a>');
 out.push("");
 out.push("### new TelegramBot(token, [options])");
-const ctorDoc = ctor ? jsDocOf(ctor) : { summary: "", params: {} as Record<string, string> };
+const ctorDoc = ctor ? jsDocOf(ctor) : { summary: "", params: {} as Record<string, string>, deprecated: false };
 if (ctorDoc.summary) out.push(ctorDoc.summary);
 out.push("");
 out.push("| Param | Type | Description |");
@@ -252,6 +258,7 @@ for (const d of methodList) {
   out.push(`<a name="${anchor(d.name)}"></a>`);
   out.push("");
   out.push(`### telegramBot.${d.name}(${sig(d)})${arrow(d.ret)}`);
+  if (d.deprecated) out.push("\n***Deprecated***");
   if (d.summary) out.push(d.summary);
   out.push("");
   const meta = ["**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)"];

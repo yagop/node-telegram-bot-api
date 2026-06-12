@@ -20,7 +20,7 @@
  *       deleteChatStickerSet happy-path blocks (omitted entirely when unset).
  *
  * The suite hits api.telegram.org directly. Methods that would mutate
- * irreversible bot configuration (logOut, close, deleteWebHook) are not
+ * irreversible bot configuration (logOut, close, deleteWebhook) are not
  * exercised here. Every test that does run makes a real assertion — there
  * are no skipped or tolerated cases.
  */
@@ -388,9 +388,9 @@ describe("Telegram Bot API (integration)", () => {
 
   // --- Webhook / updates -------------------------------------------------
 
-  describe("getWebHookInfo", () => {
+  describe("getWebhookInfo", () => {
     it("returns a WebhookInfo that validates against the schema", async () => {
-      const info = await bot.getWebHookInfo();
+      const info = await bot.getWebhookInfo();
       assert.equal(typeof info.url, "string");
       assert.equal(typeof info.has_custom_certificate, "boolean");
       assert.equal(typeof info.pending_update_count, "number");

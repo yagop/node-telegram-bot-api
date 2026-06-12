@@ -130,6 +130,27 @@ describe("TelegramBot (unit)", () => {
     });
   });
 
+  describe("setWebhook() / deprecated setWebHook alias", () => {
+    it("posts to /setWebhook with the url", async () => {
+      stubFetch(() => ({ ok: true, result: true }));
+      const bot = new TelegramBot("TOKEN");
+      await bot.setWebhook("https://example.com/hook");
+      const last = captured.at(-1)!;
+      assert.equal(last.url, "https://api.telegram.org/botTOKEN/setWebhook");
+      const params = new URLSearchParams(String(last.init.body));
+      assert.equal(params.get("url"), "https://example.com/hook");
+    });
+
+    it("setWebHook forwards to the same /setWebhook wire call", async () => {
+      stubFetch(() => ({ ok: true, result: true }));
+      const bot = new TelegramBot("TOKEN");
+      await bot.setWebHook("https://example.com/hook");
+      const last = captured.at(-1)!;
+      assert.equal(last.url, "https://api.telegram.org/botTOKEN/setWebhook");
+      assert.equal(new URLSearchParams(String(last.init.body)).get("url"), "https://example.com/hook");
+    });
+  });
+
   describe("processUpdate() event dispatch", () => {
     it("emits 'message' and the matching content-type sub-event", () => {
       const bot = new TelegramBot("TOKEN");

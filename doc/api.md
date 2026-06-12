@@ -33,9 +33,12 @@
         * [.getFileStream(fileId, [options])](#TelegramBot+getFileStream) ⇒ <code>stream.Readable</code>
         * [.downloadFile(fileId, downloadDir, [options])](#TelegramBot+downloadFile) ⇒ <code>Promise</code>
         * [.getUpdates([options])](#TelegramBot+getUpdates) ⇒ <code>Promise</code>
-        * [.setWebHook(url, [options], [fileOptions])](#TelegramBot+setWebHook) ⇒ <code>Promise</code>
-        * [.deleteWebHook([options])](#TelegramBot+deleteWebHook) ⇒ <code>Promise</code>
-        * [.getWebHookInfo([options])](#TelegramBot+getWebHookInfo) ⇒ <code>Promise</code>
+        * [.setWebhook(url, [options], [fileOptions])](#TelegramBot+setWebhook) ⇒ <code>Promise</code>
+        * [.deleteWebhook([options])](#TelegramBot+deleteWebhook) ⇒ <code>Promise</code>
+        * [.getWebhookInfo([options])](#TelegramBot+getWebhookInfo) ⇒ <code>Promise</code>
+        * [~~.setWebHook(url, [options], [fileOptions])~~](#TelegramBot+setWebHook) ⇒ <code>Promise</code>
+        * [~~.deleteWebHook([options])~~](#TelegramBot+deleteWebHook) ⇒ <code>Promise</code>
+        * [~~.getWebHookInfo([options])~~](#TelegramBot+getWebHookInfo) ⇒ <code>Promise</code>
         * [.getMe([options])](#TelegramBot+getMe) ⇒ <code>Promise</code>
         * [.logOut([options])](#TelegramBot+logOut) ⇒ <code>Promise</code>
         * [.close([options])](#TelegramBot+close) ⇒ <code>Promise</code>
@@ -425,9 +428,9 @@ Download a Telegram file to a local directory and resolve to the resulting path.
 | --- | --- | --- |
 | [options] | <code>Object</code> | Additional Telegram query options |
 
-<a name="TelegramBot+setWebHook"></a>
+<a name="TelegramBot+setWebhook"></a>
 
-### telegramBot.setWebHook(url, [options], [fileOptions]) ⇒ <code>Promise</code>
+### telegramBot.setWebhook(url, [options], [fileOptions]) ⇒ <code>Promise</code>
 
 **Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
 
@@ -441,9 +444,9 @@ Download a Telegram file to a local directory and resolve to the resulting path.
 | [options] | <code>Object</code> | Additional Telegram query options |
 | [fileOptions] | <code>Object</code> | Additional file options |
 
-<a name="TelegramBot+deleteWebHook"></a>
+<a name="TelegramBot+deleteWebhook"></a>
 
-### telegramBot.deleteWebHook([options]) ⇒ <code>Promise</code>
+### telegramBot.deleteWebhook([options]) ⇒ <code>Promise</code>
 
 **Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
 
@@ -455,15 +458,59 @@ Download a Telegram file to a local directory and resolve to the resulting path.
 | --- | --- | --- |
 | [options] | <code>Object</code> | Additional Telegram query options |
 
-<a name="TelegramBot+getWebHookInfo"></a>
+<a name="TelegramBot+getWebhookInfo"></a>
 
-### telegramBot.getWebHookInfo([options]) ⇒ <code>Promise</code>
+### telegramBot.getWebhookInfo([options]) ⇒ <code>Promise</code>
 
 **Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
 
 **Returns**: <code>Promise</code>
 
 **See**: https://core.telegram.org/bots/api#getwebhookinfo
+
+| Param | Type | Description |
+| --- | --- | --- |
+| [options] | <code>Object</code> | Additional Telegram query options |
+
+<a name="TelegramBot+setWebHook"></a>
+
+### telegramBot.setWebHook(url, [options], [fileOptions]) ⇒ <code>Promise</code>
+
+***Deprecated***
+
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
+
+**Returns**: <code>Promise</code>
+
+| Param | Type | Description |
+| --- | --- | --- |
+| url | <code>String</code> |  |
+| [options] | <code>Object</code> | Additional Telegram query options |
+| [fileOptions] | <code>Object</code> | Additional file options |
+
+<a name="TelegramBot+deleteWebHook"></a>
+
+### telegramBot.deleteWebHook([options]) ⇒ <code>Promise</code>
+
+***Deprecated***
+
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
+
+**Returns**: <code>Promise</code>
+
+| Param | Type | Description |
+| --- | --- | --- |
+| [options] | <code>Object</code> | Additional Telegram query options |
+
+<a name="TelegramBot+getWebHookInfo"></a>
+
+### telegramBot.getWebHookInfo([options]) ⇒ <code>Promise</code>
+
+***Deprecated***
+
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
+
+**Returns**: <code>Promise</code>
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -733,6 +780,10 @@ Download a Telegram file to a local directory and resolve to the resulting path.
 <a name="TelegramBot+sendPaidMedia"></a>
 
 ### telegramBot.sendPaidMedia(chatId, starCount, media, [options]) ⇒ <code>Promise</code>
+Send paid media. Each item's file fields are widened to accept uploads: the
+primary `media` plus any `thumbnail` / `cover` (video) or `photo` (live photo)
+may be a Buffer / stream / local path (uploaded as a multipart part) or a
+file_id / URL string (passed through). {@link _buildMediaItems} resolves them.
 
 **Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
 
@@ -750,6 +801,12 @@ Download a Telegram file to a local directory and resolve to the resulting path.
 <a name="TelegramBot+sendMediaGroup"></a>
 
 ### telegramBot.sendMediaGroup(chatId, media, [options]) ⇒ <code>Promise</code>
+Send a group of photos / videos / etc as an album. Each item's file fields are
+widened to accept uploads: the primary `media` plus any `thumbnail` / `cover`
+(video) or `photo` (live photo) may be a Buffer / stream / local path (uploaded
+as a multipart part) or a file_id / URL string (passed through).
+{@link _buildMediaItems} resolves every file field of every item - unlike
+{@link editMessageMedia}, whose secondary fields are string-only.
 
 **Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
 
@@ -2119,6 +2176,14 @@ JPEG before calling.
 <a name="TelegramBot+editMessageMedia"></a>
 
 ### telegramBot.editMessageMedia(media, [options]) ⇒ <code>Promise</code>
+Edit a message's media. Unlike {@link sendMediaGroup} / {@link sendPaidMedia},
+the `media` argument is the docs-faithful `InputMedia`, so every file field is
+typed `string` and NOT widened to accept uploads:
+  - Secondary fields (`thumbnail` / `cover` / `photo`) must be file_id / URL
+    strings; they pass through untouched. Uploading a *new* secondary file is
+    not supported here (the method attaches only the single primary part).
+  - The primary `media` is uploaded only when given as `attach://<local-path>`;
+    a plain file_id / URL is sent as-is.
 
 **Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
 

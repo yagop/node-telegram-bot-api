@@ -9,7 +9,7 @@ import { FatalError } from "./errors.js";
 import { HttpClient, type HttpClientOptions, type RequestOptions } from "./http.js";
 import { TelegramBotPolling, type PollingOptions, type PollingStartOptions, type PollingStopOptions } from "./polling.js";
 import { TelegramBotWebHook, type WebHookOptions } from "./webhook.js";
-import { prepareFile, prepareFiles, stringify, type FileInput, type FileMeta, type PreparedFile } from "./utils.js";
+import { deprecate, prepareFile, prepareFiles, stringify, type FileInput, type FileMeta, type PreparedFile } from "./utils.js";
 import { MESSAGE_TYPES, UPDATE_TYPES } from "./types/schemas.js";
 import type {
   // Library helpers + data objects (generated)
@@ -977,7 +977,7 @@ export class TelegramBot extends EventEmitter {
     return this._form("getUpdates", form);
   }
 
-  async setWebHook(url: string, options: Omit<SetWebhookParams, "url"> = {}, fileOptions: FileMeta = {}): Promise<SetWebhookResult> {
+  async setWebhook(url: string, options: Omit<SetWebhookParams, "url"> = {}, fileOptions: FileMeta = {}): Promise<SetWebhookResult> {
     const { certificate, ...rest } = options;
     const form: Omit<SetWebhookParams, "allowed_updates" | "certificate"> & {
       allowed_updates?: SetWebhookParams["allowed_updates"] | string;
@@ -994,12 +994,30 @@ export class TelegramBot extends EventEmitter {
     return this._request("setWebhook", { form });
   }
 
-  deleteWebHook(form: DeleteWebhookParams = {}): Promise<DeleteWebhookResult> {
+  deleteWebhook(form: DeleteWebhookParams = {}): Promise<DeleteWebhookResult> {
     return this._form("deleteWebhook", form);
   }
 
-  getWebHookInfo(form: GetWebhookInfoParams = {}): Promise<GetWebhookInfoResult> {
+  getWebhookInfo(form: GetWebhookInfoParams = {}): Promise<GetWebhookInfoResult> {
     return this._form("getWebhookInfo", form);
+  }
+
+  /** @deprecated Renamed to {@link TelegramBot.setWebhook} to match the Bot API casing. */
+  setWebHook(url: string, options: Omit<SetWebhookParams, "url"> = {}, fileOptions: FileMeta = {}): Promise<SetWebhookResult> {
+    deprecate("setWebHook(...) is deprecated; use setWebhook(...) instead.");
+    return this.setWebhook(url, options, fileOptions);
+  }
+
+  /** @deprecated Renamed to {@link TelegramBot.deleteWebhook} to match the Bot API casing. */
+  deleteWebHook(form: DeleteWebhookParams = {}): Promise<DeleteWebhookResult> {
+    deprecate("deleteWebHook(...) is deprecated; use deleteWebhook(...) instead.");
+    return this.deleteWebhook(form);
+  }
+
+  /** @deprecated Renamed to {@link TelegramBot.getWebhookInfo} to match the Bot API casing. */
+  getWebHookInfo(form: GetWebhookInfoParams = {}): Promise<GetWebhookInfoResult> {
+    deprecate("getWebHookInfo(...) is deprecated; use getWebhookInfo(...) instead.");
+    return this.getWebhookInfo(form);
   }
 
   // --- Bot identity ------------------------------------------------------
