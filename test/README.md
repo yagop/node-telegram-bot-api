@@ -51,5 +51,3 @@ bun test -t '<method>' test/integration/telegram.test.ts
 
 > **Note:** the bot must be an administrator in the chat (with the relevant
 > admin rights) for some tests to pass.
-</content>
-</invoke>

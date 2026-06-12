@@ -97,10 +97,10 @@ async function buildBody(opts: RequestOptions): Promise<{
     appendForm(fd, opts.form);
     for (const [name, file] of Object.entries(opts.formData)) {
       const buffer = file.value as Buffer;
-      // Copy into a fresh ArrayBuffer to satisfy the BlobPart type.
-      const ab = new ArrayBuffer(buffer.byteLength);
-      new Uint8Array(ab).set(buffer);
-      const blob = new Blob([ab], { type: file.contentType });
+      // Buffer is a Uint8Array view, already a valid BlobPart - no copy needed.
+      // The cast narrows ArrayBufferLike -> ArrayBuffer (Node Buffers are never
+      // SharedArrayBuffer-backed) to satisfy the stricter DOM BlobPart typing.
+      const blob = new Blob([buffer as Uint8Array<ArrayBuffer>], { type: file.contentType });
       fd.append(name, blob, file.filename);
     }
     // Content-type is set by fetch automatically for FormData.
@@ -183,9 +183,13 @@ export class HttpClient {
     signal: AbortSignal | undefined,
   ): Promise<{ status: number; parsed: TelegramApiResponse<T> }> {
     const controller = new AbortController();
+    let onExternalAbort: (() => void) | null = null;
     if (signal) {
       if (signal.aborted) controller.abort(signal.reason);
-      else signal.addEventListener("abort", () => controller.abort(signal.reason), { once: true });
+      else {
+        onExternalAbort = () => controller.abort(signal.reason);
+        signal.addEventListener("abort", onExternalAbort, { once: true });
+      }
     }
     const timer = timeoutMs ? setTimeout(() => controller.abort(new Error("HTTP timeout")), timeoutMs) : null;
 
@@ -201,6 +205,7 @@ export class HttpClient {
       throw new FatalError(err as Error);
     } finally {
       if (timer) clearTimeout(timer);
+      if (signal && onExternalAbort) signal.removeEventListener("abort", onExternalAbort);
     }
 
     const status = response.status;
