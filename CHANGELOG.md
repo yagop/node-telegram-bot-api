@@ -5,7 +5,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased][Unreleased]
 
-## [1.0.0] — 2026-05-10
+## [1.0.0][1.0.0] - 2026-06-12
 
 ### Rewritten in TypeScript
 
@@ -721,4 +721,5 @@ Fixed:
 [0.66.0]:https://github.com/yagop/node-telegram-bot-api/releases/tag/v0.66.0
 [0.67.0]:https://github.com/yagop/node-telegram-bot-api/releases/tag/v0.67.0
 [0.68.0]:https://github.com/yagop/node-telegram-bot-api/releases/tag/v0.68.0
-[Unreleased]:https://github.com/yagop/node-telegram-bot-api/compare/v0.68.0...master
+[1.0.0]:https://github.com/yagop/node-telegram-bot-api/releases/tag/v1.0.0
+[Unreleased]:https://github.com/yagop/node-telegram-bot-api/compare/v1.0.0...master
