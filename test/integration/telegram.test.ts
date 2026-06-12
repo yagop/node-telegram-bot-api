@@ -1036,6 +1036,33 @@ describe("Telegram Bot API (integration)", () => {
       assert.ok(Array.isArray(sent));
       assert.equal(sent.length, 2);
     });
+
+    // Regression: a media-group item's secondary file fields (a video's
+    // `thumbnail`, a live photo's `photo`) must be uploaded as multipart parts.
+    // Before the fix they were JSON-serialized into the `media` field as
+    // {"type":"Buffer",...}, which Telegram rejects with "can't parse InputMedia",
+    // so simply reaching a successful response proves the upload was well-formed.
+    it("uploads a video item's thumbnail buffer instead of serializing it into media", async () => {
+      const thumb = fs.readFileSync(PHOTO_PATH);
+      const sent = await bot.sendMediaGroup(GROUP_ID, [
+        { type: "video", media: VIDEO_PATH, thumbnail: thumb },
+        { type: "photo", media: photoFileId },
+      ]);
+      assert.ok(Array.isArray(sent));
+      assert.equal(sent.length, 2);
+      assert.ok(sent[0]!.video);
+    });
+
+    it("uploads a live-photo item's still photo buffer instead of serializing it into media", async () => {
+      const still = fs.readFileSync(PHOTO_FOR_LIVE_PHOTO_PATH);
+      const sent = await bot.sendMediaGroup(GROUP_ID, [
+        { type: "live_photo", media: LIVE_PHOTO_PATH, photo: still },
+        { type: "photo", media: photoFileId },
+      ]);
+      assert.ok(Array.isArray(sent));
+      assert.equal(sent.length, 2);
+      assert.ok(sent[0]!.live_photo);
+    });
   });
 
   // --- File metadata & downloads ---------------------------------------

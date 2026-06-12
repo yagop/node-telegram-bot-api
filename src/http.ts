@@ -20,10 +20,8 @@ const DEFAULT_MAX_RETRIES_ON_429 = 2;
 const RETRY_AFTER_BUFFER_SECONDS = 1;
 
 export interface RequestOptions {
-  /** Form fields (x-www-form-urlencoded) */
+  /** Scalar / structured fields. Sent as multipart when `formData` is present, else x-www-form-urlencoded. */
   form?: Record<string, unknown>;
-  /** Query string fields (used in mixed form/multipart calls) */
-  qs?: Record<string, unknown>;
   /** Multipart form data (file uploads) */
   formData?: Record<string, PreparedFile>;
   /** Per-call abort signal */
@@ -96,7 +94,6 @@ async function buildBody(opts: RequestOptions): Promise<{
     }
 
     const fd = new FormData();
-    appendForm(fd, opts.qs);
     appendForm(fd, opts.form);
     for (const [name, file] of Object.entries(opts.formData)) {
       const buffer = file.value as Buffer;
@@ -111,7 +108,6 @@ async function buildBody(opts: RequestOptions): Promise<{
   }
 
   const params = new URLSearchParams();
-  appendForm(params, opts.qs);
   appendForm(params, opts.form);
   return { body: params.toString(), contentType: "application/x-www-form-urlencoded" };
 }
@@ -142,7 +138,7 @@ export class HttpClient {
     };
     if (contentType) headers["content-type"] = contentType;
 
-    debug("HTTP POST %s qs=%j form=%j", url, opts.qs, opts.form);
+    debug("HTTP POST %s form=%j", url, opts.form);
 
     const timeoutMs = opts.timeoutMs ?? this.options.request?.timeoutMs;
     const maxRetries = this.options.request?.maxRetriesOn429 ?? DEFAULT_MAX_RETRIES_ON_429;

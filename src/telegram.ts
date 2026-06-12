@@ -45,6 +45,7 @@ import type {
   Gifts,
   InputPollOption,
   InputMedia,
+  InputFile,
   InputStoryContent,
   InputChecklist,
   KeyboardButton,
@@ -502,6 +503,27 @@ interface ReplyListenerEntry {
 const _deprecatedMessageTypes = ["new_chat_participant", "left_chat_participant"];
 
 /**
+ * Widen the file-bearing fields of a generated `InputMedia*` variant. The
+ * schema is docs-faithful, so `media` / `thumbnail` / `cover` / `photo` are
+ * typed `string` (an `attach://` ref, file_id or URL); this library also
+ * accepts an {@link InputFile} (Buffer / stream / local path) there and uploads
+ * it. Per-file `fileOptions` (filename / content-type hints) apply to `media`.
+ *
+ * Note: the variants share `type: string` (not a literal), so this is not a
+ * discriminated union - value types of known fields are checked, but a wrong
+ * field/`type` pairing is not.
+ */
+type Uploadable<T> = T extends unknown
+  ? { [K in keyof T]: K extends "media" | "thumbnail" | "cover" | "photo" ? InputFile : T[K] } & { fileOptions?: FileMeta }
+  : never;
+
+/** The docs-faithful wire shape of a built item: every file field resolved to an `attach://` / file_id / URL string. */
+type ResolvedMedia = SendMediaGroupParams["media"][number] | SendPaidMediaParams["media"][number];
+
+type SendMediaGroupMedia = Uploadable<SendMediaGroupParams["media"][number]>;
+type SendPaidMediaMedia = Uploadable<SendPaidMediaParams["media"][number]>;
+
+/**
  * The TelegramBot class is the main entry point of the library. It provides
  * methods that map 1:1 to the Telegram Bot API and emits events for incoming
  * updates received via either long polling or a webhook server.
@@ -589,17 +611,8 @@ export class TelegramBot extends EventEmitter {
       this._fixMessageIds(opts.form);
       this._fixSuggestedPostParameters(opts.form);
       this._fixLinkPreviewOptions(opts.form);
+      this._fixStoryAreas(opts.form);
       this._fixJsonFields(opts.form);
-    }
-    if (opts.qs) {
-      this._fixReplyMarkup(opts.qs);
-      this._fixEntitiesField(opts.qs);
-      this._fixReplyParameters(opts.qs);
-      this._fixMessageIds(opts.qs);
-      this._fixSuggestedPostParameters(opts.qs);
-      this._fixLinkPreviewOptions(opts.qs);
-      this._fixStoryAreas(opts.qs);
-      this._fixJsonFields(opts.qs);
     }
     return this.http.request<T>(method, opts);
   }
@@ -696,16 +709,16 @@ export class TelegramBot extends EventEmitter {
     method: string,
     fieldName: string,
     data: FileInput,
-    qs: Record<string, unknown>,
+    form: Record<string, unknown>,
     fileMeta: FileMeta = {},
     extraThumbnail?: { thumbnail?: FileInput; thumb?: FileInput },
   ): Promise<T> {
-    const opts: RequestOptions = { qs };
+    const opts: RequestOptions = { form };
     const { file, fileId } = await prepareFile(data, fileMeta, this.options.filepath);
     if (file) {
       opts.formData = { [fieldName]: file };
     } else if (fileId) {
-      qs[fieldName] = fileId;
+      form[fieldName] = fileId;
     }
     if (extraThumbnail) {
       const candidate = extraThumbnail.thumbnail ?? extraThumbnail.thumb;
@@ -714,13 +727,60 @@ export class TelegramBot extends EventEmitter {
         if (thumbFile) {
           opts.formData = opts.formData ?? {};
           opts.formData["thumbnail"] = thumbFile;
-          qs.thumbnail = "attach://thumbnail";
+          form.thumbnail = "attach://thumbnail";
         } else if (thumbId) {
-          qs.thumbnail = thumbId;
+          form.thumbnail = thumbId;
         }
       }
     }
     return this._request<T>(method, opts);
+  }
+
+  /**
+   * Build the `media` array + multipart `formData` shared by `sendMediaGroup`
+   * and `sendPaidMedia`. Every file-bearing field of each item is treated
+   * alike -- the primary `media`, plus `thumbnail` / `cover` (video, animation,
+   * audio, document) and `photo` (a live photo's still image): a Buffer /
+   * stream / local path is uploaded under a `<index>_<field>` part name and the
+   * field is rewritten to an `attach://` reference, while a fileId / URL string
+   * passes through unchanged. The caller serializes the returned `inputMedia`
+   * into the request's `media` field.
+   */
+  private async _buildMediaItems(
+    media: ReadonlyArray<SendMediaGroupMedia | SendPaidMediaMedia>,
+  ): Promise<{ inputMedia: ResolvedMedia[]; formData: Record<string, PreparedFile> }> {
+    const formData: Record<string, PreparedFile> = {};
+    const inputMedia: ResolvedMedia[] = [];
+    for (const [index, item] of media.entries()) {
+      // File fields are typed InputFile (which subsumes string), so each one holds
+      // the incoming upload and the attach:// / file_id / URL string written back over it.
+      const payload: {
+        media?: InputFile;
+        thumbnail?: InputFile;
+        cover?: InputFile;
+        photo?: InputFile;
+        fileOptions?: FileMeta;
+      } = { ...item };
+      delete payload.fileOptions;
+      for (const field of ["media", "thumbnail", "cover", "photo"] as const) {
+        const value = payload[field];
+        if (value === undefined || value === null) continue;
+        const attachName = `${index}_${field}`;
+        // fileOptions (filename / contentType hints) describe the `media` upload only.
+        const meta = field === "media" ? item.fileOptions : undefined;
+        const { file, fileId } = await prepareFile(value, meta, this.options.filepath);
+        if (file) {
+          formData[attachName] = file;
+          payload[field] = `attach://${attachName}`;
+        } else if (fileId) {
+          payload[field] = fileId;
+        }
+      }
+      // Every file field is now an attach:// / file_id / URL string, matching a
+      // ResolvedMedia variant - which TS can't infer through the in-place rewrite.
+      inputMedia.push(payload as ResolvedMedia);
+    }
+    return { inputMedia, formData };
   }
 
   // --- High-level lifecycle ----------------------------------------------
@@ -919,16 +979,19 @@ export class TelegramBot extends EventEmitter {
 
   async setWebHook(url: string, options: Omit<SetWebhookParams, "url"> = {}, fileOptions: FileMeta = {}): Promise<SetWebhookResult> {
     const { certificate, ...rest } = options;
-    const qs: Record<string, unknown> = { ...rest, url };
-    if (Array.isArray(qs.allowed_updates)) qs.allowed_updates = stringify(qs.allowed_updates);
+    const form: Omit<SetWebhookParams, "allowed_updates" | "certificate"> & {
+      allowed_updates?: SetWebhookParams["allowed_updates"] | string;
+      certificate?: string | null;
+    } = { ...rest, url };
+    if (Array.isArray(form.allowed_updates)) form.allowed_updates = stringify(form.allowed_updates);
     if (certificate) {
       const { file, fileId } = await prepareFile(certificate, fileOptions, this.options.filepath);
       if (file) {
-        return this._request("setWebhook", { qs, formData: { certificate: file } });
+        return this._request("setWebhook", { form, formData: { certificate: file } });
       }
-      qs.certificate = fileId;
+      form.certificate = fileId;
     }
-    return this._request("setWebhook", { qs });
+    return this._request("setWebhook", { form });
   }
 
   deleteWebHook(form: DeleteWebhookParams = {}): Promise<DeleteWebhookResult> {
@@ -1037,24 +1100,25 @@ export class TelegramBot extends EventEmitter {
     options: Omit<SendLivePhotoParams, "chat_id" | "live_photo" | "photo"> = {},
     fileOptions: FileMeta = {},
   ): Promise<SendLivePhotoResult> {
-    const qs: Record<string, unknown> = { ...options, chat_id: chatId };
-    const opts: RequestOptions = { qs };
+    const form: Omit<SendLivePhotoParams, "live_photo" | "photo"> & { live_photo?: string; photo?: string } =
+      { ...options, chat_id: chatId };
+    const opts: RequestOptions = { form };
 
     const liveResult = await prepareFile(livePhoto, fileOptions, this.options.filepath);
     if (liveResult.file) {
       opts.formData = { live_photo: liveResult.file };
-      qs.live_photo = "attach://live_photo";
+      form.live_photo = "attach://live_photo";
     } else if (liveResult.fileId) {
-      qs.live_photo = liveResult.fileId;
+      form.live_photo = liveResult.fileId;
     }
 
     const photoResult = await prepareFile(photo, {}, this.options.filepath);
     if (photoResult.file) {
       opts.formData = opts.formData ?? {};
       opts.formData.photo = photoResult.file;
-      qs.photo = "attach://photo";
+      form.photo = "attach://photo";
     } else if (photoResult.fileId) {
-      qs.photo = photoResult.fileId;
+      form.photo = photoResult.fileId;
     }
 
     return this._request<Message>("sendLivePhoto", opts);
@@ -1151,46 +1215,24 @@ export class TelegramBot extends EventEmitter {
   async sendPaidMedia(
     chatId: ChatId,
     starCount: number,
-    media: Array<{ type: string; media: FileInput; fileOptions?: FileMeta;[key: string]: unknown }>,
+    media: SendPaidMediaMedia[],
     options: Omit<SendPaidMediaParams, "chat_id" | "star_count" | "media"> = {},
   ): Promise<SendPaidMediaResult> {
-    const qs: Record<string, unknown> = { ...options, chat_id: chatId, star_count: starCount };
-    const { formData, fileIds } = await prepareFiles("media", media, {}, this.options.filepath);
-    const inputPaidMedia = media.map((item, index) => {
-      const copy: Record<string, unknown> = { ...item };
-      delete copy.fileOptions;
-      copy.media = fileIds[index] ?? `attach://media_${index}`;
-      return copy;
-    });
-    qs.media = stringify(inputPaidMedia);
-    return this._request("sendPaidMedia", { qs, formData });
+    const form: Omit<SendPaidMediaParams, "media"> & { media?: string } = { ...options, chat_id: chatId, star_count: starCount };
+    const { inputMedia, formData } = await this._buildMediaItems(media);
+    form.media = stringify(inputMedia);
+    return this._request("sendPaidMedia", { form, formData });
   }
 
   async sendMediaGroup(
     chatId: ChatId,
-    media: Array<{ media: FileInput; fileOptions?: FileMeta;[key: string]: unknown }>,
+    media: SendMediaGroupMedia[],
     options: Omit<SendMediaGroupParams, "chat_id" | "media"> = {},
   ): Promise<SendMediaGroupResult> {
-    const qs: Record<string, unknown> = { ...options, chat_id: chatId };
-    const formData: Record<string, PreparedFile> = {};
-    const inputMedia: Record<string, unknown>[] = [];
-    for (let index = 0; index < media.length; index++) {
-      const input = media[index]!;
-      const payload: Record<string, unknown> = { ...input };
-      delete payload.media;
-      delete payload.fileOptions;
-      const attachName = String(index);
-      const { file, fileId } = await prepareFile(input.media, input.fileOptions, this.options.filepath);
-      if (file) {
-        formData[attachName] = file;
-        payload.media = `attach://${attachName}`;
-      } else {
-        payload.media = fileId;
-      }
-      inputMedia.push(payload);
-    }
-    qs.media = stringify(inputMedia);
-    return this._request("sendMediaGroup", { qs, formData });
+    const form: Omit<SendMediaGroupParams, "media"> & { media?: string } = { ...options, chat_id: chatId };
+    const { inputMedia, formData } = await this._buildMediaItems(media);
+    form.media = stringify(inputMedia);
+    return this._request("sendMediaGroup", { form, formData });
   }
 
   sendLocation(chatId: ChatId, latitude: number, longitude: number, form: Omit<SendLocationParams, "chat_id" | "latitude" | "longitude"> = {}): Promise<SendLocationResult> {
@@ -1942,7 +1984,7 @@ export class TelegramBot extends EventEmitter {
     }
     const struct = { ...photo, [fieldName]: `attach://${fieldName}` };
     return this._request<boolean>("setMyProfilePhoto", {
-      qs: { ...form, photo: stringify(struct) },
+      form: { ...form, photo: stringify(struct) },
       formData: { [fieldName]: file },
     });
   }
@@ -1996,7 +2038,7 @@ export class TelegramBot extends EventEmitter {
   ): Promise<EditMessageMediaResult> {
     const regexAttach = /^attach:\/\/.+/;
     if (typeof media.media === "string" && regexAttach.test(media.media)) {
-      const qs: Record<string, unknown> = { ...form };
+      const out: Omit<EditMessageMediaParams, "media"> & { media?: string } = { ...form };
       const payload: Record<string, unknown> = { ...media };
       delete payload.media;
       delete payload.fileOptions;
@@ -2005,10 +2047,10 @@ export class TelegramBot extends EventEmitter {
       const { file } = await prepareFile(data, media.fileOptions, this.options.filepath);
       if (!file) throw new FatalError(`Failed to process the replacement action for your ${media.type}`);
       payload.media = `attach://${attachName}`;
-      qs.media = stringify(payload);
-      return this._request("editMessageMedia", { qs, formData: { [attachName]: file } });
+      out.media = stringify(payload);
+      return this._request("editMessageMedia", { form: out, formData: { [attachName]: file } });
     }
-    const out: Record<string, unknown> = { ...form, media: stringify(media) };
+    const out: Omit<EditMessageMediaParams, "media"> & { media: string } = { ...form, media: stringify(media) };
     return this._form("editMessageMedia", out);
   }
 
@@ -2124,9 +2166,10 @@ export class TelegramBot extends EventEmitter {
     options: { mask_position?: MaskPosition; sticker_type?: string; needs_repainting?: boolean } = {},
     fileOptions: FileMeta = {},
   ): Promise<CreateNewStickerSetResult> {
-    const qs: Record<string, unknown> = { ...options, user_id: userId, name, title, emojis };
-    if (options.mask_position) qs.mask_position = stringify(options.mask_position);
-    return this._sendFile("createNewStickerSet", "png_sticker", pngSticker, qs, fileOptions);
+    const form: { sticker_type?: string; needs_repainting?: boolean; mask_position?: MaskPosition | string; user_id: number; name: string; title: string; emojis: string } =
+      { ...options, user_id: userId, name, title, emojis };
+    if (options.mask_position) form.mask_position = stringify(options.mask_position);
+    return this._sendFile("createNewStickerSet", "png_sticker", pngSticker, form, fileOptions);
   }
 
   addStickerToSet(
@@ -2141,9 +2184,10 @@ export class TelegramBot extends EventEmitter {
     if (!["png_sticker", "tgs_sticker", "webm_sticker"].includes(stickerType)) {
       return Promise.reject(new Error("stickerType must be one of: png_sticker, tgs_sticker, webm_sticker"));
     }
-    const qs: Record<string, unknown> = { ...options, user_id: userId, name, emojis };
-    if (options.mask_position) qs.mask_position = stringify(options.mask_position);
-    return this._sendFile("addStickerToSet", stickerType, sticker, qs, fileOptions);
+    const form: { mask_position?: MaskPosition | string; user_id: number; name: string; emojis: string } =
+      { ...options, user_id: userId, name, emojis };
+    if (options.mask_position) form.mask_position = stringify(options.mask_position);
+    return this._sendFile("addStickerToSet", stickerType, sticker, form, fileOptions);
   }
 
   setStickerPositionInSet(sticker: string, position: number, form: {} = {}): Promise<SetStickerPositionInSetResult> {
@@ -2597,7 +2641,7 @@ export class TelegramBot extends EventEmitter {
     }
     const struct = { ...photo, [fieldName]: `attach://${fieldName}` };
     return this._request<boolean>("setBusinessAccountProfilePhoto", {
-      qs: { ...form, photo: stringify(struct), business_connection_id: businessConnectionId },
+      form: { ...form, photo: stringify(struct), business_connection_id: businessConnectionId },
       formData: { [fieldName]: file },
     });
   }
@@ -2722,7 +2766,7 @@ export class TelegramBot extends EventEmitter {
     options: Omit<PostStoryParams, "business_connection_id" | "content" | "active_period"> = {},
   ): Promise<PostStoryResult> {
     if (!content.type) throw new FatalError("content.type is required");
-    const qs: Record<string, unknown> = {
+    const form: Omit<PostStoryParams, "content"> & { content?: string } = {
       ...options,
       business_connection_id: businessConnectionId,
       active_period: activePeriod,
@@ -2731,8 +2775,8 @@ export class TelegramBot extends EventEmitter {
     const { formData, fileIds } = await prepareFiles(content.type, [{ media: fileInput }], {}, this.options.filepath);
     const inputContent: Record<string, unknown> = { ...content };
     inputContent[content.type] = fileIds[0] ?? `attach://${content.type}_0`;
-    qs.content = stringify(inputContent);
-    return this._request("postStory", { qs, formData });
+    form.content = stringify(inputContent);
+    return this._request("postStory", { form, formData });
   }
 
   repostStory(
@@ -2758,7 +2802,7 @@ export class TelegramBot extends EventEmitter {
     options: Omit<EditStoryParams, "business_connection_id" | "story_id" | "content"> = {},
   ): Promise<EditStoryResult> {
     if (!content.type) throw new FatalError("content.type is required");
-    const qs: Record<string, unknown> = {
+    const form: Omit<EditStoryParams, "content"> & { content?: string } = {
       ...options,
       business_connection_id: businessConnectionId,
       story_id: storyId,
@@ -2767,8 +2811,8 @@ export class TelegramBot extends EventEmitter {
     const { formData, fileIds } = await prepareFiles(content.type, [{ media: fileInput }], {}, this.options.filepath);
     const inputContent: Record<string, unknown> = { ...content };
     inputContent[content.type] = fileIds[0] ?? `attach://${content.type}_0`;
-    qs.content = stringify(inputContent);
-    return this._request("editStory", { qs, formData });
+    form.content = stringify(inputContent);
+    return this._request("editStory", { form, formData });
   }
 
   deleteStory(

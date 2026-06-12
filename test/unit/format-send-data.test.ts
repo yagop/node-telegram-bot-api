@@ -62,7 +62,7 @@ describe("format-send-data (via HttpClient)", () => {
     assert.ok(file);
 
     await client.request("sendPhoto", {
-      qs: { chat_id: 99 },
+      form: { chat_id: 99 },
       formData: { photo: file! },
     });
 

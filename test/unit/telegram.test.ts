@@ -340,6 +340,74 @@ describe("TelegramBot (unit)", () => {
     });
   });
 
+  describe("sendMediaGroup()", () => {
+    it("attaches an item's secondary file buffers (live photo's photo, video's thumbnail) as multipart parts", async () => {
+      stubFetch(() => ({ ok: true, result: [] }));
+      const bot = new TelegramBot("TOKEN", { filepath: false });
+      const motion = Buffer.from("FAKE-MP4-MOTION");
+      const still = Buffer.from("\xff\xd8\xff\xe0STILL", "binary");
+      const video = Buffer.from("FAKE-MP4-VIDEO");
+      const thumb = Buffer.from("\xff\xd8\xff\xe0THUMB", "binary");
+
+      await bot.sendMediaGroup(-1001234567890, [
+        { type: "live_photo", media: motion, photo: still },
+        { type: "video", media: video, thumbnail: thumb },
+      ]);
+
+      const fd = captured.at(-1)!.init.body as FormData;
+      const inputMedia = JSON.parse(String(fd.get("media"))) as Array<Record<string, unknown>>;
+
+      // Every file-bearing field must be an attach:// reference, never a serialized Buffer.
+      assert.equal(inputMedia[0]!.media, "attach://0_media");
+      assert.equal(inputMedia[0]!.photo, "attach://0_photo");
+      assert.equal(inputMedia[1]!.media, "attach://1_media");
+      assert.equal(inputMedia[1]!.thumbnail, "attach://1_thumbnail");
+
+      // All four files are attached as real multipart parts.
+      assert.ok(fd.get("0_media") instanceof Blob);
+      assert.ok(fd.get("0_photo") instanceof Blob);
+      assert.ok(fd.get("1_media") instanceof Blob);
+      assert.ok(fd.get("1_thumbnail") instanceof Blob);
+    });
+
+    it("passes a fileId/URL secondary file through without uploading", async () => {
+      stubFetch(() => ({ ok: true, result: [] }));
+      const bot = new TelegramBot("TOKEN", { filepath: false });
+      await bot.sendMediaGroup(1, [
+        { type: "video", media: "video-file-id", thumbnail: "https://example.com/thumb.jpg" },
+      ]);
+
+      // No uploads -> the body is a urlencoded string, not multipart FormData.
+      const params = new URLSearchParams(String(captured.at(-1)!.init.body));
+      const inputMedia = JSON.parse(String(params.get("media"))) as Array<Record<string, unknown>>;
+      assert.equal(inputMedia[0]!.media, "video-file-id");
+      assert.equal(inputMedia[0]!.thumbnail, "https://example.com/thumb.jpg");
+    });
+  });
+
+  describe("sendPaidMedia()", () => {
+    it("attaches each item's primary and secondary files under <index>_<field> names", async () => {
+      stubFetch(() => ({ ok: true, result: { message_id: 1, date: 0, chat: { id: 1, type: "channel" } } }));
+      const bot = new TelegramBot("TOKEN", { filepath: false });
+      const video = Buffer.from("FAKE-MP4-VIDEO");
+      const thumb = Buffer.from("\xff\xd8\xff\xe0THUMB", "binary");
+
+      await bot.sendPaidMedia(123, 5, [
+        { type: "video", media: video, thumbnail: thumb },
+        { type: "photo", media: "photo-file-id" },
+      ]);
+
+      const fd = captured.at(-1)!.init.body as FormData;
+      assert.equal(fd.get("star_count"), "5");
+      const inputMedia = JSON.parse(String(fd.get("media"))) as Array<Record<string, unknown>>;
+      assert.equal(inputMedia[0]!.media, "attach://0_media");
+      assert.equal(inputMedia[0]!.thumbnail, "attach://0_thumbnail");
+      assert.equal(inputMedia[1]!.media, "photo-file-id");
+      assert.ok(fd.get("0_media") instanceof Blob);
+      assert.ok(fd.get("0_thumbnail") instanceof Blob);
+    });
+  });
+
   describe("setMyProfilePhoto()", () => {
     it("posts static photo with InputProfilePhoto struct and file in formData", async () => {
       stubFetch(() => ({ ok: true, result: true }));
