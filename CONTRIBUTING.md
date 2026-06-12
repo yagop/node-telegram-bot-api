@@ -19,26 +19,48 @@ Before proceeding any further, read the following documents:
 4. Be patient please.
 
 
-### Updating API Reference i.e. generating `doc/api.md`
+### Updating the API Reference i.e. generating `doc/api.md`
 
-Run:
+`doc/api.md` is generated from the TypeScript source. Whenever a public
+`TelegramBot` method is added, removed, or has its signature changed,
+regenerate it (the CI / PR checklist requires it to be in sync):
 
 ```bash
-$ npm run doc
+$ npm run generate:docs   # bun scripts/api-doc.ts
+```
+
+
+### Regenerating the types
+
+`src/types/schemas.ts` is generated from the official Bot API docs - do
+**not** hand-edit it. When Telegram ships new methods or fields, re-run:
+
+```bash
+$ npm run generate:types  # bun scripts/api-parser.ts
 ```
 
 
 ### Running tests
 
-Please read `test/README.md` for more information.
-
-
-### Transpiling ES2015 for older Node.js versions
-
-We use babel to transpile the code:
+See `test/README.md` for the env vars and commands. In short:
 
 ```bash
-$ npm run build
+$ npm run typecheck            # tsc --noEmit (the static-analysis gate)
+$ npm run test:node:unit       # unit tests, no token required
+$ npm run test:node:integration  # hits api.telegram.org, needs credentials
+```
+
+There is **no separate lint step** - `npm run typecheck` under `strict`
+is the static-analysis gate.
+
+
+### Building
+
+The published artifact in `dist/` is produced by the TypeScript compiler
+(there is no babel step anymore):
+
+```bash
+$ npm run build   # tsc -p tsconfig.build.json
 ```
 
 [coc]:https://github.com/yagop/node-telegram-bot-api/blob/master/CODE_OF_CONDUCT.md

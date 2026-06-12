@@ -21,23 +21,21 @@ Node.js module to interact with the official [Telegram Bot API](https://core.tel
 npm i node-telegram-bot-api
 ```
 
-<br/>
-
-> ✍️ **Note:** If you use Typescript you can install this package that contains type definitions for this library
->```sh
->npm install --save-dev @types/node-telegram-bot-api
->```
+> ✍️ **Note:** This package is **ESM-only** and requires **Node.js ≥ 18**. Use
+> `import` (not `require`). **TypeScript types are bundled** — do **not** install
+> `@types/node-telegram-bot-api` (it would shadow the bundled, more accurate
+> types). Upgrading from `0.6x`? See the [migration notes in the changelog][migration].
 
 ## 🚀 Usage
 
-```js
-const TelegramBot = require('node-telegram-bot-api');
+```ts
+import TelegramBot from 'node-telegram-bot-api';
 
 // replace the value below with the Telegram token you receive from @BotFather
 const token = 'YOUR_TELEGRAM_BOT_TOKEN';
 
 // Create a bot that uses 'polling' to fetch new updates
-const bot = new TelegramBot(token, {polling: true});
+const bot = new TelegramBot(token, { polling: true });
 
 // Matches "/echo [whatever]"
 bot.onText(/\/echo (.+)/, (msg, match) => {
@@ -46,14 +44,13 @@ bot.onText(/\/echo (.+)/, (msg, match) => {
   // of the message
 
   const chatId = msg.chat.id;
-  const resp = match[1]; // the captured "whatever"
+  const resp = match?.[1] ?? ''; // the captured "whatever"
 
   // send back the matched "whatever" to the chat
   bot.sendMessage(chatId, resp);
 });
 
-// Listen for any kind of message. There are different kinds of
-// messages.
+// Listen for any kind of message. There are different kinds of messages.
 bot.on('message', (msg) => {
   const chatId = msg.chat.id;
 
@@ -62,19 +59,20 @@ bot.on('message', (msg) => {
 });
 ```
 
+More runnable examples live in the [`examples/`](./examples) directory.
+
 ## 📚 Documentation
 
 * [Usage][usage]
 * [Examples][examples]
+* [Migration guide (0.6x → 1.0)][migration]
 * [Tutorials][tutorials]
 * [Help Information][help]
-* API Reference: ([api-release](../master/doc/api.md) / [development][api-dev] / [experimental][api-experimental])
+* [API Reference][api] — generated from source; the package also ships its own TypeScript types, and method signatures mirror the [official Bot API][bot-api]
 * [Contributing to the Project][contributing]
-* [Experimental Features][experimental]
 
-_**Note**: Development is done against the **development** branch.
-Code for the latest release resides on the **master** branch.
-Experimental features reside on the **experimental** branch._
+_**Note**: Code for the latest release resides on the **master** branch, and
+pull requests should target **master**._
 
 
 ## 💭 Community
@@ -118,13 +116,12 @@ Copyright © 2019 Yago
 
 [usage]:https://github.com/yagop/node-telegram-bot-api/tree/master/doc/usage.md
 [examples]:https://github.com/yagop/node-telegram-bot-api/tree/master/examples
+[migration]:https://github.com/yagop/node-telegram-bot-api/blob/master/CHANGELOG.md#migrating-from-v067x
+[api]:https://github.com/yagop/node-telegram-bot-api/tree/master/doc/api.md
+[bot-api]:https://core.telegram.org/bots/api
 [help]:https://github.com/yagop/node-telegram-bot-api/tree/master/doc/help.md
 [tutorials]:https://github.com/yagop/node-telegram-bot-api/tree/master/doc/tutorials.md
-[api-dev]:https://github.com/yagop/node-telegram-bot-api/tree/master/doc/api.md
-[api-release]:https://github.com/yagop/node-telegram-bot-api/tree/release/doc/api.md
-[api-experimental]:https://github.com/yagop/node-telegram-bot-api/tree/experimental/doc/api.md
 [contributing]:https://github.com/yagop/node-telegram-bot-api/tree/master/CONTRIBUTING.md
 [contributors]:https://github.com/yagop/node-telegram-bot-api/graphs/contributors
-[experimental]:https://github.com/yagop/node-telegram-bot-api/tree/master/doc/experimental.md
 [tg-channel]:https://telegram.me/node_telegram_bot_api
 [tg-group]:https://t.me/+UTbprHdcw0JdZdbL
