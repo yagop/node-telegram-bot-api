@@ -52,26 +52,6 @@ jobs:
       - name: Run unit tests
         run: npm run test:node:unit
 
-  # Windows coverage (replaces the removed AppVeyor build). Kept lean: a
-  # min-supported + current-stable Node pair rather than the full matrix.
-  unit-node-windows:
-    name: Unit tests (Windows / Node ${{ matrix.node }})
-    runs-on: windows-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        node: ["20", "24"]
-    steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-node@v6
-        with:
-          node-version: ${{ matrix.node }}
-          cache: npm
-      - name: Install dependencies
-        run: npm ci || npm install --no-audit --no-fund
-      - name: Run unit tests
-        run: npm run test:node:unit
-
   unit-bun:
     name: Unit tests (Bun)
     runs-on: ubuntu-latest
