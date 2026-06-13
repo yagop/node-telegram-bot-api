@@ -5,6 +5,40 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased][Unreleased]
 
+## [1.1.0][1.1.0] - 2026-06-13
+
+### Bot API 10.1 (June 11, 2026)
+
+#### Rich Messages
+
+- Added the method `sendRichMessage(chatId, richMessage, form?)` → `Message`.
+- Added the method `sendRichMessageDraft(chatId, draftId, richMessage, form?)` → `boolean`.
+- Added the parameter `rich_message` to `editMessageText`, alongside a new
+  single-object overload:
+  ```ts
+  // New (preferred) — text or rich_message:
+  editMessageText({ chat_id, message_id, text: "…" })
+  editMessageText({ chat_id, message_id, rich_message: { … } })
+
+  // Old (deprecated, still works):
+  editMessageText("text", { chat_id, message_id })
+  ```
+- Added the type `InputRichMessage` (with `html` / `markdown` / `is_rtl` /
+  `skip_entity_detection` fields), which is JSON-serialized automatically.
+- Regenerated `src/types/schemas.ts` with all new RichMessage, RichText,
+  RichBlock, and related types.
+
+#### Join Request Queries
+
+- Added the method `answerChatJoinRequestQuery(queryId, result, form?)` → `boolean`.
+- Added the method `sendChatJoinRequestWebApp(queryId, webAppUrl, form?)` → `boolean`.
+- Added the fields `supports_join_request_queries` to `User`, `guard_bot` to
+  `ChatFullInfo`, and `query_id` to `ChatJoinRequest` (in the generated types).
+
+#### Polls
+
+- Added the types `Link` and `InputMediaLink` (generated).
+
 ## [1.0.0][1.0.0] - 2026-06-12
 
 ### Rewritten in TypeScript
@@ -722,4 +756,5 @@ Fixed:
 [0.67.0]:https://github.com/yagop/node-telegram-bot-api/releases/tag/v0.67.0
 [0.68.0]:https://github.com/yagop/node-telegram-bot-api/releases/tag/v0.68.0
 [1.0.0]:https://github.com/yagop/node-telegram-bot-api/releases/tag/v1.0.0
+[1.1.0]:https://github.com/yagop/node-telegram-bot-api/releases/tag/v1.1.0
 [Unreleased]:https://github.com/yagop/node-telegram-bot-api/compare/v1.0.0...master

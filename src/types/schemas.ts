@@ -177,6 +177,7 @@ export type User = {
   has_topics_enabled?: boolean;
   allows_users_to_create_topics?: boolean;
   can_manage_bots?: boolean;
+  supports_join_request_queries?: boolean;
 };
 
 export type Chat = {
@@ -242,6 +243,7 @@ export type ChatFullInfo = {
   first_profile_audio?: Audio;
   unique_gift_colors?: UniqueGiftColors;
   paid_message_star_count?: number;
+  guard_bot?: User;
 };
 
 export type Message = {
@@ -281,6 +283,7 @@ export type Message = {
   link_preview_options?: LinkPreviewOptions;
   suggested_post_info?: SuggestedPostInfo;
   effect_id?: string;
+  rich_message?: RichMessage;
   animation?: Animation;
   audio?: Audio;
   document?: Document;
@@ -596,10 +599,15 @@ export type Dice = {
   value: number;
 };
 
+export type Link = {
+  url: string;
+};
+
 export type PollMedia = {
   animation?: Animation;
   audio?: Audio;
   document?: Document;
+  link?: Link;
   live_photo?: LivePhoto;
   location?: Location;
   photo?: PhotoSize[];
@@ -1236,6 +1244,7 @@ export type ChatJoinRequest = {
   date: number;
   bio?: string;
   invite_link?: ChatInviteLink;
+  query_id?: string;
 };
 
 export type ChatPermissions = {
@@ -1747,6 +1756,11 @@ export type InputMediaDocument = {
   disable_content_type_detection?: boolean;
 };
 
+export type InputMediaLink = {
+  type: string;
+  url: string;
+};
+
 export type InputMediaLivePhoto = {
   type: string;
   media: string;
@@ -1896,6 +1910,308 @@ export type InputSticker = {
   emoji_list: string[];
   mask_position?: MaskPosition;
   keywords?: string[];
+};
+
+export type RichMessage = {
+  blocks: RichBlock[];
+  is_rtl?: boolean;
+};
+
+export type InputRichMessage = {
+  html?: string;
+  markdown?: string;
+  is_rtl?: boolean;
+  skip_entity_detection?: boolean;
+};
+
+export type RichTextBold = {
+  type: string;
+  text: RichText;
+};
+
+export type RichTextItalic = {
+  type: string;
+  text: RichText;
+};
+
+export type RichTextUnderline = {
+  type: string;
+  text: RichText;
+};
+
+export type RichTextStrikethrough = {
+  type: string;
+  text: RichText;
+};
+
+export type RichTextSpoiler = {
+  type: string;
+  text: RichText;
+};
+
+export type RichTextDateTime = {
+  type: string;
+  text: RichText;
+  unix_time: number;
+  date_time_format: string;
+};
+
+export type RichTextTextMention = {
+  type: string;
+  text: RichText;
+  user: User;
+};
+
+export type RichTextSubscript = {
+  type: string;
+  text: RichText;
+};
+
+export type RichTextSuperscript = {
+  type: string;
+  text: RichText;
+};
+
+export type RichTextMarked = {
+  type: string;
+  text: RichText;
+};
+
+export type RichTextCode = {
+  type: string;
+  text: RichText;
+};
+
+export type RichTextCustomEmoji = {
+  type: string;
+  custom_emoji_id: string;
+  alternative_text: string;
+};
+
+export type RichTextMathematicalExpression = {
+  type: string;
+  expression: string;
+};
+
+export type RichTextUrl = {
+  type: string;
+  text: RichText;
+  url: string;
+};
+
+export type RichTextEmailAddress = {
+  type: string;
+  text: RichText;
+  email_address: string;
+};
+
+export type RichTextPhoneNumber = {
+  type: string;
+  text: RichText;
+  phone_number: string;
+};
+
+export type RichTextBankCardNumber = {
+  type: string;
+  text: RichText;
+  bank_card_number: string;
+};
+
+export type RichTextMention = {
+  type: string;
+  text: RichText;
+  username: string;
+};
+
+export type RichTextHashtag = {
+  type: string;
+  text: RichText;
+  hashtag: string;
+};
+
+export type RichTextCashtag = {
+  type: string;
+  text: RichText;
+  cashtag: string;
+};
+
+export type RichTextBotCommand = {
+  type: string;
+  text: RichText;
+  bot_command: string;
+};
+
+export type RichTextAnchor = {
+  type: string;
+  name: string;
+};
+
+export type RichTextAnchorLink = {
+  type: string;
+  text: RichText;
+  anchor_name: string;
+};
+
+export type RichTextReference = {
+  type: string;
+  text: RichText;
+  name: string;
+};
+
+export type RichTextReferenceLink = {
+  type: string;
+  text: RichText;
+  reference_name: string;
+};
+
+export type RichBlockCaption = {
+  text: RichText;
+  credit?: RichText;
+};
+
+export type RichBlockTableCell = {
+  text?: RichText;
+  is_header?: true;
+  colspan?: number;
+  rowspan?: number;
+  align: string;
+  valign: string;
+};
+
+export type RichBlockListItem = {
+  label: string;
+  blocks: RichBlock[];
+  has_checkbox?: true;
+  is_checked?: true;
+  value?: number;
+  type?: string;
+};
+
+export type RichBlockParagraph = {
+  type: string;
+  text: RichText;
+};
+
+export type RichBlockSectionHeading = {
+  type: string;
+  text: RichText;
+  size: number;
+};
+
+export type RichBlockPreformatted = {
+  type: string;
+  text: RichText;
+  language?: string;
+};
+
+export type RichBlockFooter = {
+  type: string;
+  text: RichText;
+};
+
+export type RichBlockDivider = {
+  type: string;
+};
+
+export type RichBlockMathematicalExpression = {
+  type: string;
+  expression: string;
+};
+
+export type RichBlockAnchor = {
+  type: string;
+  name: string;
+};
+
+export type RichBlockList = {
+  type: string;
+  items: RichBlockListItem[];
+};
+
+export type RichBlockBlockQuotation = {
+  type: string;
+  blocks: RichBlock[];
+  credit?: RichText;
+};
+
+export type RichBlockPullQuotation = {
+  type: string;
+  text: RichText;
+  credit?: RichText;
+};
+
+export type RichBlockCollage = {
+  type: string;
+  blocks: RichBlock[];
+  caption?: RichBlockCaption;
+};
+
+export type RichBlockSlideshow = {
+  type: string;
+  blocks: RichBlock[];
+  caption?: RichBlockCaption;
+};
+
+export type RichBlockTable = {
+  type: string;
+  cells: RichBlockTableCell[][];
+  is_bordered?: true;
+  is_striped?: true;
+  caption?: RichText;
+};
+
+export type RichBlockDetails = {
+  type: string;
+  summary: RichText;
+  blocks: RichBlock[];
+  is_open?: true;
+};
+
+export type RichBlockMap = {
+  type: string;
+  location: Location;
+  zoom: number;
+  width: number;
+  height: number;
+  caption?: RichBlockCaption;
+};
+
+export type RichBlockAnimation = {
+  type: string;
+  animation: Animation;
+  has_spoiler?: true;
+  caption?: RichBlockCaption;
+};
+
+export type RichBlockAudio = {
+  type: string;
+  audio: Audio;
+  caption?: RichBlockCaption;
+};
+
+export type RichBlockPhoto = {
+  type: string;
+  photo: PhotoSize[];
+  has_spoiler?: true;
+  caption?: RichBlockCaption;
+};
+
+export type RichBlockVideo = {
+  type: string;
+  video: Video;
+  has_spoiler?: true;
+  caption?: RichBlockCaption;
+};
+
+export type RichBlockVoiceNote = {
+  type: string;
+  voice_note: Voice;
+  caption?: RichBlockCaption;
+};
+
+export type RichBlockThinking = {
+  type: string;
+  text: RichText;
 };
 
 export type InlineQuery = {
@@ -2201,6 +2517,10 @@ export type InputTextMessageContent = {
   parse_mode?: string;
   entities?: MessageEntity[];
   link_preview_options?: LinkPreviewOptions;
+};
+
+export type InputRichMessageContent = {
+  rich_message: InputRichMessage;
 };
 
 export type InputLocationMessageContent = {
@@ -2555,7 +2875,7 @@ export type PaidMedia = PaidMediaLivePhoto | PaidMediaPhoto | PaidMediaPreview |
 
 export type InputPollMedia = InputMediaAnimation | InputMediaAudio | InputMediaDocument | InputMediaLivePhoto | InputMediaLocation | InputMediaPhoto | InputMediaVenue | InputMediaVideo;
 
-export type InputPollOptionMedia = InputMediaAnimation | InputMediaLivePhoto | InputMediaLocation | InputMediaPhoto | InputMediaSticker | InputMediaVenue | InputMediaVideo;
+export type InputPollOptionMedia = InputMediaAnimation | InputMediaLink | InputMediaLivePhoto | InputMediaLocation | InputMediaPhoto | InputMediaSticker | InputMediaVenue | InputMediaVideo;
 
 export type BackgroundFill = BackgroundFillSolid | BackgroundFillGradient | BackgroundFillFreeformGradient;
 
@@ -2583,9 +2903,13 @@ export type InputProfilePhoto = InputProfilePhotoStatic | InputProfilePhotoAnima
 
 export type InputStoryContent = InputStoryContentPhoto | InputStoryContentVideo;
 
+export type RichText = RichTextBold | RichTextItalic | RichTextUnderline | RichTextStrikethrough | RichTextSpoiler | RichTextDateTime | RichTextTextMention | RichTextSubscript | RichTextSuperscript | RichTextMarked | RichTextCode | RichTextCustomEmoji | RichTextMathematicalExpression | RichTextUrl | RichTextEmailAddress | RichTextPhoneNumber | RichTextBankCardNumber | RichTextMention | RichTextHashtag | RichTextCashtag | RichTextBotCommand | RichTextAnchor | RichTextAnchorLink | RichTextReference | RichTextReferenceLink;
+
+export type RichBlock = RichBlockParagraph | RichBlockSectionHeading | RichBlockPreformatted | RichBlockFooter | RichBlockDivider | RichBlockMathematicalExpression | RichBlockAnchor | RichBlockList | RichBlockBlockQuotation | RichBlockPullQuotation | RichBlockCollage | RichBlockSlideshow | RichBlockTable | RichBlockDetails | RichBlockMap | RichBlockAnimation | RichBlockAudio | RichBlockPhoto | RichBlockVideo | RichBlockVoiceNote | RichBlockThinking;
+
 export type InlineQueryResult = InlineQueryResultCachedAudio | InlineQueryResultCachedDocument | InlineQueryResultCachedGif | InlineQueryResultCachedMpeg4Gif | InlineQueryResultCachedPhoto | InlineQueryResultCachedSticker | InlineQueryResultCachedVideo | InlineQueryResultCachedVoice | InlineQueryResultArticle | InlineQueryResultAudio | InlineQueryResultContact | InlineQueryResultGame | InlineQueryResultDocument | InlineQueryResultGif | InlineQueryResultLocation | InlineQueryResultMpeg4Gif | InlineQueryResultPhoto | InlineQueryResultVenue | InlineQueryResultVideo | InlineQueryResultVoice;
 
-export type InputMessageContent = InputTextMessageContent | InputLocationMessageContent | InputVenueMessageContent | InputContactMessageContent | InputInvoiceMessageContent;
+export type InputMessageContent = InputTextMessageContent | InputRichMessageContent | InputLocationMessageContent | InputVenueMessageContent | InputContactMessageContent | InputInvoiceMessageContent;
 
 export type RevenueWithdrawalState = RevenueWithdrawalStatePending | RevenueWithdrawalStateSucceeded | RevenueWithdrawalStateFailed;
 
@@ -3243,6 +3567,18 @@ export type DeclineChatJoinRequestParams = {
 };
 export type DeclineChatJoinRequestResult = boolean;
 
+export type AnswerChatJoinRequestQueryParams = {
+  chat_join_request_query_id: string;
+  result: string;
+};
+export type AnswerChatJoinRequestQueryResult = boolean;
+
+export type SendChatJoinRequestWebAppParams = {
+  chat_join_request_query_id: string;
+  web_app_url: string;
+};
+export type SendChatJoinRequestWebAppResult = boolean;
+
 export type SetChatPhotoParams = {
   chat_id: number | string;
   photo: InputFile;
@@ -3775,10 +4111,11 @@ export type EditMessageTextParams = {
   chat_id?: number | string;
   message_id?: number;
   inline_message_id?: string;
-  text: string;
+  text?: string;
   parse_mode?: string;
   entities?: MessageEntity[];
   link_preview_options?: LinkPreviewOptions;
+  rich_message?: InputRichMessage;
   reply_markup?: InlineKeyboardMarkup;
 };
 export type EditMessageTextResult = Message | boolean;
@@ -4009,6 +4346,30 @@ export type DeleteStickerSetParams = {
   name: string;
 };
 export type DeleteStickerSetResult = boolean;
+
+export type SendRichMessageParams = {
+  business_connection_id?: string;
+  chat_id: number | string;
+  message_thread_id?: number;
+  direct_messages_topic_id?: number;
+  rich_message: InputRichMessage;
+  disable_notification?: boolean;
+  protect_content?: boolean;
+  allow_paid_broadcast?: boolean;
+  message_effect_id?: string;
+  suggested_post_parameters?: SuggestedPostParameters;
+  reply_parameters?: ReplyParameters;
+  reply_markup?: InlineKeyboardMarkup | ReplyKeyboardMarkup | ReplyKeyboardRemove | ForceReply;
+};
+export type SendRichMessageResult = Message;
+
+export type SendRichMessageDraftParams = {
+  chat_id: number;
+  message_thread_id?: number;
+  draft_id: number;
+  rich_message: InputRichMessage;
+};
+export type SendRichMessageDraftResult = boolean;
 
 export type AnswerInlineQueryParams = {
   inline_query_id: string;
