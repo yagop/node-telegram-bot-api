@@ -97,13 +97,11 @@ git push -u origin version/X.Y.Z
 
 ## 7. PR to master, wait for green CI, merge
 
-`gh` is **not installed** here - use the GitHub MCP tools (`mcp__github__*`):
+`gh` may not be available here, and the GitHub MCP toolset for this environment is read/list-only. Create/merge the PR via the GitHub web UI (or the GitHub REST API if you have a `GITHUB_TOKEN`).
 
-1. `create_pull_request` head=`version/X.Y.Z` base=`master`, title `X.Y.Z`.
-2. Poll `pull_request_read` method=`get_check_runs` until all checks pass. Expect:
-   Typecheck, Unit tests (Node 20/22/24/26 + Bun), Build (dist); Integration is **skipped**
-   on PRs (no secrets). They finish in well under a minute.
-3. `merge_pull_request` method=`merge`, commit_title `Merge pull request #N from yagop/version/X.Y.Z`.
+1. Open a PR head=`version/X.Y.Z` base=`master`, title `X.Y.Z`.
+2. Wait for all checks to pass. Expect: Typecheck, Unit tests (Node 20/22/24/26 + Bun), Build (dist); Integration is **skipped** on PRs (no secrets).
+3. Merge the PR (merge commit).
 
 ## 8. Pull master
 
