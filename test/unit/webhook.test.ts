@@ -157,6 +157,29 @@ describe("TelegramBotWebHook (unit)", () => {
       });
     });
 
+    it("accepts a bare /<token> segment, not only /bot<token>", async () => {
+      await withWebHook({}, async ({ port, received }) => {
+        const res = await request(port, {
+          path: `/${TOKEN}`,
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify(sampleUpdate),
+        });
+        assert.equal(res.statusCode, 200);
+        assert.equal(received.length, 1);
+      });
+    });
+
+    it("rejects a path that only embeds the token as a substring with 401", async () => {
+      // The token must be a whole path segment: trailing junk inside the segment
+      // (which the old String.includes check accepted) no longer authorizes.
+      await withWebHook({}, async ({ port, received }) => {
+        const res = await request(port, { path: `/bot${TOKEN}extra`, method: "POST", body: "{}" });
+        assert.equal(res.statusCode, 401);
+        assert.equal(received.length, 0);
+      });
+    });
+
     it("rejects non-POST requests on the token path with 418", async () => {
       await withWebHook({}, async ({ port, received }) => {
         const res = await request(port, { path: `/bot${TOKEN}`, method: "GET" });

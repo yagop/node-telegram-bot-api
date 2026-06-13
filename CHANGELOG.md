@@ -5,6 +5,16 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased][Unreleased]
 
+### Security
+
+- **Webhook path authorization now matches the bot token as a complete path
+  segment** instead of a raw substring. A request is authorized only when the
+  token is a full `/`-delimited segment: the documented `/bot<token>` path, a
+  bare `/<token>`, or either nested under a custom prefix. Paths that merely
+  embed the token (e.g. `/bot<token>extra`) are now rejected with `401`. For
+  stronger authentication, set the `secretToken` option to also validate
+  Telegram's `X-Telegram-Bot-Api-Secret-Token` header.
+
 ## [1.0.0][1.0.0] - 2026-06-12
 
 ### Rewritten in TypeScript

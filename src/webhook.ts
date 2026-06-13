@@ -130,6 +130,20 @@ export class TelegramBotWebHook {
     this.bot.emit("webhook_error", err);
   }
 
+  /**
+   * Authorize a webhook request by its path. The bot token must appear as a
+   * complete `/`-delimited path segment - either the documented `/bot<token>`
+   * segment or a bare `/<token>` segment (optionally nested under a custom
+   * prefix). Matching whole segments rather than a raw substring means a crafted
+   * path that merely embeds the token (e.g. `/bot<token>extra`) no longer
+   * authorizes. For stronger authentication, set the `secretToken` option to
+   * have Telegram's `X-Telegram-Bot-Api-Secret-Token` header validated as well.
+   */
+  private _isAuthorizedPath(pathname: string): boolean {
+    const token = this.bot.token;
+    return pathname.split("/").some((segment) => segment === token || segment === `bot${token}`);
+  }
+
   private readonly _handleRequest = async (req: IncomingMessage, res: ServerResponse) => {
     debug("WebHook request URL: %s", req.url ?? "");
 
@@ -143,7 +157,7 @@ export class TelegramBotWebHook {
       return;
     }
 
-    if (!pathname.includes(this.bot.token)) {
+    if (!this._isAuthorizedPath(pathname)) {
       debug("WebHook request unauthorized");
       res.statusCode = 401;
       res.end();
