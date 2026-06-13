@@ -14,6 +14,7 @@ import { MESSAGE_TYPES, UPDATE_TYPES } from "./types/schemas.js";
 import type {
   // Library helpers + data objects (generated)
   ChatId,
+  InputRichMessage,
   MessageType,
   Update,
   Message,
@@ -81,6 +82,10 @@ import type {
   SendInvoiceParams,
   SendChecklistParams,
   SendMessageDraftParams,
+  SendRichMessageParams,
+  SendRichMessageDraftParams,
+  AnswerChatJoinRequestQueryParams,
+  SendChatJoinRequestWebAppParams,
   SetMessageReactionParams,
   GetUserProfilePhotosParams,
   GetUserProfileAudiosParams,
@@ -339,6 +344,10 @@ import type {
   SendLocationResult,
   SendMediaGroupResult,
   SendMessageDraftResult,
+  SendRichMessageResult,
+  SendRichMessageDraftResult,
+  AnswerChatJoinRequestQueryResult,
+  SendChatJoinRequestWebAppResult,
   SendMessageResult,
   SendPaidMediaResult,
   SendPhotoResult,
@@ -688,6 +697,7 @@ export class TelegramBot extends EventEmitter {
       "mask_position",
       "results",
       "sticker",
+      "rich_message",
     ] as const) {
       const value = obj[key];
       if (value !== undefined && value !== null && typeof value !== "string") {
@@ -1044,6 +1054,18 @@ export class TelegramBot extends EventEmitter {
     } satisfies SendMessageParams);
   }
 
+  sendRichMessage(
+    chatId: ChatId,
+    richMessage: InputRichMessage,
+    form: Omit<SendRichMessageParams, "chat_id" | "rich_message"> = {},
+  ): Promise<SendRichMessageResult> {
+    return this._form("sendRichMessage", {
+      ...form,
+      chat_id: chatId,
+      rich_message: richMessage,
+    } satisfies SendRichMessageParams);
+  }
+
   forwardMessage(
     chatId: ChatId,
     fromChatId: ChatId,
@@ -1346,6 +1368,20 @@ export class TelegramBot extends EventEmitter {
     });
   }
 
+  sendRichMessageDraft(
+    chatId: ChatId,
+    draftId: number,
+    richMessage: InputRichMessage,
+    form: Omit<SendRichMessageDraftParams, "chat_id" | "draft_id" | "rich_message"> = {},
+  ): Promise<SendRichMessageDraftResult> {
+    return this._form("sendRichMessageDraft", {
+      ...form,
+      chat_id: chatId,
+      draft_id: draftId,
+      rich_message: richMessage,
+    });
+  }
+
   sendChatAction(chatId: ChatId, action: string, form: Omit<SendChatActionParams, "chat_id" | "action"> = {}): Promise<SendChatActionResult> {
     return this._form("sendChatAction", {
       ...form,
@@ -1622,6 +1658,30 @@ export class TelegramBot extends EventEmitter {
       chat_id: chatId,
       user_id: userId,
     } satisfies DeclineChatJoinRequestParams);
+  }
+
+  answerChatJoinRequestQuery(
+    chatJoinRequestQueryId: string,
+    result: "approve" | "decline" | "queue",
+    form: Omit<AnswerChatJoinRequestQueryParams, "chat_join_request_query_id" | "result"> = {},
+  ): Promise<AnswerChatJoinRequestQueryResult> {
+    return this._form("answerChatJoinRequestQuery", {
+      ...form,
+      chat_join_request_query_id: chatJoinRequestQueryId,
+      result,
+    } satisfies AnswerChatJoinRequestQueryParams);
+  }
+
+  sendChatJoinRequestWebApp(
+    chatJoinRequestQueryId: string,
+    webAppUrl: string,
+    form: Omit<SendChatJoinRequestWebAppParams, "chat_join_request_query_id" | "web_app_url"> = {},
+  ): Promise<SendChatJoinRequestWebAppResult> {
+    return this._form("sendChatJoinRequestWebApp", {
+      ...form,
+      chat_join_request_query_id: chatJoinRequestQueryId,
+      web_app_url: webAppUrl,
+    } satisfies SendChatJoinRequestWebAppParams);
   }
 
   // --- Chat metadata ---------------------------------------------------
@@ -2046,14 +2106,29 @@ export class TelegramBot extends EventEmitter {
 
   // --- Editing messages -------------------------------------------------
 
+  /**
+   * Edit text or rich messages. On success, if the edited message is not an
+   * inline message, the edited {@link Message} is returned, otherwise `true`.
+   *
+   * **Call with a single object** (preferred):
+   *   - Text edit: `editMessageText({ chat_id, message_id, text: "…" })`
+   *   - Rich edit: `editMessageText({ chat_id, message_id, rich_message: { … } })`
+   *
+   * **`(text, form)` signature** (deprecated — kept for backward compatibility):
+   *   - `editMessageText("new text", { chat_id, message_id })`
+   *
+   * @deprecated The two-argument form is deprecated; prefer the single-object call.
+   */
+  editMessageText(text: string, form: Omit<EditMessageTextParams, "text">): Promise<EditMessageTextResult>;
+  editMessageText(form: EditMessageTextParams): Promise<EditMessageTextResult>;
   editMessageText(
-    text: string,
+    textOrForm: string | EditMessageTextParams,
     form: Omit<EditMessageTextParams, "text"> = {},
   ): Promise<EditMessageTextResult> {
-    return this._form("editMessageText", {
-      ...form,
-      text,
-    } satisfies EditMessageTextParams);
+    if (typeof textOrForm === "string") {
+      return this._form("editMessageText", { ...form, text: textOrForm });
+    }
+    return this._form("editMessageText", textOrForm);
   }
   editMessageCaption(
     caption: string,

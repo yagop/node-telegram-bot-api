@@ -489,6 +489,41 @@ describe("Telegram Bot API (integration)", () => {
     });
   });
 
+  describe("sendRichMessage", () => {
+    it("sends a markdown rich message and returns a Message carrying rich_message blocks", async () => {
+      const sent = await bot.sendRichMessage(GROUP_ID, { markdown: "**bold** and _italic_" });
+      assert.equal(typeof sent.message_id, "number");
+      assert.ok(sent.rich_message, "expected the returned Message to carry rich_message");
+      assert.ok(
+        Array.isArray(sent.rich_message!.blocks) && sent.rich_message!.blocks.length > 0,
+        "expected rich_message.blocks to be a non-empty array",
+      );
+    });
+
+    it("structures HTML formatting into rich text runs", async () => {
+      const sent = await bot.sendRichMessage(GROUP_ID, { html: "<b>bold</b> and <i>italic</i>" });
+      assert.ok(sent.rich_message);
+      // The server parses the HTML into typed runs; both words survive the round-trip.
+      const json = JSON.stringify(sent.rich_message);
+      assert.ok(json.includes("bold") && json.includes("italic"));
+    });
+  });
+
+  describe("sendRichMessageDraft", () => {
+    // Drafts target a *private* chat only; a group/supergroup peer is rejected with
+    // TEXTDRAFT_PEER_INVALID. The bot cannot open a private chat unprompted, so we
+    // assert the documented rejection rather than a happy path.
+    it("rejects with ETELEGRAM for a non-private peer", async () => {
+      await assert.rejects(
+        bot.sendRichMessageDraft(GROUP_ID, 1, { markdown: "draft" }),
+        (err: unknown) => {
+          assert.equal((err as { code?: string }).code, "ETELEGRAM");
+          return true;
+        },
+      );
+    });
+  });
+
   describe("sendChatAction", () => {
     it("returns true", async () => {
       const ok = await bot.sendChatAction(GROUP_ID, "typing");
@@ -1295,6 +1330,22 @@ describe("Telegram Bot API (integration)", () => {
           msg.entities.some((e) => e.type === "bold" && e.offset === 0 && e.length === 4),
       );
     });
+
+    it("accepts a rich_message option and returns the edited rich Message", async () => {
+      const sent = await bot.sendMessage(GROUP_ID, `rich-edit-me ${TIMESTAMP}`);
+      const edited = await bot.editMessageText("fallback text", {
+        chat_id: GROUP_ID,
+        message_id: sent.message_id,
+        rich_message: { markdown: "**now rich**" },
+      });
+      assert.ok(edited !== true, "expected a Message back when editing an owned message");
+      const msg = edited as Message;
+      assert.ok(msg.rich_message, "expected the edited Message to carry rich_message");
+      assert.ok(
+        Array.isArray(msg.rich_message!.blocks) && msg.rich_message!.blocks.length > 0,
+        "expected rich_message.blocks to be a non-empty array",
+      );
+    });
   });
 
   describe("editMessageCaption", () => {
@@ -1895,6 +1946,32 @@ describe("Telegram Bot API (integration)", () => {
         assert.equal((err as { code?: string }).code, "ETELEGRAM");
         return true;
       });
+    });
+  });
+
+  describe("answerChatJoinRequestQuery", () => {
+    // No live join-request query is available in the test chat and the test bot is
+    // not a guard bot, so the API rejects with BOT_GUARD_NOT_SUPPORTED.
+    it("rejects with ETELEGRAM for an unknown query id", async () => {
+      await assert.rejects(
+        bot.answerChatJoinRequestQuery("nonexistent-query-id", "approve"),
+        (err: unknown) => {
+          assert.equal((err as { code?: string }).code, "ETELEGRAM");
+          return true;
+        },
+      );
+    });
+  });
+
+  describe("sendChatJoinRequestWebApp", () => {
+    it("rejects with ETELEGRAM for an unknown query id", async () => {
+      await assert.rejects(
+        bot.sendChatJoinRequestWebApp("nonexistent-query-id", "https://example.com/app"),
+        (err: unknown) => {
+          assert.equal((err as { code?: string }).code, "ETELEGRAM");
+          return true;
+        },
+      );
     });
   });
 
