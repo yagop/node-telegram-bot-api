@@ -681,4 +681,14 @@ describe("TelegramBot (unit)", () => {
     });
   });
 
+  describe("polling vs webhook safety", () => {
+    it("rejects startPolling() while a webhook is open", async () => {
+      const bot = new TelegramBot("TOKEN");
+      // Stub _webHook to look open
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (bot as any)._webHook = { isOpen: () => true, open: async () => {}, close: async () => {} };
+      await assert.rejects(bot.startPolling(), /mutually exclusive/);
+    });
+  });
+
 });
