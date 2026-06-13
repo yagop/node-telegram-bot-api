@@ -28,6 +28,7 @@ trusting a class/method/field list:
 curl -s https://core.telegram.org/bots/api-changelog -o /tmp/changelog.html
 node -e 'const t=require("fs").readFileSync("/tmp/changelog.html","utf8");
   const i=t.indexOf("<VERSION DATE>");                       // e.g. "January 1, 2026"
+  if (i < 0) throw new Error("changelog: <VERSION DATE> heading not found - check the exact text");
   let s=t.slice(i-50,i+6000).replace(/<[^>]+>/g," ").replace(/&amp;/g,"&");
   console.log(s.replace(/[ \t]+/g," "));'
 ```
