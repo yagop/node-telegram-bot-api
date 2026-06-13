@@ -11,22 +11,23 @@ import TelegramBot, { type CallbackQuery, type Message } from 'node-telegram-bot
 const TOKEN = process.env.TELEGRAM_TOKEN || 'YOUR_TELEGRAM_BOT_TOKEN';
 const bot = new TelegramBot(TOKEN, { polling: true });
 
-// Matches /photo
-bot.onText(/\/photo/, (msg) => {
+// Matches /photo - the leading ^ anchors the command to the start of the message,
+// so it won't match "/photo" embedded in a URL or mid-sentence.
+bot.onText(/^\/photo/, (msg) => {
   // From a file path (resolved relative to this module — ESM has no __dirname).
   const photo = fileURLToPath(new URL('../test/data/photo.gif', import.meta.url));
   bot.sendPhoto(msg.chat.id, photo, { caption: "I'm a bot!" });
 });
 
 // Matches /audio
-bot.onText(/\/audio/, (msg) => {
+bot.onText(/^\/audio/, (msg) => {
   // From an HTTP URL — Telegram downloads it for us, no local upload needed.
   const url = 'https://upload.wikimedia.org/wikipedia/commons/c/c8/Example.ogg';
   bot.sendAudio(msg.chat.id, url);
 });
 
 // Matches /love
-bot.onText(/\/love/, (msg) => {
+bot.onText(/^\/love/, (msg) => {
   bot.sendMessage(msg.chat.id, 'Do you love me?', {
     reply_parameters: { message_id: msg.message_id },
     reply_markup: {
@@ -39,13 +40,13 @@ bot.onText(/\/love/, (msg) => {
 });
 
 // Matches /echo [whatever]
-bot.onText(/\/echo (.+)/, (msg, match) => {
+bot.onText(/^\/echo (.+)/, (msg, match) => {
   const resp = match?.[1] ?? '';
   bot.sendMessage(msg.chat.id, resp);
 });
 
 // Matches /editable
-bot.onText(/\/editable/, (msg) => {
+bot.onText(/^\/editable/, (msg) => {
   bot.sendMessage(msg.chat.id, 'Original Text', {
     reply_markup: {
       inline_keyboard: [
