@@ -5,6 +5,18 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased][Unreleased]
 
+### Support Telegram Bot API 10.1
+
+- **Rich Messages** - new `sendRichMessage(chatId, richMessage, [options])` and
+  `sendRichMessageDraft(chatId, draftId, richMessage, [options])` methods, a
+  `rich_message` option on `editMessageText`, and the full set of generated
+  `RichText*` / `RichBlock*` / `RichMessage` / `InputRichMessage` types.
+- **Join Request Queries** - new `answerChatJoinRequestQuery(chatJoinRequestQueryId, result)`
+  and `sendChatJoinRequestWebApp(chatJoinRequestQueryId, webAppUrl)` methods;
+  `supports_join_request_queries` (`User`), `guard_bot` (`ChatFullInfo`) and
+  `query_id` (`ChatJoinRequest`) fields.
+- **Polls** - new `Link` / `InputMediaLink` types and the `link` field on `PollMedia`.
+
 ## [1.0.0][1.0.0] - 2026-06-12
 
 ### Rewritten in TypeScript

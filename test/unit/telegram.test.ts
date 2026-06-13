@@ -104,6 +104,73 @@ describe("TelegramBot (unit)", () => {
     });
   });
 
+  describe("sendRichMessage()", () => {
+    it("posts to /sendRichMessage with chat_id and JSON-serialized rich_message", async () => {
+      stubFetch(() => ({ ok: true, result: { message_id: 1, date: 0, chat: { id: 1, type: "private" } } }));
+      const bot = new TelegramBot("TOKEN");
+      await bot.sendRichMessage(123, { markdown: "**hi**" });
+      const last = captured.at(-1)!;
+      assert.equal(last.url, "https://api.telegram.org/botTOKEN/sendRichMessage");
+      const params = new URLSearchParams(String(last.init.body));
+      assert.equal(params.get("chat_id"), "123");
+      assert.deepEqual(JSON.parse(params.get("rich_message")!), { markdown: "**hi**" });
+    });
+  });
+
+  describe("sendRichMessageDraft()", () => {
+    it("posts chat_id, draft_id and JSON-serialized rich_message", async () => {
+      stubFetch(() => ({ ok: true, result: true }));
+      const bot = new TelegramBot("TOKEN");
+      await bot.sendRichMessageDraft(123, 7, { html: "<b>hi</b>" });
+      const last = captured.at(-1)!;
+      assert.equal(last.url, "https://api.telegram.org/botTOKEN/sendRichMessageDraft");
+      const params = new URLSearchParams(String(last.init.body));
+      assert.equal(params.get("chat_id"), "123");
+      assert.equal(params.get("draft_id"), "7");
+      assert.deepEqual(JSON.parse(params.get("rich_message")!), { html: "<b>hi</b>" });
+    });
+  });
+
+  describe("answerChatJoinRequestQuery()", () => {
+    it("posts chat_join_request_query_id and result", async () => {
+      stubFetch(() => ({ ok: true, result: true }));
+      const bot = new TelegramBot("TOKEN");
+      await bot.answerChatJoinRequestQuery("Q1", "approve");
+      const last = captured.at(-1)!;
+      assert.equal(last.url, "https://api.telegram.org/botTOKEN/answerChatJoinRequestQuery");
+      const params = new URLSearchParams(String(last.init.body));
+      assert.equal(params.get("chat_join_request_query_id"), "Q1");
+      assert.equal(params.get("result"), "approve");
+    });
+  });
+
+  describe("sendChatJoinRequestWebApp()", () => {
+    it("posts chat_join_request_query_id and web_app_url", async () => {
+      stubFetch(() => ({ ok: true, result: true }));
+      const bot = new TelegramBot("TOKEN");
+      await bot.sendChatJoinRequestWebApp("Q1", "https://example.com/app");
+      const last = captured.at(-1)!;
+      assert.equal(last.url, "https://api.telegram.org/botTOKEN/sendChatJoinRequestWebApp");
+      const params = new URLSearchParams(String(last.init.body));
+      assert.equal(params.get("chat_join_request_query_id"), "Q1");
+      assert.equal(params.get("web_app_url"), "https://example.com/app");
+    });
+  });
+
+  describe("editMessageText() rich_message", () => {
+    it("JSON-serializes the structured rich_message option", async () => {
+      stubFetch(() => ({ ok: true, result: true }));
+      const bot = new TelegramBot("TOKEN");
+      await bot.editMessageText("fallback", {
+        chat_id: 1,
+        message_id: 5,
+        rich_message: { markdown: "*x*" },
+      });
+      const params = new URLSearchParams(String(captured.at(-1)!.init.body));
+      assert.deepEqual(JSON.parse(params.get("rich_message")!), { markdown: "*x*" });
+    });
+  });
+
   describe("getMe()", () => {
     it("returns the parsed result on ok", async () => {
       stubFetch(() => ({

@@ -48,6 +48,7 @@ import type {
   InputFile,
   InputStoryContent,
   InputChecklist,
+  InputRichMessage,
   KeyboardButton,
   AcceptedGiftTypes,
   // Per-method request params (generated, docs-faithful `<Method>Params`).
@@ -56,6 +57,10 @@ import type {
   SetWebhookParams,
   DeleteWebhookParams,
   SendMessageParams,
+  SendRichMessageParams,
+  SendRichMessageDraftParams,
+  AnswerChatJoinRequestQueryParams,
+  SendChatJoinRequestWebAppParams,
   ForwardMessageParams,
   ForwardMessagesParams,
   CopyMessageParams,
@@ -340,6 +345,10 @@ import type {
   SendMediaGroupResult,
   SendMessageDraftResult,
   SendMessageResult,
+  SendRichMessageResult,
+  SendRichMessageDraftResult,
+  AnswerChatJoinRequestQueryResult,
+  SendChatJoinRequestWebAppResult,
   SendPaidMediaResult,
   SendPhotoResult,
   SendPollResult,
@@ -687,6 +696,7 @@ export class TelegramBot extends EventEmitter {
       "keywords",
       "mask_position",
       "results",
+      "rich_message",
       "sticker",
     ] as const) {
       const value = obj[key];
@@ -1042,6 +1052,38 @@ export class TelegramBot extends EventEmitter {
       chat_id: chatId,
       text,
     } satisfies SendMessageParams);
+  }
+
+  /** Send a {@link https://core.telegram.org/bots/api#richmessage rich message}. */
+  sendRichMessage(
+    chatId: ChatId,
+    richMessage: InputRichMessage,
+    form: Omit<SendRichMessageParams, "chat_id" | "rich_message"> = {},
+  ): Promise<SendRichMessageResult> {
+    return this._form("sendRichMessage", {
+      ...form,
+      chat_id: chatId,
+      rich_message: richMessage,
+    } satisfies SendRichMessageParams);
+  }
+
+  /**
+   * Stream a partial rich message to a private chat while it is being generated.
+   * The streamed draft is ephemeral (a ~30s preview); call {@link sendRichMessage}
+   * with the complete message to persist it.
+   */
+  sendRichMessageDraft(
+    chatId: number,
+    draftId: number,
+    richMessage: InputRichMessage,
+    form: Omit<SendRichMessageDraftParams, "chat_id" | "draft_id" | "rich_message"> = {},
+  ): Promise<SendRichMessageDraftResult> {
+    return this._form("sendRichMessageDraft", {
+      ...form,
+      chat_id: chatId,
+      draft_id: draftId,
+      rich_message: richMessage,
+    } satisfies SendRichMessageDraftParams);
   }
 
   forwardMessage(
@@ -1622,6 +1664,31 @@ export class TelegramBot extends EventEmitter {
       chat_id: chatId,
       user_id: userId,
     } satisfies DeclineChatJoinRequestParams);
+  }
+
+  /**
+   * Process a received chat join request query. `result` must be `"approve"`,
+   * `"decline"`, or `"queue"` (leave the decision to other administrators).
+   */
+  answerChatJoinRequestQuery(
+    chatJoinRequestQueryId: string,
+    result: string,
+  ): Promise<AnswerChatJoinRequestQueryResult> {
+    return this._form("answerChatJoinRequestQuery", {
+      chat_join_request_query_id: chatJoinRequestQueryId,
+      result,
+    } satisfies AnswerChatJoinRequestQueryParams);
+  }
+
+  /** Process a chat join request query by showing a Mini App before deciding. */
+  sendChatJoinRequestWebApp(
+    chatJoinRequestQueryId: string,
+    webAppUrl: string,
+  ): Promise<SendChatJoinRequestWebAppResult> {
+    return this._form("sendChatJoinRequestWebApp", {
+      chat_join_request_query_id: chatJoinRequestQueryId,
+      web_app_url: webAppUrl,
+    } satisfies SendChatJoinRequestWebAppParams);
   }
 
   // --- Chat metadata ---------------------------------------------------

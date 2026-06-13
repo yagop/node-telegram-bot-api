@@ -43,6 +43,8 @@
         * [.logOut([options])](#TelegramBot+logOut) ⇒ <code>Promise</code>
         * [.close([options])](#TelegramBot+close) ⇒ <code>Promise</code>
         * [.sendMessage(chatId, text, [options])](#TelegramBot+sendMessage) ⇒ <code>Promise</code>
+        * [.sendRichMessage(chatId, richMessage, [options])](#TelegramBot+sendRichMessage) ⇒ <code>Promise</code>
+        * [.sendRichMessageDraft(chatId, draftId, richMessage, [options])](#TelegramBot+sendRichMessageDraft) ⇒ <code>Promise</code>
         * [.forwardMessage(chatId, fromChatId, messageId, [options])](#TelegramBot+forwardMessage) ⇒ <code>Promise</code>
         * [.forwardMessages(chatId, fromChatId, messageIds, [options])](#TelegramBot+forwardMessages) ⇒ <code>Promise</code>
         * [.copyMessage(chatId, fromChatId, messageId, [options])](#TelegramBot+copyMessage) ⇒ <code>Promise</code>
@@ -90,6 +92,8 @@
         * [.revokeChatInviteLink(chatId, inviteLink, [options])](#TelegramBot+revokeChatInviteLink) ⇒ <code>Promise</code>
         * [.approveChatJoinRequest(chatId, userId, [options])](#TelegramBot+approveChatJoinRequest) ⇒ <code>Promise</code>
         * [.declineChatJoinRequest(chatId, userId, [options])](#TelegramBot+declineChatJoinRequest) ⇒ <code>Promise</code>
+        * [.answerChatJoinRequestQuery(chatJoinRequestQueryId, result)](#TelegramBot+answerChatJoinRequestQuery) ⇒ <code>Promise</code>
+        * [.sendChatJoinRequestWebApp(chatJoinRequestQueryId, webAppUrl)](#TelegramBot+sendChatJoinRequestWebApp) ⇒ <code>Promise</code>
         * [.setChatPhoto(chatId, photo, [options], [fileOptions])](#TelegramBot+setChatPhoto) ⇒ <code>Promise</code>
         * [.deleteChatPhoto(chatId, [options])](#TelegramBot+deleteChatPhoto) ⇒ <code>Promise</code>
         * [.setChatTitle(chatId, title, [options])](#TelegramBot+setChatTitle) ⇒ <code>Promise</code>
@@ -572,6 +576,43 @@ Download a Telegram file to a local directory and resolve to the resulting path.
 | --- | --- | --- |
 | chatId | <code>Number \| String</code> |  |
 | text | <code>String</code> |  |
+| [options] | <code>Object</code> | Additional Telegram query options |
+
+<a name="TelegramBot+sendRichMessage"></a>
+
+### telegramBot.sendRichMessage(chatId, richMessage, [options]) ⇒ <code>Promise</code>
+Send a {@link https://core.telegram.org/bots/api#richmessage rich message}.
+
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
+
+**Returns**: <code>Promise</code>
+
+**See**: https://core.telegram.org/bots/api#sendrichmessage
+
+| Param | Type | Description |
+| --- | --- | --- |
+| chatId | <code>Number \| String</code> |  |
+| richMessage | <code>Object</code> |  |
+| [options] | <code>Object</code> | Additional Telegram query options |
+
+<a name="TelegramBot+sendRichMessageDraft"></a>
+
+### telegramBot.sendRichMessageDraft(chatId, draftId, richMessage, [options]) ⇒ <code>Promise</code>
+Stream a partial rich message to a private chat while it is being generated.
+The streamed draft is ephemeral (a ~30s preview); call {@link sendRichMessage}
+with the complete message to persist it.
+
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
+
+**Returns**: <code>Promise</code>
+
+**See**: https://core.telegram.org/bots/api#sendrichmessagedraft
+
+| Param | Type | Description |
+| --- | --- | --- |
+| chatId | <code>Number</code> |  |
+| draftId | <code>Number</code> |  |
+| richMessage | <code>Object</code> |  |
 | [options] | <code>Object</code> | Additional Telegram query options |
 
 <a name="TelegramBot+forwardMessage"></a>
@@ -1348,6 +1389,39 @@ as a multipart part) or a file_id / URL string (passed through).
 | chatId | <code>Number \| String</code> |  |
 | userId | <code>Number</code> |  |
 | [options] | <code>Object</code> | Additional Telegram query options |
+
+<a name="TelegramBot+answerChatJoinRequestQuery"></a>
+
+### telegramBot.answerChatJoinRequestQuery(chatJoinRequestQueryId, result) ⇒ <code>Promise</code>
+Process a received chat join request query. `result` must be `"approve"`,
+`"decline"`, or `"queue"` (leave the decision to other administrators).
+
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
+
+**Returns**: <code>Promise</code>
+
+**See**: https://core.telegram.org/bots/api#answerchatjoinrequestquery
+
+| Param | Type | Description |
+| --- | --- | --- |
+| chatJoinRequestQueryId | <code>String</code> |  |
+| result | <code>String</code> |  |
+
+<a name="TelegramBot+sendChatJoinRequestWebApp"></a>
+
+### telegramBot.sendChatJoinRequestWebApp(chatJoinRequestQueryId, webAppUrl) ⇒ <code>Promise</code>
+Process a chat join request query by showing a Mini App before deciding.
+
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
+
+**Returns**: <code>Promise</code>
+
+**See**: https://core.telegram.org/bots/api#sendchatjoinrequestwebapp
+
+| Param | Type | Description |
+| --- | --- | --- |
+| chatJoinRequestQueryId | <code>String</code> |  |
+| webAppUrl | <code>String</code> |  |
 
 <a name="TelegramBot+setChatPhoto"></a>
 
