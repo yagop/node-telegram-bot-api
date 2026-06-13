@@ -17,7 +17,7 @@ const bot = new TelegramBot(TOKEN, { polling: true });
 const app = express();
 
 // Matches /start
-bot.onText(/\/start/, (msg) => {
+bot.onText(/^\/start/, (msg) => {
   bot.sendGame(msg.chat.id, gameName);
 });
 
