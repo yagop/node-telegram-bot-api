@@ -825,8 +825,8 @@ Send a group of photos / videos / etc as an album. Each item's file fields are
 widened to accept uploads: the primary `media` plus any `thumbnail` / `cover`
 (video) or `photo` (live photo) may be a Buffer / stream / local path (uploaded
 as a multipart part) or a file_id / URL string (passed through).
-{@link _buildMediaItems} resolves every file field of every item - unlike
-{@link editMessageMedia}, whose secondary fields are string-only.
+{@link _buildMediaItems} resolves every file field of every item, shared with
+{@link sendPaidMedia} and {@link editMessageMedia}.
 
 **Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
 
@@ -2245,14 +2245,11 @@ JPEG before calling.
 <a name="TelegramBot+editMessageMedia"></a>
 
 ### telegramBot.editMessageMedia(media, [options]) ⇒ <code>Promise</code>
-Edit a message's media. Unlike {@link sendMediaGroup} / {@link sendPaidMedia},
-the `media` argument is the docs-faithful `InputMedia`, so every file field is
-typed `string` and NOT widened to accept uploads:
-  - Secondary fields (`thumbnail` / `cover` / `photo`) must be file_id / URL
-    strings; they pass through untouched. Uploading a *new* secondary file is
-    not supported here (the method attaches only the single primary part).
-  - The primary `media` is uploaded only when given as `attach://<local-path>`;
-    a plain file_id / URL is sent as-is.
+Edit a message's media. The `media` (and its `thumbnail` / `cover`) accept a
+file (Buffer / stream / local path, uploaded via an `attach://` part) or a
+file_id / URL string (passed through), resolved by {@link _buildMediaItems}
+like {@link sendMediaGroup}. The legacy `attach://<local-path>` form is still
+accepted for the primary `media`.
 
 **Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
 

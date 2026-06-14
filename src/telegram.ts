@@ -757,7 +757,7 @@ export class TelegramBot extends EventEmitter {
    * into the request's `media` field.
    */
   private async _buildMediaItems(
-    media: ReadonlyArray<SendMediaGroupMedia | SendPaidMediaMedia>,
+    media: ReadonlyArray<SendMediaGroupMedia | SendPaidMediaMedia | Uploadable<InputMedia>>,
   ): Promise<{ inputMedia: ResolvedMedia[]; formData: Record<string, PreparedFile> }> {
     const formData: Record<string, PreparedFile> = {};
     const inputMedia: ResolvedMedia[] = [];
@@ -1275,8 +1275,8 @@ export class TelegramBot extends EventEmitter {
    * widened to accept uploads: the primary `media` plus any `thumbnail` / `cover`
    * (video) or `photo` (live photo) may be a Buffer / stream / local path (uploaded
    * as a multipart part) or a file_id / URL string (passed through).
-   * {@link _buildMediaItems} resolves every file field of every item - unlike
-   * {@link editMessageMedia}, whose secondary fields are string-only.
+   * {@link _buildMediaItems} resolves every file field of every item, shared with
+   * {@link sendPaidMedia} and {@link editMessageMedia}.
    */
   async sendMediaGroup(
     chatId: ChatId,
@@ -2140,38 +2140,28 @@ export class TelegramBot extends EventEmitter {
     } satisfies EditMessageCaptionParams);
   }
   /**
-   * Edit a message's media. Unlike {@link sendMediaGroup} / {@link sendPaidMedia},
-   * the `media` argument is the docs-faithful `InputMedia`, so every file field is
-   * typed `string` and NOT widened to accept uploads:
-   *   - Secondary fields (`thumbnail` / `cover` / `photo`) must be file_id / URL
-   *     strings; they pass through untouched. Uploading a *new* secondary file is
-   *     not supported here (the method attaches only the single primary part).
-   *   - The primary `media` is uploaded only when given as `attach://<local-path>`;
-   *     a plain file_id / URL is sent as-is.
+   * Edit a message's media. The `media` (and its `thumbnail` / `cover`) accept a
+   * file (Buffer / stream / local path, uploaded via an `attach://` part) or a
+   * file_id / URL string (passed through), resolved by {@link _buildMediaItems}
+   * like {@link sendMediaGroup}. The legacy `attach://<local-path>` form is still
+   * accepted for the primary `media`.
    */
   async editMessageMedia(
-    media: InputMedia & { fileOptions?: FileMeta },
+    media: Uploadable<InputMedia>,
     form: Omit<EditMessageMediaParams, "media"> = {},
   ): Promise<EditMessageMediaResult> {
-    const regexAttach = /^attach:\/\/.+/;
-    // `attach://<local-path>` => upload that one file as part "0"; any thumbnail /
-    // cover / photo on the item are already strings and ride along in the payload.
-    if (typeof media.media === "string" && regexAttach.test(media.media)) {
-      const out: Omit<EditMessageMediaParams, "media"> & { media?: string } = { ...form };
-      const payload: Record<string, unknown> = { ...media };
-      delete payload.media;
-      delete payload.fileOptions;
-      const attachName = "0";
-      const data = (media.media as string).replace("attach://", "");
-      const { file } = await prepareFile(data, media.fileOptions, this.options.filepath);
-      if (!file) throw new FatalError(`Failed to process the replacement action for your ${media.type}`);
-      payload.media = `attach://${attachName}`;
-      out.media = stringify(payload);
-      return this._request("editMessageMedia", { form: out, formData: { [attachName]: file } });
+    const item = { ...media };
+    // Back-compat: the old API took the new file as `attach://<local-path>`. Strip
+    // the prefix so the path is uploaded like any other file input.
+    if (typeof item.media === "string" && item.media.startsWith("attach://")) {
+      item.media = item.media.slice("attach://".length);
     }
-    // Plain file_id / URL: no upload, just JSON-serialize the whole InputMedia.
-    const out: Omit<EditMessageMediaParams, "media"> & { media: string } = { ...form, media: stringify(media) };
-    return this._form("editMessageMedia", out);
+    const { inputMedia, formData } = await this._buildMediaItems([item]);
+    const out: Omit<EditMessageMediaParams, "media"> & { media: string } = {
+      ...form,
+      media: stringify(inputMedia[0]!),
+    };
+    return this._request("editMessageMedia", { form: out, formData });
   }
 
   editMessageChecklist(

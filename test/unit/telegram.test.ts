@@ -429,6 +429,52 @@ describe("TelegramBot (unit)", () => {
     });
   });
 
+  describe("editMessageMedia()", () => {
+    it("uploads a Buffer as an attach:// part", async () => {
+      stubFetch(() => ({ ok: true, result: true }));
+      const bot = new TelegramBot("TOKEN", { filepath: false });
+      const buf = Buffer.from("\xff\xd8\xff\xe0NEW", "binary");
+      await bot.editMessageMedia(
+        { type: "photo", media: buf, caption: "x" },
+        { chat_id: 1, message_id: 2 },
+      );
+      const fd = captured.at(-1)!.init.body as FormData;
+      const inputMedia = JSON.parse(String(fd.get("media"))) as Record<string, unknown>;
+      assert.equal(inputMedia.media, "attach://0_media");
+      assert.equal(inputMedia.caption, "x");
+      assert.ok(fd.get("0_media") instanceof Blob);
+    });
+
+    it("uploads a video's thumbnail Buffer alongside the media", async () => {
+      stubFetch(() => ({ ok: true, result: true }));
+      const bot = new TelegramBot("TOKEN", { filepath: false });
+      const video = Buffer.from("FAKE-MP4");
+      const thumb = Buffer.from("\xff\xd8\xff\xe0THUMB", "binary");
+      await bot.editMessageMedia(
+        { type: "video", media: video, thumbnail: thumb },
+        { chat_id: 1, message_id: 2 },
+      );
+      const fd = captured.at(-1)!.init.body as FormData;
+      const inputMedia = JSON.parse(String(fd.get("media"))) as Record<string, unknown>;
+      assert.equal(inputMedia.media, "attach://0_media");
+      assert.equal(inputMedia.thumbnail, "attach://0_thumbnail");
+      assert.ok(fd.get("0_media") instanceof Blob);
+      assert.ok(fd.get("0_thumbnail") instanceof Blob);
+    });
+
+    it("passes a file_id through without uploading (urlencoded body)", async () => {
+      stubFetch(() => ({ ok: true, result: true }));
+      const bot = new TelegramBot("TOKEN", { filepath: false });
+      await bot.editMessageMedia(
+        { type: "photo", media: "photo-file-id" },
+        { chat_id: 1, message_id: 2 },
+      );
+      const params = new URLSearchParams(String(captured.at(-1)!.init.body));
+      const inputMedia = JSON.parse(String(params.get("media"))) as Record<string, unknown>;
+      assert.equal(inputMedia.media, "photo-file-id");
+    });
+  });
+
   describe("setMyProfilePhoto()", () => {
     it("posts static photo with InputProfilePhoto struct and file in formData", async () => {
       stubFetch(() => ({ ok: true, result: true }));
