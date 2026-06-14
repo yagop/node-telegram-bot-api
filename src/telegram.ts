@@ -47,6 +47,7 @@ import type {
   InputPollOption,
   InputMedia,
   InputFile,
+  InputSticker,
   InputStoryContent,
   InputChecklist,
   KeyboardButton,
@@ -98,6 +99,8 @@ import type {
   PromoteChatMemberParams,
   SetChatMemberTagParams,
   SetChatPermissionsParams,
+  CreateNewStickerSetParams,
+  AddStickerToSetParams,
   CreateChatInviteLinkParams,
   EditChatInviteLinkParams,
   CreateChatSubscriptionInviteLinkParams,
@@ -533,6 +536,14 @@ type SendMediaGroupMedia = Uploadable<SendMediaGroupParams["media"][number]>;
 type SendPaidMediaMedia = Uploadable<SendPaidMediaParams["media"][number]>;
 
 /**
+ * Input for a single sticker in `createNewStickerSet` / `addStickerToSet`: the
+ * docs-faithful {@link InputSticker} but with `sticker` widened to an
+ * {@link InputFile} so a Buffer / stream / local path can be uploaded (resolved
+ * to an `attach://` reference), while a file_id / URL string passes through.
+ */
+type InputStickerInput = Omit<InputSticker, "sticker"> & { sticker: InputFile; fileOptions?: FileMeta };
+
+/**
  * The TelegramBot class is the main entry point of the library. It provides
  * methods that map 1:1 to the Telegram Bot API and emits events for incoming
  * updates received via either long polling or a webhook server.
@@ -791,6 +802,33 @@ export class TelegramBot extends EventEmitter {
       inputMedia.push(payload as ResolvedMedia);
     }
     return { inputMedia, formData };
+  }
+
+  /**
+   * Resolve an array of {@link InputStickerInput} into the docs-faithful
+   * {@link InputSticker}[] wire shape plus the multipart `formData`. A
+   * file-bearing `sticker` (Buffer / stream / local path) is uploaded under a
+   * `sticker<index>` part name and rewritten to an `attach://` reference; a
+   * file_id / URL string passes through unchanged. Shared by
+   * `createNewStickerSet` and `addStickerToSet`.
+   */
+  private async _buildStickerItems(
+    stickers: ReadonlyArray<InputStickerInput>,
+  ): Promise<{ stickers: InputSticker[]; formData: Record<string, PreparedFile> }> {
+    const formData: Record<string, PreparedFile> = {};
+    const resolved: InputSticker[] = [];
+    for (const [index, item] of stickers.entries()) {
+      const { sticker: data, fileOptions, ...rest } = item;
+      const attachName = `sticker${index}`;
+      const { file, fileId } = await prepareFile(data, fileOptions, this.options.filepath);
+      if (file) {
+        formData[attachName] = file;
+        resolved.push({ ...rest, sticker: `attach://${attachName}` });
+      } else {
+        resolved.push({ ...rest, sticker: fileId ?? "" });
+      }
+    }
+    return { stickers: resolved, formData };
   }
 
   // --- High-level lifecycle ----------------------------------------------
@@ -2267,37 +2305,37 @@ export class TelegramBot extends EventEmitter {
       fileOptions,
     );
   }
-  createNewStickerSet(
-    userId: number,
-    name: string,
-    title: string,
-    pngSticker: FileInput,
-    emojis: string,
-    options: { mask_position?: MaskPosition; sticker_type?: string; needs_repainting?: boolean } = {},
-    fileOptions: FileMeta = {},
+  /**
+   * Create a new sticker set owned by a user. Each entry in `stickers` is an
+   * {@link InputStickerInput} whose `sticker` accepts a file (Buffer / stream /
+   * local path, uploaded as an `attach://` part) or a file_id / URL string, plus
+   * the sticker's `format`, `emoji_list`, and optional `mask_position`/`keywords`.
+   * @see https://core.telegram.org/bots/api#createnewstickerset
+   */
+  async createNewStickerSet(
+    params: Omit<CreateNewStickerSetParams, "stickers"> & { stickers: InputStickerInput[] },
   ): Promise<CreateNewStickerSetResult> {
-    const form: { sticker_type?: string; needs_repainting?: boolean; mask_position?: MaskPosition | string; user_id: number; name: string; title: string; emojis: string } =
-      { ...options, user_id: userId, name, title, emojis };
-    if (options.mask_position) form.mask_position = stringify(options.mask_position);
-    return this._sendFile("createNewStickerSet", "png_sticker", pngSticker, form, fileOptions);
+    const { stickers: stickerInputs, ...rest } = params;
+    const { stickers, formData } = await this._buildStickerItems(stickerInputs);
+    const form: Omit<CreateNewStickerSetParams, "stickers"> & { stickers?: string } = { ...rest };
+    form.stickers = stringify(stickers);
+    return this._request("createNewStickerSet", { form, formData });
   }
 
-  addStickerToSet(
-    userId: number,
-    name: string,
-    sticker: FileInput,
-    emojis: string,
-    stickerType: "png_sticker" | "tgs_sticker" | "webm_sticker" = "png_sticker",
-    options: { mask_position?: MaskPosition } = {},
-    fileOptions: FileMeta = {},
+  /**
+   * Add a sticker to an existing set. The `sticker` is an
+   * {@link InputStickerInput} whose `sticker` field accepts a file (Buffer /
+   * stream / local path, uploaded as an `attach://` part) or a file_id / URL string.
+   * @see https://core.telegram.org/bots/api#addstickertoset
+   */
+  async addStickerToSet(
+    params: Omit<AddStickerToSetParams, "sticker"> & { sticker: InputStickerInput },
   ): Promise<AddStickerToSetResult> {
-    if (!["png_sticker", "tgs_sticker", "webm_sticker"].includes(stickerType)) {
-      return Promise.reject(new Error("stickerType must be one of: png_sticker, tgs_sticker, webm_sticker"));
-    }
-    const form: { mask_position?: MaskPosition | string; user_id: number; name: string; emojis: string } =
-      { ...options, user_id: userId, name, emojis };
-    if (options.mask_position) form.mask_position = stringify(options.mask_position);
-    return this._sendFile("addStickerToSet", stickerType, sticker, form, fileOptions);
+    const { sticker, ...rest } = params;
+    const { stickers, formData } = await this._buildStickerItems([sticker]);
+    const form: Omit<AddStickerToSetParams, "sticker"> & { sticker?: string } = { ...rest };
+    form.sticker = stringify(stickers[0]);
+    return this._request("addStickerToSet", { form, formData });
   }
 
   setStickerPositionInSet(sticker: string, position: number, form: {} = {}): Promise<SetStickerPositionInSetResult> {

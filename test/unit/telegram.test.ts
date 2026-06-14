@@ -475,6 +475,76 @@ describe("TelegramBot (unit)", () => {
     });
   });
 
+  describe("createNewStickerSet()", () => {
+    it("uploads file-bearing stickers as attach:// parts and serializes the stickers array", async () => {
+      stubFetch(() => ({ ok: true, result: true }));
+      const bot = new TelegramBot("TOKEN", { filepath: false });
+      const a = Buffer.from("\x89PNG-A", "binary");
+      const b = Buffer.from("\x89PNG-B", "binary");
+
+      await bot.createNewStickerSet({
+        user_id: 42,
+        name: "set_by_bot",
+        title: "My Set",
+        sticker_type: "regular",
+        stickers: [
+          { sticker: a, format: "static", emoji_list: ["😀"] },
+          { sticker: b, format: "static", emoji_list: ["🎈"], keywords: ["balloon"] },
+        ],
+      });
+
+      const fd = captured.at(-1)!.init.body as FormData;
+      assert.equal(fd.get("user_id"), "42");
+      assert.equal(fd.get("name"), "set_by_bot");
+      assert.equal(fd.get("title"), "My Set");
+      assert.equal(fd.get("sticker_type"), "regular");
+      const stickers = JSON.parse(String(fd.get("stickers"))) as Array<Record<string, unknown>>;
+      // File-bearing stickers become attach:// references, never serialized Buffers.
+      assert.equal(stickers[0]!.sticker, "attach://sticker0");
+      assert.deepEqual(stickers[0]!.emoji_list, ["😀"]);
+      assert.equal(stickers[1]!.sticker, "attach://sticker1");
+      assert.deepEqual(stickers[1]!.keywords, ["balloon"]);
+      // ...and the files are attached as real multipart parts.
+      assert.ok(fd.get("sticker0") instanceof Blob);
+      assert.ok(fd.get("sticker1") instanceof Blob);
+    });
+
+    it("passes file_id / URL stickers through without uploading (urlencoded body)", async () => {
+      stubFetch(() => ({ ok: true, result: true }));
+      const bot = new TelegramBot("TOKEN", { filepath: false });
+      await bot.createNewStickerSet({
+        user_id: 1,
+        name: "s",
+        title: "t",
+        stickers: [{ sticker: "sticker-file-id", format: "static", emoji_list: ["😀"] }],
+      });
+      // No uploads -> urlencoded body, not multipart FormData.
+      const params = new URLSearchParams(String(captured.at(-1)!.init.body));
+      const stickers = JSON.parse(String(params.get("stickers"))) as Array<Record<string, unknown>>;
+      assert.equal(stickers[0]!.sticker, "sticker-file-id");
+    });
+  });
+
+  describe("addStickerToSet()", () => {
+    it("uploads the sticker file and serializes a single InputSticker object", async () => {
+      stubFetch(() => ({ ok: true, result: true }));
+      const bot = new TelegramBot("TOKEN", { filepath: false });
+      const buf = Buffer.from("\x89PNG-X", "binary");
+      await bot.addStickerToSet({
+        user_id: 7,
+        name: "set_by_bot",
+        sticker: { sticker: buf, format: "static", emoji_list: ["🎈"] },
+      });
+      const fd = captured.at(-1)!.init.body as FormData;
+      assert.equal(fd.get("user_id"), "7");
+      assert.equal(fd.get("name"), "set_by_bot");
+      const sticker = JSON.parse(String(fd.get("sticker"))) as Record<string, unknown>;
+      assert.equal(sticker.sticker, "attach://sticker0");
+      assert.deepEqual(sticker.emoji_list, ["🎈"]);
+      assert.ok(fd.get("sticker0") instanceof Blob);
+    });
+  });
+
   describe("setMyProfilePhoto()", () => {
     it("posts static photo with InputProfilePhoto struct and file in formData", async () => {
       stubFetch(() => ({ ok: true, result: true }));

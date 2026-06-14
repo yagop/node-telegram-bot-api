@@ -35,6 +35,33 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   unaffected.
   ([#1189](https://github.com/yagop/node-telegram-bot-api/issues/1189))
 
+- **Breaking:** `createNewStickerSet` and `addStickerToSet` were still sending the
+  long-removed `png_sticker` / `emojis` fields, which Telegram rejects with
+  `400 Bad Request: invalid sticker emojis`. They now use the current Bot API
+  shape - a single options object carrying `stickers: InputSticker[]` (or a single
+  `sticker: InputSticker`), where each sticker's file (Buffer / stream / local
+  path) is uploaded via an `attach://` part, while a file_id / URL string passes
+  through unchanged.
+  ([#1236](https://github.com/yagop/node-telegram-bot-api/issues/1236))
+
+  ```ts
+  // Before (broken):
+  bot.createNewStickerSet(userId, name, title, pngSticker, "😀");
+
+  // After:
+  bot.createNewStickerSet({
+    user_id: userId,
+    name,
+    title,
+    stickers: [{ sticker: "./a.png", format: "static", emoji_list: ["😀"] }],
+  });
+  bot.addStickerToSet({
+    user_id: userId,
+    name,
+    sticker: { sticker: "./b.webp", format: "static", emoji_list: ["🎈"] },
+  });
+  ```
+
 ## [1.1.0][1.1.0] - 2026-06-13
 
 ### Bot API 10.1 (June 11, 2026)
