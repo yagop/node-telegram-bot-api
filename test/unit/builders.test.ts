@@ -4,7 +4,7 @@ import {
   forceReply,
   removeKeyboard,
 } from "../../src/core/keyboard.js";
-import { fmt } from "../../src/core/entities.js";
+import { EntityBuilder } from "../../src/core/entities.js";
 import { json } from "../../src/core/json.js";
 
 describe("InlineKeyboard", () => {
@@ -33,9 +33,9 @@ describe("InlineKeyboard", () => {
   });
 });
 
-describe("fmt()", () => {
+describe("EntityBuilder", () => {
   test("text + entity offsets are computed in UTF-16 units (no auto-spacing)", () => {
-    const { text, entities } = fmt()
+    const { text, entities } = new EntityBuilder()
       .plain("Hello ")
       .bold("world")
       .link("docs", "https://x")
