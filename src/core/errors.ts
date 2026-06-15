@@ -80,3 +80,16 @@ export function isAbortError(err: unknown): boolean {
     (err as { name?: unknown }).name === "AbortError"
   );
 }
+
+/**
+ * Classifies an error as transient (worth retrying) vs fatal.
+ *
+ * True for a `NetworkError`, a `TimeoutError`, or a `TelegramApiError` whose
+ * `errorCode >= 500` (server-side failure). A 429 is *not* treated here — the
+ * transport handles it separately via its `retry_after` path.
+ */
+export function isTransientError(err: unknown): boolean {
+  if (err instanceof NetworkError || err instanceof TimeoutError) return true;
+  if (err instanceof TelegramApiError) return err.errorCode >= 500;
+  return false;
+}

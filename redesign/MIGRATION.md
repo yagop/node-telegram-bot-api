@@ -26,10 +26,25 @@ v2 is a from-scratch redesign with **no backward compatibility** (see `ARCHITECT
 | `bot.getMe(...)` etc. (positional + options) | every method takes a single params object: `api.getMe()`, `api.getChat({ chat_id })` |
 | CommonJS, Node-only | ESM-only, web-standard core; runs on Node 18+, Bun, Deno, Workers, edge |
 
+## Runtime & module format
+
+v2 is **ESM-only** — there is no CommonJS build, no `require()` entry, and no UMD/CJS shim. This is the largest single source of breakage for existing integrations: any project still on `require('node-telegram-bot-api')` will fail at load, and the failure is immediate (a module-resolution error), not a runtime surprise. Be honest about the blast radius before upgrading — CommonJS codebases, older bundler configs, and tools that can't load ESM are all affected.
+
+The **package name is intentionally retained** (`node-telegram-bot-api`) even though v2 shares no API surface with v1. This is a deliberate semver-major: the name carries the install base and the docs/SEO, and v2 owns the lineage. The cost is that `npm install node-telegram-bot-api` on an old tutorial now lands you on a completely different API — the version (`^2`) is the only signal, so pin it.
+
+**CJS interop path.** If you must consume v2 from a CommonJS module, use a dynamic `import()`, which is available in CJS:
+
+```js
+// CommonJS consumer
+const { Bot, Api } = await import("node-telegram-bot-api");
+```
+
+`await import()` works at the top level of an ESM module and inside any `async` function in CJS. A plain top-level `require()` will not — that's the breaking constraint, not an oversight.
+
 ## Mental-model shifts
 
 - **One client, single-argument methods.** `Api` mirrors the wire API: one method per Bot API method, each taking one params object. Positional ergonomics (`ctx.reply(text)`) live on `Context`.
-- **The library serializes nothing.** Structured fields (`reply_markup`, `entities`, `reply_parameters`, …) are typed as `Json<T>` strings and produced at the call site by a builder or `json(value)`. Passing a plain object or a bare string is a *type* error.
+- **The request pipeline serializes nothing.** Structured fields (`reply_markup`, `entities`, `reply_parameters`, …) are typed as `Json<T>` strings and serialized at the call site, in a builder or `json(value)` — not in the transport. Passing a plain object or a bare string is a *type* error.
 - **Composition over events.** `bot.use(mw)` and the filter helpers (`on`/`command`/`hears`) are koa-style middleware over a per-update `Context`, so sessions/auth/rate-limiting/error-boundaries wrap one another via `await next()`.
 - **Two entry points, one dispatch path.** `bot.start(source)` pumps an async generator for long-running processes; `bot.handleUpdate(update)` handles a single update and is what the edge/webhook callback calls.
 - **Node helpers are opt-in.** `import … from 'node-telegram-bot-api'` is the runtime-agnostic core; `import … from 'node-telegram-bot-api/node'` adds `fromPath`, `createWebhookServer`, and `run`.

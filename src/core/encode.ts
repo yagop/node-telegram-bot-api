@@ -40,7 +40,7 @@ export async function encodeForm(fields: Record<string, unknown>): Promise<Encod
   for (const [key, value] of Object.entries(fields)) {
     if (value == null) continue;
     else if (isInputFile(value)) sink.attach(key, value);
-    else if (isFormPart(value)) value.writeTo(sink);
+    else if (isFormPart(value)) value.writeTo(sink, key);
     else sink.set(key, typeof value === "string" ? value : String(value));
   }
 

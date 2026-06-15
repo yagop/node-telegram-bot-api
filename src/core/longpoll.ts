@@ -9,6 +9,7 @@
  */
 
 import type { Api } from "./api.js";
+import { isTransientError } from "./errors.js";
 import { json } from "./json.js";
 import type { Update } from "../types/index.js";
 
@@ -18,7 +19,32 @@ export interface LongPollOptions {
   /** Long-poll seconds passed to Telegram. Default 30. */
   timeout?: number;
   allowedUpdates?: string[];
+  /** Resume the loop on transient (network/timeout/5xx) errors. Default true. */
+  retry?: boolean;
+  /** Cap for the exponential backoff between failed polls, in ms. Default 60000. */
+  maxBackoffMs?: number;
+  /** Observe each transient error before the loop backs off and resumes. */
+  onError?: (err: unknown) => void;
 }
+
+/** Resolve after `ms`, or reject with the signal's reason if it aborts. */
+function delay(ms: number, signal?: AbortSignal): Promise<void> {
+  return new Promise((resolve, reject) => {
+    if (signal?.aborted) return reject(signal.reason);
+    const timer = setTimeout(() => {
+      signal?.removeEventListener("abort", onAbort);
+      resolve();
+    }, ms);
+    const onAbort = () => {
+      clearTimeout(timer);
+      reject(signal?.reason);
+    };
+    signal?.addEventListener("abort", onAbort, { once: true });
+  });
+}
+
+const BASE_BACKOFF = 1000;
+const DEFAULT_MAX_BACKOFF = 60_000;
 
 export async function* longPoll(
   api: Api,
@@ -29,6 +55,11 @@ export async function* longPoll(
   const timeout = options.timeout ?? 30;
   const limit = options.limit;
   const allowed = options.allowedUpdates;
+  const retry = options.retry ?? true;
+  const maxBackoffMs = options.maxBackoffMs ?? DEFAULT_MAX_BACKOFF;
+  const onError = options.onError;
+
+  let failures = 0;
 
   while (!signal?.aborted) {
     let updates: Update[];
@@ -44,9 +75,20 @@ export async function* longPoll(
       );
     } catch (err) {
       if (signal?.aborted) return; // cancelled — swallow the abort error
-      throw err;
+      if (!retry || !isTransientError(err)) throw err; // fatal — surface it
+      onError?.(err);
+      failures += 1;
+      const exp = Math.min(BASE_BACKOFF * 2 ** (failures - 1), maxBackoffMs);
+      const wait = exp * (0.5 + Math.random() * 0.5);
+      try {
+        await delay(wait, signal);
+      } catch {
+        return; // aborted during backoff
+      }
+      continue; // retry WITHOUT advancing offset
     }
 
+    failures = 0; // reset backoff after any successful poll
     for (const update of updates) {
       yield update;
       offset = update.update_id + 1;

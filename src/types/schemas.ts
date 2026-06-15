@@ -6,7 +6,7 @@
  * Regenerate with: bun scripts/api-parser.ts
  */
 import type { Json } from "./brand.js";
-import type { InputFile } from "../core/files.js";
+import type { InputFile, FormPart } from "../core/files.js";
 
 // ---------------------------------------------------------------------------
 // Library-specific helpers (not 1:1 documented objects)
@@ -3186,7 +3186,7 @@ export type SendPaidMediaParams = {
   message_thread_id?: number;
   direct_messages_topic_id?: number;
   star_count: number;
-  media: Json<InputPaidMedia[]>;
+  media: Json<InputPaidMedia[]> | FormPart;
   payload?: string;
   caption?: string;
   parse_mode?: string;
@@ -3206,7 +3206,7 @@ export type SendMediaGroupParams = {
   chat_id: number | string;
   message_thread_id?: number;
   direct_messages_topic_id?: number;
-  media: Json<(InputMediaAudio | InputMediaDocument | InputMediaLivePhoto | InputMediaPhoto | InputMediaVideo)[]>;
+  media: Json<(InputMediaAudio | InputMediaDocument | InputMediaLivePhoto | InputMediaPhoto | InputMediaVideo)[]> | FormPart;
   disable_notification?: boolean;
   protect_content?: boolean;
   allow_paid_broadcast?: boolean;
@@ -4104,7 +4104,7 @@ export type EditMessageMediaParams = {
   chat_id?: number | string;
   message_id?: number;
   inline_message_id?: string;
-  media: Json<InputMedia>;
+  media: Json<InputMedia> | FormPart;
   reply_markup?: Json<InlineKeyboardMarkup>;
 };
 export type EditMessageMediaResult = Message | boolean;
