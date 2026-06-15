@@ -53,11 +53,23 @@ import type {
   InputRichMessage,
   KeyboardButton,
   LabeledPrice,
+  MaskPosition,
   Message,
   PassportElementError,
   ReactionType,
+  Sticker,
 } from "../../src/types/index.js";
-import { GIF_16, JPEG_160, MP3_SILENT, MP4_32, OGG_OPUS, PNG_1X1 } from "./fixtures.js";
+import {
+  GIF_16,
+  JPEG_160,
+  MP3_SILENT,
+  MP4_32,
+  OGG_OPUS,
+  PNG_1X1,
+  PROFILE_JPEG,
+  STICKER_EMOJI_PNG,
+  STICKER_PNG,
+} from "./fixtures.js";
 
 // ---------------------------------------------------------------------------
 // Environment + shared client
@@ -97,6 +109,21 @@ function e2ePng(): InputFile {
   return new InputFile(PNG_1X1, { filename: "e2e.png", contentType: "image/png" });
 }
 
+/** Real 512x512 sticker PNG - valid for createNewStickerSet / uploadStickerFile. */
+function e2eSticker(): InputFile {
+  return new InputFile(STICKER_PNG, { filename: "e2e.png", contentType: "image/png" });
+}
+
+/** Real 100x100 PNG - custom-emoji set stickers and static set thumbnails. */
+function e2eEmoji(): InputFile {
+  return new InputFile(STICKER_EMOJI_PNG, { filename: "e2e.png", contentType: "image/png" });
+}
+
+/** Real >=512px JPEG - setMyProfilePhoto (a static profile photo must be JPEG). */
+function e2eProfileJpeg(): InputFile {
+  return new InputFile(PROFILE_JPEG, { filename: "e2e.jpg", contentType: "image/jpeg" });
+}
+
 /**
  * Resolve the target user id once, falling back to the bot's own id when
  * TEST_USER_ID is unset. Tests that act on a user use this inline.
@@ -105,6 +132,44 @@ async function targetUserId(): Promise<number> {
   if (USER_ID) return USER_ID;
   const me = await api.getMe();
   return me.id;
+}
+
+/** Bot username, resolved once - sticker set names MUST end with `_by_<username>`. */
+let cachedUsername: string | undefined;
+async function botUsername(): Promise<string> {
+  if (cachedUsername === undefined) cachedUsername = (await api.getMe()).username ?? "";
+  return cachedUsername;
+}
+
+/** Monotonic suffix so each throwaway set name is unique within a run. */
+let setSeq = 0;
+
+/**
+ * Create a throwaway sticker set the bot owns, hand it to `fn`, then delete it -
+ * the self-contained-per-method peer of v1's shared lifecycle. `type` picks the
+ * set kind; the sticker fixture matches it (custom_emoji must be 100x100). The
+ * owner USER_ID must have started the bot for createNewStickerSet to be allowed.
+ */
+async function withOwnedSet<T>(
+  type: "regular" | "mask" | "custom_emoji",
+  fn: (ctx: { name: string; stickers: Sticker[] }) => Promise<T>,
+): Promise<T> {
+  const user_id = await targetUserId();
+  const name = `e2e${Date.now()}x${setSeq++}_by_${await botUsername()}`;
+  const sticker = type === "custom_emoji" ? e2eEmoji() : e2eSticker();
+  await api.createNewStickerSet({
+    user_id,
+    name,
+    title: "e2e",
+    sticker_type: type === "regular" ? undefined : type,
+    stickers: new StickerSetBuilder().add(sticker, { format: "static", emoji_list: ["🙂"] }).build(),
+  });
+  try {
+    const set = await api.getStickerSet({ name });
+    return await fn({ name, stickers: set.stickers });
+  } finally {
+    await api.deleteStickerSet({ name });
+  }
 }
 
 // Track every describe name so the coverage test can assert parity.
@@ -952,8 +1017,13 @@ describe("methods", () => {
   });
 
   method("setMyName", () => {
-    test("sets the bot name", async () => {
-      await api.setMyName({});
+    // Self-contained: capture the current name, set a fresh one, then restore.
+    // (An empty `setMyName({})` is rejected with BOT_TITLE_INVALID.)
+    test("set then restore", async () => {
+      const original = (await api.getMyName()).name;
+      const ok = await api.setMyName({ name: `NTBA e2e ${Date.now() % 100000}` });
+      expect(ok).toBe(true);
+      await api.setMyName({ name: original });
     });
   });
 
@@ -994,8 +1064,11 @@ describe("methods", () => {
   });
 
   method("setMyProfilePhoto", () => {
-    test("sets the bot profile photo", async () => {
-      await api.setMyProfilePhoto({ photo: profilePhoto.static(e2ePng()) });
+    // A static profile photo must be a JPEG large enough to crop (the 1x1 PNG is
+    // rejected with PHOTO_CROP_SIZE_SMALL). Set then remove to revert.
+    test("set then remove", async () => {
+      await api.setMyProfilePhoto({ photo: profilePhoto.static(e2eProfileJpeg()) });
+      await api.removeMyProfilePhoto();
     });
   });
 
@@ -1043,7 +1116,12 @@ describe("methods", () => {
   });
 
   method("sendGift", () => {
-    test("sends a gift", async () => {
+    // Skipped: sendGift spends real Telegram Stars (a financial transaction). It
+    // needs BOTH a valid gift_id and a funded balance - the test bot has 0 Stars and
+    // the cheapest gift is 15 - so it can never pass here, and we do not want the
+    // suite making a real spend even if it were funded. The describe still runs, so
+    // the coverage guard at the bottom keeps seeing the method.
+    test.skip("sends a gift", async () => {
       await api.sendGift({ gift_id: "e2e", user_id: await targetUserId() });
     });
   });
@@ -1263,7 +1341,13 @@ describe("methods", () => {
         title: "e2e",
         input_message_content: { message_text: "e2e" },
       } satisfies InlineQueryResult);
-      await api.savePreparedInlineMessage({ user_id: await targetUserId(), result });
+      // At least one allow_* chat type is required, else "at least one chat type
+      // must be allowed".
+      await api.savePreparedInlineMessage({
+        user_id: await targetUserId(),
+        result,
+        allow_user_chats: true,
+      });
     });
   });
 
@@ -1311,14 +1395,17 @@ describe("methods", () => {
 
   method("editMessageMedia", () => {
     test("edits a message media", async () => {
-      // Self-contained: send a photo, then replace its media.
+      // Self-contained: send our uploaded JPEG, then swap in a *different* image
+      // (Telegram rejects no-op edits with "message is not modified", so the new
+      // media must differ from the original).
       const sent = await api.sendPhoto({
         chat_id: chatId,
-        photo: "https://upload.wikimedia.org/wikipedia/commons/3/3a/Cat03.jpg",
+        photo: new InputFile(JPEG_160, { filename: "e2e.jpg", contentType: "image/jpeg" }),
       });
       const media = json<InputMedia>({
         type: "photo",
         media: "https://upload.wikimedia.org/wikipedia/commons/3/3a/Cat03.jpg",
+        caption: "e2e swapped",
       } satisfies InputMedia);
       await api.editMessageMedia({ chat_id: chatId, message_id: sent.message_id, media });
     });
@@ -1458,8 +1545,11 @@ describe("methods", () => {
 
   method("getStickerSet", () => {
     test("returns a known sticker set", async () => {
+      // Resolve a public set by its short name. Telegram echoes the canonical
+      // casing back (e.g. "Pusheen"), so assert on the payload, not the name -
+      // mirrors v1, which checks `set.stickers.length > 0`.
       const set = await api.getStickerSet({ name: "pusheen" });
-      expect(set.name).toBe("pusheen");
+      expect(set.stickers.length).toBeGreaterThan(0);
     });
   });
 
@@ -1476,7 +1566,7 @@ describe("methods", () => {
     test("uploads a sticker file", async () => {
       await api.uploadStickerFile({
         user_id: await targetUserId(),
-        sticker: new InputFile(new TextEncoder().encode("e2e"), { filename: "e2e.png" }),
+        sticker: e2eSticker(),
         sticker_format: "static",
       });
     });
@@ -1484,99 +1574,160 @@ describe("methods", () => {
 
   method("createNewStickerSet", () => {
     test("creates a new sticker set", async () => {
+      // Set names MUST end with `_by_<botUsername>` and the sticker must be a real
+      // 512x512 image; the old hardcoded "e2e_by_bot" + 1x1 PNG was rejected.
+      const name = `e2e${Date.now()}_by_${await botUsername()}`;
       await api.createNewStickerSet({
         user_id: await targetUserId(),
-        name: "e2e_by_bot",
+        name,
         title: "e2e",
         stickers: new StickerSetBuilder()
-          .add(e2ePng(), { format: "static", emoji_list: ["🙂"] })
+          .add(e2eSticker(), { format: "static", emoji_list: ["🙂"] })
           .build(),
       });
       // Revert: drop the set we just created so the test stays self-contained.
-      await api.deleteStickerSet({ name: "e2e_by_bot" });
+      await api.deleteStickerSet({ name });
     });
   });
 
   method("addStickerToSet", () => {
     test("adds a sticker to a set", async () => {
-      await api.addStickerToSet({
-        user_id: await targetUserId(),
-        name: "e2e_by_bot",
-        sticker: inputSticker(e2ePng(), { format: "static", emoji_list: ["🙂"] }),
+      await withOwnedSet("regular", async ({ name }) => {
+        await api.addStickerToSet({
+          user_id: await targetUserId(),
+          name,
+          sticker: inputSticker(e2eSticker(), { format: "static", emoji_list: ["🙂"] }),
+        });
+        const set = await api.getStickerSet({ name });
+        expect(set.stickers.length).toBeGreaterThanOrEqual(2);
       });
-      // Revert: remove the sticker we just added (the last one in the set).
-      const set = await api.getStickerSet({ name: "e2e_by_bot" });
-      const added = set.stickers.at(-1);
-      if (added) await api.deleteStickerFromSet({ sticker: added.file_id });
     });
   });
 
   method("setStickerPositionInSet", () => {
     test("sets a sticker position", async () => {
-      await api.setStickerPositionInSet({ sticker: "e2e", position: 0 });
+      await withOwnedSet("regular", async ({ stickers }) => {
+        await api.setStickerPositionInSet({ sticker: stickers[0]!.file_id, position: 0 });
+      });
     });
   });
 
   method("deleteStickerFromSet", () => {
     test("deletes a sticker from a set", async () => {
-      await api.deleteStickerFromSet({ sticker: "e2e" });
+      // Add a second sticker, then delete it (deleting the only sticker would
+      // empty the set).
+      await withOwnedSet("regular", async ({ name }) => {
+        await api.addStickerToSet({
+          user_id: await targetUserId(),
+          name,
+          sticker: inputSticker(e2eSticker(), { format: "static", emoji_list: ["🙂"] }),
+        });
+        const set = await api.getStickerSet({ name });
+        const ok = await api.deleteStickerFromSet({ sticker: set.stickers.at(-1)!.file_id });
+        expect(ok).toBe(true);
+      });
     });
   });
 
   method("replaceStickerInSet", () => {
     test("replaces a sticker in a set", async () => {
-      await api.replaceStickerInSet({
-        user_id: await targetUserId(),
-        name: "e2e_by_bot",
-        old_sticker: "e2e",
-        sticker: inputSticker(e2ePng(), { format: "static", emoji_list: ["🙂"] }),
+      await withOwnedSet("regular", async ({ name, stickers }) => {
+        await api.replaceStickerInSet({
+          user_id: await targetUserId(),
+          name,
+          old_sticker: stickers[0]!.file_id,
+          sticker: inputSticker(e2eSticker(), { format: "static", emoji_list: ["🔁"] }),
+        });
       });
     });
   });
 
   method("setStickerEmojiList", () => {
     test("sets a sticker emoji list", async () => {
-      await api.setStickerEmojiList({ sticker: "e2e", emoji_list: json<string[]>(["🙂"]) });
+      await withOwnedSet("regular", async ({ stickers }) => {
+        await api.setStickerEmojiList({
+          sticker: stickers[0]!.file_id,
+          emoji_list: json<string[]>(["😎"]),
+        });
+      });
     });
   });
 
   method("setStickerKeywords", () => {
     test("sets sticker keywords", async () => {
-      await api.setStickerKeywords({ sticker: "e2e" });
+      await withOwnedSet("regular", async ({ stickers }) => {
+        await api.setStickerKeywords({
+          sticker: stickers[0]!.file_id,
+          keywords: json<string[]>(["e2e", "test"]),
+        });
+      });
     });
   });
 
   method("setStickerMaskPosition", () => {
+    // mask_position is only valid on a mask-type set.
     test("sets a sticker mask position", async () => {
-      await api.setStickerMaskPosition({ sticker: "e2e" });
+      await withOwnedSet("mask", async ({ stickers }) => {
+        await api.setStickerMaskPosition({
+          sticker: stickers[0]!.file_id,
+          mask_position: json<MaskPosition>({
+            point: "forehead",
+            x_shift: 0,
+            y_shift: 0,
+            scale: 1,
+          }),
+        });
+      });
     });
   });
 
   method("setStickerSetTitle", () => {
     test("sets a sticker set title", async () => {
-      await api.setStickerSetTitle({ name: "e2e_by_bot", title: "e2e" });
+      await withOwnedSet("regular", async ({ name }) => {
+        await api.setStickerSetTitle({ name, title: "e2e renamed" });
+      });
     });
   });
 
   method("setStickerSetThumbnail", () => {
     test("sets a sticker set thumbnail", async () => {
-      await api.setStickerSetThumbnail({
-        name: "e2e_by_bot",
-        user_id: await targetUserId(),
-        format: "static",
+      await withOwnedSet("regular", async ({ name }) => {
+        await api.setStickerSetThumbnail({
+          name,
+          user_id: await targetUserId(),
+          thumbnail: e2eEmoji(),
+          format: "static",
+        });
       });
     });
   });
 
   method("setCustomEmojiStickerSetThumbnail", () => {
+    // The thumbnail must be a custom emoji FROM the set, so it needs a
+    // custom_emoji-type set whose sticker exposes a custom_emoji_id.
     test("sets a custom emoji sticker set thumbnail", async () => {
-      await api.setCustomEmojiStickerSetThumbnail({ name: "e2e_by_bot" });
+      await withOwnedSet("custom_emoji", async ({ name, stickers }) => {
+        await api.setCustomEmojiStickerSetThumbnail({
+          name,
+          custom_emoji_id: stickers[0]?.custom_emoji_id,
+        });
+      });
     });
   });
 
   method("deleteStickerSet", () => {
     test("deletes a sticker set", async () => {
-      await api.deleteStickerSet({ name: "e2e_by_bot" });
+      const name = `e2e${Date.now()}_by_${await botUsername()}`;
+      await api.createNewStickerSet({
+        user_id: await targetUserId(),
+        name,
+        title: "e2e",
+        stickers: new StickerSetBuilder()
+          .add(e2eSticker(), { format: "static", emoji_list: ["🙂"] })
+          .build(),
+      });
+      const ok = await api.deleteStickerSet({ name });
+      expect(ok).toBe(true);
     });
   });
 
@@ -1647,8 +1798,14 @@ describe("methods", () => {
   });
 
   method("answerShippingQuery", () => {
+    // A well-formed `ok: false` requires error_message. Still env-limited: the
+    // placeholder shipping_query_id has no live checkout, so Telegram rejects it.
     test("answers a shipping query", async () => {
-      await api.answerShippingQuery({ shipping_query_id: "e2e", ok: false });
+      await api.answerShippingQuery({
+        shipping_query_id: "e2e",
+        ok: false,
+        error_message: "e2e: shipping unavailable",
+      });
     });
   });
 
@@ -1705,7 +1862,9 @@ describe("methods", () => {
         {
           source: "unspecified",
           type: "personal_details",
-          element_hash: "e2e",
+          // element_hash must be base64 of a 32-byte (SHA-256-sized) value; a raw
+          // "e2e" fails to parse and a short value fails HASH_SIZE_INVALID.
+          element_hash: btoa("e".repeat(32)),
           message: "e2e",
         },
       ] satisfies PassportElementError[]);
@@ -1750,7 +1909,10 @@ describe("methods", () => {
   // -------------------------------------------------------------------------
 
   method("logOut", () => {
-    test("logs the bot out (terminates the session - ~10 min lockout)", async () => {
+    // SKIPPED: logOut terminates the bot session and Telegram locks the token for
+    // ~10 minutes, blocking any re-run. Left registered (describe still runs) so the
+    // coverage guard keeps seeing the method.
+    test.skip("logs the bot out (terminates the session - ~10 min lockout)", async () => {
       await api.logOut();
     });
   });
