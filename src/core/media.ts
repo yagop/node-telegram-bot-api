@@ -1,5 +1,5 @@
 /**
- * The `mediaGroup()` form-part builder (§6.4, ADR-011).
+ * The `MediaGroup` form-part builder (§6.4, ADR-011).
  *
  * `sendMediaGroup` is the one method where a JSON array must reference uploaded
  * files by `attach://<name>` while the bytes travel as separate multipart parts.
@@ -145,9 +145,4 @@ export class MediaGroup {
     // FormPart, recognised by the encoder's isFormPart check.
     return part as unknown as SendMediaGroupParams["media"];
   }
-}
-
-/** Start a media-group builder for `sendMediaGroup`. */
-export function mediaGroup(): MediaGroup {
-  return new MediaGroup();
 }
