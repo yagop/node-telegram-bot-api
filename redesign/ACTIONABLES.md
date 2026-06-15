@@ -70,7 +70,7 @@
 - [x] **L1 — Drop or qualify "the library serializes nothing" (finding 10).** Builders `JSON.stringify` and the encoder `String()`-coerces (`encode.ts:44`); state "serialization happens at the call site, not in the pipeline." (Subsumed by A1.)
 - [x] **L2 — Tighten `json()` typing or document the gap (finding 11).** For all-optional target shapes the brand accepts wrong objects; note the limitation, or constrain `json<T>` so the field type drives `T`.
 - [x] **L3 — Note the `Update` union caveats (finding 12).** It doesn't enforce exactly-one payload key; flag the TS error-message/perf cost of the 25-member union in the generator notes.
-- [x] **L4 — Fix the dangling `RESEARCH-go-rust-clients.md` reference (finding 13).** Add the note to `redesign/`, or remove the citations in ADR-001/ADR-010 (lines 152, 300, 375) so the precedent arguments are verifiable.
+- [x] **L4 — Fix the dangling `RESEARCH-go-rust-clients.md` reference (finding 13).** Resolved by **removing the citations** (the research note was created then deleted on request); the gotgbot/teloxide mentions remain in ADR-001/§6.1/ADR-010 without a dangling link.
 - [x] **L5 — Strengthen the migration story (finding 14).** ESM-only + no CJS + no shim + same package name is a large blast radius; either add a CJS build / interop note or explicitly document the breaking-rename decision and why the name is retained.
 
 ---
