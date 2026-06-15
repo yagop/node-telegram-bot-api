@@ -14,6 +14,21 @@ npm install node-telegram-bot-api
 
 ESM only. Node floor is 18 (first LTS with stable global `fetch`).
 
+## Runtime support
+
+The core uses only Web-standard APIs (`fetch`, `Blob`, `FormData`, `AbortSignal`), so it runs unchanged across:
+
+| Runtime | Supported | Notes |
+|---------|-----------|-------|
+| Node | ≥ 18 | global `fetch`/`Blob`/`FormData` are stable from 18; the transport uses `AbortSignal.timeout` (Node 17.3+), **not** `AbortSignal.any`, so the 18 floor holds. |
+| Bun | ✓ | Web APIs native. |
+| Deno | ✓ | Web APIs native. |
+| Cloudflare Workers | ✓ | `webhookCallback` is a pure `(Request) => Response`. |
+| Vercel Edge | ✓ | as above. |
+| Deno Deploy | ✓ | as above. |
+
+Filesystem uploads (`fromPath`) and the self-hosted `node:http` webhook server are the only Node-bound pieces; they live in `node-telegram-bot-api/node`.
+
 ## Quick start — a polling bot
 
 ```ts
@@ -75,7 +90,7 @@ bot.catch((err, ctx) => console.error("handler failed", err));
 
 ## Keyboards & formatting
 
-Structured fields are branded `Json<T>` strings, produced at the call site by a builder or the generic `json()` helper — the library never serializes for you.
+Structured fields are branded `Json<T>` strings, produced at the call site by a builder or the generic `json()` helper — serialization happens in the builders, not in the request pipeline.
 
 ```ts
 import { InlineKeyboard, ReplyKeyboard, removeKeyboard, fmt, json } from "node-telegram-bot-api";
@@ -133,6 +148,15 @@ export default {
 };
 ```
 
+By default the callback awaits your handler before returning `200`. For slow handlers that risk Telegram's webhook timeout, opt into **early ACK**: the callback validates the request, returns `200` immediately, and runs the handler in the background — pass `waitUntil` so the platform keeps the worker alive until it settles (`fastAck: true` alone runs it fire-and-forget). The secret-token check is a constant-time compare either way.
+
+```ts
+export default {
+  fetch: (req, env, ctx) =>
+    webhookCallback(bot, { secretToken: SECRET, waitUntil: (p) => ctx.waitUntil(p) })(req),
+};
+```
+
 **Next.js App Router** (`app/api/bot/route.ts`):
 
 ```ts
@@ -184,6 +208,41 @@ try {
 ```
 
 (The transport already retries `429` honoring `retry_after` by default.)
+
+## Resilience & rate limiting
+
+The transport retries out of the box and backs off automatically; long polling resumes through transient failures. Everything below has safe defaults — you only set what you want to change.
+
+```ts
+import { Api } from "node-telegram-bot-api";
+
+const api = new Api(TOKEN, {
+  // 429s honor retry_after first; network/timeout/5xx are also retried,
+  // with exponential backoff (base * 2^(n-1), capped at 30s, jittered).
+  maxRetries: 2,        // default 2
+  retryBackoffMs: 300,  // default 300
+
+  // Opt-in proactive throttle (requests/sec). Omit for zero overhead.
+  rateLimit: { global: 30, perChat: 1 },
+});
+```
+
+Long polling keeps running through transient errors instead of dying on the first network blip:
+
+```ts
+import { longPoll } from "node-telegram-bot-api";
+
+for await (const update of longPoll(api, {
+  timeout: 30,
+  retry: true,          // default true — resume on transient errors, keep the offset
+  maxBackoffMs: 60_000, // default 60s — cap between failed polls
+  onError: (err) => console.warn("poll failed, backing off", err),
+}, signal)) {
+  // …
+}
+```
+
+Fatal `4xx` errors still stop the loop; an aborted signal returns cleanly.
 
 ## Low-level update stream
 

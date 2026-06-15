@@ -16,6 +16,8 @@ export * from "./files.js";
 export * from "./encode.js";
 // Transport (ADR-005, ADR-008)
 export * from "./transport.js";
+// Opt-in rate limiting (ADR-004 §10, M3)
+export * from "./ratelimiter.js";
 // The single generated client class (ADR-001)
 export * from "./api.js";
 // Builders + json() (ADR-002, ADR-011, §6.3)

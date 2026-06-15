@@ -98,8 +98,67 @@ function stripComments(line) {
   return line.replace(/\/\*.*?\*\//g, "").replace(/\/\/.*$/, "");
 }
 
+/**
+ * Blank out the *contents* of string and template literals on a single line so
+ * an identifier mentioned inside a string (e.g. `"see process docs"`) is never
+ * mistaken for a real global reference. The quotes themselves are kept so the
+ * import-specifier patterns above still work; only the inner characters are
+ * replaced with spaces (preserving column positions).
+ */
+function stripStringContents(line) {
+  return line.replace(
+    /(["'`])((?:\\.|(?!\1)[^\\])*)\1/g,
+    (_m, q, body) => q + " ".repeat(body.length) + q,
+  );
+}
+
+/**
+ * Node-only globals that must never appear in `src/core`. Each is matched only
+ * as a *standalone identifier read as a global* — never as a property access
+ * (`obj.process`), an object/interface key (`global?: number`), or a substring
+ * of a longer word (`processing`, `preprocess`, `globalThis`).
+ *
+ * Allowed web globals (`globalThis`, `setTimeout`, `queueMicrotask`, `fetch`,
+ * `Blob`, `FormData`, `TextDecoder`, `AbortSignal`, `Response`, `Request`,
+ * `URLSearchParams`, …) are intentionally absent and never flagged.
+ */
+const NODE_GLOBALS = [
+  "Buffer",
+  "process",
+  "global",
+  "__dirname",
+  "__filename",
+  "setImmediate",
+  "clearImmediate",
+];
+
+/**
+ * Build the matcher for a single Node global.
+ *  - `(?<![\w$.])`  — not preceded by an identifier char or a `.` (rules out
+ *                     property access like `opts.global` / `this.process`).
+ *  - `(?![\w$])`    — not followed by an identifier char (rules out `processing`,
+ *                     and stops `global` from matching inside `globalThis`).
+ *  - `(?!\s*\??:)`  — not immediately used as an object/interface property key
+ *                     (rules out `global?: number` and `global: 30`).
+ */
+function globalMatcher(name) {
+  const id = name.replace(/[$]/g, "\\$&"); // escape `$` (none here, but safe)
+  return new RegExp(`(?<![\\w$.])${id}(?![\\w$])(?!\\s*\\??:)`);
+}
+const GLOBAL_PATTERNS = NODE_GLOBALS.map((name) => ({ name, re: globalMatcher(name) }));
+
+/**
+ * Special case from the spec: `globalThis.process` is a real Node-global access
+ * even though `process` is preceded by a `.` (so the matcher above skips it).
+ * Flag `globalThis.<denied>` for any denied global reachable off `globalThis`.
+ */
+const GLOBALTHIS_PATTERN = new RegExp(
+  `\\bglobalThis\\s*\\.\\s*(?<name>${NODE_GLOBALS.join("|")})(?![\\w$])`,
+);
+
 const files = collectTsFiles(CORE_DIR);
-const offenders = [];
+const importOffenders = [];
+const globalOffenders = [];
 
 for (const file of files) {
   const lines = readFileSync(file, "utf8").split(/\r?\n/);
@@ -123,10 +182,11 @@ for (const file of files) {
 
     const cleaned = stripComments(line);
 
+    // ── Check 1: Node built-in import/require specifiers ──────────────────
     for (const re of PATTERNS) {
       const m = re.exec(cleaned);
       if (m?.groups?.spec && isNodeBuiltin(m.groups.spec)) {
-        offenders.push({
+        importOffenders.push({
           file: file.slice(ROOT.length + 1),
           line: i + 1,
           spec: m.groups.spec,
@@ -135,18 +195,64 @@ for (const file of files) {
         break; // one report per line is enough
       }
     }
+
+    // ── Check 2: Node-only globals as identifiers ─────────────────────────
+    // String contents are blanked so globals named inside a literal don't trip
+    // the scan; comments are already stripped above.
+    const code = stripStringContents(cleaned);
+
+    // `globalThis.process` & friends count as a hit on the underlying global.
+    const gt = GLOBALTHIS_PATTERN.exec(code);
+    if (gt?.groups?.name) {
+      globalOffenders.push({
+        file: file.slice(ROOT.length + 1),
+        line: i + 1,
+        name: gt.groups.name,
+        text: line.trim(),
+      });
+    } else {
+      for (const { name, re } of GLOBAL_PATTERNS) {
+        if (re.test(code)) {
+          globalOffenders.push({
+            file: file.slice(ROOT.length + 1),
+            line: i + 1,
+            name,
+            text: line.trim(),
+          });
+          break; // one report per line is enough
+        }
+      }
+    }
   }
 }
 
-if (offenders.length > 0) {
-  console.error("FAIL: src/core must not import Node built-ins.\n");
-  for (const o of offenders) {
+let failed = false;
+
+if (importOffenders.length > 0) {
+  failed = true;
+  console.error("FAIL [imports]: src/core must not import Node built-ins.\n");
+  for (const o of importOffenders) {
     console.error(`  ${o.file}:${o.line}  imports "${o.spec}"`);
     console.error(`      ${o.text}`);
   }
-  console.error(`\n${offenders.length} offending import(s) found in src/core.`);
-  process.exit(1);
+  console.error(`\n${importOffenders.length} offending import(s) found in src/core.\n`);
 }
 
-console.log(`OK: scanned ${files.length} file(s) in src/core; no Node built-in imports found.`);
+if (globalOffenders.length > 0) {
+  failed = true;
+  console.error("FAIL [globals]: src/core must not use Node-only globals.\n");
+  for (const o of globalOffenders) {
+    console.error(`  ${o.file}:${o.line}  uses "${o.name}"`);
+    console.error(`      ${o.text}`);
+  }
+  console.error(`\n${globalOffenders.length} offending global use(s) found in src/core.\n`);
+}
+
+if (failed) process.exit(1);
+
+console.log(
+  `OK: scanned ${files.length} file(s) in src/core; ` +
+    `no Node built-in imports and no Node-only globals ` +
+    `(${NODE_GLOBALS.join(", ")}) found.`,
+);
 process.exit(0);

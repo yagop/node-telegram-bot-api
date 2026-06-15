@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { webhookCallback } from "../../src/core/webhook.js";
+import { webhookCallback, safeEqual } from "../../src/core/webhook.js";
 import type { Bot } from "../../src/core/bot.js";
 import type { Update } from "../../src/types/index.js";
 
@@ -76,5 +76,123 @@ describe("webhookCallback", () => {
     );
     expect(res.status).toBe(400);
     expect(received.length).toBe(0);
+  });
+
+  test("fastAck returns 200 before the handler finishes, but still invokes it", async () => {
+    // handleUpdate stays pending until we trigger it; the handler must ACK first.
+    let resolveHandler!: () => void;
+    let invoked = false;
+    const handlerDone = new Promise<void>((resolve) => {
+      resolveHandler = resolve;
+    });
+    const bot = {
+      handleUpdate: () => {
+        invoked = true;
+        return handlerDone;
+      },
+    } as unknown as Bot;
+
+    const handle = webhookCallback(bot, { fastAck: true });
+    const res = await handle(
+      new Request("https://h/hook", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(UPDATE),
+      }),
+    );
+
+    // We resolved to a 200 while handleUpdate is still pending.
+    expect(res.status).toBe(200);
+    expect(invoked).toBe(true);
+
+    // Now let the background handler complete; should not throw.
+    resolveHandler();
+    await handlerDone;
+  });
+
+  test("waitUntil receives the background promise and 200 is returned without awaiting", async () => {
+    let resolveHandler!: () => void;
+    const handlerDone = new Promise<void>((resolve) => {
+      resolveHandler = resolve;
+    });
+    const bot = {
+      handleUpdate: () => handlerDone,
+    } as unknown as Bot;
+
+    let captured: Promise<unknown> | undefined;
+    const handle = webhookCallback(bot, {
+      waitUntil: (p) => {
+        captured = p;
+      },
+    });
+    const res = await handle(
+      new Request("https://h/hook", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(UPDATE),
+      }),
+    );
+
+    expect(res.status).toBe(200);
+    expect(captured).toBeInstanceOf(Promise);
+
+    resolveHandler();
+    await captured; // wrapped promise resolves (and never rejects)
+  });
+
+  test("fastAck swallows a rejecting handler (no unhandled rejection)", async () => {
+    const bot = {
+      handleUpdate: () => Promise.reject(new Error("boom")),
+    } as unknown as Bot;
+
+    let captured: Promise<unknown> | undefined;
+    const handle = webhookCallback(bot, {
+      waitUntil: (p) => {
+        captured = p;
+      },
+    });
+    const res = await handle(
+      new Request("https://h/hook", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(UPDATE),
+      }),
+    );
+
+    expect(res.status).toBe(200);
+    // The promise handed to waitUntil resolves (rejection is swallowed).
+    await expect(captured).resolves.toBeUndefined();
+  });
+
+  test("missing secret header runs the compare and fails with 401", async () => {
+    const { bot, received } = fakeBot();
+    const handle = webhookCallback(bot, { secretToken: "s" });
+    const res = await handle(
+      new Request("https://h/hook", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(UPDATE),
+      }),
+    );
+    expect(res.status).toBe(401);
+    expect(received.length).toBe(0);
+  });
+});
+
+describe("safeEqual", () => {
+  test("equal strings -> true", () => {
+    expect(safeEqual("secret", "secret")).toBe(true);
+    expect(safeEqual("", "")).toBe(true);
+  });
+
+  test("differing content of same length -> false", () => {
+    expect(safeEqual("secret", "secreT")).toBe(false);
+    expect(safeEqual("aaaa", "aaab")).toBe(false);
+  });
+
+  test("differing lengths -> false", () => {
+    expect(safeEqual("secret", "secre")).toBe(false);
+    expect(safeEqual("", "x")).toBe(false);
+    expect(safeEqual("x", "")).toBe(false);
   });
 });
