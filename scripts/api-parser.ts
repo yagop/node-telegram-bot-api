@@ -21,6 +21,7 @@
 
 const API_URL = "https://core.telegram.org/bots/api";
 const OUT = new URL("../src/types/schemas.ts", import.meta.url);
+const API_OUT = new URL("../src/core/api.ts", import.meta.url);
 
 // ---------------------------------------------------------------------------
 // Record model — one entry per <h4> in #dev_page_content
@@ -149,6 +150,38 @@ function mapType(raw: string): string {
 }
 
 // ---------------------------------------------------------------------------
+// Method param field typing (ADR-002, ADR-006)
+// ---------------------------------------------------------------------------
+//
+// This transform applies ONLY to method request params, never to response
+// object types (Message, User, …) which stay as real nested objects: they are
+// parsed from responses, never sent. For a param field's mapped TS type we:
+//
+//   - file field  (contains `InputFile`)  → `InputFile | string`  (string = file_id/URL)
+//   - array       (`X[]` / `(...)[]`)     → `Json<that>`          (Telegram wants JSON lists)
+//   - non-scalar  (references an object/union, not only number|string|boolean|true)
+//                                          → `Json<that>`
+//   - pure scalar (number|string|boolean|true unions, incl. ChatId = number|string)
+//                                          → left as-is
+
+/** True iff every union member is one of number|string|boolean|true. Arrays are not primitive. */
+function isPrimitiveType(ts: string): boolean {
+  const t = ts.trim();
+  if (/\[\]$/.test(t)) return false; // an array is never primitive
+  const members = t.split("|").map((m) => m.trim()).filter(Boolean);
+  return members.every((m) => m === "number" || m === "string" || m === "boolean" || m === "true");
+}
+
+/** Post-process a mapped param-field type into its wire-ready form (ADR-002/ADR-006). */
+function transformParamType(ts: string): string {
+  const t = ts.trim();
+  if (/\bInputFile\b/.test(t)) return "InputFile | string";
+  if (/\[\]$/.test(t)) return `Json<${t}>`;
+  if (!isPrimitiveType(t)) return `Json<${t}>`;
+  return t;
+}
+
+// ---------------------------------------------------------------------------
 // Reply-type extraction from method prose
 // ---------------------------------------------------------------------------
 
@@ -272,7 +305,10 @@ function fieldsFromRows(rec: Rec, isMethod: boolean): Field[] {
   const c = colIndices(rec.headers);
   return rec.rows.map((row) => {
     const fname = (row[c.name] ?? "").trim();
-    const type = mapType(row[c.type] ?? "");
+    const mapped = mapType(row[c.type] ?? "");
+    // Method params are wire-ready (Json<T> / InputFile | string); response
+    // object fields stay as real nested objects (parsed, never sent).
+    const type = isMethod ? transformParamType(mapped) : mapped;
     const optional = isMethod
       ? (row[c.required] ?? "").trim() !== "Yes"
       : /^Optional\b/.test((row[c.desc] ?? "").trim());
@@ -307,12 +343,13 @@ const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 // Emit
 // ---------------------------------------------------------------------------
 
+// `InputFile` is NOT listed here: it is no longer defined in schemas.ts; it is
+// imported from the Phase-1 core class (../core/files.js). It is therefore still
+// a "known" name for the empty-object filter, handled separately below.
 const PRELUDE_NAMES = new Set([
   "ChatId",
   "ReplyMarkup",
   "InputProfilePhotoInput",
-  "InputFile",
-  "MessageType",
   "ParseMode",
 ]);
 
@@ -325,9 +362,6 @@ export type ChatId = number | string;
 
 /** Text formatting mode accepted by \`parse_mode\` fields. */
 export type ParseMode = "Markdown" | "MarkdownV2" | "HTML";
-
-/** Anything accepted in a file slot: file_id / URL (string) or local data. */
-export type InputFile = string | Buffer | NodeJS.ReadableStream;
 
 /** Union of the four reply-markup objects. */
 export type ReplyMarkup =
@@ -343,48 +377,6 @@ export type ReplyMarkup =
 export type InputProfilePhotoInput =
   | { type: "static"; photo: InputFile }
   | { type: "animated"; animation: InputFile; main_frame_timestamp?: number };
-
-/** Message content sub-event names emitted by \`processUpdate\`. */
-export const MESSAGE_TYPES = [
-  "text",
-  "animation",
-  "audio",
-  "channel_chat_created",
-  "contact",
-  "delete_chat_photo",
-  "dice",
-  "document",
-  "game",
-  "group_chat_created",
-  "invoice",
-  "left_chat_member",
-  "location",
-  "migrate_from_chat_id",
-  "migrate_to_chat_id",
-  "new_chat_members",
-  "new_chat_photo",
-  "new_chat_title",
-  "passport_data",
-  "photo",
-  "pinned_message",
-  "poll",
-  "sticker",
-  "successful_payment",
-  "supergroup_chat_created",
-  "video",
-  "video_note",
-  "voice",
-  "video_chat_started",
-  "video_chat_ended",
-  "video_chat_participants_invited",
-  "video_chat_scheduled",
-  "message_auto_delete_timer_changed",
-  "chat_invite_link",
-  "chat_member_updated",
-  "web_app_data",
-  "message_reaction",
-] as const;
-export type MessageType = (typeof MESSAGE_TYPES)[number];
 `;
 
 function emitFields(fields: Field[]): string {
@@ -401,6 +393,7 @@ const defined = new Set<string>([
   ...types.map((t) => t.name),
   ...unions.map((u) => u.name),
   ...PRELUDE_NAMES,
+  "InputFile", // imported from ../core/files.js, not emitted as a placeholder
 ]);
 const referenced = new Set<string>();
 const collect = (ts: string) =>
@@ -431,31 +424,62 @@ out.push(`/* eslint-disable */
  * Source: ${API_URL}
  * Regenerate with: bun scripts/api-parser.ts
  */
+import type { Json } from "./brand.js";
+import type { InputFile } from "../core/files.js";
 `);
 out.push(PRELUDE);
 
-// `Update`'s field names, emitted as a runtime list so `processUpdate` can
-// iterate every dispatchable update kind instead of mirroring the type by hand.
+// `Update` is emitted as a DISCRIMINATED UNION (ADR-007): one variant per
+// payload key, each `{ update_id: number } & { <key>: <Type> }`. This lets
+// `if ('message' in u)` narrow `u.message` to `Message`, instead of the v1
+// all-optional object where every field was `T | undefined`.
 const updateDef = types.find((t) => t.name === "Update");
 if (!updateDef) throw new Error("Could not find the `Update` object in the parsed docs");
-const updateKeys = updateDef.fields.map((f) => f.name).filter((n) => n !== "update_id");
+const updateVariants = updateDef.fields.filter((f) => f.name !== "update_id");
+const updateKeys = updateVariants.map((f) => f.name);
+
+out.push(`\n// ---------------------------------------------------------------------------
+// Update — discriminated union (ADR-007), one variant per payload key
+// ---------------------------------------------------------------------------\n`);
 out.push(
-  `\n/** \`Update\` field names dispatched as events by \`processUpdate\` (every \`Update\` field except \`update_id\`). */\n` +
+  `export type Update =\n` +
+    updateVariants
+      .map((f) => `  | ({ update_id: number } & { ${f.name}: ${f.type} })`)
+      .join("\n") +
+    `;\n`,
+);
+
+// All payload keys across every `Update` variant. A discriminated union's
+// `keyof` is only the common key (`update_id`), so distribute over the union
+// (via a naked type parameter) to collect each variant's own keys, then union
+// them.
+out.push(
+  `\n/** \`keyof\` distributed over a union (each member's keys, unioned). */\n` +
+    `type _KeysOfUnion<T> = T extends unknown ? keyof T : never;\n` +
+    `/** Every payload key across all \`Update\` variants. */\n` +
+    `type _UpdateKeys = _KeysOfUnion<Update>;\n`,
+);
+
+out.push(
+  `\n/** \`Update\` field names dispatched as events (every \`Update\` payload key except \`update_id\`). */\n` +
     `export const UPDATE_TYPES = [\n` +
     updateKeys.map((n) => `  ${JSON.stringify(n)},`).join("\n") +
-    `\n] as const satisfies readonly Exclude<keyof Update, "update_id">[];\n` +
+    `\n] as const satisfies readonly Exclude<_UpdateKeys, "update_id">[];\n` +
     `export type UpdateType = (typeof UPDATE_TYPES)[number];\n` +
     `\n// Compile-time proof that UPDATE_TYPES stays in lockstep with \`Update\`: the\n` +
-    `// \`satisfies\` above rejects any entry that is not an \`Update\` field, and this\n` +
-    `// rejects the reverse - an \`Update\` field that is missing from UPDATE_TYPES.\n` +
+    `// \`satisfies\` above rejects any entry that is not an \`Update\` payload key, and\n` +
+    `// this rejects the reverse - a payload key that is missing from UPDATE_TYPES.\n` +
     `type _AssertNever<T extends never> = T;\n` +
-    `type _UpdateTypesAreExhaustive = _AssertNever<Exclude<Exclude<keyof Update, "update_id">, UpdateType>>;\n`,
+    `type _UpdateTypesAreExhaustive = _AssertNever<Exclude<Exclude<_UpdateKeys, "update_id">, UpdateType>>;\n`,
 );
 
 out.push(`\n// ---------------------------------------------------------------------------
 // Objects
 // ---------------------------------------------------------------------------\n`);
-for (const t of types) out.push(`export type ${t.name} = ${emitFields(t.fields)};\n`);
+for (const t of types) {
+  if (t.name === "Update") continue; // emitted above as a discriminated union
+  out.push(`export type ${t.name} = ${emitFields(t.fields)};\n`);
+}
 
 if (emptyTypes.length) {
   out.push(`\n// Placeholder objects (documented as holding no fields)\n`);
@@ -479,10 +503,77 @@ for (const m of methods) {
 await Bun.write(OUT, out.join("\n"));
 
 // ---------------------------------------------------------------------------
+// Emit the single generated `Api` class (ADR-001) → src/core/api.ts
+// ---------------------------------------------------------------------------
+//
+// One concrete method per Bot API method, each a one-liner over the shared
+// `request()`. No Proxy, no Raw/Api split. Every method takes a single `params`
+// argument plus an optional trailing `signal`. Types come from the types barrel
+// via a namespace import (`T.SendMessageParams`, `T.Message`, …) so we never
+// maintain a giant import list.
+
+const apiOut: string[] = [];
+apiOut.push(`/* eslint-disable */
+/** AUTO-GENERATED by scripts/api-parser.ts — DO NOT EDIT BY HAND. */
+import { Transport, type TransportOptions } from "./transport.js";
+import type * as T from "../types/index.js";
+
+export class Api {
+  protected readonly transport: Transport;
+
+  constructor(token: string, options?: TransportOptions) {
+    this.transport = new Transport(token, options);
+  }
+
+  protected request<R>(
+    method: string,
+    params?: Record<string, unknown>,
+    signal?: AbortSignal,
+  ): Promise<R> {
+    return this.transport.request<R>(method, params, signal);
+  }
+`);
+
+for (const m of methods) {
+  const C = cap(m.name);
+  const result = `T.${C}Result`;
+  const hasFields = m.fields.length > 0;
+  const allOptional = hasFields && m.fields.every((f) => f.optional);
+
+  if (!hasFields) {
+    // No params at all → no params argument, pass `undefined`.
+    apiOut.push(
+      `  ${m.name}(signal?: AbortSignal): Promise<${result}> {\n` +
+        `    return this.request<${result}>(${JSON.stringify(m.name)}, undefined, signal);\n` +
+        `  }`,
+    );
+  } else if (allOptional) {
+    // Every field optional → params is optional.
+    apiOut.push(
+      `  ${m.name}(params?: T.${C}Params, signal?: AbortSignal): Promise<${result}> {\n` +
+        `    return this.request<${result}>(${JSON.stringify(m.name)}, params, signal);\n` +
+        `  }`,
+    );
+  } else {
+    // At least one required field → params is required.
+    apiOut.push(
+      `  ${m.name}(params: T.${C}Params, signal?: AbortSignal): Promise<${result}> {\n` +
+        `    return this.request<${result}>(${JSON.stringify(m.name)}, params, signal);\n` +
+        `  }`,
+    );
+  }
+}
+
+apiOut.push(`}\n`);
+
+await Bun.write(API_OUT, apiOut.join("\n"));
+
+// ---------------------------------------------------------------------------
 // Report
 // ---------------------------------------------------------------------------
 
 console.log(`✓ wrote ${OUT.pathname}`);
+console.log(`✓ wrote ${API_OUT.pathname}`);
 console.log(`  objects:        ${types.length}`);
 console.log(`  unions:         ${unions.length}`);
 console.log(`  empty objects:  ${emptyTypes.length} (${emptyTypes.join(", ") || "none"})`);
