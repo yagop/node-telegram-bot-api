@@ -81,7 +81,8 @@ describe("Transport", () => {
     const throwingFetch = (async () => {
       throw new Error("connection reset");
     }) as unknown as typeof fetch;
-    const tr = new Transport(TOKEN, { fetch: throwingFetch });
+    // maxRetries: 0 so the transient throw surfaces immediately (no backoff wait).
+    const tr = new Transport(TOKEN, { fetch: throwingFetch, maxRetries: 0 });
     let caught: unknown;
     try {
       await tr.request("getMe");
@@ -113,7 +114,8 @@ describe("Transport", () => {
           { once: true },
         );
       })) as unknown as typeof fetch;
-    const tr = new Transport(TOKEN, { fetch: abortAwareFetch, timeoutMs: 5 });
+    // maxRetries: 0 so our timeout surfaces immediately as a TimeoutError.
+    const tr = new Transport(TOKEN, { fetch: abortAwareFetch, timeoutMs: 5, maxRetries: 0 });
     let caught: unknown;
     try {
       await tr.request("getMe");
@@ -122,6 +124,75 @@ describe("Transport", () => {
     }
     expect(caught).toBeInstanceOf(TimeoutError);
     expect((caught as TimeoutError).code).toBe("ETIMEOUT");
+  });
+
+  test("transient network throw then success retries and resolves (fetch called twice)", async () => {
+    let i = 0;
+    const calls: number[] = [];
+    const flakyFetch = (async () => {
+      calls.push(i);
+      i += 1;
+      if (i === 1) throw new Error("connection reset");
+      return new Response(JSON.stringify({ ok: true, result: { id: 7 } }));
+    }) as unknown as typeof fetch;
+    const tr = new Transport(TOKEN, { fetch: flakyFetch, maxRetries: 2, retryBackoffMs: 0 });
+    const result = await tr.request<{ id: number }>("getMe");
+    expect(result).toEqual({ id: 7 });
+    expect(calls.length).toBe(2);
+  });
+
+  test("5xx response then success retries and resolves", async () => {
+    let i = 0;
+    const calls: string[] = [];
+    const flakyFetch = (async (url: string | URL | Request) => {
+      calls.push(String(url));
+      i += 1;
+      if (i === 1) return new Response("upstream error", { status: 502 });
+      return new Response(JSON.stringify({ ok: true, result: true }));
+    }) as unknown as typeof fetch;
+    const tr = new Transport(TOKEN, { fetch: flakyFetch, maxRetries: 2, retryBackoffMs: 0 });
+    const result = await tr.request<boolean>("getMe");
+    expect(result).toBe(true);
+    expect(calls.length).toBe(2);
+  });
+
+  test("exhausted 5xx -> NetworkError including the status", async () => {
+    const fetch500 = (async () =>
+      new Response("boom", { status: 503 })) as unknown as typeof fetch;
+    const tr = new Transport(TOKEN, { fetch: fetch500, maxRetries: 1, retryBackoffMs: 0 });
+    let caught: unknown;
+    try {
+      await tr.request("getMe");
+    } catch (err) {
+      caught = err;
+    }
+    expect(caught).toBeInstanceOf(NetworkError);
+    expect((caught as NetworkError).message).toContain("503");
+  });
+
+  test("caller-abort is not retried and propagates verbatim", async () => {
+    const controller = new AbortController();
+    let calls = 0;
+    const abortingFetch = (async (_url: string, init?: RequestInit) => {
+      calls += 1;
+      controller.abort(new Error("caller cancelled"));
+      const e = new Error("aborted");
+      e.name = "AbortError";
+      // Mirror real fetch: reject because the (caller) signal aborted.
+      if (init?.signal?.aborted) throw e;
+      throw e;
+    }) as unknown as typeof fetch;
+    const tr = new Transport(TOKEN, { fetch: abortingFetch, maxRetries: 3, retryBackoffMs: 0 });
+    let caught: unknown;
+    try {
+      await tr.request("getMe", {}, controller.signal);
+    } catch (err) {
+      caught = err;
+    }
+    // Propagated verbatim (not wrapped) and fetch was called exactly once.
+    expect((caught as Error).name).toBe("AbortError");
+    expect(caught).not.toBeInstanceOf(NetworkError);
+    expect(calls).toBe(1);
   });
 
   test("request URL contains /bot<token>/<method> and uses POST", async () => {

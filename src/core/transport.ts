@@ -18,6 +18,7 @@ import {
   TimeoutError,
   isAbortError,
 } from "./errors.js";
+import { RateLimiter, type RateLimitOptions } from "./ratelimiter.js";
 
 export interface TransportOptions {
   /** API origin. Default `https://api.telegram.org`. */
@@ -26,8 +27,12 @@ export interface TransportOptions {
   fetch?: typeof fetch;
   /** Per-request client timeout in ms for ordinary calls; `0` disables. Default 30000. */
   timeoutMs?: number;
-  /** Max retries on HTTP 429, honoring `retry_after`. Default 2. */
+  /** Max retries on 429 and transient (network/timeout/5xx) failures. Default 2. */
   maxRetries?: number;
+  /** Base delay in ms for exponential backoff on transient (non-429) retries. Default 300. */
+  retryBackoffMs?: number;
+  /** Opt-in proactive rate limiting (global + per-chat). Omit for zero overhead. */
+  rateLimit?: RateLimitOptions;
 }
 
 type ApiResponse<R> =
@@ -37,6 +42,8 @@ type ApiResponse<R> =
 const DEFAULT_API_ROOT = "https://api.telegram.org";
 const DEFAULT_TIMEOUT = 30_000;
 const DEFAULT_MAX_RETRIES = 2;
+const DEFAULT_RETRY_BACKOFF = 300;
+const MAX_BACKOFF = 30_000;
 
 /** Combine several abort signals into one, plus a listener cleanup. */
 function combineSignals(signals: Array<AbortSignal | undefined>): {
@@ -81,6 +88,8 @@ export class Transport {
   private readonly fetchImpl: typeof fetch;
   private readonly timeoutMs: number;
   private readonly maxRetries: number;
+  private readonly retryBackoffMs: number;
+  private readonly limiter?: RateLimiter;
 
   constructor(
     private readonly token: string,
@@ -95,6 +104,14 @@ export class Transport {
     this.fetchImpl = fetchImpl;
     this.timeoutMs = options.timeoutMs ?? DEFAULT_TIMEOUT;
     this.maxRetries = options.maxRetries ?? DEFAULT_MAX_RETRIES;
+    this.retryBackoffMs = options.retryBackoffMs ?? DEFAULT_RETRY_BACKOFF;
+    if (options.rateLimit) this.limiter = new RateLimiter(options.rateLimit);
+  }
+
+  /** Exponential backoff for transient retries: `base * 2^(attempt-1)`, capped, with jitter. */
+  private backoff(attempt: number): number {
+    const exp = Math.min(this.retryBackoffMs * 2 ** (attempt - 1), MAX_BACKOFF);
+    return exp * (0.5 + Math.random() * 0.5);
   }
 
   /** For long polling the client timeout must outlast the server-side wait. */
@@ -113,6 +130,12 @@ export class Transport {
     const url = `${this.apiRoot}/bot${this.token}/${method}`;
     const timeoutMs = this.effectiveTimeout(method, params);
 
+    // Opt-in proactive rate limiting: acquire once, before the first send attempt
+    // (not per retry), keyed by chat id when present.
+    if (this.limiter) {
+      await this.limiter.acquire(params?.chat_id as string | number | undefined, signal);
+    }
+
     let attempt = 0;
     for (;;) {
       const { body, headers } = await encodeForm(params ?? {});
@@ -124,10 +147,33 @@ export class Transport {
         response = await this.fetchImpl(url, { method: "POST", body, headers, signal: composed });
       } catch (err) {
         if (signal?.aborted) throw err; // caller cancelled — propagate verbatim
+        // Transient throws (fetch reject / our timeout): retry with backoff.
+        if (attempt < this.maxRetries) {
+          attempt += 1;
+          await delay(this.backoff(attempt), signal);
+          continue;
+        }
         if (isAbortError(err)) throw new TimeoutError(`Request timed out: ${method}`, { cause: err });
         throw new NetworkError(`Network request failed: ${method}`, { cause: err });
       } finally {
         cleanup();
+      }
+
+      // Server-side 5xx is transient: retry without parsing the body. Read the
+      // body once regardless so we can surface a precise error when exhausted.
+      if (response.status >= 500) {
+        const text = await response.text();
+        if (attempt < this.maxRetries) {
+          attempt += 1;
+          await delay(this.backoff(attempt), signal);
+          continue;
+        }
+        // Exhausted: prefer the `{ ok: false }` envelope when the body is one.
+        const envelope = parseEnvelope<R>(text);
+        if (envelope && !envelope.ok) {
+          throw new TelegramApiError(envelope.error_code, envelope.description, envelope.parameters);
+        }
+        throw new NetworkError(`Server error ${response.status} on ${method}`);
       }
 
       const text = await response.text();
@@ -152,5 +198,14 @@ export class Transport {
 
       throw new TelegramApiError(json.error_code, json.description, json.parameters);
     }
+  }
+}
+
+/** Best-effort envelope parse; returns `undefined` when the body is not JSON. */
+function parseEnvelope<R>(text: string): ApiResponse<R> | undefined {
+  try {
+    return JSON.parse(text) as ApiResponse<R>;
+  } catch {
+    return undefined;
   }
 }

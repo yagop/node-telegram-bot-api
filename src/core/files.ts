@@ -47,10 +47,14 @@ export interface FormSink {
   attach(key: string, file: InputFile): void;
 }
 
-/** A file-carrying composite (e.g. a media group) that emits itself. */
+/**
+ * A file-carrying composite (e.g. a media group) that emits itself into the
+ * form. `key` is the param field the composite is bound to (e.g. `"media"`), so
+ * a single builder works for any nested-file method without hardcoding a name.
+ */
 export interface FormPart {
   readonly __formPart: true;
-  writeTo(sink: FormSink): void;
+  writeTo(sink: FormSink, key: string): void;
 }
 
 export function isFormPart(value: unknown): value is FormPart {
