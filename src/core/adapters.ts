@@ -2,16 +2,16 @@
  * Framework webhook adapters (ADR-005, §6.7).
  *
  * These live in core because they bridge the pure `(Request) => Promise<Response>`
- * webhook callback onto the shapes popular frameworks expose — without dragging in
+ * webhook callback onto the shapes popular frameworks expose - without dragging in
  * a single `node:*` import. The `(req, res)` Node-style handler types its arguments
  * STRUCTURALLY (a minimal duck-typed shape), so `node:http`, Express, Connect and
  * Next.js are never dependencies and core stays runtime-agnostic.
  *
- * - `nextAppWebhook`     — Next.js App Router (`export const POST = nextAppWebhook(bot)`);
+ * - `nextAppWebhook`     - Next.js App Router (`export const POST = nextAppWebhook(bot)`);
  *                          the core callback verbatim, since the App Router speaks Web `Request`/`Response`.
- * - `nodeFrameworkWebhook` — an `(req, res)` handler for Express / Connect / Next.js Pages API.
- * - `registerExpressWebhook` — registers the `(req, res)` handler on an existing Express app.
- * - `nextPagesWebhook`   — alias of `nodeFrameworkWebhook` (Next.js Pages API).
+ * - `nodeFrameworkWebhook` - an `(req, res)` handler for Express / Connect / Next.js Pages API.
+ * - `registerExpressWebhook` - registers the `(req, res)` handler on an existing Express app.
+ * - `nextPagesWebhook`   - alias of `nodeFrameworkWebhook` (Next.js Pages API).
  */
 
 import type { Bot } from "./bot.js";
@@ -70,7 +70,7 @@ export function nodeFrameworkWebhook(
     res: NodeLikeResponse,
   ): Promise<void> {
     // Accumulate the raw body. Decode Uint8Array chunks; append strings as-is.
-    // No node `Buffer` — `TextDecoder` is a Web standard available everywhere.
+    // No node `Buffer` - `TextDecoder` is a Web standard available everywhere.
     const decoder = new TextDecoder();
     let body = "";
     for await (const chunk of req) {

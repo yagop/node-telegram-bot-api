@@ -74,8 +74,8 @@ export async function* longPoll(
         signal,
       );
     } catch (err) {
-      if (signal?.aborted) return; // cancelled — swallow the abort error
-      if (!retry || !isTransientError(err)) throw err; // fatal — surface it
+      if (signal?.aborted) return; // cancelled - swallow the abort error
+      if (!retry || !isTransientError(err)) throw err; // fatal - surface it
       onError?.(err);
       failures += 1;
       const exp = Math.min(BASE_BACKOFF * 2 ** (failures - 1), maxBackoffMs);

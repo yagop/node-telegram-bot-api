@@ -1,5 +1,5 @@
 /**
- * `node-telegram-bot-api/node` — Node entry (subpath "./node").
+ * `node-telegram-bot-api/node` - Node entry (subpath "./node").
  *
  * Re-exports everything in core, plus the Node-only sugar (fs uploads via
  * `fromPath`, a self-hosted `node:http` webhook server, and a managed long-poll

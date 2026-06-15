@@ -2,7 +2,7 @@
 /**
  * CI lint gate: the runtime-agnostic core (`src/core/**`) must not depend on any
  * Node built-in. This catches `node:fs` imports, bare-builtin imports (`fs`,
- * `path`, …), `export … from` re-exports, dynamic `import()` and `require()`.
+ * `path`, ...), `export ... from` re-exports, dynamic `import()` and `require()`.
  *
  * Plain Node ESM, no dependencies. Exit 0 if clean, 1 (with offenders) if not.
  */
@@ -114,13 +114,13 @@ function stripStringContents(line) {
 
 /**
  * Node-only globals that must never appear in `src/core`. Each is matched only
- * as a *standalone identifier read as a global* — never as a property access
+ * as a *standalone identifier read as a global* - never as a property access
  * (`obj.process`), an object/interface key (`global?: number`), or a substring
  * of a longer word (`processing`, `preprocess`, `globalThis`).
  *
  * Allowed web globals (`globalThis`, `setTimeout`, `queueMicrotask`, `fetch`,
  * `Blob`, `FormData`, `TextDecoder`, `AbortSignal`, `Response`, `Request`,
- * `URLSearchParams`, …) are intentionally absent and never flagged.
+ * `URLSearchParams`, ...) are intentionally absent and never flagged.
  */
 const NODE_GLOBALS = [
   "Buffer",
@@ -134,11 +134,11 @@ const NODE_GLOBALS = [
 
 /**
  * Build the matcher for a single Node global.
- *  - `(?<![\w$.])`  — not preceded by an identifier char or a `.` (rules out
+ *  - `(?<![\w$.])`  - not preceded by an identifier char or a `.` (rules out
  *                     property access like `opts.global` / `this.process`).
- *  - `(?![\w$])`    — not followed by an identifier char (rules out `processing`,
+ *  - `(?![\w$])`    - not followed by an identifier char (rules out `processing`,
  *                     and stops `global` from matching inside `globalThis`).
- *  - `(?!\s*\??:)`  — not immediately used as an object/interface property key
+ *  - `(?!\s*\??:)`  - not immediately used as an object/interface property key
  *                     (rules out `global?: number` and `global: 30`).
  */
 function globalMatcher(name) {

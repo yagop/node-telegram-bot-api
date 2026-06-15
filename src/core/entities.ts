@@ -3,7 +3,7 @@
  *
  * `EntityBuilder` is a fluent builder that accumulates text and tracks UTF-16 offsets so
  * callers never hand-count them. A JS string's `.length` already counts UTF-16
- * code units — exactly the unit Telegram's `offset`/`length` use — so we record
+ * code units - exactly the unit Telegram's `offset`/`length` use - so we record
  * `offset = text.length` before appending a styled segment and `length` as the
  * segment's own `.length`. `.build()` returns the plain text plus a branded
  * `Json<MessageEntity[]>`, both ready to drop into `sendMessage`.

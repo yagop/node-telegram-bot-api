@@ -1,5 +1,5 @@
 /**
- * Transport (ADR-005, ADR-008) — the only module that touches `fetch`.
+ * Transport (ADR-005, ADR-008) - the only module that touches `fetch`.
  *
  * It is injectable (`options.fetch`) so tests pass a fake instead of
  * monkeypatching `globalThis.fetch`. It merges a per-request timeout with the
@@ -146,7 +146,7 @@ export class Transport {
       try {
         response = await this.fetchImpl(url, { method: "POST", body, headers, signal: composed });
       } catch (err) {
-        if (signal?.aborted) throw err; // caller cancelled — propagate verbatim
+        if (signal?.aborted) throw err; // caller cancelled - propagate verbatim
         // Transient throws (fetch reject / our timeout): retry with backoff.
         if (attempt < this.maxRetries) {
           attempt += 1;

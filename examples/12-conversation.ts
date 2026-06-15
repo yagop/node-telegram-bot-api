@@ -1,9 +1,9 @@
 /**
- * 12 — A minimal multi-step conversation.
+ * 12 - A minimal multi-step conversation.
  *
  * Walks a user through "ask name → ask age → done" by tracking a per-chat step in
- * a `Map`. There's no built-in conversation engine — just middleware + your own
- * state — which keeps the model transparent. `ctx.state` is used to stash the
+ * a `Map`. There's no built-in conversation engine - just middleware + your own
+ * state - which keeps the model transparent. `ctx.state` is used to stash the
  * current step for the handler within a single update; the `Map` persists it
  * across updates.
  *
@@ -64,7 +64,7 @@ bot.on("message", (ctx) => {
     case "awaiting_age": {
       const age = Number(text.trim());
       if (!Number.isInteger(age) || age <= 0) {
-        return ctx.reply("That doesn't look like an age — try a whole number.");
+        return ctx.reply("That doesn't look like an age - try a whole number.");
       }
       convo.step = "idle";
       return ctx.reply(`Got it: ${convo.name}, ${age}. Thanks! Send /start to go again.`);

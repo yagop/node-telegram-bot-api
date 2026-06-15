@@ -29,7 +29,7 @@ The core uses only Web-standard APIs (`fetch`, `Blob`, `FormData`, `AbortSignal`
 
 Filesystem uploads (`fromPath`) and the self-hosted `node:http` webhook server are the only Node-bound pieces; they live in `node-telegram-bot-api/node`.
 
-## Quick start — a polling bot
+## Quick start - a polling bot
 
 ```ts
 import { Bot, InlineKeyboard } from "node-telegram-bot-api";
@@ -54,7 +54,7 @@ bot.on("callback_query", async (ctx) => {
 await run(bot); // or: await bot.start();
 ```
 
-The core has no managed runner dependency — `await bot.start()` works anywhere. `run()` just wires `Ctrl-C` to `bot.stop()`.
+The core has no managed runner dependency - `await bot.start()` works anywhere. `run()` just wires `Ctrl-C` to `bot.stop()`.
 
 ## Calling the API directly
 
@@ -90,7 +90,7 @@ bot.catch((err, ctx) => console.error("handler failed", err));
 
 ## Keyboards & formatting
 
-Structured fields are branded `Json<T>` strings, produced at the call site by a builder or the generic `json()` helper — serialization happens in the builders, not in the request pipeline.
+Structured fields are branded `Json<T>` strings, produced at the call site by a builder or the generic `json()` helper - serialization happens in the builders, not in the request pipeline.
 
 ```ts
 import { InlineKeyboard, ReplyKeyboard, removeKeyboard, EntityBuilder, json } from "node-telegram-bot-api";
@@ -121,7 +121,7 @@ import { fromPath } from "node-telegram-bot-api/node";
 await api.sendPhoto({ chat_id, photo: await fromPath("./cat.jpg") });
 await api.sendDocument({ chat_id, document: inputFile(new Uint8Array(bytes), { filename: "report.pdf" }) });
 
-// nested files (media groups) — the builder mints attach:// refs at the call site
+// nested files (media groups) - the builder mints attach:// refs at the call site
 await api.sendMediaGroup({
   chat_id,
   media: new MediaGroup()
@@ -133,7 +133,7 @@ await api.sendMediaGroup({
 
 ## Webhooks
 
-The web-standard callback is a pure `(Request) => Promise<Response>` — one function for every serverless runtime.
+The web-standard callback is a pure `(Request) => Promise<Response>` - one function for every serverless runtime.
 
 **Cloudflare Workers / Bun.serve / Deno Deploy / Vercel Edge:**
 
@@ -148,7 +148,7 @@ export default {
 };
 ```
 
-By default the callback awaits your handler before returning `200`. For slow handlers that risk Telegram's webhook timeout, opt into **early ACK**: the callback validates the request, returns `200` immediately, and runs the handler in the background — pass `waitUntil` so the platform keeps the worker alive until it settles (`fastAck: true` alone runs it fire-and-forget). The secret-token check is a constant-time compare either way.
+By default the callback awaits your handler before returning `200`. For slow handlers that risk Telegram's webhook timeout, opt into **early ACK**: the callback validates the request, returns `200` immediately, and runs the handler in the background - pass `waitUntil` so the platform keeps the worker alive until it settles (`fastAck: true` alone runs it fire-and-forget). The secret-token check is a constant-time compare either way.
 
 ```ts
 export default {
@@ -211,7 +211,7 @@ try {
 
 ## Resilience & rate limiting
 
-The transport retries out of the box and backs off automatically; long polling resumes through transient failures. Everything below has safe defaults — you only set what you want to change.
+The transport retries out of the box and backs off automatically; long polling resumes through transient failures. Everything below has safe defaults - you only set what you want to change.
 
 ```ts
 import { Api } from "node-telegram-bot-api";
@@ -234,11 +234,11 @@ import { longPoll } from "node-telegram-bot-api";
 
 for await (const update of longPoll(api, {
   timeout: 30,
-  retry: true,          // default true — resume on transient errors, keep the offset
-  maxBackoffMs: 60_000, // default 60s — cap between failed polls
+  retry: true,          // default true - resume on transient errors, keep the offset
+  maxBackoffMs: 60_000, // default 60s - cap between failed polls
   onError: (err) => console.warn("poll failed, backing off", err),
 }, signal)) {
-  // …
+  // ...
 }
 ```
 
@@ -246,7 +246,7 @@ Fatal `4xx` errors still stop the loop; an aborted signal returns cleanly.
 
 ## Low-level update stream
 
-`longPoll` is a plain async generator — `for await`, `take(n)`, filter, batch or fan out as you like.
+`longPoll` is a plain async generator - `for await`, `take(n)`, filter, batch or fan out as you like.
 
 ```ts
 import { Api, longPoll } from "node-telegram-bot-api";
@@ -266,7 +266,7 @@ bun run check            # tsc (strict) + core-isolation lint + unit tests
 bun run build            # emit dist/
 ```
 
-`bun run check` runs three gates: `tsc --strict` over `src/`, a lint that fails if anything under `src/core/` imports a `node:` module (keeping the edge bundle Node-free), and the unit-test suite (which never touches the network — `fetch` is injected).
+`bun run check` runs three gates: `tsc --strict` over `src/`, a lint that fails if anything under `src/core/` imports a `node:` module (keeping the edge bundle Node-free), and the unit-test suite (which never touches the network - `fetch` is injected).
 
 ## License
 

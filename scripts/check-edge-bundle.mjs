@@ -6,13 +6,13 @@
  * Where `check-core-imports.mjs` reads the source statically, this check proves
  * the guarantee at the *bundler* level: it asks Bun to bundle the core entry the
  * way an edge platform (Cloudflare Workers, Vercel/Deno Edge) would, and fails if
- * a Node builtin is reachable from `src/core/index.ts` — even transitively, past
+ * a Node builtin is reachable from `src/core/index.ts` - even transitively, past
  * the import-specifier lint.
  *
  * Why a resolver plugin instead of just scanning the output: Bun's
  * `target: "browser"` *polyfills* Node builtins (a stray `node:crypto` bloats the
  * bundle to ~950 KiB but leaves no `node:` text to grep for). A real edge runtime
- * provides no such polyfills, so we model that faithfully — a custom resolver
+ * provides no such polyfills, so we model that faithfully - a custom resolver
  * intercepts every `node:*` / bare-builtin import and makes the build FAIL, which
  * is exactly what would happen on a Worker. A literal `node:` scan of the output
  * is kept as a redundant second layer.
@@ -47,7 +47,7 @@ const leaked = [];
 
 /**
  * Edge resolver: no Node builtins exist. Any `node:*` or bare-builtin import is
- * routed to a namespace whose loader throws, so `Bun.build` reports failure —
+ * routed to a namespace whose loader throws, so `Bun.build` reports failure -
  * mirroring what an edge runtime (Cloudflare Workers, etc.) would do.
  */
 const noNodeBuiltins = {
@@ -111,7 +111,7 @@ if (bad) {
 
 const kib = (totalBytes / 1024).toFixed(1);
 console.log(
-  `OK: core bundled Node-free for target "browser" — ` +
+  `OK: core bundled Node-free for target "browser" - ` +
     `${result.outputs.length} output(s), ${totalBytes} bytes (${kib} KiB); ` +
     `no Node builtins reachable, no "node:" references survived.`,
 );

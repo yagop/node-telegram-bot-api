@@ -1,5 +1,5 @@
 /**
- * Opt-in rate limiting (ADR-004 §10, M3) — proactive flood control.
+ * Opt-in rate limiting (ADR-004 §10, M3) - proactive flood control.
  *
  * A classic token bucket plus a thin `RateLimiter` that combines a global
  * bucket with lazily-created per-chat buckets. Edge-safe: no `node:` imports,

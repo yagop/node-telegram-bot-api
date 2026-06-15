@@ -1,5 +1,5 @@
 /**
- * `run` — a managed long-poll runner for Node processes (§6.5).
+ * `run` - a managed long-poll runner for Node processes (§6.5).
  *
  * Wraps `bot.start()` with `SIGINT`/`SIGTERM` handlers that call `bot.stop()` for
  * graceful shutdown, and removes those listeners when the runner resolves. Lives

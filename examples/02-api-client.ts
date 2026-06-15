@@ -1,5 +1,5 @@
 /**
- * 02 — Raw API client.
+ * 02 - Raw API client.
  *
  * Demonstrates the low-level `Api` with no dispatch layer: construct it with a
  * token, call generated methods (`getMe`, `sendMessage`) directly, and read the

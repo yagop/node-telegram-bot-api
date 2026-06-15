@@ -1,5 +1,5 @@
 /**
- * `node-telegram-bot-api` — runtime-agnostic core entry (subpath ".").
+ * `node-telegram-bot-api` - runtime-agnostic core entry (subpath ".").
  *
  * Imports only Web-standard APIs; a CI lint guarantees nothing here reaches for
  * `node:*`, so this bundle runs unchanged on Node 18+, Bun, Deno, Cloudflare

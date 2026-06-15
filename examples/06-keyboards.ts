@@ -1,8 +1,8 @@
 /**
- * 06 — Keyboards & callback queries.
+ * 06 - Keyboards & callback queries.
  *
- * Demonstrates the markup builders — `InlineKeyboard`, `ReplyKeyboard`,
- * `removeKeyboard()`, `forceReply()` — and handling a `callback_query` with
+ * Demonstrates the markup builders - `InlineKeyboard`, `ReplyKeyboard`,
+ * `removeKeyboard()`, `forceReply()` - and handling a `callback_query` with
  * `ctx.answerCallbackQuery()`. Each builder's `.build()` returns a wire-ready
  * `Json<...>` string that drops straight into `reply_markup`.
  *

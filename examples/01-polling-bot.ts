@@ -1,5 +1,5 @@
 /**
- * 01 — Polling bot.
+ * 01 - Polling bot.
  *
  * Demonstrates the high-level `Bot`: `command()`, `hears()`, `on()`, `ctx.reply()`,
  * and the managed `run()` long-poll runner from the `/node` subpath (it installs
