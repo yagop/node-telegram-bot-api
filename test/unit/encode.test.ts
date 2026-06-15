@@ -123,6 +123,35 @@ describe("nested-file builders", () => {
     expect(form.get("media_1")).toBeInstanceOf(Blob);
   });
 
+  test("MediaGroup.livePhoto -> media + photo take two attach slots", async () => {
+    const media = new MediaGroup()
+      .livePhoto(new InputFile(new Uint8Array([1])), new InputFile(new Uint8Array([2])), { caption: "lp" })
+      .build();
+    const { body } = await encodeForm({ chat_id: 1, media });
+    const form = body as FormData;
+    const parsed = JSON.parse(form.get("media") as string) as Array<Record<string, unknown>>;
+    expect(parsed[0]!.type).toBe("live_photo");
+    expect(parsed[0]!.media).toBe("attach://media_0");
+    expect(parsed[0]!.photo).toBe("attach://media_1");
+    expect(parsed[0]!.caption).toBe("lp");
+    expect(form.get("media_0")).toBeInstanceOf(Blob);
+    expect(form.get("media_1")).toBeInstanceOf(Blob);
+  });
+
+  test("PaidMediaGroup.livePhoto -> media + photo take two attach slots", async () => {
+    const media = new PaidMediaGroup()
+      .livePhoto(new InputFile(new Uint8Array([1])), new InputFile(new Uint8Array([2])))
+      .build();
+    const { body } = await encodeForm({ chat_id: 1, star_count: 1, media });
+    const form = body as FormData;
+    const parsed = JSON.parse(form.get("media") as string) as Array<Record<string, unknown>>;
+    expect(parsed[0]!.type).toBe("live_photo");
+    expect(parsed[0]!.media).toBe("attach://media_0");
+    expect(parsed[0]!.photo).toBe("attach://media_1");
+    expect(form.get("media_0")).toBeInstanceOf(Blob);
+    expect(form.get("media_1")).toBeInstanceOf(Blob);
+  });
+
   test("inputSticker -> the file part does NOT clobber the `sticker` field", async () => {
     const sticker = inputSticker(new InputFile(new Uint8Array([2])), {
       format: "static",
