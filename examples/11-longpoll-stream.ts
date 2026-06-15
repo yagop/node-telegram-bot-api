@@ -1,8 +1,8 @@
 /**
- * 11 — Consuming the long-poll stream directly.
+ * 11 - Consuming the long-poll stream directly.
  *
  * `longPoll(api, options, signal)` is a plain `AsyncGenerator<Update>`, so you can
- * `for await` it, filter it, or fan it out — no `Bot` required. This is handy when
+ * `for await` it, filter it, or fan it out - no `Bot` required. This is handy when
  * you want full control over the loop. Cancellation is just an `AbortController`:
  * abort the signal and the generator returns cleanly.
  *
@@ -23,7 +23,7 @@ const timer = setTimeout(() => controller.abort(), 15_000);
 let seen = 0;
 const MAX = 10;
 
-console.log("Listening for up to 15s (or 10 messages)…");
+console.log("Listening for up to 15s (or 10 messages)...");
 
 for await (const update of longPoll(
   api,
@@ -38,10 +38,10 @@ for await (const update of longPoll(
 
   seen += 1;
   if (seen >= MAX) {
-    controller.abort(); // second exit condition — the loop returns cleanly
+    controller.abort(); // second exit condition - the loop returns cleanly
     break;
   }
 }
 
 clearTimeout(timer);
-console.log(`Done — processed ${seen} message(s).`);
+console.log(`Done - processed ${seen} message(s).`);

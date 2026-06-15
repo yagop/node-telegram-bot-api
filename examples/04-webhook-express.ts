@@ -1,11 +1,11 @@
 /**
- * 04 — Webhook on Express (or any Connect-style app).
+ * 04 - Webhook on Express (or any Connect-style app).
  *
  * `registerExpressWebhook(bot, app, { path, secretToken })` mounts the webhook
  * route on an existing app. The `app` argument is typed STRUCTURALLY in the
  * library, so `express` is never a dependency of this package. Here we keep the
  * example dependency-free by declaring the minimal `app.post(path, handler)`
- * shape — in your own project you'd pass a real `express()` instance instead.
+ * shape - in your own project you'd pass a real `express()` instance instead.
  *
  * Register the webhook with Telegram once at startup:
  *   api.setWebhook({ url: "https://you.example/telegram", secret_token: SECRET })

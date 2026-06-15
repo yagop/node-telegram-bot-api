@@ -1,11 +1,11 @@
 /**
- * 08 — Uploading files.
+ * 08 - Uploading files.
  *
  * Three ways to supply file bytes:
- *   - `inputFile(bytes, { filename })` — wrap in-memory bytes (Blob / Uint8Array /
+ *   - `inputFile(bytes, { filename })` - wrap in-memory bytes (Blob / Uint8Array /
  *     ReadableStream). Web-standard, works on every runtime.
- *   - `fromPath("./pic.jpg")` — read a local file off disk (from the `/node` subpath).
- *   - `new MediaGroup()` — build a `sendMediaGroup` payload; uploaded files are wired
+ *   - `fromPath("./pic.jpg")` - read a local file off disk (from the `/node` subpath).
+ *   - `new MediaGroup()` - build a `sendMediaGroup` payload; uploaded files are wired
  *     in via `attach://` references for you.
  * A plain string in a file field is always treated as a `file_id` or URL.
  *

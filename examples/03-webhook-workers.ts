@@ -1,10 +1,10 @@
 /**
- * 03 — Webhook on Cloudflare Workers (or any Web-standard runtime).
+ * 03 - Webhook on Cloudflare Workers (or any Web-standard runtime).
  *
  * `webhookCallback(bot)` is a pure `(Request) => Promise<Response>`, so it drops
  * straight into a Workers `export default { fetch }`. We use `fastAck` + the
  * runtime's `ctx.waitUntil` so the worker returns 200 immediately and finishes
- * `handleUpdate` in the background — Telegram never trips its webhook timeout.
+ * `handleUpdate` in the background - Telegram never trips its webhook timeout.
  *
  * Because Telegram redelivers un-acked updates (at-least-once), handlers should
  * be idempotent when fast-ack is on. See the note in src/core/webhook.ts.
@@ -16,7 +16,7 @@
  */
 import { Bot, webhookCallback } from "node-telegram-bot-api";
 
-// Minimal structural shapes for the Workers fetch handler — avoids depending on
+// Minimal structural shapes for the Workers fetch handler - avoids depending on
 // `@cloudflare/workers-types`. The real runtime supplies richer objects.
 interface Env {
   BOT_TOKEN: string;

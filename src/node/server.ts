@@ -1,8 +1,8 @@
 /**
- * `createWebhookServer` — a self-hosted `node:http` webhook server (ADR-005, §6.7).
+ * `createWebhookServer` - a self-hosted `node:http` webhook server (ADR-005, §6.7).
  *
  * Adapts incoming `node:http` requests and delegates to the core
- * `nodeFrameworkWebhook` handler — no request-handling logic is duplicated. The
+ * `nodeFrameworkWebhook` handler - no request-handling logic is duplicated. The
  * server is returned WITHOUT calling `.listen()`, so the caller picks the port.
  */
 

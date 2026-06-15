@@ -1,5 +1,5 @@
 /**
- * Request encoding (ADR-002, ADR-010, ADR-011) — the library serializes nothing.
+ * Request encoding (ADR-002, ADR-010, ADR-011) - the library serializes nothing.
  *
  * `encodeForm` walks the param record and does exactly one of three things per
  * field:

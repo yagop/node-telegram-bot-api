@@ -3,7 +3,7 @@
  *
  * A single base, `TelegramBotError`, preserves `cause` and a stable `.code`
  * string (kept for muscle memory from v1). Subclasses expose structured fields
- * so callers branch on values — `err.errorCode === 429`, `err.retryAfter` —
+ * so callers branch on values - `err.errorCode === 429`, `err.retryAfter` -
  * instead of substring-matching a message.
  */
 
@@ -85,7 +85,7 @@ export function isAbortError(err: unknown): boolean {
  * Classifies an error as transient (worth retrying) vs fatal.
  *
  * True for a `NetworkError`, a `TimeoutError`, or a `TelegramApiError` whose
- * `errorCode >= 500` (server-side failure). A 429 is *not* treated here — the
+ * `errorCode >= 500` (server-side failure). A 429 is *not* treated here - the
  * transport handles it separately via its `retry_after` path.
  */
 export function isTransientError(err: unknown): boolean {

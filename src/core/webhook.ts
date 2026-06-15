@@ -4,13 +4,13 @@
  * A pure `(Request) => Promise<Response>`: verify the secret-token header, parse
  * one `Update`, run `bot.handleUpdate`, return a `Response`. The same function
  * runs on Cloudflare Workers, Deno Deploy, Vercel Edge, Bun.serve, and the
- * Next.js App Router (which speaks `Request`/`Response` natively) — so this file
+ * Next.js App Router (which speaks `Request`/`Response` natively) - so this file
  * imports nothing Node-specific. Framework adapters that bridge `(req, res)`
  * servers live under `src/node` and delegate to this callback.
  *
  * Update dedup: Telegram **redelivers** an update if the webhook does not reply
  * with a 2xx in time (its delivery is at-least-once, not exactly-once). The same
- * `update.update_id` can therefore arrive more than once — especially with
+ * `update.update_id` can therefore arrive more than once - especially with
  * `fastAck`/`waitUntil`, where the handler runs *after* the 200 and so cannot
  * influence whether Telegram considers the delivery acknowledged. Make handlers
  * idempotent, or dedupe on `update.update_id` (e.g. a short-TTL seen-set) before
@@ -52,7 +52,7 @@ export interface WebhookOptions {
  * Constant-time string comparison. Does not early-out on content: a length
  * difference may be revealed (via the loop bound), but for a given length the
  * comparison always inspects every position, so it leaks no information about
- * *where* two equal-length strings differ. Pure JS — no `node:crypto` — to keep
+ * *where* two equal-length strings differ. Pure JS - no `node:crypto` - to keep
  * `src/core` edge-safe.
  */
 export function safeEqual(a: string, b: string): boolean {

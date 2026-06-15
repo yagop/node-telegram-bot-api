@@ -1,5 +1,5 @@
 /**
- * 05 — Webhook on the Next.js App Router.
+ * 05 - Webhook on the Next.js App Router.
  *
  * The App Router speaks Web `Request`/`Response` natively, so `nextAppWebhook(bot)`
  * is the core callback verbatim. In a real project this file would live at
@@ -18,5 +18,5 @@ const secret = process.env.WEBHOOK_SECRET!;
 const bot = new Bot(token);
 bot.command("start", (ctx) => ctx.reply("Hello from Next.js ▲"));
 
-// app/api/telegram/route.ts — App Router route handler:
+// app/api/telegram/route.ts - App Router route handler:
 export const POST = nextAppWebhook(bot, { secretToken: secret });
