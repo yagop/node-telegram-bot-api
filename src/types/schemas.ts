@@ -6,7 +6,7 @@
  * Regenerate with: bun scripts/api-parser.ts
  */
 import type { Json } from "./brand.js";
-import type { InputFile } from "../core/files.js";
+import type { InputFile, JsonWithInputFiles } from "../core/files.js";
 
 // ---------------------------------------------------------------------------
 // Library-specific helpers (not 1:1 documented objects)
@@ -3186,7 +3186,7 @@ export type SendPaidMediaParams = {
   message_thread_id?: number;
   direct_messages_topic_id?: number;
   star_count: number;
-  media: Json<InputPaidMedia[]>;
+  media: JsonWithInputFiles<InputPaidMedia[]>;
   payload?: string;
   caption?: string;
   parse_mode?: string;
@@ -3206,7 +3206,7 @@ export type SendMediaGroupParams = {
   chat_id: number | string;
   message_thread_id?: number;
   direct_messages_topic_id?: number;
-  media: Json<(InputMediaAudio | InputMediaDocument | InputMediaLivePhoto | InputMediaPhoto | InputMediaVideo)[]>;
+  media: JsonWithInputFiles<(InputMediaAudio | InputMediaDocument | InputMediaLivePhoto | InputMediaPhoto | InputMediaVideo)[]>;
   disable_notification?: boolean;
   protect_content?: boolean;
   allow_paid_broadcast?: boolean;
@@ -3807,7 +3807,7 @@ export type GetMyShortDescriptionParams = {
 export type GetMyShortDescriptionResult = BotShortDescription;
 
 export type SetMyProfilePhotoParams = {
-  photo: Json<InputProfilePhoto>;
+  photo: JsonWithInputFiles<InputProfilePhoto>;
 };
 export type SetMyProfilePhotoResult = boolean;
 
@@ -3916,7 +3916,7 @@ export type SetBusinessAccountBioResult = boolean;
 
 export type SetBusinessAccountProfilePhotoParams = {
   business_connection_id: string;
-  photo: Json<InputProfilePhoto>;
+  photo: JsonWithInputFiles<InputProfilePhoto>;
   is_public?: boolean;
 };
 export type SetBusinessAccountProfilePhotoResult = boolean;
@@ -4012,7 +4012,7 @@ export type TransferGiftResult = boolean;
 
 export type PostStoryParams = {
   business_connection_id: string;
-  content: Json<InputStoryContent>;
+  content: JsonWithInputFiles<InputStoryContent>;
   active_period: number;
   caption?: string;
   parse_mode?: string;
@@ -4036,7 +4036,7 @@ export type RepostStoryResult = Story;
 export type EditStoryParams = {
   business_connection_id: string;
   story_id: number;
-  content: Json<InputStoryContent>;
+  content: JsonWithInputFiles<InputStoryContent>;
   caption?: string;
   parse_mode?: string;
   caption_entities?: Json<MessageEntity[]>;
@@ -4104,7 +4104,7 @@ export type EditMessageMediaParams = {
   chat_id?: number | string;
   message_id?: number;
   inline_message_id?: string;
-  media: Json<InputMedia>;
+  media: JsonWithInputFiles<InputMedia>;
   reply_markup?: Json<InlineKeyboardMarkup>;
 };
 export type EditMessageMediaResult = Message | boolean;
@@ -4238,7 +4238,7 @@ export type CreateNewStickerSetParams = {
   user_id: number;
   name: string;
   title: string;
-  stickers: Json<InputSticker[]>;
+  stickers: JsonWithInputFiles<InputSticker[]>;
   sticker_type?: string;
   needs_repainting?: boolean;
 };
@@ -4247,7 +4247,7 @@ export type CreateNewStickerSetResult = boolean;
 export type AddStickerToSetParams = {
   user_id: number;
   name: string;
-  sticker: Json<InputSticker>;
+  sticker: JsonWithInputFiles<InputSticker>;
 };
 export type AddStickerToSetResult = boolean;
 
@@ -4266,7 +4266,7 @@ export type ReplaceStickerInSetParams = {
   user_id: number;
   name: string;
   old_sticker: string;
-  sticker: Json<InputSticker>;
+  sticker: JsonWithInputFiles<InputSticker>;
 };
 export type ReplaceStickerInSetResult = boolean;
 
