@@ -1,0 +1,82 @@
+/**
+ * Error hierarchy (ADR-008).
+ *
+ * A single base, `TelegramBotError`, preserves `cause` and a stable `.code`
+ * string (kept for muscle memory from v1). Subclasses expose structured fields
+ * so callers branch on values — `err.errorCode === 429`, `err.retryAfter` —
+ * instead of substring-matching a message.
+ */
+
+/** Subset of Telegram's `ResponseParameters` carried on API errors. */
+export interface ApiErrorParameters {
+  retry_after?: number;
+  migrate_to_chat_id?: number;
+}
+
+export class TelegramBotError extends Error {
+  /** Stable, machine-readable code (e.g. `ETELEGRAM`, `EFETCH`). */
+  readonly code: string;
+
+  constructor(message: string, options: { code?: string; cause?: unknown } = {}) {
+    super(message, options.cause !== undefined ? { cause: options.cause } : undefined);
+    this.name = new.target.name;
+    this.code = options.code ?? "EUNKNOWN";
+  }
+}
+
+/** A transport-level failure: DNS, connection reset, fetch threw, etc. */
+export class NetworkError extends TelegramBotError {
+  constructor(message: string, options: { cause?: unknown } = {}) {
+    super(message, { code: "EFETCH", cause: options.cause });
+  }
+}
+
+/** The request exceeded the configured client timeout. */
+export class TimeoutError extends TelegramBotError {
+  constructor(message = "Request timed out", options: { cause?: unknown } = {}) {
+    super(message, { code: "ETIMEOUT", cause: options.cause });
+  }
+}
+
+/** The response body could not be parsed as the expected JSON envelope. */
+export class ParseError extends TelegramBotError {
+  readonly responseText?: string;
+  constructor(message: string, options: { cause?: unknown; responseText?: string } = {}) {
+    super(message, { code: "EPARSE", cause: options.cause });
+    this.responseText = options.responseText;
+  }
+}
+
+/** Telegram answered with `{ ok: false }`. Carries the structured error fields. */
+export class TelegramApiError extends TelegramBotError {
+  readonly errorCode: number;
+  readonly description: string;
+  readonly parameters?: ApiErrorParameters;
+
+  constructor(errorCode: number, description: string, parameters?: ApiErrorParameters) {
+    super(`${errorCode}: ${description}`, { code: "ETELEGRAM" });
+    this.errorCode = errorCode;
+    this.description = description;
+    this.parameters = parameters;
+  }
+
+  /** Seconds to wait before retrying, when Telegram returns a 429. */
+  get retryAfter(): number | undefined {
+    return this.parameters?.retry_after;
+  }
+
+  /** The supergroup chat id to migrate to, on a group→supergroup migration. */
+  get migrateToChatId(): number | undefined {
+    return this.parameters?.migrate_to_chat_id;
+  }
+}
+
+/** True for an `AbortController`/timeout abort, across runtimes. */
+export function isAbortError(err: unknown): boolean {
+  return (
+    typeof err === "object" &&
+    err !== null &&
+    "name" in err &&
+    (err as { name?: unknown }).name === "AbortError"
+  );
+}
