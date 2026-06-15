@@ -181,7 +181,7 @@ ctx.reply("hi", { reply_markup: json({ inline_keyboard: [[{ text: "A", callback_
 
 Consequences:
 
-- **The encoder is trivial** — per field it does one of three things: attach an `InputFile` as a multipart part, let a file-carrying composite write itself (§6.4), or set a string (`Json<T>` and scalars alike). A `Json<T>` value is **always a string at runtime** — the brand is purely a compile-time wrapper over `string`. No `JSON.stringify` in the pipeline, no `_fix*`, no field map, no marker interface.
+- **The encoder is trivial** — per field it does one of three things: attach an `InputFile` as a multipart part, let a file-carrying composite write itself (§6.4), or set a string (`Json<T>` and scalars alike). No `JSON.stringify` in the pipeline, no `_fix*`, no field map, no marker interface.
 - **The client never needs to understand a structured shape** — good for forward-compat when Telegram adds keyboard/entity fields; only the builder/types change.
 - **"Which fields are structured" lives in the generator** (it emits `Json<T>` aliases at compile time), not in any runtime step.
 - `json()` is the universal escape hatch for fields without a bespoke builder (`reply_parameters`, `link_preview_options`, …); builders are sugar on top of it.
@@ -224,8 +224,8 @@ File-bearing params are typed **`InputFile | string`**, where a string is always
 ```ts
 for (const [key, v] of fields) {
   if (v == null)           continue;
-  else if (isInputFile(v)) form.attach(key, v);      // upload → multipart part
-  else if (isFormPart(v))  v.writeTo(form, key);      // file-carrying composite (media groups)
+  else if (isInputFile(v)) form.attach(key, v);    // upload → multipart part
+  else if (isFormPart(v))  v.writeTo(form);          // file-carrying composite (media groups)
   else                     form.set(key, String(v)); // Json<T> strings + scalars
 }
 ```
@@ -233,7 +233,7 @@ for (const [key, v] of fields) {
 - **The presence of any `InputFile` is the only thing that flips a request to `multipart/form-data`** (ADR-010); otherwise it stays `x-www-form-urlencoded`.
 - **Top-level file params** (`photo`, `document`, `thumbnail`, …) are sent as a multipart part named after the parameter — the documented "upload under the field name" convention. A `file_id`/URL string just goes in as a normal field.
 
-**Nested files (e.g. `sendMediaGroup`)** are the one case where a JSON array must reference files by `attach://<name>` while the bytes travel as separate parts. This is handled by a builder whose output is a **distinct `FormPart` type**, so serialization still stays out of the pipeline:
+**Nested files (e.g. `sendMediaGroup`)** are the one case where a JSON array must reference files by `attach://<name>` while the bytes travel as separate parts. This is handled by a builder, so the "pipeline serializes nothing" rule still holds:
 
 ```ts
 mediaGroup()
@@ -242,7 +242,7 @@ mediaGroup()
   .build();
 ```
 
-`mediaGroup().build()` serializes **at the call site** (like every other builder): it mints `attach://` names, JSON-stringifies the array with those references, and returns a real **`FormPart`** object — not a `Json<T>` string, and not a `FormPart` laundered through `Json<T>` by a cast. The fields that accept this are typed `Json<X> | FormPart` (the generator emits that union for any param whose inner type references `InputMedia`/`InputPaidMedia`: `sendMediaGroup.media`, `sendPaidMedia.media`, `editMessageMedia.media`), so the `Json<T>`-is-always-a-string invariant (§6.2) holds — the `FormPart` is its own branch in both the type and the encoder. The encoder's `writeTo(sink, key)` branch receives the **bound field key** (so the composite isn't hardcoded to `"media"`), sets that field to the JSON string and registers each part — it still stringifies nothing. The builder serializes; the encoder only moves strings and files. (See ADR-011.)
+`mediaGroup().build()` serializes **at the call site** (like every other builder): it mints `attach://` names, JSON-stringifies the array with those references, and returns a small *form-part payload* carrying both the `Json` string and the keyed `InputFile`s. The encoder's `writeTo(form)` branch then sets the `media` field to that string and registers each part — it still stringifies nothing. The builder serializes; the encoder only moves strings and files. (See ADR-011.)
 
 Runtime note: `Blob`/`Uint8Array`/`ReadableStream` exist on Node 18+, Bun, Deno, and Workers, so uploads work on the edge too; `fromPath()` is the only Node-only piece and lives in `./node`.
 
@@ -332,11 +332,7 @@ Backward compatibility is dropped, so these are intentional:
 | D. `toJSON()` + encoder `JSON.stringify` | library, one line | high | none (`.build()` optional) | one line |
 | E. **Branded `Json<T>` strings, built at call site** | **at the call site** | **high** | **`.build()`/`json()` per field** | **none** |
 
-*Axis the table omits:* **serialization frequency.** A→D all serialize *per request*; E serializes *per distinct value* — a value built once is reused across many sends without re-stringifying (see "Why E over D" below).
-
-**Decision: E.** Structured fields are typed `Json<T>` (a branded string). At runtime a `Json<T>` value is **always a string** — the brand is a zero-cost compile-time wrapper, never a wrapper object. Values are produced by builders (`InlineKeyboard`, the `fmt()` entity builder) or the generic `json(value)`, both of which `JSON.stringify` eagerly and return the branded string. The request pipeline performs **no serialization**: `encodeForm` writes strings and extracts `InputFile`s, nothing more. (The one apparent exception — file-bearing composites like `sendMediaGroup.media`, typed `Json<X> | FormPart` — does not break the string invariant: a `FormPart` is a *separate* type with its own encoder branch, not a `Json<T>`. See ADR-011 and §6.4.)
-
-**Why E over D.** The decision matrix scores D at or above E on every visible axis, but it omits one on which E wins decisively: **serialize-once, reuse-many**. A structured value built once — a module-level static `InlineKeyboard`, a cached `fmt()` result — is `JSON.stringify`d a single time under E and can then be reused across thousands of sends at zero further serialization cost. Under D the encoder re-`JSON.stringify`s the live object on *every* request, so a hot keyboard pays the stringify tax on every send. E also makes the wire contract explicit *in the type* (`Json<T>` says "this field is JSON on the wire") and surfaces a malformed value as a build error at the call site rather than as silent garbage in the pipeline. The DX cost is real — `.build()`/`json()` on every structured field — and we don't pretend otherwise; **D remains the documented fallback** (one `JSON.stringify` in the encoder, builders/objects accepted directly) if that call-site verbosity proves painful in practice. We are not claiming measured speedups here, only the structural difference: under E the serialization count is "once per distinct value", under D it is "once per request".
+**Decision: E.** Structured fields are typed `Json<T>` (a branded string). Values are produced by builders (`InlineKeyboard`, the `fmt()` entity builder) or the generic `json(value)`, both of which `JSON.stringify` eagerly and return the branded string. The request pipeline performs **no serialization**: `encodeForm` writes strings and extracts `InputFile`s, nothing more.
 
 **Consequences.** Zero serialization code in the hot path; the client is decoupled from every structured shape (forward-compatible); the "which fields are JSON" knowledge lives in generated `Json<T>` aliases at compile time. The brand is load-bearing — a bare `type X = string` would accept arbitrary text and re-create the "is this secretly JSON?" problem. The brand is, however, only **structural**: it guarantees a value "went through `json()`/`.build()`", not that the value is fully correct — for a permissive, all-optional target shape `T`, `json({})` or a wrongly-shaped-but-assignable object still type-checks. It catches "you forgot to serialize", not "you serialized the wrong thing". Trade-off: callers write `.build()`/`json()` on every structured field, and cannot pass a builder instance or plain object directly (that would require a library serialize step — option D — which we explicitly chose against to keep a single, pure client). Option D remains the fallback if call-site verbosity proves painful: it restores object/builder inputs at the cost of one `JSON.stringify` in the encoder, without bringing back a second client layer.
 
@@ -413,11 +409,11 @@ Backward compatibility is dropped, so these are intentional:
 
 **Decision.**
 - `InputFile` wraps web-standard data only (`Blob | Uint8Array | ReadableStream<Uint8Array>`); file-bearing params are typed `InputFile | string` (string = `file_id`/URL).
-- The encoder has exactly three branches: attach an `InputFile` as a multipart part, let a `FormPart` composite write itself, or set a string. Any `InputFile` present switches the body to `multipart/form-data`; otherwise `x-www-form-urlencoded`.
+- The encoder has exactly three branches: attach an `InputFile` as a multipart part, let a *form-part composite* write itself, or set a string. Any `InputFile` present switches the body to `multipart/form-data`; otherwise `x-www-form-urlencoded`.
 - Top-level file params upload as a part named after the parameter. Files nested in JSON are referenced as `attach://<name>` with a matching part.
-- Nested-file methods use a builder (`mediaGroup()`) whose `.build()` serializes at the call site and returns a real **`FormPart`** — a **distinct type**, not a `Json<T>`. These params are typed **`Json<X> | FormPart`** (the generator emits this union for any param whose inner type references `InputMedia`/`InputPaidMedia` — i.e. `sendMediaGroup.media`, `sendPaidMedia.media`, `editMessageMedia.media`). So the `Json<T>`-is-always-a-string invariant (ADR-002) is preserved: a `FormPart` is **not** a `FormPart` laundered through `Json<T>` by a cast — it is its own type with its own encoder branch, carrying the `Json` array (with `attach://` refs) **plus** the keyed `InputFile`s. `FormPart.writeTo(sink, key)` receives the **bound field key**, so the composite sets *that* field (it is **not** hardcoded to `"media"`) and registers the parts.
+- Nested-file methods use a builder (`mediaGroup()`) whose `.build()` serializes at the call site and returns a *form-part payload* = the `Json` array (with `attach://` refs) **plus** the keyed `InputFile`s. The encoder's composite branch sets the JSON field and registers the parts.
 
-**Consequences.** The "pipeline serializes nothing" rule (ADR-002) holds even for media groups — the builder does the serialization; the encoder only moves strings and files. Uploads work on the edge (web-standard data); `fromPath()` is the sole Node-only helper (`./node`). Trade-off: the encoder grows one branch (`FormPart` composites) beyond the string/file pair, and file-carrying composites need a bespoke builder rather than `json()`.
+**Consequences.** The "pipeline serializes nothing" rule (ADR-002) holds even for media groups — the builder does the serialization; the encoder only moves strings and files. Uploads work on the edge (web-standard data); `fromPath()` is the sole Node-only helper (`./node`). Trade-off: the encoder grows one branch (form-part composites) beyond the string/file pair, and file-carrying composites need a bespoke builder rather than `json()`.
 
 ---
 

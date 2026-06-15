@@ -1,20 +1,20 @@
 # Actionables — adversarial review of `ARCHITECTURE.md`
 
 **Source:** balanced red-team audit of `redesign/ARCHITECTURE.md` (2026-06-15), grounded in the v2 implementation.
-**Legend:** `[x]` done · severity **H/M/L** · each item names the finding, the concrete change, and a done-when.
+**Legend:** `[x]` done · `[~]` reverted · severity **H/M/L** · each item names the finding, the concrete change, and a done-when.
 
-> **Status — all 15 items executed (2026-06-15).** A1 decision: **keep model E and document the justification** (added a "Why E over D" subsection; no serialization-model switch). Code fixes (A2, M2, M3, M5, M6) implemented; docs (A1, A3, A4, M1, M4, L1–L5) updated. Verified by `npm run check`: `tsc --strict` + Node-isolation lint (now also globals) + edge-bundle gate + 62 unit tests, all green.
+> **Status (2026-06-15).** 13 of 15 items retained; **A1 and A2 were reverted on request.** A2: the generator emits structured params as `Json<T>` only (no `Json<X> | FormPart`); `mediaGroup().build()` keeps its `as unknown as Json<…>` cast and `FormPart.writeTo(sink)` (no key); the matching ADR-002/011/§6.4 wording is restored. A1: the "Why E over D" subsection was removed (model E is still kept, just not justified in-doc). **Retained:** A3 (tree-shake correction), A4 (single-params-arg + AbortSignal), M2/M3/M5/M6 code, and M1/M4/L1/L2/L3 + §10 docs. Verified by `npm run check`: `tsc --strict` + Node-isolation lint (imports + globals) + edge-bundle gate + 62 unit tests, all green.
 
 ---
 
 ## High
 
-- [x] **A1 — Re-decide ADR-002 (E vs D); fix the DX regression.** (finding 1)
+- [~] **A1 — Re-decide ADR-002 (E vs D); fix the DX regression.** (finding 1) — _REVERTED on request: the "Why E over D" subsection was removed; model E is kept but no longer justified in the doc._
   The decision table rates option D (objects/builders accepted; one `JSON.stringify` in the encoder) above the chosen E on every axis except "pipeline purity." Either switch the default to D, or document an explicit, evidence-backed reason E wins despite its own table.
   *Action:* prototype D — let `encodeForm` accept builder instances / plain objects for structured fields and stringify once; keep `Json<T>`/`.build()` as an optional fast path. Compare call-site ergonomics on 5 real handlers.
   *Done when:* ADR-002 either flips to D or adds a "Why E over D" subsection that doesn't contradict its own scoring; structured call sites no longer require `.build()` on every field (if D).
 
-- [x] **A2 — Resolve the `Json<T>` "always a string" vs `mediaGroup()` contradiction.** (finding 2)
+- [~] **A2 — Resolve the `Json<T>` "always a string" vs `mediaGroup()` contradiction.** (finding 2) — _REVERTED on request: api-parser emits `Json<T>` only (no `FormPart`); `mediaGroup().build()` keeps the `as unknown as Json<…>` cast. The contradiction is reinstated by choice._
   `media.ts:146` returns a `FormPart` object cast to a `Json<T>` string; ADR-002 says `Json<T>` is "still a string at runtime."
   *Action:* pick one — (a) give file-bearing composites their own param type (e.g. `MediaGroupInput`) instead of laundering a `FormPart` through `Json<T>`, so the string invariant holds; or (b) explicitly redefine `Json<T>` in ADR-002 as "string **or** form-part composite" and document the encoder's `isFormPart`-before-string ordering as a contract.
   *Done when:* no value typed `Json<T>` is a non-string at runtime, **or** the doc + types acknowledge the composite case; a test asserts the chosen invariant.
