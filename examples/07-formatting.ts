@@ -1,9 +1,9 @@
 /**
- * 07 — Rich text via message entities.
+ * 07 - Rich text via message entities.
  *
  * `EntityBuilder` is a fluent builder that accumulates text and tracks UTF-16
  * offsets for you, so you never hand-count entity positions or escape
- * Markdown/HTML. Its `.build()` returns `{ text, entities }` — both ready to drop
+ * Markdown/HTML. Its `.build()` returns `{ text, entities }` - both ready to drop
  * into `sendMessage`. `EntityType` is a typo-proof enum of every documented
  * entity kind.
  *
@@ -21,7 +21,7 @@ const { text, entities } = new EntityBuilder()
   .plain("\n\n")
   .plain("Shipped ")
   .italic("entity-based")
-  .plain(" formatting — no escaping needed. Run ")
+  .plain(" formatting - no escaping needed. Run ")
   .code("bun test")
   .plain(" and see the ")
   .link("changelog", "https://example.com/changelog")

@@ -1,5 +1,5 @@
 /**
- * `fromPath` — read a local file into an `InputFile` (ADR-006, §6.4).
+ * `fromPath` - read a local file into an `InputFile` (ADR-006, §6.4).
  *
  * The sole Node-only file-input helper. The core `InputFile` wraps web-standard
  * data only (no `fs`, no path-guessing), so reading from disk lives here, under
@@ -14,7 +14,7 @@ import { inputFile, type InputFile } from "../core/files.js";
  * Read `path` off disk and wrap it as an `InputFile`. The default filename is the
  * path's basename; pass `meta.filename` / `meta.contentType` to override.
  *
- * `readFile` returns a `Buffer`, which is a `Uint8Array` — accepted by `InputFile`
+ * `readFile` returns a `Buffer`, which is a `Uint8Array` - accepted by `InputFile`
  * directly, no copy.
  */
 export async function fromPath(

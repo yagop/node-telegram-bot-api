@@ -1,8 +1,8 @@
 /**
- * 10 — Resilience: retries, rate limiting, and error branching.
+ * 10 - Resilience: retries, rate limiting, and error branching.
  *
  * The transport retries transient failures (network, timeout, 5xx, and 429 with
- * `retry_after`) automatically — tune with `maxRetries` / `retryBackoffMs`.
+ * `retry_after`) automatically - tune with `maxRetries` / `retryBackoffMs`.
  * Opt-in proactive rate limiting (`rateLimit: { global, perChat }`) paces sends
  * so you stay under Telegram's flood limits before a 429 ever happens.
  *
@@ -34,12 +34,12 @@ async function notify(text: string): Promise<void> {
       console.warn(`Rate limited; retry after ${err.retryAfter ?? "?"}s`);
     } else if (err instanceof TelegramApiError && err.errorCode === 403) {
       // The user blocked the bot, or it was kicked from the chat.
-      console.warn("Forbidden — the bot can't message this chat.");
+      console.warn("Forbidden - the bot can't message this chat.");
     } else if (err instanceof NetworkError) {
-      // DNS, connection reset, fetch threw — already retried up to maxRetries.
+      // DNS, connection reset, fetch threw - already retried up to maxRetries.
       console.error("Network failure after retries:", err.message);
     } else {
-      throw err; // anything else is unexpected — let it surface
+      throw err; // anything else is unexpected - let it surface
     }
   }
 }

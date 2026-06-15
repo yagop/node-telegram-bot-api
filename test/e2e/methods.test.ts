@@ -1,12 +1,12 @@
 /**
- * Live integration (e2e) suite — ONE describe per Bot API method (~180).
+ * Live integration (e2e) suite - ONE describe per Bot API method (~180).
  *
  * Mirrors v1's integration pattern (see `.claude/skills/run-tests/SKILL.md`):
  * every method hits the real `api.telegram.org`, throttled, with real fixtures.
  *
  * STRICT MODEL: every method test calls the method FOR REAL and lets a rejection
  * FAIL the test. There is no error-swallowing wrapper around `TelegramApiError`
- * — if the API rejects, the test fails. The call resolving IS the assertion; where a result
+ * - if the API rejects, the test fails. The call resolving IS the assertion; where a result
  * is captured a single light `expect(result).toBeDefined()` documents it. Each test
  * is self-contained: a method that needs a `message_id` / `file_id` / poll creates
  * its own fixture at the top and reverts (delete / unpin) within the same test.
@@ -14,7 +14,7 @@
  * Consequence: env-limited methods (forum-only, payments without a provider,
  * special-supergroup stickers, owner-not-promotable admin ops, business / story /
  * gift / managed-bot / passport, etc.) WILL FAIL when run live in this environment.
- * That is intended — the suite no longer masks those rejections.
+ * That is intended - the suite no longer masks those rejections.
  *
  * RUNNING THE FULL SUITE LOGS THE BOT OUT: `logOut` and `close` are the LAST two
  * describe blocks and terminate the bot session (~10 min lockout). Acceptable for
@@ -1728,16 +1728,16 @@ live("methods", () => {
   });
 
   // -------------------------------------------------------------------------
-  // SESSION TERMINATORS — MUST BE LAST.
+  // SESSION TERMINATORS - MUST BE LAST.
   //
   // `logOut` and `close` end the bot session. After logOut the bot is locked out
   // of the Bot API for ~10 minutes; any method placed after these two would 401.
-  // Running the FULL suite therefore logs this (droppable) test bot out — that is
+  // Running the FULL suite therefore logs this (droppable) test bot out - that is
   // expected and acceptable.
   // -------------------------------------------------------------------------
 
   method("logOut", () => {
-    test("logs the bot out (terminates the session — ~10 min lockout)", async () => {
+    test("logs the bot out (terminates the session - ~10 min lockout)", async () => {
       await api.logOut();
     });
   });
@@ -1752,7 +1752,7 @@ live("methods", () => {
   // Completeness guard: every Api method must have a describe block above.
   // -------------------------------------------------------------------------
 
-  test("coverage — every Api method has a describe", () => {
+  test("coverage - every Api method has a describe", () => {
     const apiMethods = Object.getOwnPropertyNames(Api.prototype).filter(
       (n) => n !== "constructor" && n !== "request",
     );

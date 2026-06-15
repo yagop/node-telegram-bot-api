@@ -25,7 +25,7 @@ import type {
 export class Context {
   readonly update: Update;
   readonly api: Api;
-  /** Mutable per-update bag for middleware (sessions, i18n, …). */
+  /** Mutable per-update bag for middleware (sessions, i18n, ...). */
   readonly state: Record<string, unknown> = {};
   /** Set by `command()` (args string) / `hears()` (string or RegExpMatchArray). */
   match?: string | RegExpMatchArray;

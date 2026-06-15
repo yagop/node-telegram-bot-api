@@ -33,7 +33,7 @@ describe("TokenBucket", () => {
     await bucket.take();
     await bucket.take();
     await bucket.take();
-    // All three resolved without any clock movement — assertion is reaching here.
+    // All three resolved without any clock movement - assertion is reaching here.
     expect(true).toBe(true);
   });
 
@@ -81,7 +81,7 @@ describe("RateLimiter", () => {
     const limiter = new RateLimiter({ perChat: 1, now: clock.now });
 
     await limiter.acquire("A"); // chat A drains its single token (burst 1)
-    await limiter.acquire("B"); // chat B has its own fresh bucket — immediate
+    await limiter.acquire("B"); // chat B has its own fresh bucket - immediate
 
     // Chat A again must wait, but B is unaffected: abort A's wait to prove it
     // was blocked (keeps the test fast and deterministic without a 1s timer).

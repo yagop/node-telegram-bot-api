@@ -4,7 +4,7 @@
  * Structured Bot API fields are typed as branded `Json<T>` strings; the request
  * pipeline never serializes. `json()` is how a caller produces that branded
  * string for any field that has no bespoke builder (`reply_parameters`,
- * `link_preview_options`, …). The dedicated builders (`InlineKeyboard`,
+ * `link_preview_options`, ...). The dedicated builders (`InlineKeyboard`,
  * `EntityBuilder`, `MediaGroup`) are sugar layered on top of the same idea.
  */
 import type { Json } from "../types/brand.js";

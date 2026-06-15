@@ -3,7 +3,7 @@
  *
  * `InputFile` is the one value that cannot be a pre-serialized `Json<T>` string
  * (you can't JSON-encode a `Blob`), so it has its own path. It wraps
- * web-standard data only — no `fs`, no path-guessing — so uploads work on Node,
+ * web-standard data only - no `fs`, no path-guessing - so uploads work on Node,
  * Bun, Deno and the edge. File-bearing params are typed `InputFile | string`,
  * where a string is always a `file_id` or URL and goes on the wire as-is.
  *

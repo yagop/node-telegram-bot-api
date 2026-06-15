@@ -1,10 +1,10 @@
 /**
- * Bot — the composition root (ADR-003, ADR-004, ADR-005).
+ * Bot - the composition root (ADR-003, ADR-004, ADR-005).
  *
  * Holds the single `Api`, an ordered middleware list, and an optional error
  * boundary. `use`/`on`/`command`/`hears` all register filter middleware so they
  * interleave with one another and obey registration order. `handleUpdate` is the
- * one dispatch path — shared by `start()` (which pumps any `AsyncIterable<Update>`,
+ * one dispatch path - shared by `start()` (which pumps any `AsyncIterable<Update>`,
  * defaulting to `longPoll`) and by `webhookCallback`.
  */
 

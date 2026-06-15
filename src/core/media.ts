@@ -7,7 +7,7 @@
  * `.build()` it mints `attach://` names, JSON-stringifies the InputMedia array
  * with those references substituted, and returns a `FormPart` carrying both that
  * string and the keyed `InputFile`s. The encoder's `writeTo(sink)` branch then
- * sets the `media` field and registers each part — it still stringifies nothing.
+ * sets the `media` field and registers each part - it still stringifies nothing.
  */
 import type {
   InputMediaAnimation,
@@ -67,9 +67,9 @@ function splitOptions(options?: ThumbOptions): { thumbnail?: Media; rest: Record
 }
 
 /**
- * Builds the `media` argument for `sendMediaGroup`. Each `.photo()/.video()/…`
+ * Builds the `media` argument for `sendMediaGroup`. Each `.photo()/.video()/...`
  * call records an InputMedia item; `.build()` returns a `FormPart` typed as the
- * `media` field's `Json<…>`.
+ * `media` field's `Json<...>`.
  */
 export class MediaGroup {
   private readonly items: Item[] = [];
@@ -103,7 +103,7 @@ export class MediaGroup {
   /**
    * Serialize at the call site: mint `attach://` refs for every `InputFile`,
    * stringify the array with those refs, and return a `FormPart` carrying the
-   * JSON plus the keyed files. Typed as the `media` field's `Json<…>`; the
+   * JSON plus the keyed files. Typed as the `media` field's `Json<...>`; the
    * runtime value is the FormPart, which the encoder handles before the string
    * branch (ADR-011).
    */
@@ -141,7 +141,7 @@ export class MediaGroup {
       },
     };
 
-    // Typed as Json<…> to satisfy the param field; the runtime value is the
+    // Typed as Json<...> to satisfy the param field; the runtime value is the
     // FormPart, recognised by the encoder's isFormPart check.
     return part as unknown as SendMediaGroupParams["media"];
   }

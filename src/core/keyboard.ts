@@ -1,7 +1,7 @@
 /**
  * Markup builders (§6.2, ADR-002).
  *
- * Each `.build()` returns a branded `Json<…>` string — already wire-ready — so
+ * Each `.build()` returns a branded `Json<...>` string - already wire-ready - so
  * it drops straight into a `reply_markup` field. The library serializes nothing;
  * these builders (and `json()`) do it at the call site.
  */
