@@ -1,42 +1,44 @@
 {
   "name": "node-telegram-bot-api",
-  "version": "1.1.1",
-  "description": "Telegram Bot API — modern TypeScript rewrite with generated types",
+  "version": "2.0.0-alpha.0",
+  "description": "Telegram Bot API — runtime-agnostic TypeScript client (v2). See redesign/ARCHITECTURE.md.",
   "type": "module",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+  "main": "./dist/core/index.js",
+  "types": "./dist/core/index.d.ts",
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
+      "types": "./dist/core/index.d.ts",
+      "import": "./dist/core/index.js"
+    },
+    "./node": {
+      "types": "./dist/node/index.d.ts",
+      "import": "./dist/node/index.js"
+    },
+    "./types": {
+      "types": "./dist/types/index.d.ts",
+      "import": "./dist/types/index.js"
     }
   },
+  "sideEffects": false,
   "files": [
     "dist",
     "README.md",
     "LICENSE.md"
   ],
-  "directories": {
-    "example": "examples",
-    "test": "test"
-  },
   "keywords": [
     "telegram",
     "telegram bot",
     "telegram bot api",
     "bot",
-    "typescript"
+    "typescript",
+    "edge",
+    "cloudflare-workers"
   ],
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
-    "prepare": "npm run build",
     "typecheck": "tsc --noEmit",
-    "generate:types": "bun scripts/api-parser.ts",
-    "generate:docs": "bun scripts/api-doc.ts",
-    "test:node:unit": "node test/run-unit.mjs",
-    "test:node:integration": "node test/run-integration.mjs",
-    "test:bun:unit": "bun test test/unit",
-    "test:bun:integration": "bun test --timeout 300000 test/integration"
+    "test": "bun test test/unit",
+    "generate:types": "bun scripts/api-parser.ts"
   },
   "author": "Yago Pérez <yagoperezs@gmail.com>",
   "license": "MIT",
@@ -44,9 +46,9 @@
     "node": ">=18"
   },
   "devDependencies": {
-    "@types/node": "^25.6.2",
-    "tsx": "^4.22.3",
-    "typescript": "^5.7.0"
+    "@types/node": "^25.9.3",
+    "bun": "^1.3.14",
+    "typescript": "^5.9.3"
   },
   "repository": {
     "type": "git",
