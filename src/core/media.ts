@@ -20,6 +20,7 @@ import type {
   InputMediaAnimation,
   InputMediaAudio,
   InputMediaDocument,
+  InputMediaLivePhoto,
   InputMediaPhoto,
   InputMediaVideo,
   InputProfilePhoto,
@@ -103,19 +104,22 @@ type AudioOptions = ThumbOptions & Pick<InputMediaAudio, "duration" | "performer
 type DocumentOptions = ThumbOptions & Pick<InputMediaDocument, "disable_content_type_detection">;
 type AnimationOptions = ThumbOptions &
   Pick<InputMediaAnimation, "show_caption_above_media" | "width" | "height" | "duration" | "has_spoiler">;
+// A live photo carries TWO files: `media` (the live photo) and `photo` (the still).
+type LivePhotoOptions = CaptionOptions & Pick<InputMediaLivePhoto, "show_caption_above_media" | "has_spoiler">;
 
 /**
  * One InputMedia entry, kept fully typed: its `type` and file-bearing `media`
- * (plus `thumbnail`, which lives in the kind's options) alongside the typed
- * extras - no `Record<string, unknown>` bag. `AttachedMedia` substitutes whichever
- * of `media`/`thumbnail` is an `InputFile`.
+ * (plus `thumbnail`/`photo`, which carry files too) alongside the typed extras -
+ * no `Record<string, unknown>` bag. `AttachedMedia` substitutes whichever fields
+ * are an `InputFile`.
  */
 type GroupItem =
   | ({ type: "photo"; media: Media } & PhotoOptions)
   | ({ type: "video"; media: Media } & VideoOptions)
   | ({ type: "audio"; media: Media } & AudioOptions)
   | ({ type: "document"; media: Media } & DocumentOptions)
-  | ({ type: "animation"; media: Media } & AnimationOptions);
+  | ({ type: "animation"; media: Media } & AnimationOptions)
+  | ({ type: "live_photo"; media: Media; photo: Media } & LivePhotoOptions);
 
 /**
  * Builds the `media` argument for `sendMediaGroup`. Each `.photo()/.video()/...`
@@ -151,6 +155,12 @@ export class MediaGroup {
     return this;
   }
 
+  /** A live photo: `media` is the live photo, `photo` the still cover. Both upload. */
+  livePhoto(media: Media, photo: Media, options?: LivePhotoOptions): this {
+    this.items.push({ type: "live_photo", media, photo, ...options });
+    return this;
+  }
+
   build(): SendMediaGroupParams["media"] {
     return new AttachedMedia<CarriedBy<SendMediaGroupParams["media"]>>(this.items).build();
   }
@@ -171,7 +181,10 @@ export interface PaidVideoOptions {
   supports_streaming?: boolean;
 }
 
-type PaidItem = { type: "photo"; media: Media } | ({ type: "video"; media: Media } & PaidVideoOptions);
+type PaidItem =
+  | { type: "photo"; media: Media }
+  | ({ type: "video"; media: Media } & PaidVideoOptions)
+  | { type: "live_photo"; media: Media; photo: Media };
 
 /**
  * Builds the `media` argument for `sendPaidMedia` (InputPaidMedia[]). The peer of
@@ -189,6 +202,12 @@ export class PaidMediaGroup {
 
   video(media: Media, options?: PaidVideoOptions): this {
     this.items.push({ type: "video", media, ...options });
+    return this;
+  }
+
+  /** A live photo: `media` is the live photo, `photo` the still cover. Both upload. */
+  livePhoto(media: Media, photo: Media): this {
+    this.items.push({ type: "live_photo", media, photo });
     return this;
   }
 
