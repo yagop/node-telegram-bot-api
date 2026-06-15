@@ -3,13 +3,11 @@
  *
  * `sendMediaGroup` is the one method where a JSON array must reference uploaded
  * files by `attach://<name>` while the bytes travel as separate multipart parts.
- * Serialization happens at the call site, not in the pipeline (ADR-002): at
- * `.build()` the builder mints `attach://` names, JSON-stringifies the InputMedia
- * array with those references substituted, and returns a `FormPart` carrying both
- * that string and the keyed `InputFile`s. The encoder's `writeTo(sink, key)`
- * branch then sets the bound field and registers each part — it stringifies
- * nothing. `build()` returns a `FormPart` (not a `Json<…>`), so the "`Json<T>`
- * is always a string at runtime" invariant holds (ADR-011).
+ * The builder keeps the "library serializes nothing" rule (ADR-002) intact: at
+ * `.build()` it mints `attach://` names, JSON-stringifies the InputMedia array
+ * with those references substituted, and returns a `FormPart` carrying both that
+ * string and the keyed `InputFile`s. The encoder's `writeTo(sink)` branch then
+ * sets the `media` field and registers each part — it still stringifies nothing.
  */
 import type {
   InputMediaAnimation,
@@ -17,6 +15,7 @@ import type {
   InputMediaDocument,
   InputMediaPhoto,
   InputMediaVideo,
+  SendMediaGroupParams,
 } from "../types/index.js";
 import type { Json } from "../types/brand.js";
 import { type FormPart, type FormSink, InputFile, isInputFile } from "./files.js";
@@ -104,11 +103,11 @@ export class MediaGroup {
   /**
    * Serialize at the call site: mint `attach://` refs for every `InputFile`,
    * stringify the array with those refs, and return a `FormPart` carrying the
-   * JSON plus the keyed files. Assignable to any nested-file `media` param
-   * (`sendMediaGroup`, `sendPaidMedia`), which the generator types as
-   * `Json<…> | FormPart`.
+   * JSON plus the keyed files. Typed as the `media` field's `Json<…>`; the
+   * runtime value is the FormPart, which the encoder handles before the string
+   * branch (ADR-011).
    */
-  build(): FormPart {
+  build(): SendMediaGroupParams["media"] {
     const files: Array<[string, InputFile]> = [];
 
     // Substitute an InputFile with an `attach://<name>` ref, recording the file.
@@ -136,12 +135,15 @@ export class MediaGroup {
 
     const part: FormPart = {
       __formPart: true,
-      writeTo(sink: FormSink, key: string): void {
-        sink.set(key, mediaJson);
+      writeTo(sink: FormSink): void {
+        sink.set("media", mediaJson);
         for (const [name, file] of files) sink.attach(name, file);
       },
     };
-    return part;
+
+    // Typed as Json<…> to satisfy the param field; the runtime value is the
+    // FormPart, recognised by the encoder's isFormPart check.
+    return part as unknown as SendMediaGroupParams["media"];
   }
 }
 
