@@ -38,9 +38,11 @@
     "build": "tsc -p tsconfig.build.json",
     "typecheck": "tsc --noEmit",
     "test": "bun test test/unit",
+    "test:e2e": "bun test test/e2e",
+    "typecheck:examples": "tsc -p tsconfig.examples.json --noEmit",
     "lint:core": "node scripts/check-core-imports.mjs",
     "check:edge": "bun scripts/check-edge-bundle.mjs",
-    "check": "tsc -p tsconfig.json --noEmit && npm run lint:core && npm run check:edge && bun test test/unit",
+    "check": "tsc -p tsconfig.json --noEmit && npm run typecheck:examples && npm run lint:core && npm run check:edge && bun test test/unit",
     "generate:types": "bun scripts/api-parser.ts"
   },
   "author": "Yago Pérez <yagoperezs@gmail.com>",
