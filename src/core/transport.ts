@@ -8,6 +8,7 @@
  * `./errors`.
  */
 
+import { debug } from "./debug.js";
 import { encodeForm } from "./encode.js";
 import {
   type ApiErrorParameters,
@@ -44,6 +45,8 @@ const DEFAULT_TIMEOUT = 30_000;
 const DEFAULT_MAX_RETRIES = 2;
 const DEFAULT_RETRY_BACKOFF = 300;
 const MAX_BACKOFF = 30_000;
+
+const log = debug("transport");
 
 /** Combine several abort signals into one, plus a listener cleanup. */
 function combineSignals(signals: Array<AbortSignal | undefined>): {
@@ -129,6 +132,7 @@ export class Transport {
   ): Promise<R> {
     const url = `${this.apiRoot}/bot${this.token}/${method}`;
     const timeoutMs = this.effectiveTimeout(method, params);
+    log("-> %s", method);
 
     // Opt-in proactive rate limiting: acquire once, before the first send attempt
     // (not per retry), keyed by chat id when present.
@@ -136,8 +140,11 @@ export class Transport {
       await this.limiter.acquire(params?.chat_id as string | number | undefined, signal);
     }
 
-    let attempt = 0;
-    for (;;) {
+    // Bounded: at most `maxRetries + 1` attempts (the first send plus one retry
+    // per allowed retry). `attempt` doubles as the loop counter and the retry
+    // count; every error path either retries via `continue` or throws, so the
+    // bound is a hard ceiling rather than the termination condition.
+    for (let attempt = 0; attempt <= this.maxRetries; attempt++) {
       const { body, headers } = await encodeForm(params ?? {});
       const timeoutSignal = timeoutMs > 0 ? AbortSignal.timeout(timeoutMs) : undefined;
       const { signal: composed, cleanup } = combineSignals([signal, timeoutSignal]);
@@ -149,8 +156,9 @@ export class Transport {
         if (signal?.aborted) throw err; // caller cancelled - propagate verbatim
         // Transient throws (fetch reject / our timeout): retry with backoff.
         if (attempt < this.maxRetries) {
-          attempt += 1;
-          await delay(this.backoff(attempt), signal);
+          const wait = this.backoff(attempt + 1);
+          log("%s transient error; retry %d/%d in %dms", method, attempt + 1, this.maxRetries, wait);
+          await delay(wait, signal);
           continue;
         }
         if (isAbortError(err)) throw new TimeoutError(`Request timed out: ${method}`, { cause: err });
@@ -164,8 +172,9 @@ export class Transport {
       if (response.status >= 500) {
         const text = await response.text();
         if (attempt < this.maxRetries) {
-          attempt += 1;
-          await delay(this.backoff(attempt), signal);
+          const wait = this.backoff(attempt + 1);
+          log("%s HTTP %d; retry %d/%d in %dms", method, response.status, attempt + 1, this.maxRetries, wait);
+          await delay(wait, signal);
           continue;
         }
         // Exhausted: prefer the `{ ok: false }` envelope when the body is one.
@@ -187,17 +196,26 @@ export class Transport {
         });
       }
 
-      if (json.ok) return json.result;
+      if (json.ok) {
+        log("<- %s ok", method);
+        return json.result;
+      }
 
       if (json.error_code === 429 && attempt < this.maxRetries) {
-        attempt += 1;
         const retryAfter = json.parameters?.retry_after ?? 1;
+        log("%s 429; retry %d/%d after %ds", method, attempt + 1, this.maxRetries, retryAfter);
         await delay(retryAfter * 1000, signal);
         continue;
       }
 
+      log("<- %s error %d %s", method, json.error_code, json.description);
       throw new TelegramApiError(json.error_code, json.description, json.parameters);
     }
+
+    // Unreachable: the final iteration (attempt === maxRetries) takes a throwing
+    // branch on every error path, so the loop never falls through here. Present
+    // only to satisfy control-flow analysis now that the loop is bounded.
+    throw new TelegramBotError(`Retry loop exited without a result: ${method}`);
   }
 }
 

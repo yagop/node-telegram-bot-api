@@ -90,7 +90,7 @@ flowchart TD
   CTX -->|ctx.reply / ctx.api.*| API --> ENC --> TR --> TG["api.telegram.org"]
 ```
 
-Two entry points, **one dispatch path**: `bot.start(source)` pumps a generator for long-running processes; `bot.handleUpdate(update)` handles a single update and is what the Worker/edge callback calls. Both build a `Context` and run the same composed chain. Structured arguments are serialized **before** they reach the client, by the builders/`json()` at the call site - the client and encoder only ever move strings.
+Two entry points, **one dispatch path**: `bot.startPolling(source)` pumps a generator for long-running processes; `bot.handleUpdate(update)` handles a single update and is what the Worker/edge callback calls. Both build a `Context` and run the same composed chain. Structured arguments are serialized **before** they reach the client, by the builders/`json()` at the call site - the client and encoder only ever move strings.
 
 ---
 
@@ -211,7 +211,6 @@ class InputFile {
     readonly meta?: { filename?: string; contentType?: string },
   ) {}
 }
-const inputFile = (data, meta?) => new InputFile(data, meta);
 
 // node subpath only:
 async function fromPath(path: string, meta?): Promise<InputFile>;   // fs → Blob/stream
@@ -225,7 +224,7 @@ File-bearing params are typed **`InputFile | string`**, where a string is always
 for (const [key, v] of fields) {
   if (v == null)           continue;
   else if (isInputFile(v)) form.attach(key, v);    // upload → multipart part
-  else if (isFormPart(v))  v.writeTo(form);          // file-carrying composite (media groups)
+  else if (isFormPart(v))  v.writeTo(form, key);     // file-carrying composite (nested-file builders)
   else                     form.set(key, String(v)); // Json<T> strings + scalars
 }
 ```
@@ -233,16 +232,16 @@ for (const [key, v] of fields) {
 - **The presence of any `InputFile` is the only thing that flips a request to `multipart/form-data`** (ADR-010); otherwise it stays `x-www-form-urlencoded`.
 - **Top-level file params** (`photo`, `document`, `thumbnail`, ...) are sent as a multipart part named after the parameter - the documented "upload under the field name" convention. A `file_id`/URL string just goes in as a normal field.
 
-**Nested files (e.g. `sendMediaGroup`)** are the one case where a JSON array must reference files by `attach://<name>` while the bytes travel as separate parts. This is handled by a builder, so the "pipeline serializes nothing" rule still holds:
+**Nested files** (`sendMediaGroup`, sticker sets, profile photos, story content) are the case where a JSON structure must reference files by `attach://<name>` while the bytes travel as separate parts. This is handled by a builder per structure, so the "pipeline serializes nothing" rule still holds:
 
 ```ts
 new MediaGroup()
-  .photo(inputFile(bytesA), { caption: "A" })
+  .photo(new InputFile(bytesA), { caption: "A" })
   .photo("https://example.com/b.jpg")    // URL → no upload
   .build();
 ```
 
-`new MediaGroup().build()` serializes **at the call site** (like every other builder): it mints `attach://` names, JSON-stringifies the array with those references, and returns a small *form-part payload* carrying both the `Json` string and the keyed `InputFile`s. The encoder's `writeTo(form)` branch then sets the `media` field to that string and registers each part - it still stringifies nothing. The builder serializes; the encoder only moves strings and files. (See ADR-011.)
+`new MediaGroup().build()` serializes **at the call site** (like every other builder): it mints `attach://` names, JSON-stringifies the array with those references, and returns a small *form-part payload* carrying both the `Json` string and the keyed `InputFile`s. The encoder's `writeTo(form, key)` branch then sets *that param's field* (`media`, `stickers`, `photo`, `content`, ...) to the string and registers each part - it still stringifies nothing. The builder serializes; the encoder only moves strings and files. The same shape backs `StickerSetBuilder`/`inputSticker`, `profilePhoto` and `storyContent`. (See ADR-011.)
 
 Runtime note: `Blob`/`Uint8Array`/`ReadableStream` exist on Node 18+, Bun, Deno, and Workers, so uploads work on the edge too; `fromPath()` is the only Node-only piece and lives in `./node`.
 
@@ -295,9 +294,9 @@ Backward compatibility is dropped, so these are intentional:
 2. **No `EventEmitter`.** `bot.on('message', ...)` is now a router, not an event subscription. `onText` → `bot.hears`; `onReplyToMessage` → middleware on `ctx.message.reply_to_message`.
 3. **Single-argument methods.** Every `Api` method takes one params object. `sendMessage(chatId, text, opts)` → `api.sendMessage({ chat_id, text, ... })` or `ctx.reply(text)`.
 4. **Structured args are branded `Json<T>` strings.** `reply_markup`/entities/etc. take the output of a builder (`new InlineKeyboard()...build()`) or `json(value)`. Passing a plain object or a bare string is a type error. The `_fix*` pipeline and any pipeline-side serialization are gone (serialization moves to the builders at the call site).
-5. **File inputs:** bare strings are never paths. Use `inputFile(bytes)` or `fromPath(path)`. `options.filepath` is gone.
+5. **File inputs:** bare strings are never paths. Use `new InputFile(bytes)` or `fromPath(path)`. `options.filepath` is gone.
 6. **Webhooks:** `TelegramBotWebHook` → `webhookCallback(bot)` in core, `createWebhookServer(bot)` in `node-telegram-bot-api/node`, or `registerExpressWebhook` / `nextAppWebhook` to mount on an existing server.
-7. **Polling:** `TelegramBotPolling` and `startPolling`/`stopPolling`/`isPolling` → `bot.start()`/`bot.stop()` or `longPoll()` directly.
+7. **Polling:** `TelegramBotPolling` and `startPolling`/`stopPolling`/`isPolling` -> `bot.startPolling()`/`bot.stop()`/`bot.isRunning()` or `longPoll()` directly.
 8. **Errors:** `EFATAL` splits into `NetworkError`/`TimeoutError`; `TelegramError` → `TelegramApiError` with structured fields. `.code` strings are preserved.
 9. **`Update` is a discriminated union** - `update.message` only exists on the message variant.
 10. **ESM-only, web-standard.** No CommonJS build. Node floor stays at 18 (first LTS with stable global `fetch`). Subpath exports: core at `.`, Node helpers at `./node`.
@@ -353,7 +352,7 @@ Backward compatibility is dropped, so these are intentional:
 ### ADR-004 - Update sources as async generators
 
 **Context.** `TelegramBotPolling` is heavy stateful machinery.
-**Decision.** `async function* longPoll(api, opts, signal)`; `bot.start()` consumes any `AsyncIterable<Update>`.
+**Decision.** `async function* longPoll(api, opts, signal)`; `bot.startPolling()` consumes any `AsyncIterable<Update>`.
 **Consequences.** Deletes scheduling/abort/active-request bookkeeping; makes the stream composable (filter/take/fan-out). The "offset infinite loop" workaround becomes an explicit, opt-in error policy. Trade-off: a misbehaving handler can slow the pull loop - documented; concurrency is opt-in via a queue middleware.
 
 ### ADR-005 - Web-standard core + Node/edge adapters
@@ -365,7 +364,7 @@ Backward compatibility is dropped, so these are intentional:
 ### ADR-006 - Explicit `InputFile`; strings are file_id/URL only
 
 **Context.** `options.filepath` makes a bare string mean path *or* file_id; relies on `fs`.
-**Decision.** Uploadables are wrapped (`inputFile(...)`/`fromPath(...)`); strings are always file_id/URL. File-bearing params are typed `InputFile | string`.
+**Decision.** Uploadables are wrapped (`new InputFile(...)`/`fromPath(...)`); strings are always file_id/URL. File-bearing params are typed `InputFile | string`.
 **Consequences.** Removes ambiguity and the only fs dependency in the hot path; works on edge. Trade-off: a little more typing for local uploads, in exchange for predictability. The wire mechanics (multipart trigger, `attach://`, nested files) are ADR-011.
 
 ### ADR-007 - `Update` as a discriminated union
@@ -411,7 +410,7 @@ Backward compatibility is dropped, so these are intentional:
 - `InputFile` wraps web-standard data only (`Blob | Uint8Array | ReadableStream<Uint8Array>`); file-bearing params are typed `InputFile | string` (string = `file_id`/URL).
 - The encoder has exactly three branches: attach an `InputFile` as a multipart part, let a *form-part composite* write itself, or set a string. Any `InputFile` present switches the body to `multipart/form-data`; otherwise `x-www-form-urlencoded`.
 - Top-level file params upload as a part named after the parameter. Files nested in JSON are referenced as `attach://<name>` with a matching part.
-- Nested-file methods use a builder (`MediaGroup`) whose `.build()` serializes at the call site and returns a *form-part payload* = the `Json` array (with `attach://` refs) **plus** the keyed `InputFile`s. The encoder's composite branch sets the JSON field and registers the parts.
+- Nested-file methods use a builder per structure (`MediaGroup`; `StickerSetBuilder`/`inputSticker`; `profilePhoto`; `storyContent`) whose `.build()` (or factory call) serializes at the call site and returns a *form-part payload* = the `Json` value (with `attach://` refs) **plus** the keyed `InputFile`s. The encoder's composite branch sets the JSON field (under the param's own key) and registers the parts.
 
 **Consequences.** The "pipeline serializes nothing" rule (ADR-002) holds even for media groups - the builder does the serialization; the encoder only moves strings and files. Uploads work on the edge (web-standard data); `fromPath()` is the sole Node-only helper (`./node`). Trade-off: the encoder grows one branch (form-part composites) beyond the string/file pair, and file-carrying composites need a bespoke builder rather than `json()`.
 

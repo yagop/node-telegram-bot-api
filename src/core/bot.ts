@@ -4,8 +4,12 @@
  * Holds the single `Api`, an ordered middleware list, and an optional error
  * boundary. `use`/`on`/`command`/`hears` all register filter middleware so they
  * interleave with one another and obey registration order. `handleUpdate` is the
- * one dispatch path - shared by `start()` (which pumps any `AsyncIterable<Update>`,
- * defaulting to `longPoll`) and by `webhookCallback`.
+ * one dispatch path - shared by `startPolling()` (which pumps any
+ * `AsyncIterable<Update>`, defaulting to `longPoll`) and by `webhookCallback`.
+ *
+ * `startPolling` is the long-poll pump. Webhook mode has no `start` here: it is a
+ * request handler (`webhookCallback` / `createWebhookServer`), since polling and
+ * webhooks are mutually exclusive and webhook serving stays out of edge-neutral core.
  */
 
 import { Api } from "./api.js";
@@ -44,7 +48,7 @@ export class Bot {
    */
   on(kind: UpdateType | UpdateType[], ...handlers: Middleware<Context>[]): this {
     const kinds = Array.isArray(kind) ? kind : [kind];
-    const run = compose(handlers) as Composed;
+    const run = compose(handlers) satisfies Composed;
     return this.use((ctx, next) => {
       const matched = kinds.some((k) => k in ctx.update);
       return matched ? run(ctx, next) : next();
@@ -60,7 +64,7 @@ export class Bot {
       n.replace(/^\//, ""),
     );
     const re = new RegExp(`^\\/(${names.map(escapeRegExp).join("|")})(@\\w+)?(?:\\s+(.*))?$`, "s");
-    const run = compose(handlers) as Composed;
+    const run = compose(handlers) satisfies Composed;
     return this.use((ctx, next) => {
       const text = ctx.message?.text ?? ctx.channelPost?.text;
       if (text === undefined) return next();
@@ -81,7 +85,7 @@ export class Bot {
     ...handlers: Middleware<Context>[]
   ): this {
     const triggers = Array.isArray(trigger) ? trigger : [trigger];
-    const run = compose(handlers) as Composed;
+    const run = compose(handlers) satisfies Composed;
     return this.use((ctx, next) => {
       const text = ctx.message?.text;
       if (text === undefined) return next();
@@ -122,9 +126,10 @@ export class Bot {
 
   /**
    * Pump an update source (default `longPoll`) through `handleUpdate` until
-   * `stop()` aborts. Resolves when the source is exhausted or aborted.
+   * `stop()` aborts. Resolves when the source is exhausted or aborted. This is
+   * long-poll mode; for webhooks use `webhookCallback`/`createWebhookServer`.
    */
-  async start(source?: AsyncIterable<Update>, options?: LongPollOptions): Promise<void> {
+  async startPolling(source?: AsyncIterable<Update>, options?: LongPollOptions): Promise<void> {
     const controller = new AbortController();
     this.controller = controller;
     this.running = true;
