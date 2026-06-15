@@ -8,7 +8,7 @@
 
 import { readFile } from "node:fs/promises";
 import { basename } from "node:path";
-import { inputFile, type InputFile } from "../core/files.js";
+import { InputFile } from "../core/files.js";
 
 /**
  * Read `path` off disk and wrap it as an `InputFile`. The default filename is the
@@ -22,7 +22,7 @@ export async function fromPath(
   meta?: { filename?: string; contentType?: string },
 ): Promise<InputFile> {
   const bytes = await readFile(path);
-  return inputFile(bytes, {
+  return new InputFile(bytes, {
     filename: meta?.filename ?? basename(path),
     contentType: meta?.contentType,
   });

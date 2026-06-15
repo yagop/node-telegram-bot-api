@@ -2,7 +2,7 @@
  * 08 - Uploading files.
  *
  * Three ways to supply file bytes:
- *   - `inputFile(bytes, { filename })` - wrap in-memory bytes (Blob / Uint8Array /
+ *   - `new InputFile(bytes, { filename })` - wrap in-memory bytes (Blob / Uint8Array /
  *     ReadableStream). Web-standard, works on every runtime.
  *   - `fromPath("./pic.jpg")` - read a local file off disk (from the `/node` subpath).
  *   - `new MediaGroup()` - build a `sendMediaGroup` payload; uploaded files are wired
@@ -11,7 +11,7 @@
  *
  * Run: BOT_TOKEN=123:abc CHAT_ID=12345 bun examples/08-uploads.ts
  */
-import { Api, inputFile, MediaGroup } from "node-telegram-bot-api";
+import { Api, InputFile, MediaGroup } from "node-telegram-bot-api";
 import { fromPath } from "node-telegram-bot-api/node";
 
 const api = new Api(process.env.BOT_TOKEN!);
@@ -22,7 +22,7 @@ if (chatId !== 0) {
   const bytes = new TextEncoder().encode("hello from a Uint8Array\n");
   await api.sendDocument({
     chat_id: chatId,
-    document: inputFile(bytes, { filename: "hello.txt", contentType: "text/plain" }),
+    document: new InputFile(bytes, { filename: "hello.txt", contentType: "text/plain" }),
     caption: "Sent from memory",
   });
 
@@ -42,7 +42,7 @@ if (chatId !== 0) {
   const album = new MediaGroup()
     .photo("https://picsum.photos/seed/a/400", { caption: "First" })
     .photo("https://picsum.photos/seed/b/400")
-    .photo(inputFile(bytes, { filename: "note.txt" })) // mixes uploads + URLs freely
+    .photo(new InputFile(bytes, { filename: "note.txt" })) // mixes uploads + URLs freely
     .build();
   await api.sendMediaGroup({ chat_id: chatId, media: album });
 

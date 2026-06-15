@@ -19,7 +19,9 @@
       "import": "./dist/types/index.js"
     }
   },
-  "sideEffects": false,
+  "sideEffects": [
+    "./dist/node/debug.js"
+  ],
   "files": [
     "dist",
     "README.md",

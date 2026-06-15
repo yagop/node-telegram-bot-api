@@ -1,9 +1,10 @@
 /**
  * `run` - a managed long-poll runner for Node processes (§6.5).
  *
- * Wraps `bot.start()` with `SIGINT`/`SIGTERM` handlers that call `bot.stop()` for
- * graceful shutdown, and removes those listeners when the runner resolves. Lives
- * under `./node` because it touches `node:process`.
+ * Wraps `bot.startPolling()` with `SIGINT`/`SIGTERM` handlers that call
+ * `bot.stop()` for graceful shutdown, and removes those listeners when the runner
+ * resolves. Lives under `./node` because it touches `node:process`. The webhook
+ * counterpart is `startWebhook` (see `./server`).
  */
 
 import process from "node:process";
@@ -24,7 +25,7 @@ export async function run(bot: Bot, options?: LongPollOptions): Promise<void> {
   process.on("SIGTERM", stop);
 
   try {
-    return await bot.start(undefined, options);
+    return await bot.startPolling(undefined, options);
   } finally {
     process.off("SIGINT", stop);
     process.off("SIGTERM", stop);

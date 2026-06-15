@@ -22,16 +22,24 @@
  *
  * Credentials come from the environment (loaded from `.env` by `bun test`):
  *   NODE_TELEGRAM_TOKEN, TEST_GROUP_ID, TEST_USER_ID.
- * Without a token the whole suite no-ops (describe.skipIf).
+ * The suite ALWAYS runs when invoked - there is no skip-if-no-token guard. Without
+ * a valid token the real calls reject and the tests fail (by design). Run it only
+ * via `test:e2e`, not a plain `bun test`.
  */
 import { describe, expect, test } from "bun:test";
 
 import { Api } from "../../src/core/api.js";
-import { inputFile } from "../../src/core/files.js";
+import { InputFile } from "../../src/core/files.js";
 import { json } from "../../src/core/json.js";
 import { InlineKeyboard } from "../../src/core/keyboard.js";
 import { EntityBuilder } from "../../src/core/entities.js";
-import { MediaGroup } from "../../src/core/media.js";
+import {
+  MediaGroup,
+  StickerSetBuilder,
+  inputSticker,
+  profilePhoto,
+  storyContent,
+} from "../../src/core/media.js";
 import type {
   AcceptedGiftTypes,
   BotCommand,
@@ -42,15 +50,14 @@ import type {
   InputMedia,
   InputPaidMedia,
   InputPollOption,
-  InputProfilePhoto,
   InputRichMessage,
-  InputStoryContent,
   KeyboardButton,
   LabeledPrice,
   Message,
   PassportElementError,
   ReactionType,
 } from "../../src/types/index.js";
+import { GIF_16, JPEG_160, MP3_SILENT, MP4_32, OGG_OPUS, PNG_1X1 } from "./fixtures.js";
 
 // ---------------------------------------------------------------------------
 // Environment + shared client
@@ -59,7 +66,6 @@ import type {
 const TOKEN = process.env.NODE_TELEGRAM_TOKEN ?? process.env.TEST_TELEGRAM_TOKEN;
 const GROUP_ID = process.env.TEST_GROUP_ID ?? "";
 const USER_ID = Number(process.env.TEST_USER_ID ?? "0");
-const hasLive = !!TOKEN;
 
 // `chat_id` accepts `number | string`; keep the raw env string (group ids are
 // large negative numbers that survive better as strings on the wire).
@@ -86,6 +92,11 @@ const samplePermissions = json<ChatPermissions>({
 
 const sampleInlineKeyboard = new InlineKeyboard().text("noop", "noop").build();
 
+/** The PNG fixture as an InputFile, fed to the attach:// builders below. */
+function e2ePng(): InputFile {
+  return new InputFile(PNG_1X1, { filename: "e2e.png", contentType: "image/png" });
+}
+
 /**
  * Resolve the target user id once, falling back to the bot's own id when
  * TEST_USER_ID is unset. Tests that act on a user use this inline.
@@ -103,11 +114,10 @@ function method(name: string, body: () => void): void {
   describe(name, body);
 }
 
-// `describe.skipIf` no-ops the whole suite when there is no token, so a plain
-// `bun test` (no creds) passes. The orchestrator runs WITH a token.
-const live = describe.skipIf(!hasLive);
-
-live("methods", () => {
+// The suite always runs when this file is invoked - there is no skip-if-no-token
+// escape hatch. Run it only via `test:e2e` (creds from `.env`); without valid creds
+// the real calls reject and the tests fail, per the STRICT MODEL above.
+describe("methods", () => {
   // -------------------------------------------------------------------------
   // Updates / webhook / identity
   // -------------------------------------------------------------------------
@@ -241,7 +251,7 @@ live("methods", () => {
     test("sends an uploaded audio", async () => {
       const msg = await api.sendAudio({
         chat_id: chatId,
-        audio: inputFile(new TextEncoder().encode("ID3e2e"), {
+        audio: new InputFile(MP3_SILENT, {
           filename: "e2e.mp3",
           contentType: "audio/mpeg",
         }),
@@ -254,7 +264,7 @@ live("methods", () => {
     test("sends an uploaded document", async () => {
       const msg = await api.sendDocument({
         chat_id: chatId,
-        document: inputFile(new TextEncoder().encode("e2e-doc"), { filename: "e2e.txt" }),
+        document: new InputFile(new TextEncoder().encode("e2e-doc"), { filename: "e2e.txt" }),
         caption: "e2e doc",
       });
       expect(msg.document?.file_id).toBeTruthy();
@@ -265,7 +275,7 @@ live("methods", () => {
     test("sends an uploaded video", async () => {
       const msg = await api.sendVideo({
         chat_id: chatId,
-        video: inputFile(new TextEncoder().encode("e2e"), {
+        video: new InputFile(MP4_32, {
           filename: "e2e.mp4",
           contentType: "video/mp4",
         }),
@@ -278,7 +288,7 @@ live("methods", () => {
     test("sends an uploaded animation", async () => {
       const msg = await api.sendAnimation({
         chat_id: chatId,
-        animation: inputFile(new TextEncoder().encode("e2e"), {
+        animation: new InputFile(GIF_16, {
           filename: "e2e.gif",
           contentType: "image/gif",
         }),
@@ -291,7 +301,7 @@ live("methods", () => {
     test("sends an uploaded voice", async () => {
       const msg = await api.sendVoice({
         chat_id: chatId,
-        voice: inputFile(new TextEncoder().encode("e2e"), {
+        voice: new InputFile(OGG_OPUS, {
           filename: "e2e.ogg",
           contentType: "audio/ogg",
         }),
@@ -304,7 +314,7 @@ live("methods", () => {
     test("sends an uploaded video note", async () => {
       const msg = await api.sendVideoNote({
         chat_id: chatId,
-        video_note: inputFile(new TextEncoder().encode("e2e"), {
+        video_note: new InputFile(MP4_32, {
           filename: "e2e.mp4",
           contentType: "video/mp4",
         }),
@@ -420,7 +430,7 @@ live("methods", () => {
   method("setMessageReaction", () => {
     test("reacts to a freshly-sent message", async () => {
       const msg = await api.sendMessage({ chat_id: chatId, text: "e2e setMessageReaction" });
-      const reaction = json<ReactionType[]>([{ type: "emoji", emoji: "👍" } as ReactionType]);
+      const reaction = json<ReactionType[]>([{ type: "emoji", emoji: "👍" } satisfies ReactionType]);
       const ok = await api.setMessageReaction({
         chat_id: chatId,
         message_id: msg.message_id,
@@ -455,7 +465,7 @@ live("methods", () => {
       // Self-contained: upload a document inline, then resolve its file_id.
       const doc = await api.sendDocument({
         chat_id: chatId,
-        document: inputFile(new TextEncoder().encode("e2e"), { filename: "e2e.txt" }),
+        document: new InputFile(new TextEncoder().encode("e2e"), { filename: "e2e.txt" }),
       });
       const fileId = doc.document?.file_id ?? "";
       const file = await api.getFile({ file_id: fileId });
@@ -639,8 +649,8 @@ live("methods", () => {
     test("sets the chat photo", async () => {
       await api.setChatPhoto({
         chat_id: chatId,
-        photo: inputFile(new TextEncoder().encode("\xFF\xD8\xFFe2e"), {
-          filename: "chat.jpeg",
+        photo: new InputFile(JPEG_160, {
+          filename: "chat.jpg",
           contentType: "image/jpeg",
         }),
       });
@@ -866,7 +876,7 @@ live("methods", () => {
         id: "1",
         title: "e2e",
         input_message_content: { message_text: "e2e" },
-      } as InlineQueryResult);
+      } satisfies InlineQueryResult);
       await api.answerGuestQuery({ guest_query_id: "e2e", result });
     });
   });
@@ -985,11 +995,7 @@ live("methods", () => {
 
   method("setMyProfilePhoto", () => {
     test("sets the bot profile photo", async () => {
-      const photo = json<InputProfilePhoto>({
-        type: "static",
-        photo: "attach://e2e",
-      } as InputProfilePhoto);
-      await api.setMyProfilePhoto({ photo });
+      await api.setMyProfilePhoto({ photo: profilePhoto.static(e2ePng()) });
     });
   });
 
@@ -1111,11 +1117,10 @@ live("methods", () => {
 
   method("setBusinessAccountProfilePhoto", () => {
     test("sets the business account profile photo", async () => {
-      const photo = json<InputProfilePhoto>({
-        type: "static",
-        photo: "attach://e2e",
-      } as InputProfilePhoto);
-      await api.setBusinessAccountProfilePhoto({ business_connection_id: "e2e", photo });
+      await api.setBusinessAccountProfilePhoto({
+        business_connection_id: "e2e",
+        photo: profilePhoto.static(e2ePng()),
+      });
     });
   });
 
@@ -1199,11 +1204,11 @@ live("methods", () => {
 
   method("postStory", () => {
     test("posts a story", async () => {
-      const content = json<InputStoryContent>({
-        type: "photo",
-        photo: "attach://e2e",
-      } as InputStoryContent);
-      await api.postStory({ business_connection_id: "e2e", content, active_period: 86_400 });
+      await api.postStory({
+        business_connection_id: "e2e",
+        content: storyContent.photo(e2ePng()),
+        active_period: 86_400,
+      });
     });
   });
 
@@ -1220,11 +1225,11 @@ live("methods", () => {
 
   method("editStory", () => {
     test("edits a story", async () => {
-      const content = json<InputStoryContent>({
-        type: "photo",
-        photo: "attach://e2e",
-      } as InputStoryContent);
-      await api.editStory({ business_connection_id: "e2e", story_id: 1, content });
+      await api.editStory({
+        business_connection_id: "e2e",
+        story_id: 1,
+        content: storyContent.photo(e2ePng()),
+      });
     });
   });
 
@@ -1245,7 +1250,7 @@ live("methods", () => {
         id: "1",
         title: "e2e",
         input_message_content: { message_text: "e2e" },
-      } as InlineQueryResult);
+      } satisfies InlineQueryResult);
       await api.answerWebAppQuery({ web_app_query_id: "e2e", result });
     });
   });
@@ -1257,14 +1262,14 @@ live("methods", () => {
         id: "1",
         title: "e2e",
         input_message_content: { message_text: "e2e" },
-      } as InlineQueryResult);
+      } satisfies InlineQueryResult);
       await api.savePreparedInlineMessage({ user_id: await targetUserId(), result });
     });
   });
 
   method("savePreparedKeyboardButton", () => {
     test("saves a prepared keyboard button", async () => {
-      const button = json<KeyboardButton>({ text: "e2e" } as KeyboardButton);
+      const button = json<KeyboardButton>({ text: "e2e" } satisfies KeyboardButton);
       await api.savePreparedKeyboardButton({ user_id: await targetUserId(), button });
     });
   });
@@ -1314,7 +1319,7 @@ live("methods", () => {
       const media = json<InputMedia>({
         type: "photo",
         media: "https://upload.wikimedia.org/wikipedia/commons/3/3a/Cat03.jpg",
-      } as InputMedia);
+      } satisfies InputMedia);
       await api.editMessageMedia({ chat_id: chatId, message_id: sent.message_id, media });
     });
   });
@@ -1443,7 +1448,7 @@ live("methods", () => {
     test("sends a sticker", async () => {
       await api.sendSticker({
         chat_id: chatId,
-        sticker: inputFile(new TextEncoder().encode("e2e"), {
+        sticker: new InputFile(new TextEncoder().encode("e2e"), {
           filename: "e2e.webp",
           contentType: "image/webp",
         }),
@@ -1471,7 +1476,7 @@ live("methods", () => {
     test("uploads a sticker file", async () => {
       await api.uploadStickerFile({
         user_id: await targetUserId(),
-        sticker: inputFile(new TextEncoder().encode("e2e"), { filename: "e2e.png" }),
+        sticker: new InputFile(new TextEncoder().encode("e2e"), { filename: "e2e.png" }),
         sticker_format: "static",
       });
     });
@@ -1481,10 +1486,14 @@ live("methods", () => {
     test("creates a new sticker set", async () => {
       await api.createNewStickerSet({
         user_id: await targetUserId(),
-        name: `e2e_by_bot`,
+        name: "e2e_by_bot",
         title: "e2e",
-        stickers: json([{ sticker: "attach://e2e", format: "static", emoji_list: ["🙂"] }]),
+        stickers: new StickerSetBuilder()
+          .add(e2ePng(), { format: "static", emoji_list: ["🙂"] })
+          .build(),
       });
+      // Revert: drop the set we just created so the test stays self-contained.
+      await api.deleteStickerSet({ name: "e2e_by_bot" });
     });
   });
 
@@ -1493,8 +1502,12 @@ live("methods", () => {
       await api.addStickerToSet({
         user_id: await targetUserId(),
         name: "e2e_by_bot",
-        sticker: json({ sticker: "attach://e2e", format: "static", emoji_list: ["🙂"] }),
+        sticker: inputSticker(e2ePng(), { format: "static", emoji_list: ["🙂"] }),
       });
+      // Revert: remove the sticker we just added (the last one in the set).
+      const set = await api.getStickerSet({ name: "e2e_by_bot" });
+      const added = set.stickers.at(-1);
+      if (added) await api.deleteStickerFromSet({ sticker: added.file_id });
     });
   });
 
@@ -1516,7 +1529,7 @@ live("methods", () => {
         user_id: await targetUserId(),
         name: "e2e_by_bot",
         old_sticker: "e2e",
-        sticker: json({ sticker: "attach://e2e", format: "static", emoji_list: ["🙂"] }),
+        sticker: inputSticker(e2ePng(), { format: "static", emoji_list: ["🙂"] }),
       });
     });
   });
@@ -1595,7 +1608,7 @@ live("methods", () => {
           title: "e2e",
           input_message_content: { message_text: "e2e" },
         },
-      ] as InlineQueryResult[]);
+      ] satisfies InlineQueryResult[]);
       await api.answerInlineQuery({ inline_query_id: "e2e", results });
     });
   });
@@ -1695,7 +1708,7 @@ live("methods", () => {
           element_hash: "e2e",
           message: "e2e",
         },
-      ] as PassportElementError[]);
+      ] satisfies PassportElementError[]);
       await api.setPassportDataErrors({ user_id: await targetUserId(), errors });
     });
   });

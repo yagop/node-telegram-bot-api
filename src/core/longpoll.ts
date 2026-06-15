@@ -9,6 +9,7 @@
  */
 
 import type { Api } from "./api.js";
+import { debug } from "./debug.js";
 import { isTransientError } from "./errors.js";
 import { json } from "./json.js";
 import type { Update } from "../types/index.js";
@@ -46,6 +47,8 @@ function delay(ms: number, signal?: AbortSignal): Promise<void> {
 const BASE_BACKOFF = 1000;
 const DEFAULT_MAX_BACKOFF = 60_000;
 
+const log = debug("polling");
+
 export async function* longPoll(
   api: Api,
   options: LongPollOptions = {},
@@ -61,6 +64,7 @@ export async function* longPoll(
 
   let failures = 0;
 
+  log("started (timeout=%ds)", timeout);
   while (!signal?.aborted) {
     let updates: Update[];
     try {
@@ -80,6 +84,7 @@ export async function* longPoll(
       failures += 1;
       const exp = Math.min(BASE_BACKOFF * 2 ** (failures - 1), maxBackoffMs);
       const wait = exp * (0.5 + Math.random() * 0.5);
+      log("getUpdates failed; backoff %dms (failure %d)", Math.round(wait), failures);
       try {
         await delay(wait, signal);
       } catch {
@@ -89,6 +94,7 @@ export async function* longPoll(
     }
 
     failures = 0; // reset backoff after any successful poll
+    if (updates.length > 0) log("%d update(s)", updates.length);
     for (const update of updates) {
       yield update;
       offset = update.update_id + 1;

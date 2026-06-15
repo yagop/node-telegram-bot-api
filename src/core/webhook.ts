@@ -8,6 +8,15 @@
  * imports nothing Node-specific. Framework adapters that bridge `(req, res)`
  * servers live under `src/node` and delegate to this callback.
  *
+ * Authenticity: the `secretToken` compare below is the ONLY thing that
+ * authenticates a caller, and Telegram offers nothing stronger - webhook payloads
+ * are not signed (unlike, say, Stripe). So treat `secret_token` as REQUIRED in
+ * production (a long random value, set identically here and in `setWebhook`); with
+ * it unset, anyone who learns the URL can POST forged updates. Defense in depth is
+ * a deployment concern, not this callback's: terminate TLS at your edge and, if you
+ * want it, allowlist Telegram's published source-IP ranges at the proxy/firewall
+ * (brittle in app code behind CDNs, so it is intentionally not built in here).
+ *
  * Update dedup: Telegram **redelivers** an update if the webhook does not reply
  * with a 2xx in time (its delivery is at-least-once, not exactly-once). The same
  * `update.update_id` can therefore arrive more than once - especially with
@@ -17,8 +26,11 @@
  * acting on side effects. This callback does **not** dedupe for you.
  */
 
+import { debug } from "./debug.js";
 import type { Bot } from "./bot.js";
 import type { Update } from "../types/index.js";
+
+const log = debug("webhook");
 
 export interface WebhookOptions {
   /**
@@ -82,6 +94,7 @@ export function webhookCallback(
       // (compare against ""), to avoid an early-out path that leaks header presence.
       const got = request.headers.get("X-Telegram-Bot-Api-Secret-Token") ?? "";
       if (!safeEqual(got, secretToken)) {
+        log("rejected POST: bad secret token");
         return new Response("Unauthorized", { status: 401 });
       }
     }
@@ -90,8 +103,10 @@ export function webhookCallback(
     try {
       update = (await request.json()) as Update;
     } catch {
+      log("rejected POST: invalid JSON body");
       return new Response("Bad Request", { status: 400 });
     }
+    log("update %d", update.update_id);
 
     if (earlyAck) {
       // Validate, kick off the handler, and ACK now. The bot's own catch boundary
@@ -101,6 +116,7 @@ export function webhookCallback(
         /* swallowed: handleUpdate has its own error boundary */
       });
       if (waitUntil !== undefined) waitUntil(work);
+      log("update %d: acked 200, handling in background", update.update_id);
       return new Response(null, { status: 200 });
     }
 
