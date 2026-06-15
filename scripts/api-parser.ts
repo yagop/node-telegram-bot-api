@@ -178,13 +178,43 @@ function isPrimitiveType(ts: string): boolean {
   return members.every((m) => m === "number" || m === "string" || m === "boolean" || m === "true");
 }
 
+// Param types whose `attach://<file>` slots a builder can fill with an upload, so
+// their fields are typed `JsonWithInputFiles<T>` (a `Json<T>` string OR a file-carrying
+// `FilePart<T>`) rather than plain `Json<T>`. This mirrors the builders in
+// src/core/media.ts (MediaGroup / inputSticker / profilePhoto / storyContent); the
+// member types are listed because some fields use the expanded union, not the alias.
+const FILE_BEARING_TYPES = new Set([
+  "InputMedia",
+  "InputMediaPhoto",
+  "InputMediaVideo",
+  "InputMediaAnimation",
+  "InputMediaAudio",
+  "InputMediaDocument",
+  "InputMediaLivePhoto",
+  "InputPaidMedia",
+  "InputPaidMediaPhoto",
+  "InputPaidMediaVideo",
+  "InputPaidMediaLivePhoto",
+  "InputSticker",
+  "InputProfilePhoto",
+  "InputProfilePhotoStatic",
+  "InputProfilePhotoAnimated",
+  "InputStoryContent",
+  "InputStoryContentPhoto",
+  "InputStoryContentVideo",
+]);
+
 /** Post-process a mapped param-field type into its wire-ready form (ADR-002/ADR-006). */
 function transformParamType(ts: string): string {
   const t = ts.trim();
   if (/\bInputFile\b/.test(t)) return "InputFile | string";
-  if (/\[\]$/.test(t)) return `Json<${t}>`;
-  if (!isPrimitiveType(t)) return `Json<${t}>`;
-  return t;
+  // Pure scalars (number|string|boolean|true) go on the wire as-is.
+  if (isPrimitiveType(t) && !/\[\]$/.test(t)) return t;
+  // Structured (array or object reference): wire-ready JSON. A field whose type
+  // reaches a file-bearing type may instead arrive as a FilePart, so widen it.
+  const ids = t.match(/[A-Za-z_][A-Za-z0-9_]*/g) ?? [];
+  const wrapper = ids.some((id) => FILE_BEARING_TYPES.has(id)) ? "JsonWithInputFiles" : "Json";
+  return `${wrapper}<${t}>`;
 }
 
 // ---------------------------------------------------------------------------
@@ -431,7 +461,7 @@ out.push(`/* eslint-disable */
  * Regenerate with: bun scripts/api-parser.ts
  */
 import type { Json } from "./brand.js";
-import type { InputFile } from "../core/files.js";
+import type { InputFile, JsonWithInputFiles } from "../core/files.js";
 `);
 out.push(PRELUDE);
 
