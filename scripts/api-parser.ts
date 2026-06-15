@@ -176,15 +176,8 @@ function isPrimitiveType(ts: string): boolean {
 function transformParamType(ts: string): string {
   const t = ts.trim();
   if (/\bInputFile\b/.test(t)) return "InputFile | string";
-  // Fields that can carry files nested inside a JSON structure (sendMediaGroup,
-  // sendPaidMedia, editMessageMedia) accept either a pre-serialized `Json<…>`
-  // string or a file-bearing `FormPart` composite (e.g. `mediaGroup().build()`).
-  // The `FormPart` arm keeps `Json<T>` a string-at-runtime invariant (ADR-002)
-  // instead of laundering a composite object through it (ADR-011).
-  const nestedFiles = /\bInput(?:Media|PaidMedia)/.test(t);
-  const wrap = (inner: string) => (nestedFiles ? `Json<${inner}> | FormPart` : `Json<${inner}>`);
-  if (/\[\]$/.test(t)) return wrap(t);
-  if (!isPrimitiveType(t)) return wrap(t);
+  if (/\[\]$/.test(t)) return `Json<${t}>`;
+  if (!isPrimitiveType(t)) return `Json<${t}>`;
   return t;
 }
 
@@ -432,7 +425,7 @@ out.push(`/* eslint-disable */
  * Regenerate with: bun scripts/api-parser.ts
  */
 import type { Json } from "./brand.js";
-import type { InputFile, FormPart } from "../core/files.js";
+import type { InputFile } from "../core/files.js";
 `);
 out.push(PRELUDE);
 
