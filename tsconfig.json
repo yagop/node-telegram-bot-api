@@ -19,6 +19,6 @@
     "verbatimModuleSyntax": false,
     "allowJs": false
   },
-  "include": ["src/**/*", "test/**/*"],
+  "include": ["src/**/*"],
   "exclude": ["node_modules", "dist"]
 }
