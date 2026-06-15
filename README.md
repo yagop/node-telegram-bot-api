@@ -93,7 +93,7 @@ bot.catch((err, ctx) => console.error("handler failed", err));
 Structured fields are branded `Json<T>` strings, produced at the call site by a builder or the generic `json()` helper — serialization happens in the builders, not in the request pipeline.
 
 ```ts
-import { InlineKeyboard, ReplyKeyboard, removeKeyboard, fmt, json } from "node-telegram-bot-api";
+import { InlineKeyboard, ReplyKeyboard, removeKeyboard, EntityBuilder, json } from "node-telegram-bot-api";
 
 // inline keyboard
 new InlineKeyboard().text("A", "a").url("Docs", "https://core.telegram.org/bots/api").row().text("B", "b").build();
@@ -103,7 +103,7 @@ new ReplyKeyboard().text("Yes").text("No").build({ resize_keyboard: true });
 removeKeyboard();
 
 // rich text without counting UTF-16 offsets by hand
-const { text, entities } = fmt().plain("Hello ").bold("world").link("docs", "https://x").build();
+const { text, entities } = new EntityBuilder().plain("Hello ").bold("world").link("docs", "https://x").build();
 await api.sendMessage({ chat_id, text, entities });
 
 // escape hatch for any structured field without a bespoke builder
@@ -115,7 +115,7 @@ await api.sendMessage({ chat_id, text: "hi", link_preview_options: json({ is_dis
 A bare string is **always** a `file_id` or URL. To upload bytes, wrap them: `inputFile()` (web-standard data) or `fromPath()` (Node, filesystem).
 
 ```ts
-import { inputFile, mediaGroup } from "node-telegram-bot-api";
+import { inputFile, MediaGroup } from "node-telegram-bot-api";
 import { fromPath } from "node-telegram-bot-api/node";
 
 await api.sendPhoto({ chat_id, photo: await fromPath("./cat.jpg") });
@@ -124,7 +124,7 @@ await api.sendDocument({ chat_id, document: inputFile(new Uint8Array(bytes), { f
 // nested files (media groups) — the builder mints attach:// refs at the call site
 await api.sendMediaGroup({
   chat_id,
-  media: mediaGroup()
+  media: new MediaGroup()
     .photo(inputFile(bytesA), { caption: "A" })
     .photo("https://example.com/b.jpg") // URL → no upload
     .build(),

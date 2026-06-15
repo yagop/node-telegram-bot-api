@@ -1,7 +1,7 @@
 /**
  * MessageEntity helpers (§6.3).
  *
- * `fmt()` is a fluent builder that accumulates text and tracks UTF-16 offsets so
+ * `EntityBuilder` is a fluent builder that accumulates text and tracks UTF-16 offsets so
  * callers never hand-count them. A JS string's `.length` already counts UTF-16
  * code units — exactly the unit Telegram's `offset`/`length` use — so we record
  * `offset = text.length` before appending a styled segment and `length` as the
@@ -116,9 +116,4 @@ export class EntityBuilder {
   build(): BuiltEntities {
     return { text: this.text, entities: json<MessageEntity[]>(this.entities) };
   }
-}
-
-/** Start a fluent entity builder. */
-export function fmt(): EntityBuilder {
-  return new EntityBuilder();
 }

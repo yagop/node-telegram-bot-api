@@ -16,7 +16,7 @@ v2 is a from-scratch redesign with **no backward compatibility** (see `ARCHITECT
 | `bot.sendPhoto(id, '/path/to/p.jpg')` | `api.sendPhoto({ chat_id, photo: await fromPath('/path/to/p.jpg') })` (from `'node-telegram-bot-api/node'`) |
 | `bot.sendPhoto(id, fs.createReadStream(...))` | `api.sendPhoto({ chat_id, photo: inputFile(bytes) })` |
 | bare string = path **or** file_id (via `options.filepath`) | a bare string is **always** a `file_id`/URL; bytes go through `inputFile()`/`fromPath()` |
-| `bot.sendMediaGroup(id, [{ type:'photo', media: stream }])` | `api.sendMediaGroup({ chat_id, media: mediaGroup().photo(inputFile(bytes)).build() })` |
+| `bot.sendMediaGroup(id, [{ type:'photo', media: stream }])` | `api.sendMediaGroup({ chat_id, media: new MediaGroup().photo(inputFile(bytes)).build() })` |
 | webhook via `new TelegramBot(token, { webHook: { port } })` | `createWebhookServer(bot, { path })` (`/node`) or `webhookCallback(bot)` on any runtime |
 | `bot.setWebHook(url)` | `api.setWebhook({ url })` |
 | `bot.startPolling()` / `bot.stopPolling()` / `bot.isPolling()` | `bot.start()` / `bot.stop()` / `bot.isRunning()`, or `longPoll(api, opts, signal)` directly |

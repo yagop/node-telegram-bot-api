@@ -1,7 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import { encodeForm } from "../../src/core/encode.js";
 import { inputFile } from "../../src/core/files.js";
-import { mediaGroup } from "../../src/core/media.js";
+import { MediaGroup } from "../../src/core/media.js";
 
 describe("encodeForm", () => {
   test("no files -> URLSearchParams + urlencoded content-type", async () => {
@@ -48,8 +48,8 @@ describe("encodeForm", () => {
     expect(params.has("reply_to_message_id")).toBe(false);
   });
 
-  test("mediaGroup FormPart -> FormData with media JSON + file part", async () => {
-    const media = mediaGroup()
+  test("MediaGroup FormPart -> FormData with media JSON + file part", async () => {
+    const media = new MediaGroup()
       .photo(inputFile(new Uint8Array([1])), { caption: "A" })
       .photo("https://x/b.jpg")
       .build();
