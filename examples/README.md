@@ -14,14 +14,17 @@ relative `../src` paths.
 | [`05-webhook-nextjs.ts`](./05-webhook-nextjs.ts) | `nextAppWebhook` as an App Router `export const POST` | `app/api/telegram/route.ts` in a Next.js app (illustrative) |
 | [`06-keyboards.ts`](./06-keyboards.ts) | `InlineKeyboard`, `ReplyKeyboard`, `removeKeyboard`, `forceReply`, `ctx.answerCallbackQuery` | `BOT_TOKEN=... bun examples/06-keyboards.ts` |
 | [`07-formatting.ts`](./07-formatting.ts) | `EntityBuilder` + `EntityType` + `json()`, sending entities | `BOT_TOKEN=... CHAT_ID=... bun examples/07-formatting.ts` |
-| [`08-uploads.ts`](./08-uploads.ts) | `inputFile`, `fromPath` (`/node`), `MediaGroup` | `BOT_TOKEN=... CHAT_ID=... bun examples/08-uploads.ts` |
+| [`08-uploads.ts`](./08-uploads.ts) | `InputFile`, `fromPath` (`/node`), `MediaGroup` | `BOT_TOKEN=... CHAT_ID=... bun examples/08-uploads.ts` |
 | [`09-middleware.ts`](./09-middleware.ts) | `bot.use` for timing, an in-memory session, and an allowlist auth gate | `BOT_TOKEN=... ALLOWED_USERS=111,222 bun examples/09-middleware.ts` |
 | [`10-resilience-ratelimit.ts`](./10-resilience-ratelimit.ts) | `maxRetries`/`retryBackoffMs`/`rateLimit`, branching on `TelegramApiError`/`NetworkError` | `BOT_TOKEN=... CHAT_ID=... bun examples/10-resilience-ratelimit.ts` |
 | [`11-longpoll-stream.ts`](./11-longpoll-stream.ts) | Consume `longPoll(api, opts, signal)` with `for await`, filter, stop via `AbortController` | `BOT_TOKEN=... bun examples/11-longpoll-stream.ts` |
 | [`12-conversation.ts`](./12-conversation.ts) | A multi-step conversation (name → age) via `ctx.state` + a per-chat step `Map` | `BOT_TOKEN=... bun examples/12-conversation.ts` |
+| [`13-webhook-node-server.ts`](./13-webhook-node-server.ts) | `createWebhookServer` (`/node`): a raw `node:http` webhook server, no framework | `BOT_TOKEN=... WEBHOOK_SECRET=... PUBLIC_URL=https://... bun examples/13-webhook-node-server.ts` |
 
-The webhook examples (03–05) target servers/serverless platforms and aren't
-standalone-runnable here, but they typecheck and show the exact wiring.
+The framework webhook examples (03-05) target serverless/framework platforms and
+aren't standalone-runnable here, but they typecheck and show the exact wiring.
+The self-hosted `node:http` variant (13) does start a real server locally - put a
+TLS-terminating proxy or tunnel in front of it to receive live Telegram traffic.
 
 ## Running from this repo
 

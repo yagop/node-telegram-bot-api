@@ -51,10 +51,10 @@ bot.on("callback_query", async (ctx) => {
   await ctx.answerCallbackQuery({ text: `You tapped ${ctx.callbackQuery!.data}` });
 });
 
-await run(bot); // or: await bot.start();
+await run(bot); // or: await bot.startPolling();
 ```
 
-The core has no managed runner dependency - `await bot.start()` works anywhere. `run()` just wires `Ctrl-C` to `bot.stop()`.
+The core has no managed runner dependency - `await bot.startPolling()` works anywhere. `run()` just wires `Ctrl-C` to `bot.stop()`. (`startPolling` is long-poll mode; for webhooks use `webhookCallback`/`createWebhookServer`/`startWebhook` below.)
 
 ## Calling the API directly
 
@@ -112,23 +112,43 @@ await api.sendMessage({ chat_id, text: "hi", link_preview_options: json({ is_dis
 
 ## Uploads
 
-A bare string is **always** a `file_id` or URL. To upload bytes, wrap them: `inputFile()` (web-standard data) or `fromPath()` (Node, filesystem).
+A bare string is **always** a `file_id` or URL. To upload bytes, wrap them: `new InputFile()` (web-standard data) or `fromPath()` (Node, filesystem).
 
 ```ts
-import { inputFile, MediaGroup } from "node-telegram-bot-api";
+import { InputFile, MediaGroup } from "node-telegram-bot-api";
 import { fromPath } from "node-telegram-bot-api/node";
 
 await api.sendPhoto({ chat_id, photo: await fromPath("./cat.jpg") });
-await api.sendDocument({ chat_id, document: inputFile(new Uint8Array(bytes), { filename: "report.pdf" }) });
+await api.sendDocument({ chat_id, document: new InputFile(new Uint8Array(bytes), { filename: "report.pdf" }) });
 
 // nested files (media groups) - the builder mints attach:// refs at the call site
 await api.sendMediaGroup({
   chat_id,
   media: new MediaGroup()
-    .photo(inputFile(bytesA), { caption: "A" })
+    .photo(new InputFile(bytesA), { caption: "A" })
     .photo("https://example.com/b.jpg") // URL → no upload
     .build(),
 });
+```
+
+Other methods that reference a file by `attach://` from inside a JSON structure have
+their own builders, so you never hand-wire the part: `StickerSetBuilder` /
+`inputSticker` (sticker sets), `profilePhoto` (`setMyProfilePhoto`), `storyContent`
+(`postStory`/`editStory`). Each `.build()` (or factory call) returns the field's
+`Json<...>` and carries the bytes along:
+
+```ts
+import { StickerSetBuilder, inputSticker, profilePhoto, storyContent } from "node-telegram-bot-api";
+
+await api.createNewStickerSet({
+  user_id, name, title,
+  stickers: new StickerSetBuilder()
+    .add(new InputFile(pngBytes), { format: "static", emoji_list: ["🙂"] })
+    .build(),
+});
+await api.addStickerToSet({ user_id, name, sticker: inputSticker(new InputFile(pngBytes), { format: "static", emoji_list: ["🙂"] }) });
+await api.setMyProfilePhoto({ photo: profilePhoto.static(new InputFile(pngBytes)) });
+await api.postStory({ business_connection_id, active_period, content: storyContent.photo(new InputFile(pngBytes)) });
 ```
 
 ## Webhooks
@@ -181,13 +201,19 @@ app.listen(3000);
 
 ```ts
 import { Bot } from "node-telegram-bot-api";
-import { createWebhookServer } from "node-telegram-bot-api/node";
+import { createWebhookServer, startWebhook } from "node-telegram-bot-api/node";
 
+// Low-level: you own the server and the port.
 const server = createWebhookServer(new Bot(TOKEN), { path: "/telegram", secretToken: SECRET });
 server.listen(8080);
+
+// Or the managed one-liner (listen + graceful shutdown, the webhook peer of run()):
+await startWebhook(new Bot(TOKEN), { port: 8080, path: "/telegram", secretToken: SECRET });
 ```
 
-Register the URL once with `api.setWebhook({ url, secret_token })`.
+Register the URL once with `api.setWebhook({ url, secret_token })`. The `secret_token`
+is the only thing that authenticates callers (payloads are not signed), so treat it as
+required in production; put TLS termination - and any IP allowlisting - at your proxy.
 
 ## Errors
 
@@ -257,6 +283,23 @@ for await (const update of longPoll(api, { timeout: 30 }, ac.signal)) {
   console.log(update.update_id);
 }
 ```
+
+## Debugging
+
+Set the `DEBUG` env var (the `debug`-package convention) to print internal traces to
+**stderr** - request lifecycle/retries, polling, and webhook delivery:
+
+```sh
+DEBUG="node-telegram-bot-api:*" node app.js
+# node-telegram-bot-api:transport -> sendMessage
+# node-telegram-bot-api:transport <- sendMessage ok +142ms
+```
+
+Namespaces: `node-telegram-bot-api:transport`, `:polling`, `:webhook` (filter to one,
+or skip with a leading `-`, e.g. `DEBUG="node-telegram-bot-api:*,-node-telegram-bot-api:polling"`).
+Tracing is a **Node feature**: it's wired up by importing `node-telegram-bot-api/node`
+(or calling `enableDebugFromEnv()` from it). The edge-neutral core stays free of
+`process`/stderr, so on Workers/Deno Edge the traces are an inert no-op.
 
 ## Development
 

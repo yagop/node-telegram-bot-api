@@ -1,0 +1,4 @@
+[test]
+# Wire core's debug tracing to DEBUG + stderr for test runs, so
+# `DEBUG="node-telegram-bot-api:*" bun test ...` prints traces (debug-pkg convention).
+preload = ["./test/preload.ts"]

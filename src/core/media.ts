@@ -1,13 +1,20 @@
 /**
- * The `MediaGroup` form-part builder (§6.4, ADR-011).
+ * Nested-file builders (§6.4, ADR-011).
  *
- * `sendMediaGroup` is the one method where a JSON array must reference uploaded
- * files by `attach://<name>` while the bytes travel as separate multipart parts.
- * The builder keeps the "library serializes nothing" rule (ADR-002) intact: at
- * `.build()` it mints `attach://` names, JSON-stringifies the InputMedia array
- * with those references substituted, and returns a `FormPart` carrying both that
- * string and the keyed `InputFile`s. The encoder's `writeTo(sink)` branch then
- * sets the `media` field and registers each part - it still stringifies nothing.
+ * A few methods reference uploaded files by `attach://<name>` from inside a JSON
+ * structure while the bytes travel as separate multipart parts: `sendMediaGroup`
+ * (an InputMedia array), the sticker-set methods (InputSticker),
+ * `setMyProfilePhoto`/`setBusinessAccountProfilePhoto` (InputProfilePhoto) and
+ * `postStory`/`editStory` (InputStoryContent). Each builder keeps the "library
+ * serializes nothing" rule (ADR-002): at `.build()` (or the factory call) it mints
+ * `attach://` names, JSON-stringifies the structure with those refs substituted,
+ * and returns a `FormPart` (via `formPart()`) carrying that string plus the keyed
+ * `InputFile`s. The encoder's `writeTo(sink, key)` branch sets the destination
+ * field and registers each part - it still stringifies nothing.
+ *
+ * Each builder is typed as the destination field's `Json<...>`; the runtime value
+ * is the FormPart, recognised by the encoder's `isFormPart` check before the
+ * string branch.
  */
 import type {
   InputMediaAnimation,
@@ -15,13 +22,41 @@ import type {
   InputMediaDocument,
   InputMediaPhoto,
   InputMediaVideo,
+  InputProfilePhoto,
+  InputSticker,
+  InputStoryContent,
+  MaskPosition,
   SendMediaGroupParams,
 } from "../types/index.js";
 import type { Json } from "../types/brand.js";
-import { type FormPart, type FormSink, InputFile, isInputFile } from "./files.js";
+import { formPart, InputFile, isInputFile } from "./files.js";
 
 /** A file-bearing param: an uploadable wrapper or a `file_id`/URL string. */
 type Media = InputFile | string;
+
+/**
+ * Substitute an `InputFile` with an `attach://<name>` ref (recording the file in
+ * `into`); pass `file_id`/URL strings through unchanged. `name` doubles as the
+ * multipart part key, so it must be unique within the one request.
+ */
+function attachRef(media: Media, name: string, into: Array<[string, InputFile]>): string {
+  if (isInputFile(media)) {
+    into.push([name, media]);
+    return `attach://${name}`;
+  }
+  return media;
+}
+
+/** Serialize `value` and wrap it (plus its files) as a FormPart typed `Json<T>`. */
+function partOf<T>(value: unknown, files: Array<[string, InputFile]>): Json<T> {
+  // Typed as Json<T> to satisfy the param field; the runtime value is the
+  // FormPart, recognised by the encoder's isFormPart check (ADR-011).
+  return formPart(JSON.stringify(value), files) as unknown as Json<T>;
+}
+
+// ---------------------------------------------------------------------------
+// sendMediaGroup
+// ---------------------------------------------------------------------------
 
 /** Caption options shared across every media kind. */
 interface CaptionOptions {
@@ -103,46 +138,132 @@ export class MediaGroup {
   /**
    * Serialize at the call site: mint `attach://` refs for every `InputFile`,
    * stringify the array with those refs, and return a `FormPart` carrying the
-   * JSON plus the keyed files. Typed as the `media` field's `Json<...>`; the
-   * runtime value is the FormPart, which the encoder handles before the string
-   * branch (ADR-011).
+   * JSON plus the keyed files. Typed as the `media` field's `Json<...>`.
    */
   build(): SendMediaGroupParams["media"] {
     const files: Array<[string, InputFile]> = [];
-
-    // Substitute an InputFile with an `attach://<name>` ref, recording the file.
-    const ref = (value: Media, name: string): string => {
-      if (isInputFile(value)) {
-        files.push([name, value]);
-        return `attach://${name}`;
-      }
-      return value;
-    };
-
     const serializable = this.items.map((item, i) => {
       const out: Record<string, unknown> = {
         type: item.type,
-        media: ref(item.media, `file_${i}`),
+        media: attachRef(item.media, `file_${i}`, files),
         ...item.rest,
       };
       if (item.thumbnail !== undefined) {
-        out.thumbnail = ref(item.thumbnail, `thumb_${i}`);
+        out.thumbnail = attachRef(item.thumbnail, `thumb_${i}`, files);
       }
       return out;
     });
-
-    const mediaJson = JSON.stringify(serializable);
-
-    const part: FormPart = {
-      __formPart: true,
-      writeTo(sink: FormSink): void {
-        sink.set("media", mediaJson);
-        for (const [name, file] of files) sink.attach(name, file);
-      },
-    };
-
-    // Typed as Json<...> to satisfy the param field; the runtime value is the
-    // FormPart, recognised by the encoder's isFormPart check.
-    return part as unknown as SendMediaGroupParams["media"];
+    return partOf<unknown[]>(serializable, files) as unknown as SendMediaGroupParams["media"];
   }
 }
+
+// ---------------------------------------------------------------------------
+// Sticker sets - createNewStickerSet / addStickerToSet / replaceStickerInSet
+// ---------------------------------------------------------------------------
+
+/** Per-sticker options: everything in `InputSticker` except the file itself. */
+export interface StickerOptions {
+  format: string;
+  emoji_list: string[];
+  mask_position?: MaskPosition;
+  keywords?: string[];
+}
+
+/** Serialize one InputSticker, substituting its file with an `attach://` ref. */
+function stickerObject(
+  media: Media,
+  name: string,
+  options: StickerOptions,
+  files: Array<[string, InputFile]>,
+): Record<string, unknown> {
+  const out: Record<string, unknown> = {
+    sticker: attachRef(media, name, files),
+    format: options.format,
+    emoji_list: options.emoji_list,
+  };
+  if (options.mask_position !== undefined) out.mask_position = options.mask_position;
+  if (options.keywords !== undefined) out.keywords = options.keywords;
+  return out;
+}
+
+/**
+ * Build the `sticker` argument for `addStickerToSet`/`replaceStickerInSet`: a
+ * single InputSticker whose `InputFile` uploads as a matching multipart part.
+ */
+export function inputSticker(media: Media, options: StickerOptions): Json<InputSticker> {
+  const files: Array<[string, InputFile]> = [];
+  // Part name must differ from the `sticker` field it rides next to, else the blob
+  // would clobber the JSON string in the FormData. `sticker_0` matches the array case.
+  return partOf<InputSticker>(stickerObject(media, "sticker_0", options, files), files);
+}
+
+/**
+ * Build the `stickers` argument for `createNewStickerSet`: an InputSticker array,
+ * each `InputFile` riding along as its own part. Mirrors `MediaGroup`.
+ */
+export class StickerSetBuilder {
+  private readonly items: Array<{ media: Media; options: StickerOptions }> = [];
+
+  add(media: Media, options: StickerOptions): this {
+    this.items.push({ media, options });
+    return this;
+  }
+
+  build(): Json<InputSticker[]> {
+    const files: Array<[string, InputFile]> = [];
+    const serializable = this.items.map((item, i) =>
+      stickerObject(item.media, `sticker_${i}`, item.options, files),
+    );
+    return partOf<InputSticker[]>(serializable, files);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Profile photos - setMyProfilePhoto / setBusinessAccountProfilePhoto
+// ---------------------------------------------------------------------------
+
+/** Build the `photo` argument for the profile-photo methods (InputProfilePhoto). */
+export const profilePhoto = {
+  /** A static profile photo (a still image). */
+  static(media: Media): Json<InputProfilePhoto> {
+    const files: Array<[string, InputFile]> = [];
+    // `photo_0`, not `photo`: the part name must differ from the `photo` field.
+    return partOf<InputProfilePhoto>({ type: "static", photo: attachRef(media, "photo_0", files) }, files);
+  },
+  /** An animated profile photo (a video); `main_frame_timestamp` picks the still frame. */
+  animated(media: Media, options: { main_frame_timestamp?: number } = {}): Json<InputProfilePhoto> {
+    const files: Array<[string, InputFile]> = [];
+    const obj: Record<string, unknown> = { type: "animated", animation: attachRef(media, "animation_0", files) };
+    if (options.main_frame_timestamp !== undefined) obj.main_frame_timestamp = options.main_frame_timestamp;
+    return partOf<InputProfilePhoto>(obj, files);
+  },
+};
+
+// ---------------------------------------------------------------------------
+// Story content - postStory / editStory
+// ---------------------------------------------------------------------------
+
+/** Extra fields for a video story, beyond the file itself. */
+export interface StoryVideoOptions {
+  duration?: number;
+  cover_frame_timestamp?: number;
+  is_animation?: boolean;
+}
+
+/** Build the `content` argument for the story methods (InputStoryContent). */
+export const storyContent = {
+  /** A photo story. */
+  photo(media: Media): Json<InputStoryContent> {
+    const files: Array<[string, InputFile]> = [];
+    return partOf<InputStoryContent>({ type: "photo", photo: attachRef(media, "photo_0", files) }, files);
+  },
+  /** A video story. */
+  video(media: Media, options: StoryVideoOptions = {}): Json<InputStoryContent> {
+    const files: Array<[string, InputFile]> = [];
+    const obj: Record<string, unknown> = { type: "video", video: attachRef(media, "video_0", files) };
+    if (options.duration !== undefined) obj.duration = options.duration;
+    if (options.cover_frame_timestamp !== undefined) obj.cover_frame_timestamp = options.cover_frame_timestamp;
+    if (options.is_animation !== undefined) obj.is_animation = options.is_animation;
+    return partOf<InputStoryContent>(obj, files);
+  },
+};
