@@ -25,12 +25,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
       - uses: actions/setup-node@v6
         with:
           node-version: 24
-          cache: npm
       - name: Install dependencies
-        run: npm ci || npm install --no-audit --no-fund
+        run: bun install --frozen-lockfile || bun install
       - name: tsc --noEmit
         run: npm run typecheck
 
@@ -56,12 +58,14 @@ jobs:
         node: ["22", "24", "26"]
     steps:
       - uses: actions/checkout@v6
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
       - uses: actions/setup-node@v6
         with:
           node-version: ${{ matrix.node }}
-          cache: npm
       - name: Install dependencies
-        run: npm ci || npm install --no-audit --no-fund
+        run: bun install --frozen-lockfile || bun install
       - name: Run unit tests with Node
         run: npm run test:node:unit
 
@@ -71,12 +75,14 @@ jobs:
     needs: typecheck
     steps:
       - uses: actions/checkout@v6
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
       - uses: actions/setup-node@v6
         with:
           node-version: 24
-          cache: npm
       - name: Install dependencies
-        run: npm ci || npm install --no-audit --no-fund
+        run: bun install --frozen-lockfile || bun install
       - name: Build
         run: npm run build
       - name: Verify dist artefacts
