@@ -12,13 +12,8 @@
  * `JSON.stringify` here and no field map.
  */
 
-import {
-  type InputFile,
-  type WireValue,
-  inputFileToBlob,
-  isFormPart,
-  isInputFile,
-} from "./files.js";
+import { type InputFile, inputFileToBlob, isFormPart, isInputFile } from "./files.js";
+import type { WireValue } from "./serialize.js";
 
 export interface EncodedRequest {
   /** Always a `URLSearchParams` (urlencoded) or `FormData` (multipart). */
