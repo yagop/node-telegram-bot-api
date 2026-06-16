@@ -1,7 +1,7 @@
-<h1 align="center">Node.js Telegram Bot API</h1>
+<h1 align="center">✨ A Modern Telegram Bot API Library ✨</h1>
 
 <div align=center>
-A runtime-agnostic TypeScript client for the [Telegram Bot API](https://core.telegram.org/bots/api).
+A runtime-agnostic TypeScript client for the [Telegram Bot API](https://core.telegram.org/bots/api) - one codebase on **Node 18+, Bun, Deno, Cloudflare Workers, Vercel Edge and Deno Deploy**.
 
 [![Bot API](https://img.shields.io/badge/Bot%20API-v.10.1-00aced.svg?style=flat-square&logo=telegram)](https://core.telegram.org/bots/api)
 [![npm package](https://img.shields.io/npm/v/node-telegram-bot-api?logo=npm&style=flat-square)](https://www.npmjs.org/package/node-telegram-bot-api)
@@ -10,11 +10,9 @@ A runtime-agnostic TypeScript client for the [Telegram Bot API](https://core.tel
 [![https://t.me/+_IC8j_b1wSFlZTVk](https://img.shields.io/badge/💬%20Telegram-Group-blue.svg?style=flat-square)](https://t.me/+_IC8j_b1wSFlZTVk)
 [![https://telegram.me/Yago_Perez](https://img.shields.io/badge/💬%20Telegram-Yago_Perez-blue.svg?style=flat-square)](https://telegram.me/Yago_Perez)
 
-The core imports only Web-standard APIs, so the same code runs on **Node 18+, Bun, Deno, Cloudflare Workers, Vercel Edge and Deno Deploy**. Node-only conveniences (filesystem uploads, a self-hosted webhook server, a managed polling runner) live in the `node-telegram-bot-api/node` subpath.
-
-> **v2 is a from-scratch redesign with no backward compatibility.** Coming from v1? See [`redesign/MIGRATION.md`](./redesign/MIGRATION.md). The design and its rationale are in [`redesign/ARCHITECTURE.md`](./redesign/ARCHITECTURE.md).
-
 </div>
+
+> **v2 is a from-scratch redesign, no v1 compatibility.** Coming from v1? See [`redesign/MIGRATION.md`](./redesign/MIGRATION.md); design rationale in [`redesign/ARCHITECTURE.md`](./redesign/ARCHITECTURE.md).
 
 ## 📦 Install
 
@@ -24,25 +22,10 @@ npm install node-telegram-bot-api
 
 ESM only. Node floor is 18 (first LTS with stable global `fetch`).
 
-## 🌐 Runtime support
-
-The core uses only Web-standard APIs (`fetch`, `Blob`, `FormData`, `AbortSignal`), so it runs unchanged across:
-
-| Runtime | Supported | Notes |
-|---------|-----------|-------|
-| Node | ≥ 18 | global `fetch`/`Blob`/`FormData` are stable from 18; the transport uses `AbortSignal.timeout` (Node 17.3+), **not** `AbortSignal.any`, so the 18 floor holds. |
-| Bun | ✓ | Web APIs native. |
-| Deno | ✓ | Web APIs native. |
-| Cloudflare Workers | ✓ | `webhookCallback` is a pure `(Request) => Response`. |
-| Vercel Edge | ✓ | as above. |
-| Deno Deploy | ✓ | as above. |
-
-Filesystem uploads (`fromPath`) and the self-hosted `node:http` webhook server are the only Node-bound pieces; they live in `node-telegram-bot-api/node`.
-
 ## 🚀 Usage
 
 ```ts
-import { Bot, InlineKeyboard } from "node-telegram-bot-api";
+import { Bot, InlineKeyboardBuilder } from "node-telegram-bot-api";
 import { run } from "node-telegram-bot-api/node"; // managed runner: wires Ctrl-C to bot.stop()
 
 const bot = new Bot(process.env.BOT_TOKEN!);
@@ -53,7 +36,7 @@ bot.hears(/echo (.+)/, (ctx) => ctx.reply(ctx.match![1]!));
 
 bot.on("message", (ctx) =>
   ctx.reply("Pick one:", {
-    reply_markup: new InlineKeyboard()
+    reply_markup: new InlineKeyboardBuilder()
       .text("👍", "up")
       .text("👎", "down")
       .build(),
@@ -105,24 +88,31 @@ bot.catch((err, ctx) => console.error("handler failed", err));
 Structured fields are plain typed objects - pass a literal or use a fluent builder; the pipeline serializes either.
 
 ```ts
-import { InlineKeyboard, ReplyKeyboard, removeKeyboard, EntityBuilder } from "node-telegram-bot-api";
+import { InlineKeyboardBuilder, ReplyKeyboardBuilder, EntityBuilder } from "node-telegram-bot-api";
 
-// inline keyboard
-new InlineKeyboard()
-  .text("A", "a")
-  .url("Docs", "https://core.telegram.org/bots/api")
-  .row()
-  .text("B", "b")
-  .build();
+// 🎛️ inline keyboard as reply_markup
+await api.sendMessage({
+  chat_id,
+  text: "Choose:",
+  reply_markup: new InlineKeyboardBuilder()
+    .text("A", "a")
+    .url("Docs", "https://core.telegram.org/bots/api")
+    .row()
+    .text("B", "b")
+    .build(),
+});
 
-// reply keyboard
-new ReplyKeyboard()
-  .text("Yes")
-  .text("No")
-  .build({ resize_keyboard: true });
-removeKeyboard();
+// ⌨️ reply keyboard as reply_markup
+await api.sendMessage({
+  chat_id,
+  text: "Yes or no?",
+  reply_markup: new ReplyKeyboardBuilder()
+    .text("Yes")
+    .text("No")
+    .build({ resize_keyboard: true }),
+});
 
-// rich text without counting UTF-16 offsets by hand
+// ✍️ rich text - EntityBuilder computes UTF-16 offsets for you
 const { text, entities } = new EntityBuilder()
   .plain("Hello ")
   .bold("world")
