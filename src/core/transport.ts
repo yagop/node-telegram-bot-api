@@ -10,7 +10,7 @@
 
 import { debug } from "./debug.js";
 import { encodeForm } from "./encode.js";
-import type { WireValue } from "./files.js";
+import type { WireValue } from "./serialize.js";
 import {
   type ApiErrorParameters,
   NetworkError,
@@ -33,6 +33,13 @@ export interface TransportOptions {
   maxRetries?: number;
   /** Base delay in ms for exponential backoff on transient (non-429) retries. Default 300. */
   retryBackoffMs?: number;
+  /**
+   * Max 429 `retry_after` to honor by waiting, in ms. When Telegram asks to wait
+   * longer than this, the request is NOT retried - the `TelegramApiError` is surfaced
+   * immediately (read `err.retryAfter` to decide) instead of hanging for the full
+   * flood-wait. Default 60000. `0` disables the cap (honor `retry_after` verbatim).
+   */
+  maxRetryAfterMs?: number;
   /** Opt-in proactive rate limiting (global + per-chat). Omit for zero overhead. */
   rateLimit?: RateLimitOptions;
 }
@@ -45,6 +52,7 @@ const DEFAULT_API_ROOT = "https://api.telegram.org";
 const DEFAULT_TIMEOUT = 30_000;
 const DEFAULT_MAX_RETRIES = 2;
 const DEFAULT_RETRY_BACKOFF = 300;
+const DEFAULT_MAX_RETRY_AFTER = 60_000;
 const MAX_BACKOFF = 30_000;
 
 const log = debug("transport");
@@ -93,6 +101,7 @@ export class Transport {
   private readonly timeoutMs: number;
   private readonly maxRetries: number;
   private readonly retryBackoffMs: number;
+  private readonly maxRetryAfterMs: number;
   private readonly limiter?: RateLimiter;
 
   constructor(
@@ -109,6 +118,7 @@ export class Transport {
     this.timeoutMs = options.timeoutMs ?? DEFAULT_TIMEOUT;
     this.maxRetries = options.maxRetries ?? DEFAULT_MAX_RETRIES;
     this.retryBackoffMs = options.retryBackoffMs ?? DEFAULT_RETRY_BACKOFF;
+    this.maxRetryAfterMs = options.maxRetryAfterMs ?? DEFAULT_MAX_RETRY_AFTER;
     if (options.rateLimit) this.limiter = new RateLimiter(options.rateLimit);
   }
 
@@ -211,9 +221,15 @@ export class Transport {
 
       if (json.error_code === 429 && attempt < this.maxRetries) {
         const retryAfter = json.parameters?.retry_after ?? 1;
-        log("%s 429; retry %d/%d after %ds", method, attempt + 1, this.maxRetries, retryAfter);
-        await delay(retryAfter * 1000, signal);
-        continue;
+        // Honor `retry_after` only up to the cap (0 = no cap). A longer flood-wait is
+        // surfaced immediately (caller reads err.retryAfter) rather than hanging the
+        // request for minutes; the per-request timeout does not bound this sleep.
+        if (this.maxRetryAfterMs === 0 || retryAfter * 1000 <= this.maxRetryAfterMs) {
+          log("%s 429; retry %d/%d after %ds", method, attempt + 1, this.maxRetries, retryAfter);
+          await delay(retryAfter * 1000, signal);
+          continue;
+        }
+        log("%s 429; retry_after %ds exceeds maxRetryAfterMs (%dms) - surfacing", method, retryAfter, this.maxRetryAfterMs);
       }
 
       log("<- %s error %d %s", method, json.error_code, json.description);

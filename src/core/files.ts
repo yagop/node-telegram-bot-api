@@ -78,13 +78,6 @@ export function formPart(
   return { __formPart: true, json, files };
 }
 
-/**
- * A fully wire-ready param value: what `serializeParams` emits and `encodeForm`
- * consumes. A scalar goes on the wire String-coerced; a top-level `InputFile` is
- * attached under its field name; a `FormPart` carries a JSON string + nested parts.
- */
-export type WireValue = string | number | boolean | InputFile | FormPart;
-
 /** Normalize any `InputFile.data` into a `Blob` for `FormData`. */
 export async function inputFileToBlob(file: InputFile): Promise<Blob> {
   const { data, meta } = file;
