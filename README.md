@@ -1,7 +1,6 @@
 <h1 align="center">✨ A Modern Telegram Bot API Library ✨</h1>
 
 <div align=center>
-A runtime-agnostic TypeScript client for the [Telegram Bot API](https://core.telegram.org/bots/api) - one codebase on **Node 18+, Bun, Deno, Cloudflare Workers, Vercel Edge and Deno Deploy**.
 
 [![Bot API](https://img.shields.io/badge/Bot%20API-v.10.1-00aced.svg?style=flat-square&logo=telegram)](https://core.telegram.org/bots/api)
 [![npm package](https://img.shields.io/npm/v/node-telegram-bot-api?logo=npm&style=flat-square)](https://www.npmjs.org/package/node-telegram-bot-api)
@@ -20,7 +19,7 @@ A runtime-agnostic TypeScript client for the [Telegram Bot API](https://core.tel
 npm install node-telegram-bot-api
 ```
 
-ESM only. Node floor is 18 (first LTS with stable global `fetch`).
+> **Runs on **Bun, modern Node.js, Deno, Cloudflare Workers and Vercel Functions λ**
 
 ## 🚀 Usage
 
