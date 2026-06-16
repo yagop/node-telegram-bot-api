@@ -20,8 +20,7 @@ export * from "./transport.js";
 export * from "./ratelimiter.js";
 // The single generated client class (ADR-001)
 export * from "./api.js";
-// Builders + json() (ADR-002, ADR-011, §6.3)
-export * from "./json.js";
+// Builders (§6.2-6.4) - optional fluent sugar over plain param shapes
 export * from "./keyboard.js";
 export * from "./entities.js";
 export * from "./media.js";

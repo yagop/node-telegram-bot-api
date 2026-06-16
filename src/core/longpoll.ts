@@ -11,7 +11,6 @@
 import type { Api } from "./api.js";
 import { debug } from "./debug.js";
 import { isTransientError } from "./errors.js";
-import { json } from "./json.js";
 import type { Update } from "../types/index.js";
 
 export interface LongPollOptions {
@@ -73,7 +72,7 @@ export async function* longPoll(
           offset,
           limit,
           timeout,
-          allowed_updates: allowed ? json(allowed) : undefined,
+          allowed_updates: allowed,
         },
         signal,
       );

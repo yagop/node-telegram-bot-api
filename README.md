@@ -90,10 +90,10 @@ bot.catch((err, ctx) => console.error("handler failed", err));
 
 ## Keyboards & formatting
 
-Structured fields are branded `Json<T>` strings, produced at the call site by a builder or the generic `json()` helper - serialization happens in the builders, not in the request pipeline.
+Structured fields are **plain typed objects** - pass a literal, or use a fluent builder. The request pipeline serializes them; there's no wrapper to remember.
 
 ```ts
-import { InlineKeyboard, ReplyKeyboard, removeKeyboard, EntityBuilder, json } from "node-telegram-bot-api";
+import { InlineKeyboard, ReplyKeyboard, removeKeyboard, EntityBuilder } from "node-telegram-bot-api";
 
 // inline keyboard
 new InlineKeyboard().text("A", "a").url("Docs", "https://core.telegram.org/bots/api").row().text("B", "b").build();
@@ -106,8 +106,8 @@ removeKeyboard();
 const { text, entities } = new EntityBuilder().plain("Hello ").bold("world").link("docs", "https://x").build();
 await api.sendMessage({ chat_id, text, entities });
 
-// escape hatch for any structured field without a bespoke builder
-await api.sendMessage({ chat_id, text: "hi", link_preview_options: json({ is_disabled: true }) });
+// any structured field is just a plain object - no wrapper needed
+await api.sendMessage({ chat_id, text: "hi", link_preview_options: { is_disabled: true } });
 ```
 
 ## Uploads
@@ -121,21 +121,27 @@ import { fromPath } from "node-telegram-bot-api/node";
 await api.sendPhoto({ chat_id, photo: await fromPath("./cat.jpg") });
 await api.sendDocument({ chat_id, document: new InputFile(new Uint8Array(bytes), { filename: "report.pdf" }) });
 
-// nested files (media groups) - the builder mints attach:// refs at the call site
+// nested files (media groups) - drop a raw InputFile straight into the array;
+// the pipeline hoists it to an attach:// part for you. Or use the MediaGroup builder.
 await api.sendMediaGroup({
   chat_id,
-  media: new MediaGroup()
-    .photo(new InputFile(bytesA), { caption: "A" })
-    .photo("https://example.com/b.jpg") // URL → no upload
-    .build(),
+  media: [
+    { type: "photo", media: new InputFile(bytesA), caption: "A" },
+    { type: "photo", media: "https://example.com/b.jpg" }, // URL -> no upload
+  ],
+});
+// equivalently, the fluent builder:
+await api.sendMediaGroup({
+  chat_id,
+  media: new MediaGroup().photo(new InputFile(bytesA), { caption: "A" }).photo("https://example.com/b.jpg").build(),
 });
 ```
 
-Other methods that reference a file by `attach://` from inside a JSON structure have
-their own builders, so you never hand-wire the part: `StickerSetBuilder` /
-`inputSticker` (sticker sets), `profilePhoto` (`setMyProfilePhoto`), `storyContent`
-(`postStory`/`editStory`). Each `.build()` (or factory call) returns the field's
-`Json<...>` and carries the bytes along:
+Every method that references a file by `attach://` from inside a structure works the
+same way - put a raw `InputFile` in the file field and the pipeline resolves it.
+Fluent builders are optional sugar: `StickerSetBuilder` / `inputSticker` (sticker
+sets), `profilePhoto` (`setMyProfilePhoto`), `storyContent` (`postStory`/`editStory`).
+Each `.build()` (or factory call) returns the plain shape:
 
 ```ts
 import { StickerSetBuilder, inputSticker, profilePhoto, storyContent } from "node-telegram-bot-api";

@@ -1,8 +1,8 @@
 /**
  * Files & the form-part contract (ADR-006, ADR-011).
  *
- * `InputFile` is the one value that cannot be a pre-serialized `Json<T>` string
- * (you can't JSON-encode a `Blob`), so it has its own path. It wraps
+ * `InputFile` is the one value that cannot be JSON-serialized (you can't encode a
+ * `Blob`), so it has its own path: a multipart part. It wraps
  * web-standard data only - no `fs`, no path-guessing - so uploads work on Node,
  * Bun, Deno and the edge. File-bearing params are typed `InputFile | string`,
  * where a string is always a `file_id` or URL and goes on the wire as-is.
@@ -58,20 +58,17 @@ export interface FormSink {
   attach(key: string, file: InputFile): void;
 }
 
-/** A file-carrying composite (e.g. a media group) that emits itself. */
+/**
+ * A file-carrying composite that writes itself into the form. `serializeParams`
+ * produces one for a structured field that contained nested `InputFile`s: it holds
+ * the JSON (with `attach://` refs) plus the keyed parts, and `writeTo` sets the
+ * field string + registers each part. The encoder still stringifies nothing.
+ */
 export interface FormPart {
   readonly __formPart: true;
   /** Write into `sink` under `key` - the param field name the encoder found it at. */
   writeTo(sink: FormSink, key: string): void;
 }
-
-/**
- * What a nested-file builder's `build()` returns: a `FormPart` at runtime (it carries
- * `attach://` refs + the matching parts), branded with the logical type `T` it
- * serializes to. It is the file-carrying arm of `Json<T>` (see `../types/brand.ts`):
- * a structured field accepts a plain `JsonString<T>` OR a `FilePart<T>`.
- */
-export type FilePart<T> = FormPart & { readonly __files: T };
 
 export function isFormPart(value: unknown): value is FormPart {
   return (

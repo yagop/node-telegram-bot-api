@@ -9,7 +9,7 @@
  *
  * Run: BOT_TOKEN=123:abc CHAT_ID=12345 bun examples/07-formatting.ts
  */
-import { Api, EntityBuilder, EntityType, json } from "node-telegram-bot-api";
+import { Api, EntityBuilder, EntityType } from "node-telegram-bot-api";
 import type { MessageEntity } from "node-telegram-bot-api";
 
 const api = new Api(process.env.BOT_TOKEN!);
@@ -33,12 +33,12 @@ if (chatId !== 0) {
   console.log("Sent a formatted message.");
 }
 
-// You can also hand-build entities with `json()` + `EntityType` when you already
-// know the offsets (e.g. mirroring text produced elsewhere).
+// You can also hand-build a plain `MessageEntity[]` with `EntityType` when you
+// already know the offsets (e.g. mirroring text produced elsewhere).
 const manualText = "spoiler ahead";
-const manualEntities = json<MessageEntity[]>([
+const manualEntities: MessageEntity[] = [
   { type: EntityType.Spoiler, offset: 0, length: manualText.length },
-]);
+];
 if (chatId !== 0) {
   await api.sendMessage({ chat_id: chatId, text: manualText, entities: manualEntities });
 }
