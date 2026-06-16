@@ -239,13 +239,13 @@ for (const [key, v] of Object.entries(fields)) {
 **Nested files** (`sendMediaGroup`, sticker sets, profile photos, story content) are the case where a JSON structure must reference files by `attach://<name>` while the bytes travel as separate parts. The pipeline (`serializeParams`) handles it; a builder is optional sugar over the same plain shape:
 
 ```ts
-new MediaGroup()
-  .photo(new InputFile(bytesA), { caption: "A" })
-  .photo("https://example.com/b.jpg")    // URL → no upload
+new MediaGroupBuilder()
+  .photo({ media: new InputFile(bytesA), caption: "A" })
+  .photo({ media: "https://example.com/b.jpg" })    // URL -> no upload
   .build();
 ```
 
-`new MediaGroup().build()` returns a **plain typed array** (optional sugar - a literal `[{ type: "photo", media: new InputFile(bytes) }]` works identically). The pipeline's `serializeParams` walks it: it mints `attach://` names, JSON-stringifies the array with those references, and emits a `FormPart` carrying the JSON string plus the keyed `InputFile`s. The encoder then sets *that param's field* (`media`, `stickers`, `photo`, `content`, ...) to the string and attaches each part. The same shape backs `StickerSetBuilder`/`inputSticker`, `profilePhoto` and `storyContent`. (See ADR-011.)
+`new MediaGroupBuilder().build()` returns a **plain typed array** (optional sugar - a literal `[{ type: "photo", media: new InputFile(bytes) }]` works identically). The pipeline's `serializeParams` walks it: it mints `attach://` names, JSON-stringifies the array with those references, and emits a `FormPart` carrying the JSON string plus the keyed `InputFile`s. The encoder then sets *that param's field* (`media`, `stickers`, `photo`, `content`, ...) to the string and attaches each part. The same shape backs the sticker, profile-photo and story builders (`StickerSetBuilder`, `StaticProfilePhotoBuilder`/`AnimatedProfilePhotoBuilder`, `PhotoStoryBuilder`/`VideoStoryBuilder`). (See ADR-011.)
 
 Runtime note: `Blob`/`Uint8Array`/`ReadableStream` exist on Node 18+, Bun, Deno, and Workers, so uploads work on the edge too; `fromPath()` is the only Node-only piece and lives in `./node`.
 
@@ -424,7 +424,7 @@ Backward compatibility is dropped, so these are intentional:
 - `InputFile` wraps web-standard data only (`Blob | Uint8Array | ReadableStream<Uint8Array>`); file-bearing params are typed `InputFile | string` (string = `file_id`/URL).
 - The encoder has exactly three branches: attach an `InputFile` as a multipart part, spread a *form-part composite* (its JSON string + nested parts), or set a string. Any `InputFile` present switches the body to `multipart/form-data`; otherwise `x-www-form-urlencoded`.
 - Top-level file params upload as a part named after the parameter. Files nested in JSON are referenced as `attach://<name>` with a matching part.
-- Nested-file methods take a plain typed object/array with raw `InputFile`s embedded; builders (`MediaGroup`; `StickerSetBuilder`/`inputSticker`; `profilePhoto`; `storyContent`) are optional sugar over that shape. `serializeParams` walks it, hoists each nested `InputFile` to `attach://media_<i>`, and emits a `FormPart` = the JSON string (with `attach://` refs) **plus** the keyed `InputFile`s. The encoder sets the JSON field (under the param's own key) and attaches the parts.
+- Nested-file methods take a plain typed object/array with raw `InputFile`s embedded; builders (`MediaGroupBuilder`; `StickerSetBuilder`; `StaticProfilePhotoBuilder`/`AnimatedProfilePhotoBuilder`; `PhotoStoryBuilder`/`VideoStoryBuilder`) are optional sugar over that shape. `serializeParams` walks it, hoists each nested `InputFile` to `attach://media_<i>`, and emits a `FormPart` = the JSON string (with `attach://` refs) **plus** the keyed `InputFile`s. The encoder sets the JSON field (under the param's own key) and attaches the parts.
 
 **Consequences.** One `serializeParams` walk covers media groups too - the encoder still only moves strings and files. Uploads work on the edge (web-standard data); `fromPath()` is the sole Node-only helper (`./node`). Trade-off: the encoder grows one branch (form-part composites) beyond the string/file pair.
 
@@ -434,7 +434,7 @@ Backward compatibility is dropped, so these are intentional:
 
 1. **Core skeleton** - `Transport`, `encodeForm` (three branches: file part / form-part composite / string; no serialization), `InputFile`, `errors`; set up `exports` and the `src/core` no-`node:` lint. Unit tests with an injected fetch.
 2. **Type generator** - extend `scripts/api-parser.ts` to emit the discriminated `Update`, the generated `Api` method signatures, plain structured-field types, `InputFile | string` for file params, and expanded `MessageEntity`.
-3. **Pipeline + builders** - `serializeParams` (the one `JSON.stringify` + `attach://` walk), the `InlineKeyboard` markup builder, the entity helpers (`EntityType`, `EntityBuilder`), and the `MediaGroup` media builder (lands with the media methods); builders are optional sugar.
+3. **Pipeline + builders** - `serializeParams` (the one `JSON.stringify` + `attach://` walk), the `InlineKeyboard` markup builder, the entity helpers (`EntityType`, `EntityBuilder`), and the `MediaGroupBuilder` media builder (lands with the media methods); builders are optional sugar.
 4. **Client** - generate the single `Api` class over `request()`.
 5. **Dispatch** - `compose`, `Context`, `Bot`, `longPoll`, `webhookCallback`.
 6. **Node + framework adapters** - `src/node`: `fromPath`, `createWebhookServer`, managed polling; plus `registerExpressWebhook` / `nextAppWebhook` / `nextPagesWebhook`.
@@ -459,4 +459,4 @@ CI gates throughout: `tsc --strict`, the no-`node:`-in-`src/core` lint, unit tes
 - **Polling error policy.** Was open (ADR-004's "explicit opt-in error policy"). Now: `longPoll` has `retry` (default on), `maxBackoffMs` (default 60 000), and an `onError` observer; the loop backs off and resumes on transient errors *without advancing the offset*, rethrows fatal 4xx, and returns cleanly on abort. The transport mirrors this for one-off calls (transient retry + exponential backoff, M2, §6.8).
 - **Call-site verbosity of structured fields.** Was open (`.build()`/`json()` on every structured field - ADR-002 option E). Now: superseded by **option D** - `*Params` fields are plain objects/arrays and `serializeParams` does the one `JSON.stringify` + `attach://` walk; builders are optional sugar (ADR-002 banner, §6.2).
 
-*(Resolved by ADR: keep the name `node-telegram-bot-api`, one package with subpath exports - ADR-009; a single generated `Api` class, no Proxy, no Raw/Api split - ADR-001; structured args as plain typed objects, serialized once by the pipeline - ADR-002 (Option D); uniform form encoding, no JSON body - ADR-010; `InputFile`/multipart and nested uploads via `MediaGroup` - ADR-011; edge isolation enforced by lint + edge-bundle CI - ADR-009/M5.)*
+*(Resolved by ADR: keep the name `node-telegram-bot-api`, one package with subpath exports - ADR-009; a single generated `Api` class, no Proxy, no Raw/Api split - ADR-001; structured args as plain typed objects, serialized once by the pipeline - ADR-002 (Option D); uniform form encoding, no JSON body - ADR-010; `InputFile`/multipart and nested uploads via `MediaGroupBuilder` - ADR-011; edge isolation enforced by lint + edge-bundle CI - ADR-009/M5.)*

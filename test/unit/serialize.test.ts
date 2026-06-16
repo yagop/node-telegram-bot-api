@@ -2,7 +2,7 @@ import { describe, expect, test } from "bun:test";
 import { encodeForm } from "../../src/core/encode.js";
 import { serializeParams } from "../../src/core/serialize.js";
 import { InputFile } from "../../src/core/files.js";
-import { MediaGroup } from "../../src/core/media.js";
+import { MediaGroupBuilder } from "../../src/core/media.js";
 
 /** Plain params -> serializeParams -> encodeForm. */
 const enc = (p: Record<string, unknown>) => encodeForm(serializeParams(p));
@@ -93,9 +93,9 @@ describe("serializeParams", () => {
     expect(form.get("media_1")).toBeInstanceOf(Blob);
   });
 
-  test("a MediaGroup builder result serializes identically to the plain literal", async () => {
+  test("a MediaGroupBuilder builder result serializes identically to the plain literal", async () => {
     const a = fileA();
-    const fromBuilder = (await enc({ chat_id: 1, media: new MediaGroup().photo(a, { caption: "A" }).build() })).body as FormData;
+    const fromBuilder = (await enc({ chat_id: 1, media: new MediaGroupBuilder().photo({ media: a, caption: "A" }).build() })).body as FormData;
     const fromLiteral = (await enc({ chat_id: 1, media: [{ type: "photo", media: a, caption: "A" }] })).body as FormData;
     expect(JSON.parse(fromBuilder.get("media") as string)).toEqual(JSON.parse(fromLiteral.get("media") as string));
   });
