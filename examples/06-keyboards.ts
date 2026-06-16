@@ -25,9 +25,13 @@ bot.command("menu", (ctx) => {
 
 // Reply keyboard: a custom keyboard with quick-reply buttons + a contact request.
 bot.command("keyboard", (ctx) => {
-  const kb = new ReplyKeyboard().text("🍕 Pizza").text("🍔 Burger").row().requestContact("📞 Share contact");
   return ctx.reply("Pick something:", {
-    reply_markup: kb.build({ resize_keyboard: true, one_time_keyboard: true }),
+    reply_markup: new ReplyKeyboard()
+      .text("🍕 Pizza")
+      .text("🍔 Burger")
+      .row()
+      .requestContact("📞 Share contact")
+      .build({ resize_keyboard: true, one_time_keyboard: true }),
   });
 });
 
