@@ -6,19 +6,17 @@
  * sugar over the same object a caller could write by hand.
  */
 import type {
-  ForceReply,
   InlineKeyboardButton,
   InlineKeyboardMarkup,
   KeyboardButton,
   ReplyKeyboardMarkup,
-  ReplyKeyboardRemove,
 } from "../types/index.js";
 
 /**
  * Fluent inline-keyboard builder. Buttons append to the current row; `row()`
  * starts a new one.
  */
-export class InlineKeyboard {
+export class InlineKeyboardBuilder {
   private readonly rows: InlineKeyboardButton[][] = [[]];
 
   private push(button: InlineKeyboardButton): this {
@@ -92,7 +90,7 @@ export interface ReplyKeyboardBuildOptions {
  * Fluent reply-keyboard builder. Buttons append to the current row; `row()`
  * starts a new one.
  */
-export class ReplyKeyboard {
+export class ReplyKeyboardBuilder {
   private readonly rows: KeyboardButton[][] = [[]];
 
   private push(button: KeyboardButton): this {
@@ -134,14 +132,4 @@ export class ReplyKeyboard {
     }
     return { keyboard, ...options };
   }
-}
-
-/** Tell clients to remove the custom keyboard. */
-export function removeKeyboard(options?: { selective?: boolean }): ReplyKeyboardRemove {
-  return { remove_keyboard: true, ...options };
-}
-
-/** Tell clients to display a reply interface to the user. */
-export function forceReply(options?: { selective?: boolean; input_field_placeholder?: string }): ForceReply {
-  return { force_reply: true, ...options };
 }
