@@ -1,4 +1,5 @@
-import { describe, expect, test } from "bun:test";
+import { describe, test } from "node:test";
+import assert from "node:assert/strict";
 import type { Api } from "../../src/core/api.js";
 import { NetworkError, TelegramApiError } from "../../src/core/errors.js";
 import { longPoll } from "../../src/core/longpoll.js";
@@ -42,7 +43,7 @@ describe("longPoll", () => {
     for await (const update of longPoll(api, {}, controller.signal)) {
       seen.push(update.update_id);
     }
-    expect(seen).toEqual([100]);
+    assert.deepStrictEqual(seen, [100]);
   });
 
   test("resumes after a transient NetworkError without advancing offset", async () => {
@@ -67,9 +68,9 @@ describe("longPoll", () => {
       seen.push(update.update_id);
     }
 
-    expect(seen).toEqual([5, 6]);
+    assert.deepStrictEqual(seen, [5, 6]);
     // Offsets per call: 1st undefined, 2nd 6 (after yielding 5), 3rd 6 (no advance across failure).
-    expect(offsets).toEqual([undefined, 6, 6]);
+    assert.deepStrictEqual(offsets, [undefined, 6, 6]);
   });
 
   test("rethrows a fatal TelegramApiError(401)", async () => {
@@ -87,8 +88,8 @@ describe("longPoll", () => {
     } catch (err) {
       caught = err;
     }
-    expect(caught).toBeInstanceOf(TelegramApiError);
-    expect((caught as TelegramApiError).errorCode).toBe(401);
+    assert.ok(caught instanceof TelegramApiError);
+    assert.strictEqual((caught as TelegramApiError).errorCode, 401);
   });
 
   test("rethrows transient error when retry is disabled", async () => {
@@ -106,6 +107,6 @@ describe("longPoll", () => {
     } catch (err) {
       caught = err;
     }
-    expect(caught).toBeInstanceOf(NetworkError);
+    assert.ok(caught instanceof NetworkError);
   });
 });

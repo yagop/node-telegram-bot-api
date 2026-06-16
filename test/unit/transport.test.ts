@@ -1,4 +1,5 @@
-import { describe, expect, test } from "bun:test";
+import { describe, test } from "node:test";
+import assert from "node:assert/strict";
 import { NetworkError, TelegramApiError, TimeoutError } from "../../src/core/errors.js";
 import { InputFile } from "../../src/core/files.js";
 import { Transport } from "../../src/core/transport.js";
@@ -26,7 +27,7 @@ describe("Transport", () => {
     const { fetch } = jsonFetch([{ ok: true, result: { id: 42 } }]);
     const tr = new Transport(TOKEN, { fetch });
     const result = await tr.request<{ id: number }>("getMe");
-    expect(result).toEqual({ id: 42 });
+    assert.deepStrictEqual(result, { id: 42 });
   });
 
   test("api error throws TelegramApiError with errorCode + code", async () => {
@@ -38,11 +39,11 @@ describe("Transport", () => {
     } catch (err) {
       caught = err;
     }
-    expect(caught).toBeInstanceOf(TelegramApiError);
+    assert.ok(caught instanceof TelegramApiError);
     const e = caught as TelegramApiError;
-    expect(e.errorCode).toBe(400);
-    expect(e.code).toBe("ETELEGRAM");
-    expect(e.description).toBe("Bad Request: x");
+    assert.strictEqual(e.errorCode, 400);
+    assert.strictEqual(e.code, "ETELEGRAM");
+    assert.strictEqual(e.description, "Bad Request: x");
   });
 
   test("429 then success retries and resolves", async () => {
@@ -52,8 +53,8 @@ describe("Transport", () => {
     ]);
     const tr = new Transport(TOKEN, { fetch, maxRetries: 2 });
     const result = await tr.request<boolean>("getMe");
-    expect(result).toBe(true);
-    expect(calls.length).toBe(2);
+    assert.strictEqual(result, true);
+    assert.strictEqual(calls.length, 2);
   });
 
   test("429 exhausts retries -> throws with errorCode 429 and maxRetries+1 calls", async () => {
@@ -65,9 +66,9 @@ describe("Transport", () => {
     } catch (err) {
       caught = err;
     }
-    expect(caught).toBeInstanceOf(TelegramApiError);
-    expect((caught as TelegramApiError).errorCode).toBe(429);
-    expect(calls.length).toBe(2); // maxRetries + 1
+    assert.ok(caught instanceof TelegramApiError);
+    assert.strictEqual((caught as TelegramApiError).errorCode, 429);
+    assert.strictEqual(calls.length, 2); // maxRetries + 1
   });
 
   test("429 with retry_after over maxRetryAfterMs surfaces immediately (no wait, no retry)", async () => {
@@ -80,10 +81,10 @@ describe("Transport", () => {
     } catch (err) {
       caught = err;
     }
-    expect(caught).toBeInstanceOf(TelegramApiError);
-    expect((caught as TelegramApiError).errorCode).toBe(429);
-    expect((caught as TelegramApiError).retryAfter).toBe(3600); // preserved for the caller
-    expect(calls.length).toBe(1); // surfaced on the first response, never retried
+    assert.ok(caught instanceof TelegramApiError);
+    assert.strictEqual((caught as TelegramApiError).errorCode, 429);
+    assert.strictEqual((caught as TelegramApiError).retryAfter, 3600); // preserved for the caller
+    assert.strictEqual(calls.length, 1); // surfaced on the first response, never retried
   });
 
   test("network failure -> NetworkError (EFETCH)", async () => {
@@ -98,8 +99,8 @@ describe("Transport", () => {
     } catch (err) {
       caught = err;
     }
-    expect(caught).toBeInstanceOf(NetworkError);
-    expect((caught as NetworkError).code).toBe("EFETCH");
+    assert.ok(caught instanceof NetworkError);
+    assert.strictEqual((caught as NetworkError).code, "EFETCH");
   });
 
   test("timeout -> TimeoutError when our signal aborts", async () => {
@@ -131,8 +132,8 @@ describe("Transport", () => {
     } catch (err) {
       caught = err;
     }
-    expect(caught).toBeInstanceOf(TimeoutError);
-    expect((caught as TimeoutError).code).toBe("ETIMEOUT");
+    assert.ok(caught instanceof TimeoutError);
+    assert.strictEqual((caught as TimeoutError).code, "ETIMEOUT");
   });
 
   test("transient network throw then success retries and resolves (fetch called twice)", async () => {
@@ -146,8 +147,8 @@ describe("Transport", () => {
     }) as unknown as typeof fetch;
     const tr = new Transport(TOKEN, { fetch: flakyFetch, maxRetries: 2, retryBackoffMs: 0 });
     const result = await tr.request<{ id: number }>("getMe");
-    expect(result).toEqual({ id: 7 });
-    expect(calls.length).toBe(2);
+    assert.deepStrictEqual(result, { id: 7 });
+    assert.strictEqual(calls.length, 2);
   });
 
   test("5xx response then success retries and resolves", async () => {
@@ -161,8 +162,8 @@ describe("Transport", () => {
     }) as unknown as typeof fetch;
     const tr = new Transport(TOKEN, { fetch: flakyFetch, maxRetries: 2, retryBackoffMs: 0 });
     const result = await tr.request<boolean>("getMe");
-    expect(result).toBe(true);
-    expect(calls.length).toBe(2);
+    assert.strictEqual(result, true);
+    assert.strictEqual(calls.length, 2);
   });
 
   test("retried streamed upload re-sends the buffered body (no stream re-consumption)", async () => {
@@ -184,8 +185,8 @@ describe("Transport", () => {
     });
     const tr = new Transport(TOKEN, { fetch: flakyFetch, maxRetries: 2, retryBackoffMs: 0 });
     const result = await tr.request<boolean>("sendPhoto", { chat_id: 1, photo: new InputFile(stream) });
-    expect(result).toBe(true);
-    expect(sizes).toEqual([5, 5]); // both attempts saw the full 5-byte body
+    assert.strictEqual(result, true);
+    assert.deepStrictEqual(sizes, [5, 5]); // both attempts saw the full 5-byte body
   });
 
   test("a body-read failure is transient: retried, then wrapped as NetworkError", async () => {
@@ -202,8 +203,8 @@ describe("Transport", () => {
     } catch (err) {
       caught = err;
     }
-    expect(caught).toBeInstanceOf(NetworkError);
-    expect(i).toBe(2); // retried once before surfacing
+    assert.ok(caught instanceof NetworkError);
+    assert.strictEqual(i, 2); // retried once before surfacing
   });
 
   test("exhausted 5xx -> NetworkError including the status", async () => {
@@ -215,8 +216,8 @@ describe("Transport", () => {
     } catch (err) {
       caught = err;
     }
-    expect(caught).toBeInstanceOf(NetworkError);
-    expect((caught as NetworkError).message).toContain("503");
+    assert.ok(caught instanceof NetworkError);
+    assert.match((caught as NetworkError).message, /503/);
   });
 
   test("caller-abort is not retried and propagates verbatim", async () => {
@@ -239,17 +240,17 @@ describe("Transport", () => {
       caught = err;
     }
     // Propagated verbatim (not wrapped) and fetch was called exactly once.
-    expect((caught as Error).name).toBe("AbortError");
-    expect(caught).not.toBeInstanceOf(NetworkError);
-    expect(calls).toBe(1);
+    assert.strictEqual((caught as Error).name, "AbortError");
+    assert.ok(!(caught instanceof NetworkError));
+    assert.strictEqual(calls, 1);
   });
 
   test("request URL contains /bot<token>/<method> and uses POST", async () => {
     const { fetch, calls } = jsonFetch([{ ok: true, result: {} }]);
     const tr = new Transport(TOKEN, { fetch });
     await tr.request("getMe");
-    expect(calls.length).toBe(1);
-    expect(calls[0]!.url).toBe(`https://api.telegram.org/bot${TOKEN}/getMe`);
-    expect(calls[0]!.init?.method).toBe("POST");
+    assert.strictEqual(calls.length, 1);
+    assert.strictEqual(calls[0]!.url, `https://api.telegram.org/bot${TOKEN}/getMe`);
+    assert.strictEqual(calls[0]!.init?.method, "POST");
   });
 });

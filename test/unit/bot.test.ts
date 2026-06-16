@@ -1,4 +1,5 @@
-import { describe, expect, test } from "bun:test";
+import { describe, test } from "node:test";
+import assert from "node:assert/strict";
 import { Bot } from "../../src/core/bot.js";
 import type { Update } from "../../src/types/index.js";
 
@@ -45,7 +46,7 @@ describe("Bot routing", () => {
     });
     await bot.handleUpdate(messageUpdate("hello"));
     await bot.handleUpdate(callbackUpdate());
-    expect(fired).toBe(1);
+    assert.strictEqual(fired, 1);
   });
 
   test('command("start") sets ctx.match to the args string', async () => {
@@ -55,7 +56,7 @@ describe("Bot routing", () => {
       match = ctx.match;
     });
     await bot.handleUpdate(messageUpdate("/start a b"));
-    expect(match).toBe("a b");
+    assert.strictEqual(match, "a b");
   });
 
   test('command("start") sets ctx.match to "" with no args', async () => {
@@ -65,7 +66,7 @@ describe("Bot routing", () => {
       match = ctx.match;
     });
     await bot.handleUpdate(messageUpdate("/start"));
-    expect(match).toBe("");
+    assert.strictEqual(match, "");
   });
 
   test("hears(/n(\\d+)/) sets ctx.match to the RegExpMatchArray", async () => {
@@ -75,8 +76,8 @@ describe("Bot routing", () => {
       match = ctx.match as RegExpMatchArray;
     });
     await bot.handleUpdate(messageUpdate("n42"));
-    expect(match).toBeDefined();
-    expect(match![1]).toBe("42");
+    assert.notStrictEqual(match, undefined);
+    assert.strictEqual(match![1], "42");
   });
 
   test("catch handler receives a thrown error", async () => {
@@ -90,6 +91,6 @@ describe("Bot routing", () => {
       throw boom;
     });
     await bot.handleUpdate(messageUpdate("x"));
-    expect(caught).toBe(boom);
+    assert.strictEqual(caught, boom);
   });
 });
