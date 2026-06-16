@@ -1,4 +1,5 @@
-import { describe, expect, test } from "bun:test";
+import { describe, test } from "node:test";
+import assert from "node:assert/strict";
 import type { Bot } from "../../src/core/bot.js";
 import { safeEqual, webhookCallback } from "../../src/core/webhook.js";
 import type { Update } from "../../src/types/index.js";
@@ -30,9 +31,9 @@ describe("webhookCallback", () => {
         body: JSON.stringify(UPDATE),
       }),
     );
-    expect(res.status).toBe(200);
-    expect(received.length).toBe(1);
-    expect(received[0]!.update_id).toBe(1);
+    assert.strictEqual(res.status, 200);
+    assert.strictEqual(received.length, 1);
+    assert.strictEqual(received[0]!.update_id, 1);
   });
 
   test("wrong secret -> 401, handleUpdate not invoked", async () => {
@@ -48,15 +49,15 @@ describe("webhookCallback", () => {
         body: JSON.stringify(UPDATE),
       }),
     );
-    expect(res.status).toBe(401);
-    expect(received.length).toBe(0);
+    assert.strictEqual(res.status, 401);
+    assert.strictEqual(received.length, 0);
   });
 
   test("GET -> 405", async () => {
     const { bot } = fakeBot();
     const handle = webhookCallback(bot, { secretToken: "s" });
     const res = await handle(new Request("https://h/hook", { method: "GET" }));
-    expect(res.status).toBe(405);
+    assert.strictEqual(res.status, 405);
   });
 
   test("malformed JSON body -> 400", async () => {
@@ -72,8 +73,8 @@ describe("webhookCallback", () => {
         body: "{ not json",
       }),
     );
-    expect(res.status).toBe(400);
-    expect(received.length).toBe(0);
+    assert.strictEqual(res.status, 400);
+    assert.strictEqual(received.length, 0);
   });
 
   test("fastAck returns 200 before the handler finishes, but still invokes it", async () => {
@@ -100,8 +101,8 @@ describe("webhookCallback", () => {
     );
 
     // We resolved to a 200 while handleUpdate is still pending.
-    expect(res.status).toBe(200);
-    expect(invoked).toBe(true);
+    assert.strictEqual(res.status, 200);
+    assert.strictEqual(invoked, true);
 
     // Now let the background handler complete; should not throw.
     resolveHandler();
@@ -131,8 +132,8 @@ describe("webhookCallback", () => {
       }),
     );
 
-    expect(res.status).toBe(200);
-    expect(captured).toBeInstanceOf(Promise);
+    assert.strictEqual(res.status, 200);
+    assert.ok(captured instanceof Promise);
 
     resolveHandler();
     await captured; // wrapped promise resolves (and never rejects)
@@ -157,9 +158,9 @@ describe("webhookCallback", () => {
       }),
     );
 
-    expect(res.status).toBe(200);
+    assert.strictEqual(res.status, 200);
     // The promise handed to waitUntil resolves (rejection is swallowed).
-    await expect(captured).resolves.toBeUndefined();
+    assert.strictEqual(await captured, undefined);
   });
 
   test("missing secret header runs the compare and fails with 401", async () => {
@@ -172,25 +173,25 @@ describe("webhookCallback", () => {
         body: JSON.stringify(UPDATE),
       }),
     );
-    expect(res.status).toBe(401);
-    expect(received.length).toBe(0);
+    assert.strictEqual(res.status, 401);
+    assert.strictEqual(received.length, 0);
   });
 });
 
 describe("safeEqual", () => {
   test("equal strings -> true", () => {
-    expect(safeEqual("secret", "secret")).toBe(true);
-    expect(safeEqual("", "")).toBe(true);
+    assert.strictEqual(safeEqual("secret", "secret"), true);
+    assert.strictEqual(safeEqual("", ""), true);
   });
 
   test("differing content of same length -> false", () => {
-    expect(safeEqual("secret", "secreT")).toBe(false);
-    expect(safeEqual("aaaa", "aaab")).toBe(false);
+    assert.strictEqual(safeEqual("secret", "secreT"), false);
+    assert.strictEqual(safeEqual("aaaa", "aaab"), false);
   });
 
   test("differing lengths -> false", () => {
-    expect(safeEqual("secret", "secre")).toBe(false);
-    expect(safeEqual("", "x")).toBe(false);
-    expect(safeEqual("x", "")).toBe(false);
+    assert.strictEqual(safeEqual("secret", "secre"), false);
+    assert.strictEqual(safeEqual("", "x"), false);
+    assert.strictEqual(safeEqual("x", ""), false);
   });
 });

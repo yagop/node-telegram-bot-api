@@ -1,4 +1,5 @@
-import { describe, expect, test } from "bun:test";
+import { describe, test } from "node:test";
+import assert from "node:assert/strict";
 import type { Api } from "../../src/core/api.js";
 import { Context } from "../../src/core/context.js";
 import type { Update } from "../../src/types/index.js";
@@ -41,15 +42,15 @@ describe("Context", () => {
     const { api, calls } = fakeApi();
     const ctx = new Context(messageUpdate(), api);
     await ctx.reply("pong");
-    expect(calls.sendMessage.length).toBe(1);
-    expect(calls.sendMessage[0]).toEqual({ chat_id: 555, text: "pong" });
+    assert.strictEqual(calls.sendMessage.length, 1);
+    assert.deepStrictEqual(calls.sendMessage[0], { chat_id: 555, text: "pong" });
   });
 
   test("reply() forwards extra options", async () => {
     const { api, calls } = fakeApi();
     const ctx = new Context(messageUpdate(), api);
     await ctx.reply("pong", { parse_mode: "HTML" });
-    expect(calls.sendMessage[0]).toEqual({
+    assert.deepStrictEqual(calls.sendMessage[0], {
       chat_id: 555,
       text: "pong",
       parse_mode: "HTML",
@@ -59,16 +60,16 @@ describe("Context", () => {
   test("chat / from / chatId accessors", () => {
     const { api } = fakeApi();
     const ctx = new Context(messageUpdate(), api);
-    expect(ctx.chat?.id).toBe(555);
-    expect(ctx.from?.id).toBe(777);
-    expect(ctx.chatId).toBe(555);
-    expect(ctx.message?.text).toBe("hi");
+    assert.strictEqual(ctx.chat?.id, 555);
+    assert.strictEqual(ctx.from?.id, 777);
+    assert.strictEqual(ctx.chatId, 555);
+    assert.strictEqual(ctx.message?.text, "hi");
   });
 
   test("answerCallbackQuery() throws on a non-callback update", () => {
     const { api } = fakeApi();
     const ctx = new Context(messageUpdate(), api);
-    expect(() => ctx.answerCallbackQuery()).toThrow("this update has no callback query");
+    assert.throws(() => ctx.answerCallbackQuery(), /this update has no callback query/);
   });
 
   test("answerCallbackQuery() answers a callback update", async () => {
@@ -89,10 +90,10 @@ describe("Context", () => {
     } as unknown as Update;
     const ctx = new Context(cbUpdate, api);
     await ctx.answerCallbackQuery({ text: "ok" });
-    expect(calls.answerCallbackQuery[0]).toEqual({
+    assert.deepStrictEqual(calls.answerCallbackQuery[0], {
       callback_query_id: "cq1",
       text: "ok",
     });
-    expect(ctx.chatId).toBe(444);
+    assert.strictEqual(ctx.chatId, 444);
   });
 });

@@ -1,4 +1,5 @@
-import { describe, expect, test } from "bun:test";
+import { describe, test } from "node:test";
+import assert from "node:assert/strict";
 import { RateLimiter, TokenBucket } from "../../src/core/ratelimiter.js";
 
 /** A controllable clock for deterministic, wall-clock-independent tests. */
@@ -34,7 +35,7 @@ describe("TokenBucket", () => {
     await bucket.take();
     await bucket.take();
     // All three resolved without any clock movement - assertion is reaching here.
-    expect(true).toBe(true);
+    assert.strictEqual(true, true);
   });
 
   test("computes a positive wait once the burst is drained, satisfied by refill", async () => {
@@ -45,12 +46,12 @@ describe("TokenBucket", () => {
 
     // Without advancing the clock the next take must wait (no token yet).
     const pending = bucket.take();
-    expect(await settledNextTick(pending)).toBe(false);
+    assert.strictEqual(await settledNextTick(pending), false);
 
     // Advance so a token has accrued; the (short) timer fires and the take resolves.
     clock.advance(1000);
     await pending;
-    expect(true).toBe(true);
+    assert.strictEqual(true, true);
   });
 });
 
@@ -65,7 +66,7 @@ describe("RateLimiter", () => {
     // to prove it was blocked (fast + deterministic; no real 1s timer).
     const controller = new AbortController();
     const pending = limiter.acquire(undefined, controller.signal);
-    expect(await settledNextTick(pending)).toBe(false);
+    assert.strictEqual(await settledNextTick(pending), false);
     controller.abort(new Error("stop waiting"));
     let caught: unknown;
     try {
@@ -73,7 +74,7 @@ describe("RateLimiter", () => {
     } catch (err) {
       caught = err;
     }
-    expect((caught as Error).message).toBe("stop waiting");
+    assert.strictEqual((caught as Error).message, "stop waiting");
   });
 
   test("awaits a per-chat bucket independently per chat", async () => {
@@ -87,7 +88,7 @@ describe("RateLimiter", () => {
     // was blocked (keeps the test fast and deterministic without a 1s timer).
     const controller = new AbortController();
     const pending = limiter.acquire("A", controller.signal);
-    expect(await settledNextTick(pending)).toBe(false);
+    assert.strictEqual(await settledNextTick(pending), false);
     controller.abort(new Error("stop waiting"));
     let caught: unknown;
     try {
@@ -95,6 +96,6 @@ describe("RateLimiter", () => {
     } catch (err) {
       caught = err;
     }
-    expect((caught as Error).message).toBe("stop waiting");
+    assert.strictEqual((caught as Error).message, "stop waiting");
   });
 });

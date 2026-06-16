@@ -1,4 +1,5 @@
-import { describe, expect, test } from "bun:test";
+import { describe, test } from "node:test";
+import assert from "node:assert/strict";
 import { compose, type Middleware } from "../../src/core/compose.js";
 
 interface Ctx {
@@ -19,7 +20,7 @@ describe("compose", () => {
       c.log.push("b:after");
     };
     await compose([a, b])(ctx);
-    expect(ctx.log).toEqual(["a:before", "b:before", "b:after", "a:after"]);
+    assert.deepStrictEqual(ctx.log, ["a:before", "b:before", "b:after", "a:after"]);
   });
 
   test("short-circuits when a middleware does not call next()", async () => {
@@ -32,7 +33,7 @@ describe("compose", () => {
       c.log.push("b");
     };
     await compose([a, b])(ctx);
-    expect(ctx.log).toEqual(["a"]);
+    assert.deepStrictEqual(ctx.log, ["a"]);
   });
 
   test("calling next() twice rejects", async () => {
@@ -41,7 +42,7 @@ describe("compose", () => {
       await next();
       await next();
     };
-    await expect(compose([bad])(ctx)).rejects.toThrow("next() called multiple times");
+    await assert.rejects(compose([bad])(ctx), /next\(\) called multiple times/);
   });
 
   test("trailing next is invoked after the chain", async () => {
@@ -53,6 +54,6 @@ describe("compose", () => {
     await compose([a])(ctx, async () => {
       ctx.log.push("tail");
     });
-    expect(ctx.log).toEqual(["a", "tail"]);
+    assert.deepStrictEqual(ctx.log, ["a", "tail"]);
   });
 });
