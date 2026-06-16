@@ -39,19 +39,9 @@ import {
   StickerSetBuilder,
 } from "../../src/core/media.js";
 import type {
-  AcceptedGiftTypes,
-  BotCommand,
-  BotCommandScopeDefault,
-  ChatPermissions,
   InlineQueryResult,
-  InputChecklist,
   InputMedia,
-  InputPaidMedia,
-  InputPollOption,
-  InputRichMessage,
   KeyboardButton,
-  LabeledPrice,
-  MaskPosition,
   Message,
   PassportElementError,
   ReactionType,
@@ -577,7 +567,13 @@ describe("methods", () => {
 
   method("unbanChatMember", () => {
     test("unbans a chat member", async () => {
-      await api.unbanChatMember({ chat_id: chatId, user_id: await targetUserId() });
+      // only_if_banned: true makes this a safe no-op when the target isn't
+      // banned (otherwise 400 "user isn't a member"). Matches master.
+      await api.unbanChatMember({
+        chat_id: chatId,
+        user_id: await targetUserId(),
+        only_if_banned: true,
+      });
     });
   });
 
