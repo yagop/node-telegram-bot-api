@@ -330,7 +330,10 @@ describe("methods", () => {
     test("sends a live photo", async () => {
       const msg = await api.sendLivePhoto({
         chat_id: chatId,
-        live_photo: "https://example.com/e2e.mov",
+        live_photo: new InputFile(MP4_32, {
+          filename: "e2e.mov",
+          contentType: "video/quicktime",
+        }),
         photo: "https://upload.wikimedia.org/wikipedia/commons/3/3a/Cat03.jpg",
       });
       expect(msg).toBeDefined();
