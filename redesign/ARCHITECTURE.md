@@ -16,7 +16,7 @@ v2 keeps what works (generated, docs-faithful types; a thin fetch transport; the
 1. **Generator-based dispatch.** The update stream is an `AsyncGenerator<Update>`. The bespoke polling class with its manual scheduling, abort flags, and "offset infinite loop" workaround disappears.
 2. **Middleware + Context.** A composed middleware chain (koa-style) over a per-update `Context` replaces ad-hoc `EventEmitter` subscriptions, so sessions, auth, rate-limiting, and error boundaries can wrap one another.
 3. **One generated client class, no Proxy.** A single `Api` class has one concrete, single-argument method per Bot API method. There is **no `RawApi`/`Api` split** - see decision 4 for why it isn't needed.
-4. **One serialization step, in the pipeline.** Structured fields (`reply_markup`, entities, ...) are typed as **plain objects/arrays**. A single `serializeParams()` (in `Api.request`, before the retry loop) does the one `JSON.stringify` + `attach://` walk; the transport and encoder then only move strings and files. Builders (`new InlineKeyboard()...build()`) are **optional sugar** returning the same plain shapes. No `_fix*`, no per-field call-site serialization, and still no second client layer (ADR-002, Option D).
+4. **One serialization step, in the pipeline.** Structured fields (`reply_markup`, entities, ...) are typed as **plain objects/arrays**. A single `serializeParams()` (in `Api.request`, before the retry loop) does the one `JSON.stringify` + `attach://` walk; the transport and encoder then only move strings and files. Builders (`new InlineKeyboardBuilder()...build()`) are **optional sugar** returning the same plain shapes. No `_fix*`, no per-field call-site serialization, and still no second client layer (ADR-002, Option D).
 5. **Runtime-agnostic core, one package.** The core imports only Web-standard APIs. The package keeps the name **`node-telegram-bot-api`** and ships as one install with [subpath exports](https://nodejs.org/api/packages.html#subpath-exports) (`.`, `./node`, `./types`); the core-vs-node isolation is enforced by **CI, not a package boundary**.
 6. **Uniform request encoding.** Every call goes out as form encoding - `x-www-form-urlencoded` without files, `multipart/form-data` with them. No JSON body, no per-call body-type branching beyond "is a file present" (ADR-010).
 
@@ -80,7 +80,7 @@ flowchart TD
     TR["Transport - fetch + 429 retry + envelope"]
   end
 
-  BLD["InlineKeyboard.build() → plain markup object (optional sugar)"]
+  BLD["InlineKeyboardBuilder.build() -> plain markup object (optional sugar)"]
 
   P --> BOT
   WCB --> DISP
@@ -170,7 +170,7 @@ type Json<T> = string & { readonly __json: T };   // zero-cost brand; still a st
 
 // generated param field:  reply_markup?: Json<InlineKeyboardSpec>
 
-class InlineKeyboard {
+class InlineKeyboardBuilder {
   build(): Json<InlineKeyboardSpec> { return JSON.stringify(this.spec) as Json<InlineKeyboardSpec>; }
 }
 function json<T>(value: T): Json<T> { return JSON.stringify(value) as Json<T>; }
@@ -179,7 +179,7 @@ function json<T>(value: T): Json<T> { return JSON.stringify(value) as Json<T>; }
 A field typed `Json<InlineKeyboardSpec>` only accepts something a builder or `json()` produced - `reply_markup: "hello"` and `reply_markup: { inline_keyboard: [] }` are both type errors. Call sites read:
 
 ```ts
-ctx.reply("hi", { reply_markup: new InlineKeyboard().text("A", "a").row().url("Docs", URL).build() });
+ctx.reply("hi", { reply_markup: new InlineKeyboardBuilder().text("A", "a").row().url("Docs", URL).build() });
 ctx.reply("hi", { reply_markup: json({ inline_keyboard: [[{ text: "A", callback_data: "a" }]] }) });
 ```
 
@@ -345,7 +345,7 @@ Backward compatibility is dropped, so these are intentional:
 | D. `toJSON()` + encoder `JSON.stringify` | library, one line | high | none (`.build()` optional) | one line |
 | E. **Branded `Json<T>` strings, built at call site** | **at the call site** | **high** | **`.build()`/`json()` per field** | **none** |
 
-**Decision: E.** Structured fields are typed `Json<T>` (a branded string). Values are produced by builders (`InlineKeyboard`, the `EntityBuilder`) or the generic `json(value)`, both of which `JSON.stringify` eagerly and return the branded string. The request pipeline performs **no serialization**: `encodeForm` writes strings and extracts `InputFile`s, nothing more.
+**Decision: E.** Structured fields are typed `Json<T>` (a branded string). Values are produced by builders (`InlineKeyboardBuilder`, the `EntityBuilder`) or the generic `json(value)`, both of which `JSON.stringify` eagerly and return the branded string. The request pipeline performs **no serialization**: `encodeForm` writes strings and extracts `InputFile`s, nothing more.
 
 **Consequences.** Zero serialization code in the hot path; the client is decoupled from every structured shape (forward-compatible); the "which fields are JSON" knowledge lives in generated `Json<T>` aliases at compile time. The brand is load-bearing - a bare `type X = string` would accept arbitrary text and re-create the "is this secretly JSON?" problem. The brand is, however, only **structural**: it guarantees a value "went through `json()`/`.build()`", not that the value is fully correct - for a permissive, all-optional target shape `T`, `json({})` or a wrongly-shaped-but-assignable object still type-checks. It catches "you forgot to serialize", not "you serialized the wrong thing". Trade-off: callers write `.build()`/`json()` on every structured field, and cannot pass a builder instance or plain object directly (that would require a library serialize step - option D - which we explicitly chose against to keep a single, pure client). Option D remains the fallback if call-site verbosity proves painful: it restores object/builder inputs at the cost of one `JSON.stringify` in the encoder, without bringing back a second client layer.
 
@@ -434,7 +434,7 @@ Backward compatibility is dropped, so these are intentional:
 
 1. **Core skeleton** - `Transport`, `encodeForm` (three branches: file part / form-part composite / string; no serialization), `InputFile`, `errors`; set up `exports` and the `src/core` no-`node:` lint. Unit tests with an injected fetch.
 2. **Type generator** - extend `scripts/api-parser.ts` to emit the discriminated `Update`, the generated `Api` method signatures, plain structured-field types, `InputFile | string` for file params, and expanded `MessageEntity`.
-3. **Pipeline + builders** - `serializeParams` (the one `JSON.stringify` + `attach://` walk), the `InlineKeyboard` markup builder, the entity helpers (`EntityType`, `EntityBuilder`), and the `MediaGroupBuilder` media builder (lands with the media methods); builders are optional sugar.
+3. **Pipeline + builders** - `serializeParams` (the one `JSON.stringify` + `attach://` walk), the `InlineKeyboardBuilder` markup builder, the entity helpers (`EntityType`, `EntityBuilder`), and the `MediaGroupBuilder` media builder (lands with the media methods); builders are optional sugar.
 4. **Client** - generate the single `Api` class over `request()`.
 5. **Dispatch** - `compose`, `Context`, `Bot`, `longPoll`, `webhookCallback`.
 6. **Node + framework adapters** - `src/node`: `fromPath`, `createWebhookServer`, managed polling; plus `registerExpressWebhook` / `nextAppWebhook` / `nextPagesWebhook`.

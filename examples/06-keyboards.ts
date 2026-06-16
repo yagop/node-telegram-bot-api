@@ -1,21 +1,21 @@
 /**
  * 06 - Keyboards & callback queries.
  *
- * Demonstrates the markup builders - `InlineKeyboard`, `ReplyKeyboard`,
- * `removeKeyboard()`, `forceReply()` - and handling a `callback_query` with
+ * Demonstrates the markup builders - `InlineKeyboardBuilder` and
+ * `ReplyKeyboardBuilder` - and handling a `callback_query` with
  * `ctx.answerCallbackQuery()`. Each builder's `.build()` returns the plain
  * `*Markup` object that drops straight into `reply_markup`.
  *
  * Run: BOT_TOKEN=123:abc bun examples/06-keyboards.ts
  */
-import { Bot, forceReply, InlineKeyboard, ReplyKeyboard, removeKeyboard } from "node-telegram-bot-api";
+import { Bot, InlineKeyboardBuilder, ReplyKeyboardBuilder } from "node-telegram-bot-api";
 import { run } from "node-telegram-bot-api/node";
 
 const bot = new Bot(process.env.BOT_TOKEN!);
 
 // Inline keyboard: callback buttons + a URL button, laid out over two rows.
 bot.command("menu", (ctx) => {
-  const kb = new InlineKeyboard()
+  const kb = new InlineKeyboardBuilder()
     .text("👍 Like", "vote:up")
     .text("👎 Dislike", "vote:down")
     .row()
@@ -26,7 +26,7 @@ bot.command("menu", (ctx) => {
 // Reply keyboard: a custom keyboard with quick-reply buttons + a contact request.
 bot.command("keyboard", (ctx) => {
   return ctx.reply("Pick something:", {
-    reply_markup: new ReplyKeyboard()
+    reply_markup: new ReplyKeyboardBuilder()
       .text("🍕 Pizza")
       .text("🍔 Burger")
       .row()
@@ -35,13 +35,13 @@ bot.command("keyboard", (ctx) => {
   });
 });
 
-// Remove the custom keyboard.
-bot.command("hide", (ctx) => ctx.reply("Keyboard hidden.", { reply_markup: removeKeyboard() }));
+// Remove the custom keyboard with a plain ReplyKeyboardRemove object.
+bot.command("hide", (ctx) => ctx.reply("Keyboard hidden.", { reply_markup: { remove_keyboard: true } }));
 
-// Force a reply (the client opens the input box pre-focused with a reply target).
+// Force a reply with a plain ForceReply object (opens the input box pre-focused).
 bot.command("ask", (ctx) =>
   ctx.reply("What's your favorite color?", {
-    reply_markup: forceReply({ input_field_placeholder: "e.g. teal" }),
+    reply_markup: { force_reply: true, input_field_placeholder: "e.g. teal" },
   }),
 );
 
