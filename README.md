@@ -115,7 +115,7 @@ await api.sendMessage({
 const { text, entities } = new EntityBuilder()
   .plain("Hello ")
   .bold("world")
-  .link("docs", "https://x")
+  .link("docs", "https://github.com/yagop/node-telegram-bot-api")
   .build();
 await api.sendMessage({ chat_id, text, entities });
 
@@ -141,7 +141,7 @@ await api.sendMediaGroup({
   chat_id,
   media: [
     { type: "photo", media: new InputFile(bytesA), caption: "A" },
-    { type: "photo", media: "https://example.com/b.jpg" }, // a URL is never uploaded
+    { type: "photo", media: "https://telegram.org/example/photo.jpg" },
   ],
 });
 
@@ -150,7 +150,7 @@ await api.sendMediaGroup({
   chat_id,
   media: new MediaGroupBuilder()
     .photo({ media: new InputFile(bytesA), caption: "A" })
-    .photo({ media: "https://example.com/b.jpg" })
+    .photo({ media: "https://telegram.org/example/photo.jpg" })
     .build(),
 });
 ```

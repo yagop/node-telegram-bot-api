@@ -25,7 +25,7 @@ const { text, entities } = new EntityBuilder()
   .plain(" formatting - no escaping needed. Run ")
   .code("bun test")
   .plain(" and see the ")
-  .link("changelog", "https://example.com/changelog")
+  .link("changelog", "https://core.telegram.org/bots/api#recent-changes")
   .plain(".")
   .build();
 
