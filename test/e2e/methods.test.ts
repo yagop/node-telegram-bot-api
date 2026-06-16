@@ -33,11 +33,10 @@ import { InputFile } from "../../src/core/files.js";
 import { InlineKeyboard } from "../../src/core/keyboard.js";
 import { EntityBuilder } from "../../src/core/entities.js";
 import {
-  MediaGroup,
+  MediaGroupBuilder,
+  PhotoStoryBuilder,
+  StaticProfilePhotoBuilder,
   StickerSetBuilder,
-  inputSticker,
-  profilePhoto,
-  storyContent,
 } from "../../src/core/media.js";
 import type {
   AcceptedGiftTypes,
@@ -155,7 +154,7 @@ async function createOwnedSet(type: SetKind): Promise<string> {
     name,
     title: "e2e",
     sticker_type: type === "regular" ? undefined : type,
-    stickers: new StickerSetBuilder().add(sticker, { format: "static", emoji_list: ["🙂"] }).build(),
+    stickers: new StickerSetBuilder().add({ sticker, format: "static", emoji_list: ["🙂"] }).build(),
   });
   return name;
 }
@@ -426,9 +425,9 @@ describe("methods", () => {
 
   method("sendMediaGroup", () => {
     test("sends a two-photo album", async () => {
-      const media = new MediaGroup()
-        .photo("https://upload.wikimedia.org/wikipedia/commons/3/3a/Cat03.jpg", { caption: "a" })
-        .photo("https://upload.wikimedia.org/wikipedia/commons/3/3a/Cat03.jpg", { caption: "b" })
+      const media = new MediaGroupBuilder()
+        .photo({ media: "https://upload.wikimedia.org/wikipedia/commons/3/3a/Cat03.jpg", caption: "a" })
+        .photo({ media: "https://upload.wikimedia.org/wikipedia/commons/3/3a/Cat03.jpg", caption: "b" })
         .build();
       const res = await api.sendMediaGroup({ chat_id: chatId, media });
       expect(res).toBeDefined();
@@ -1093,7 +1092,7 @@ describe("methods", () => {
     // A static profile photo must be a JPEG large enough to crop (the 1x1 PNG is
     // rejected with PHOTO_CROP_SIZE_SMALL). Set then remove to revert.
     test("set then remove", async () => {
-      await api.setMyProfilePhoto({ photo: profilePhoto.static(e2eProfileJpeg()) });
+      await api.setMyProfilePhoto({ photo: new StaticProfilePhotoBuilder({ photo: e2eProfileJpeg() }).build() });
       await api.removeMyProfilePhoto();
     });
   });
@@ -1223,7 +1222,7 @@ describe("methods", () => {
     test("sets the business account profile photo", async () => {
       await api.setBusinessAccountProfilePhoto({
         business_connection_id: "e2e",
-        photo: profilePhoto.static(e2ePng()),
+        photo: new StaticProfilePhotoBuilder({ photo: e2ePng() }).build(),
       });
     });
   });
@@ -1310,7 +1309,7 @@ describe("methods", () => {
     test("posts a story", async () => {
       await api.postStory({
         business_connection_id: "e2e",
-        content: storyContent.photo(e2ePng()),
+        content: new PhotoStoryBuilder({ photo: e2ePng() }).build(),
         active_period: 86_400,
       });
     });
@@ -1332,7 +1331,7 @@ describe("methods", () => {
       await api.editStory({
         business_connection_id: "e2e",
         story_id: 1,
-        content: storyContent.photo(e2ePng()),
+        content: new PhotoStoryBuilder({ photo: e2ePng() }).build(),
       });
     });
   });
@@ -1608,7 +1607,7 @@ describe("methods", () => {
         name,
         title: "e2e",
         stickers: new StickerSetBuilder()
-          .add(e2eSticker(), { format: "static", emoji_list: ["🙂"] })
+          .add({ sticker: e2eSticker(), format: "static", emoji_list: ["🙂"] })
           .build(),
       });
       // Revert: drop the set we just created so the test stays self-contained.
@@ -1623,7 +1622,7 @@ describe("methods", () => {
       await api.addStickerToSet({
         user_id: await targetUserId(),
         name,
-        sticker: inputSticker(e2eSticker(), { format: "static", emoji_list: ["🙂"] }),
+        sticker: { sticker: e2eSticker(), format: "static", emoji_list: ["🙂"] },
       });
       const after = (await api.getStickerSet({ name })).stickers.length;
       expect(after).toBeGreaterThan(before);
@@ -1645,7 +1644,7 @@ describe("methods", () => {
       await api.addStickerToSet({
         user_id: await targetUserId(),
         name,
-        sticker: inputSticker(e2eSticker(), { format: "static", emoji_list: ["🙂"] }),
+        sticker: { sticker: e2eSticker(), format: "static", emoji_list: ["🙂"] },
       });
       const set = await api.getStickerSet({ name });
       const ok = await api.deleteStickerFromSet({ sticker: set.stickers.at(-1)!.file_id });
@@ -1661,7 +1660,7 @@ describe("methods", () => {
         user_id: await targetUserId(),
         name,
         old_sticker: sticker.file_id,
-        sticker: inputSticker(e2eSticker(), { format: "static", emoji_list: ["🔁"] }),
+        sticker: { sticker: e2eSticker(), format: "static", emoji_list: ["🔁"] },
       });
     });
   });
@@ -1735,7 +1734,7 @@ describe("methods", () => {
         name,
         title: "e2e",
         stickers: new StickerSetBuilder()
-          .add(e2eSticker(), { format: "static", emoji_list: ["🙂"] })
+          .add({ sticker: e2eSticker(), format: "static", emoji_list: ["🙂"] })
           .build(),
       });
       const ok = await api.deleteStickerSet({ name });
