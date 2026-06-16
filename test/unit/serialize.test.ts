@@ -32,6 +32,15 @@ describe("serializeParams", () => {
     expect((body as URLSearchParams).get("message_ids")).toBe("[10,11]");
   });
 
+  test("null/undefined fields are dropped before the wire", async () => {
+    const { body } = await enc({ chat_id: 1, caption: null, reply_to_message_id: undefined, text: "keep" });
+    const p = body as URLSearchParams;
+    expect(p.get("chat_id")).toBe("1");
+    expect(p.get("text")).toBe("keep");
+    expect(p.has("caption")).toBe(false);
+    expect(p.has("reply_to_message_id")).toBe(false);
+  });
+
   test("top-level InputFile attaches under the field name (multipart)", async () => {
     const f = fileA();
     const form = (await enc({ chat_id: 1, photo: f, caption: "x" })).body as FormData;

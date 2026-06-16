@@ -16,7 +16,7 @@ v2 keeps what works (generated, docs-faithful types; a thin fetch transport; the
 1. **Generator-based dispatch.** The update stream is an `AsyncGenerator<Update>`. The bespoke polling class with its manual scheduling, abort flags, and "offset infinite loop" workaround disappears.
 2. **Middleware + Context.** A composed middleware chain (koa-style) over a per-update `Context` replaces ad-hoc `EventEmitter` subscriptions, so sessions, auth, rate-limiting, and error boundaries can wrap one another.
 3. **One generated client class, no Proxy.** A single `Api` class has one concrete, single-argument method per Bot API method. There is **no `RawApi`/`Api` split** - see decision 4 for why it isn't needed.
-4. **The request pipeline performs no serialization.** Structured fields (`reply_markup`, entities, ...) are typed as **branded `Json<T>` strings**: their values arrive already wire-ready. Serialization still happens - but **at the call site, in the builders** (`new InlineKeyboard()...build()`) or the generic `json(value)`, never in the request pipeline. The transport and encoder never stringify anything - which is exactly what removes the need for a second client layer. No `_fix*`, no pipeline serialize step.
+4. **One serialization step, in the pipeline.** Structured fields (`reply_markup`, entities, ...) are typed as **plain objects/arrays**. A single `serializeParams()` (in `Api.request`, before the retry loop) does the one `JSON.stringify` + `attach://` walk; the transport and encoder then only move strings and files. Builders (`new InlineKeyboard()...build()`) are **optional sugar** returning the same plain shapes. No `_fix*`, no per-field call-site serialization, and still no second client layer (ADR-002, Option D).
 5. **Runtime-agnostic core, one package.** The core imports only Web-standard APIs. The package keeps the name **`node-telegram-bot-api`** and ships as one install with [subpath exports](https://nodejs.org/api/packages.html#subpath-exports) (`.`, `./node`, `./types`); the core-vs-node isolation is enforced by **CI, not a package boundary**.
 6. **Uniform request encoding.** Every call goes out as form encoding - `x-www-form-urlencoded` without files, `multipart/form-data` with them. No JSON body, no per-call body-type branching beyond "is a file present" (ADR-010).
 
@@ -28,12 +28,12 @@ v2 keeps what works (generated, docs-faithful types; a thin fetch transport; the
 
 - **Developer ergonomics** - less boilerplate, full autocomplete, sensible defaults, one obvious way to do each thing.
 - **Runtime-agnostic core** - runs unchanged on Node 18+, Bun, Deno, and edge/serverless (Cloudflare Workers, Vercel Edge, Deno Deploy).
-- **Type-safety & inference** - discriminated-union updates; a single generated client class; structured arguments are branded `Json<T>` strings so the compiler rejects an unbuilt or arbitrary string.
+- **Type-safety & inference** - discriminated-union updates; a single generated client class; structured arguments are plain typed objects the compiler checks by shape, serialized once by the pipeline.
 
 **Non-goals:**
 
 - v1 API compatibility. The `TelegramBot` god-class, positional method args, the `EventEmitter` events, and the `_fix*`/`filepath` behaviors are all removed. A short "v1→v2 cheatsheet" ships with the release; there is no shim.
-- Reimplementing the type generator. `scripts/api-parser.ts` stays; it gains a discriminated `Update`, emits the single generated client surface (ADR-001) with structured fields typed as `Json<T>` (ADR-002), and expands `MessageEntity` coverage to drive the entity helpers (§6.3).
+- Reimplementing the type generator. `scripts/api-parser.ts` stays; it gains a discriminated `Update`, emits the single generated client surface (ADR-001) with structured fields typed as plain objects (ADR-002), and expands `MessageEntity` coverage to drive the entity helpers (§6.3).
 
 **Hard constraints the design must satisfy:**
 
@@ -75,22 +75,22 @@ flowchart TD
     DISP["handleUpdate(update)"]
     COMP["compose(middleware)"]
     CTX["Context (per update)"]
-    API["Api  (single generated client, one method per API method)"]
+    API["Api  (single client; Api.request → serializeParams)"]
     ENC["encodeForm() - files → multipart; everything else is already a string"]
     TR["Transport - fetch + 429 retry + envelope"]
   end
 
-  BLD["InlineKeyboard.build() / json(value) → Json<T> string"]
+  BLD["InlineKeyboard.build() → plain markup object (optional sugar)"]
 
   P --> BOT
   WCB --> DISP
   NSrv --> WCB
   BOT --> DISP --> COMP --> CTX
-  BLD -->|wire-ready strings| CTX
+  BLD -->|plain objects| CTX
   CTX -->|ctx.reply / ctx.api.*| API --> ENC --> TR --> TG["api.telegram.org"]
 ```
 
-Two entry points, **one dispatch path**: `bot.startPolling(source)` pumps a generator for long-running processes; `bot.handleUpdate(update)` handles a single update and is what the Worker/edge callback calls. Both build a `Context` and run the same composed chain. Structured arguments are serialized **before** they reach the client, by the builders/`json()` at the call site - the client and encoder only ever move strings.
+Two entry points, **one dispatch path**: `bot.startPolling(source)` pumps a generator for long-running processes; `bot.handleUpdate(update)` handles a single update and is what the Worker/edge callback calls. Both build a `Context` and run the same composed chain. Structured arguments are plain objects; `Api.request` serializes them once (`serializeParams`) before the transport - the encoder only ever moves strings and files.
 
 ---
 
@@ -101,15 +101,15 @@ Two entry points, **one dispatch path**: `bot.startPolling(source)` pumps a gene
 ```
 src/
   core/      runtime-agnostic. Bot, Context, compose, the single Api client class,
-             Transport, encodeForm (no serialization), files
-             (Blob/Uint8Array/stream), markup + entity builders, the json() helper,
+             Transport, serializeParams + encodeForm, files
+             (Blob/Uint8Array/stream), markup + entity + media builders (optional sugar),
              longPoll, webhookCallback, framework webhook adapters (Express/Next.js), errors.
              → zero node:* imports; runs on Node / Bun / Deno / Workers / edge.
   node/      Node-only sugar: fromPath() (fs uploads), createWebhookServer()
              (node:http → delegates to core's webhookCallback), optional managed
              polling runner. THE ONLY folder allowed to import node:*.
   types/     the generated schema (re-exported by core): discriminated Update,
-             the generated Api method signatures, Json<T> field aliases, expanded MessageEntity.
+             the generated Api method signatures, plain structured-field types, expanded MessageEntity.
 ```
 
 ```jsonc
@@ -197,16 +197,16 @@ The accepted cost: `.build()` / `json()` appears at every structured call site, 
 The api-parser's `MessageEntity` coverage is expanded to emit the full object (including `url`, `user`, `language`, `custom_emoji_id`). On top of that the library provides ergonomics so callers never hand-count UTF-16 offsets:
 
 - **`EntityType`** - a constant for every documented entity kind (`EntityType.Bold`, ...), typo-proof versus raw strings.
-- **`EntityBuilder`** - a fluent builder that accumulates text and tracks offsets, and whose `.build()` returns `{ text: string; entities: Json<MessageEntity[]> }` - the entity list already serialized, ready to drop into `sendMessage`.
+- **`EntityBuilder`** - a fluent builder that accumulates text and tracks offsets, and whose `.build()` returns `{ text: string; entities: MessageEntity[] }` - a plain entity list, ready to drop into `sendMessage`.
 
 ```ts
 const { text, entities } = new EntityBuilder().plain("Hello ").bold("world").link("docs", url).build();
-await ctx.reply(text, { entities });   // `entities` is a Json<MessageEntity[]>
+await ctx.reply(text, { entities });   // `entities` is a plain MessageEntity[]
 ```
 
 ### 6.4 Files - `InputFile` and multipart
 
-`InputFile` is the one value that can't be a pre-serialized `Json<T>` string (you can't JSON-encode a `Blob`), so it has its own path. It's an explicit, web-standard wrapper - no `fs`, no path-guessing:
+`InputFile` is the one value that can't be JSON-serialized (you can't encode a `Blob`), so it has its own path on the wire. It's an explicit, web-standard wrapper - no `fs`, no path-guessing:
 
 ```ts
 class InputFile {
@@ -222,21 +222,21 @@ async function fromPath(path: string, meta?): Promise<InputFile>;   // fs → Bl
 
 File-bearing params are typed **`InputFile | string`**, where a string is always a `file_id` or URL (ADR-006) - both go on the wire as-is, no upload.
 
-**The encoder has three branches** (and nothing else):
+**The encoder (`encodeForm`) has three branches** (and nothing else). It consumes the wire-ready record `serializeParams` produced - every value is a `WireValue` (a scalar, a top-level `InputFile`, or a `FormPart`):
 
 ```ts
-for (const [key, v] of fields) {
-  if (v == null)           continue;
-  else if (isInputFile(v)) form.attach(key, v);    // upload → multipart part
-  else if (isFormPart(v))  v.writeTo(form, key);     // file-carrying composite (nested-file builders)
-  else                     form.set(key, String(v)); // Json<T> strings + scalars
+for (const [key, v] of Object.entries(fields)) {
+  if (isInputFile(v))     files.push([key, v]);            // upload → multipart part
+  else if (isFormPart(v)) { strings.push([key, v.json]);   // file-carrying composite:
+                            files.push(...v.files); }      //   its JSON + nested parts
+  else                    strings.push([key, String(v)]);  // serialized field / scalar
 }
 ```
 
 - **The presence of any `InputFile` is the only thing that flips a request to `multipart/form-data`** (ADR-010); otherwise it stays `x-www-form-urlencoded`.
 - **Top-level file params** (`photo`, `document`, `thumbnail`, ...) are sent as a multipart part named after the parameter - the documented "upload under the field name" convention. A `file_id`/URL string just goes in as a normal field.
 
-**Nested files** (`sendMediaGroup`, sticker sets, profile photos, story content) are the case where a JSON structure must reference files by `attach://<name>` while the bytes travel as separate parts. This is handled by a builder per structure, so the "pipeline serializes nothing" rule still holds:
+**Nested files** (`sendMediaGroup`, sticker sets, profile photos, story content) are the case where a JSON structure must reference files by `attach://<name>` while the bytes travel as separate parts. The pipeline (`serializeParams`) handles it; a builder is optional sugar over the same plain shape:
 
 ```ts
 new MediaGroup()
@@ -245,7 +245,7 @@ new MediaGroup()
   .build();
 ```
 
-`new MediaGroup().build()` serializes **at the call site** (like every other builder): it mints `attach://` names, JSON-stringifies the array with those references, and returns a small *form-part payload* carrying both the `Json` string and the keyed `InputFile`s. The encoder's `writeTo(form, key)` branch then sets *that param's field* (`media`, `stickers`, `photo`, `content`, ...) to the string and registers each part - it still stringifies nothing. The builder serializes; the encoder only moves strings and files. The same shape backs `StickerSetBuilder`/`inputSticker`, `profilePhoto` and `storyContent`. (See ADR-011.)
+`new MediaGroup().build()` returns a **plain typed array** (optional sugar - a literal `[{ type: "photo", media: new InputFile(bytes) }]` works identically). The pipeline's `serializeParams` walks it: it mints `attach://` names, JSON-stringifies the array with those references, and emits a `FormPart` carrying the JSON string plus the keyed `InputFile`s. The encoder then sets *that param's field* (`media`, `stickers`, `photo`, `content`, ...) to the string and attaches each part. The same shape backs `StickerSetBuilder`/`inputSticker`, `profilePhoto` and `storyContent`. (See ADR-011.)
 
 Runtime note: `Blob`/`Uint8Array`/`ReadableStream` exist on Node 18+, Bun, Deno, and Workers, so uploads work on the edge too; `fromPath()` is the only Node-only piece and lives in `./node`.
 
@@ -297,7 +297,7 @@ Backward compatibility is dropped, so these are intentional:
 1. **No `TelegramBot` class / no default export.** Use `new Bot(token, options)` from `node-telegram-bot-api`; the low-level client is the single `Api` class.
 2. **No `EventEmitter`.** `bot.on('message', ...)` is now a router, not an event subscription. `onText` → `bot.hears`; `onReplyToMessage` → middleware on `ctx.message.reply_to_message`.
 3. **Single-argument methods.** Every `Api` method takes one params object. `sendMessage(chatId, text, opts)` → `api.sendMessage({ chat_id, text, ... })` or `ctx.reply(text)`.
-4. **Structured args are branded `Json<T>` strings.** `reply_markup`/entities/etc. take the output of a builder (`new InlineKeyboard()...build()`) or `json(value)`. Passing a plain object or a bare string is a type error. The `_fix*` pipeline and any pipeline-side serialization are gone (serialization moves to the builders at the call site).
+4. **Structured args are plain typed objects.** `reply_markup`/entities/etc. take a plain object/array, or a builder's `.build()` (which returns the same shape); `Api.request` serializes them once. v1's `_fix*` helpers - and the need to hand a pre-serialized string - are both gone.
 5. **File inputs:** bare strings are never paths. Use `new InputFile(bytes)` or `fromPath(path)`. `options.filepath` is gone.
 6. **Webhooks:** `TelegramBotWebHook` → `webhookCallback(bot)` in core, `createWebhookServer(bot)` in `node-telegram-bot-api/node`, or `registerExpressWebhook` / `nextAppWebhook` to mount on an existing server.
 7. **Polling:** `TelegramBotPolling` and `startPolling`/`stopPolling`/`isPolling` -> `bot.startPolling()`/`bot.stop()`/`bot.isRunning()` or `longPoll()` directly.
@@ -411,30 +411,30 @@ Backward compatibility is dropped, so these are intentional:
 | Option | Body types | Serialization implication |
 |--------|-----------|---------------------------|
 | A. JSON body when no file, multipart when file | 2 unrelated models | structured fields are nested JSON (no per-field work) for the common case |
-| B. **Form encoding always** (urlencoded w/o files, multipart w/ files) | 1 field model (every field a string) | structured fields must be strings - fits the `Json<T>` decision exactly |
+| B. **Form encoding always** (urlencoded w/o files, multipart w/ files) | 1 field model (every field a string) | structured fields must be strings - which `serializeParams` already produces |
 
-**Decision: B.** One field model for every request: every field is a string; multipart only adds file parts. Note the honest framing: for large classes of bots - notification, inline-answer, and text/keyboard bots - file uploads are actually **rare**, so the file-less path (where option A's JSON-body shortcut would apply) is often the *common* case, not the exception. We therefore do **not** anchor this on "uploads are common." We anchor it on **synergy with ADR-002**: structured fields are already `Json<T>` strings produced at the call site, so a single all-strings field model needs no nesting from the body format and adds no per-field work - the JSON-body shortcut would buy nothing that ADR-002 hasn't already bought, while a second body model would add branching. One field model is simply the format that ADR-002 already implies.
-**Consequences.** No body-type branching beyond "is a file present." The trade-off - losing JSON-body's automatic nesting - is exactly what ADR-002 already handles by serializing at the call site, regardless of how often a given bot actually uploads.
+**Decision: B.** One field model for every request: every field is a string; multipart only adds file parts. Note the honest framing: for large classes of bots - notification, inline-answer, and text/keyboard bots - file uploads are actually **rare**, so the file-less path (where option A's JSON-body shortcut would apply) is often the *common* case, not the exception. We therefore do **not** anchor this on "uploads are common." We anchor it on **synergy with ADR-002**: `serializeParams` already turns every structured field into a JSON string before encoding, so a single all-strings field model needs no nesting from the body format and adds no per-field work - the JSON-body shortcut would buy nothing the serialize step hasn't already produced, while a second body model would add branching. One field model is simply the format that ADR-002's serialization already implies.
+**Consequences.** No body-type branching beyond "is a file present." The trade-off - losing JSON-body's automatic nesting - is exactly what `serializeParams` already handles, regardless of how often a given bot actually uploads.
 
 ### ADR-011 - File & multipart handling (`InputFile`, `attach://`, nested uploads)
 
-**Context.** `InputFile` carries binary data, so (unlike every other structured field in ADR-002) it cannot be a pre-serialized `Json<T>` string. The encoder must therefore recognise files, switch the request to multipart, and - for methods that reference files from inside a JSON structure (`sendMediaGroup`, `sendPaidMedia`, input media with thumbnails) - bind those references to the uploaded parts.
+**Context.** `InputFile` carries binary data, so (unlike every other structured field in ADR-002) it cannot become a JSON string. The encoder must therefore recognise files, switch the request to multipart, and - for methods that reference files from inside a JSON structure (`sendMediaGroup`, `sendPaidMedia`, input media with thumbnails) - bind those references to the uploaded parts.
 
 **Decision.**
 - `InputFile` wraps web-standard data only (`Blob | Uint8Array | ReadableStream<Uint8Array>`); file-bearing params are typed `InputFile | string` (string = `file_id`/URL).
-- The encoder has exactly three branches: attach an `InputFile` as a multipart part, let a *form-part composite* write itself, or set a string. Any `InputFile` present switches the body to `multipart/form-data`; otherwise `x-www-form-urlencoded`.
+- The encoder has exactly three branches: attach an `InputFile` as a multipart part, spread a *form-part composite* (its JSON string + nested parts), or set a string. Any `InputFile` present switches the body to `multipart/form-data`; otherwise `x-www-form-urlencoded`.
 - Top-level file params upload as a part named after the parameter. Files nested in JSON are referenced as `attach://<name>` with a matching part.
-- Nested-file methods use a builder per structure (`MediaGroup`; `StickerSetBuilder`/`inputSticker`; `profilePhoto`; `storyContent`) whose `.build()` (or factory call) serializes at the call site and returns a *form-part payload* = the `Json` value (with `attach://` refs) **plus** the keyed `InputFile`s. The encoder's composite branch sets the JSON field (under the param's own key) and registers the parts.
+- Nested-file methods take a plain typed object/array with raw `InputFile`s embedded; builders (`MediaGroup`; `StickerSetBuilder`/`inputSticker`; `profilePhoto`; `storyContent`) are optional sugar over that shape. `serializeParams` walks it, hoists each nested `InputFile` to `attach://media_<i>`, and emits a `FormPart` = the JSON string (with `attach://` refs) **plus** the keyed `InputFile`s. The encoder sets the JSON field (under the param's own key) and attaches the parts.
 
-**Consequences.** The "pipeline serializes nothing" rule (ADR-002) holds even for media groups - the builder does the serialization; the encoder only moves strings and files. Uploads work on the edge (web-standard data); `fromPath()` is the sole Node-only helper (`./node`). Trade-off: the encoder grows one branch (form-part composites) beyond the string/file pair, and file-carrying composites need a bespoke builder rather than `json()`.
+**Consequences.** One `serializeParams` walk covers media groups too - the encoder still only moves strings and files. Uploads work on the edge (web-standard data); `fromPath()` is the sole Node-only helper (`./node`). Trade-off: the encoder grows one branch (form-part composites) beyond the string/file pair.
 
 ---
 
 ## 9. Phased implementation plan
 
 1. **Core skeleton** - `Transport`, `encodeForm` (three branches: file part / form-part composite / string; no serialization), `InputFile`, `errors`; set up `exports` and the `src/core` no-`node:` lint. Unit tests with an injected fetch.
-2. **Type generator** - extend `scripts/api-parser.ts` to emit the discriminated `Update`, the generated `Api` method signatures, the `Json<T>` field aliases, `InputFile | string` for file params, and expanded `MessageEntity`.
-3. **Builders + `json()`** - `Json<T>`, the generic `json(value)`, the `InlineKeyboard` markup builder, the entity helpers (`EntityType`, `EntityBuilder`), and the `MediaGroup` form-part builder (lands with the media methods).
+2. **Type generator** - extend `scripts/api-parser.ts` to emit the discriminated `Update`, the generated `Api` method signatures, plain structured-field types, `InputFile | string` for file params, and expanded `MessageEntity`.
+3. **Pipeline + builders** - `serializeParams` (the one `JSON.stringify` + `attach://` walk), the `InlineKeyboard` markup builder, the entity helpers (`EntityType`, `EntityBuilder`), and the `MediaGroup` media builder (lands with the media methods); builders are optional sugar.
 4. **Client** - generate the single `Api` class over `request()`.
 5. **Dispatch** - `compose`, `Context`, `Bot`, `longPoll`, `webhookCallback`.
 6. **Node + framework adapters** - `src/node`: `fromPath`, `createWebhookServer`, managed polling; plus `registerExpressWebhook` / `nextAppWebhook` / `nextPagesWebhook`.
@@ -450,13 +450,13 @@ CI gates throughout: `tsc --strict`, the no-`node:`-in-`src/core` lint, unit tes
 
 **Still open:**
 
-- **Call-site verbosity of `.build()`/`json()`.** Mandatory on every structured field (ADR-002). If it proves painful in real bots, the documented fallback is option D (encoder does one `JSON.stringify`, builders/objects accepted directly) - still a single `Api` class.
-- **Builder coverage.** Bespoke builders for the high-traffic types (inline/reply keyboards, entities); `json()` covers the rest. Decide which structured types earn a dedicated builder as methods are ported.
+- **Builder coverage.** Bespoke builders for the high-traffic types (inline/reply keyboards, entities, media); plain objects cover everything else. Decide which structured types earn a dedicated builder as methods are ported.
 
 **Addressed since the first draft:**
 
 - **Concurrency / flood control.** Was open ("provide an opt-in queue rather than baking it in"). Now: opt-in `TransportOptions.rateLimit: { global?, perChat? }` (requests/sec) backed by a token-bucket `RateLimiter` keyed on `params.chat_id` - off by default, zero overhead when unset (M3, §6.8). Sequential polling remains the default; queue/concurrency middleware is still the composition story for parallel handling.
 - **Serverless response timing.** Was open ("expose a hook so handlers can return early"). Now: `WebhookOptions.fastAck` and `WebhookOptions.waitUntil` - validate, return 200 immediately, then run the handler in the background or hand its promise to `waitUntil` (e.g. a Worker's `ctx.waitUntil`); default stays blocking (M6, §6.7).
 - **Polling error policy.** Was open (ADR-004's "explicit opt-in error policy"). Now: `longPoll` has `retry` (default on), `maxBackoffMs` (default 60 000), and an `onError` observer; the loop backs off and resumes on transient errors *without advancing the offset*, rethrows fatal 4xx, and returns cleanly on abort. The transport mirrors this for one-off calls (transient retry + exponential backoff, M2, §6.8).
+- **Call-site verbosity of structured fields.** Was open (`.build()`/`json()` on every structured field - ADR-002 option E). Now: superseded by **option D** - `*Params` fields are plain objects/arrays and `serializeParams` does the one `JSON.stringify` + `attach://` walk; builders are optional sugar (ADR-002 banner, §6.2).
 
-*(Resolved by ADR: keep the name `node-telegram-bot-api`, one package with subpath exports - ADR-009; a single generated `Api` class, no Proxy, no Raw/Api split - ADR-001; structured args as branded `Json<T>` strings built at the call site, pipeline serializes nothing - ADR-002; uniform form encoding, no JSON body - ADR-010; `InputFile`/multipart and nested uploads via `MediaGroup` - ADR-011; edge isolation enforced by lint + edge-bundle CI - ADR-009/M5.)*
+*(Resolved by ADR: keep the name `node-telegram-bot-api`, one package with subpath exports - ADR-009; a single generated `Api` class, no Proxy, no Raw/Api split - ADR-001; structured args as plain typed objects, serialized once by the pipeline - ADR-002 (Option D); uniform form encoding, no JSON body - ADR-010; `InputFile`/multipart and nested uploads via `MediaGroup` - ADR-011; edge isolation enforced by lint + edge-bundle CI - ADR-009/M5.)*

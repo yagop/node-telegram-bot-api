@@ -24,14 +24,6 @@ export type ReplyMarkup =
   | ReplyKeyboardRemove
   | ForceReply;
 
-/**
- * Builder input for setMyProfilePhoto / setBusinessAccountProfilePhoto: the
- * photo/animation field accepts raw file data; the library attaches it.
- */
-export type InputProfilePhotoInput =
-  | { type: "static"; photo: InputFile }
-  | { type: "animated"; animation: InputFile; main_frame_timestamp?: number };
-
 
 // ---------------------------------------------------------------------------
 // Update - discriminated union (ADR-007), one variant per payload key

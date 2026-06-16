@@ -1,21 +1,20 @@
 /**
  * Request encoding (ADR-002, ADR-010, ADR-011) - the library serializes nothing.
  *
- * `encodeForm` walks the param record and does exactly one of three things per
- * field:
+ * `encodeForm` consumes the wire-ready record `serializeParams` produced (every
+ * value is a `WireValue`) and does exactly one of three things per field:
  *   1. attach an `InputFile` as a multipart part,
- *   2. let a file-carrying composite (`FormPart`) write itself, or
- *   3. set a string (an already-serialized structured field or a scalar coerced with `String`).
+ *   2. spread a file-carrying composite (`FormPart`): its JSON string + nested parts,
+ *   3. set a string (a serialized structured field, or a scalar coerced with `String`).
  *
  * The presence of *any* file is the only thing that flips the request from
  * `application/x-www-form-urlencoded` to `multipart/form-data`. There is no
- * `JSON.stringify` here, no field map, no marker interface beyond the file
- * checks.
+ * `JSON.stringify` here and no field map.
  */
 
 import {
-  type FormSink,
   type InputFile,
+  type WireValue,
   inputFileToBlob,
   isFormPart,
   isInputFile,
@@ -28,27 +27,26 @@ export interface EncodedRequest {
   headers: Record<string, string>;
 }
 
-export async function encodeForm(fields: Record<string, unknown>): Promise<EncodedRequest> {
+export async function encodeForm(fields: Record<string, WireValue>): Promise<EncodedRequest> {
   const strings: Array<[string, string]> = [];
-  const files: Array<[string, InputFile]> = [];
-
-  const sink: FormSink = {
-    set: (key, value) => strings.push([key, value]),
-    attach: (key, file) => files.push([key, file]),
-  };
+  const files: Array<readonly [string, InputFile]> = [];
 
   for (const [key, value] of Object.entries(fields)) {
-    if (value == null) continue;
-    else if (isInputFile(value)) sink.attach(key, value);
-    else if (isFormPart(value)) value.writeTo(sink, key);
-    else sink.set(key, typeof value === "string" ? value : String(value));
+    if (isInputFile(value)) files.push([key, value]);
+    else if (isFormPart(value)) {
+      strings.push([key, value.json]);
+      files.push(...value.files);
+    } else {
+      strings.push([key, typeof value === "string" ? value : String(value)]);
+    }
   }
 
+  // No file anywhere -> urlencoded. Keys are unique here (a FormPart always
+  // carries >= 1 file, so it never lands in this branch), so the constructor's
+  // append-semantics match a per-key set.
   if (files.length === 0) {
-    const params = new URLSearchParams();
-    for (const [key, value] of strings) params.set(key, value);
     return {
-      body: params,
+      body: new URLSearchParams(strings),
       headers: { "content-type": "application/x-www-form-urlencoded" },
     };
   }
@@ -56,8 +54,7 @@ export async function encodeForm(fields: Record<string, unknown>): Promise<Encod
   const form = new FormData();
   for (const [key, value] of strings) form.set(key, value);
   for (const [key, file] of files) {
-    const blob = await inputFileToBlob(file);
-    form.set(key, blob, file.meta?.filename ?? key);
+    form.set(key, await inputFileToBlob(file), file.meta?.filename ?? key);
   }
   // No explicit content-type: fetch derives `multipart/form-data` + boundary.
   return { body: form, headers: {} };
