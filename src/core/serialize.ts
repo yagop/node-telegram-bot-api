@@ -19,13 +19,7 @@
  * rather than colliding.
  */
 
-import {
-  ATTACH_PREFIX,
-  type FormPart,
-  formPart,
-  type InputFile,
-  isInputFile,
-} from "./files.js";
+import { ATTACH_PREFIX, type FormPart, formPart, type InputFile, isInputFile } from "./files.js";
 
 /**
  * A fully wire-ready param value: what `serializeParams` emits and `encodeForm`
@@ -62,12 +56,7 @@ export function serializeParams(params: Record<string, unknown>): Record<string,
 }
 
 /** Replace every nested `InputFile` with its `attach://` ref (collecting the part). */
-function resolve(
-  node: unknown,
-  slots: { next: number },
-  files: Array<[string, InputFile]>,
-  depth: number,
-): unknown {
+function resolve(node: unknown, slots: { next: number }, files: Array<[string, InputFile]>, depth: number): unknown {
   if (depth > MAX_DEPTH) throw new TypeError("serializeParams: structure too deep (cyclic?)");
   if (isInputFile(node)) {
     const ref = node.build(slots.next++);
@@ -76,9 +65,7 @@ function resolve(
   }
   if (Array.isArray(node)) return node.map((child) => resolve(child, slots, files, depth + 1));
   if (node !== null && typeof node === "object") {
-    return Object.fromEntries(
-      Object.entries(node).map(([k, v]) => [k, resolve(v, slots, files, depth + 1)]),
-    );
+    return Object.fromEntries(Object.entries(node).map(([k, v]) => [k, resolve(v, slots, files, depth + 1)]));
   }
   return node;
 }

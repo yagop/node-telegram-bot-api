@@ -26,9 +26,9 @@
  * acting on side effects. This callback does **not** dedupe for you.
  */
 
-import { debug } from "./debug.js";
-import type { Bot } from "./bot.js";
 import type { Update } from "../types/index.js";
+import type { Bot } from "./bot.js";
+import { debug } from "./debug.js";
 
 const log = debug("webhook");
 
@@ -76,10 +76,7 @@ export function safeEqual(a: string, b: string): boolean {
   return diff === 0;
 }
 
-export function webhookCallback(
-  bot: Bot,
-  options: WebhookOptions = {},
-): (request: Request) => Promise<Response> {
+export function webhookCallback(bot: Bot, options: WebhookOptions = {}): (request: Request) => Promise<Response> {
   const { secretToken, fastAck, waitUntil } = options;
   // Providing a waitUntil hook implies fast-ACK behavior.
   const earlyAck = fastAck === true || waitUntil !== undefined;

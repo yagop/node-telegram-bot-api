@@ -17,10 +17,7 @@ import { InputFile } from "../core/files.js";
  * `readFile` returns a `Buffer`, which is a `Uint8Array` - accepted by `InputFile`
  * directly, no copy.
  */
-export async function fromPath(
-  path: string,
-  meta?: { filename?: string; contentType?: string },
-): Promise<InputFile> {
+export async function fromPath(path: string, meta?: { filename?: string; contentType?: string }): Promise<InputFile> {
   const bytes = await readFile(path);
   return new InputFile(bytes, {
     filename: meta?.filename ?? basename(path),

@@ -8,13 +8,7 @@
  *
  * Run: BOT_TOKEN=123:abc bun examples/06-keyboards.ts
  */
-import {
-  Bot,
-  InlineKeyboard,
-  ReplyKeyboard,
-  removeKeyboard,
-  forceReply,
-} from "node-telegram-bot-api";
+import { Bot, forceReply, InlineKeyboard, ReplyKeyboard, removeKeyboard } from "node-telegram-bot-api";
 import { run } from "node-telegram-bot-api/node";
 
 const bot = new Bot(process.env.BOT_TOKEN!);
@@ -31,20 +25,14 @@ bot.command("menu", (ctx) => {
 
 // Reply keyboard: a custom keyboard with quick-reply buttons + a contact request.
 bot.command("keyboard", (ctx) => {
-  const kb = new ReplyKeyboard()
-    .text("🍕 Pizza")
-    .text("🍔 Burger")
-    .row()
-    .requestContact("📞 Share contact");
+  const kb = new ReplyKeyboard().text("🍕 Pizza").text("🍔 Burger").row().requestContact("📞 Share contact");
   return ctx.reply("Pick something:", {
     reply_markup: kb.build({ resize_keyboard: true, one_time_keyboard: true }),
   });
 });
 
 // Remove the custom keyboard.
-bot.command("hide", (ctx) =>
-  ctx.reply("Keyboard hidden.", { reply_markup: removeKeyboard() }),
-);
+bot.command("hide", (ctx) => ctx.reply("Keyboard hidden.", { reply_markup: removeKeyboard() }));
 
 // Force a reply (the client opens the input box pre-focused with a reply target).
 bot.command("ask", (ctx) =>

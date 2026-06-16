@@ -25,11 +25,7 @@ const MAX = 10;
 
 console.log("Listening for up to 15s (or 10 messages)...");
 
-for await (const update of longPoll(
-  api,
-  { timeout: 30, allowedUpdates: ["message"] },
-  controller.signal,
-)) {
+for await (const update of longPoll(api, { timeout: 30, allowedUpdates: ["message"] }, controller.signal)) {
   // Only react to text messages; ignore everything else.
   if (!("message" in update) || update.message.text === undefined) continue;
 

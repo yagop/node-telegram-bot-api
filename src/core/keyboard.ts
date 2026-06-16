@@ -142,9 +142,6 @@ export function removeKeyboard(options?: { selective?: boolean }): ReplyKeyboard
 }
 
 /** Tell clients to display a reply interface to the user. */
-export function forceReply(options?: {
-  selective?: boolean;
-  input_field_placeholder?: string;
-}): ForceReply {
+export function forceReply(options?: { selective?: boolean; input_field_placeholder?: string }): ForceReply {
   return { force_reply: true, ...options };
 }

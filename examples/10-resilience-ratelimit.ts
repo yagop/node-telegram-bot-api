@@ -12,7 +12,7 @@
  *
  * Run: BOT_TOKEN=123:abc CHAT_ID=12345 bun examples/10-resilience-ratelimit.ts
  */
-import { Api, TelegramApiError, NetworkError } from "node-telegram-bot-api";
+import { Api, NetworkError, TelegramApiError } from "node-telegram-bot-api";
 
 const api = new Api(process.env.BOT_TOKEN!, {
   maxRetries: 5, // up to 5 retries on transient failures (default 2)

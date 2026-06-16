@@ -1,15 +1,10 @@
 import { describe, expect, test } from "bun:test";
-import { InlineKeyboard, forceReply, removeKeyboard } from "../../src/core/keyboard.js";
 import { EntityBuilder } from "../../src/core/entities.js";
+import { forceReply, InlineKeyboard, removeKeyboard } from "../../src/core/keyboard.js";
 
 describe("InlineKeyboard", () => {
   test("rows produce the expected inline_keyboard shape", () => {
-    const markup = new InlineKeyboard()
-      .text("A", "a")
-      .text("B", "b")
-      .row()
-      .url("Docs", "https://x")
-      .build();
+    const markup = new InlineKeyboard().text("A", "a").text("B", "b").row().url("Docs", "https://x").build();
     expect(markup.inline_keyboard.length).toBe(2);
     expect(markup.inline_keyboard[0]).toEqual([
       { text: "A", callback_data: "a" },
@@ -26,11 +21,7 @@ describe("InlineKeyboard", () => {
 
 describe("EntityBuilder", () => {
   test("text + entity offsets are computed in UTF-16 units (no auto-spacing)", () => {
-    const { text, entities } = new EntityBuilder()
-      .plain("Hello ")
-      .bold("world")
-      .link("docs", "https://x")
-      .build();
+    const { text, entities } = new EntityBuilder().plain("Hello ").bold("world").link("docs", "https://x").build();
 
     // The builder adds no separators between segments.
     expect(text).toBe("Hello worlddocs");

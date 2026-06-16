@@ -1,11 +1,7 @@
 import { describe, expect, test } from "bun:test";
-import { Transport } from "../../src/core/transport.js";
+import { NetworkError, TelegramApiError, TimeoutError } from "../../src/core/errors.js";
 import { InputFile } from "../../src/core/files.js";
-import {
-  NetworkError,
-  TelegramApiError,
-  TimeoutError,
-} from "../../src/core/errors.js";
+import { Transport } from "../../src/core/transport.js";
 
 const TOKEN = "123:ABC";
 
@@ -34,9 +30,7 @@ describe("Transport", () => {
   });
 
   test("api error throws TelegramApiError with errorCode + code", async () => {
-    const { fetch } = jsonFetch([
-      { ok: false, error_code: 400, description: "Bad Request: x" },
-    ]);
+    const { fetch } = jsonFetch([{ ok: false, error_code: 400, description: "Bad Request: x" }]);
     const tr = new Transport(TOKEN, { fetch });
     let caught: unknown;
     try {
@@ -63,9 +57,7 @@ describe("Transport", () => {
   });
 
   test("429 exhausts retries -> throws with errorCode 429 and maxRetries+1 calls", async () => {
-    const { fetch, calls } = jsonFetch([
-      { ok: false, error_code: 429, parameters: { retry_after: 0 } },
-    ]);
+    const { fetch, calls } = jsonFetch([{ ok: false, error_code: 429, parameters: { retry_after: 0 } }]);
     const tr = new Transport(TOKEN, { fetch, maxRetries: 1 });
     let caught: unknown;
     try {
@@ -79,9 +71,7 @@ describe("Transport", () => {
   });
 
   test("429 with retry_after over maxRetryAfterMs surfaces immediately (no wait, no retry)", async () => {
-    const { fetch, calls } = jsonFetch([
-      { ok: false, error_code: 429, parameters: { retry_after: 3600 } },
-    ]);
+    const { fetch, calls } = jsonFetch([{ ok: false, error_code: 429, parameters: { retry_after: 3600 } }]);
     // Cap at 1s: a 3600s flood-wait must NOT be honored - surface at once.
     const tr = new Transport(TOKEN, { fetch, maxRetries: 2, maxRetryAfterMs: 1000 });
     let caught: unknown;
@@ -217,8 +207,7 @@ describe("Transport", () => {
   });
 
   test("exhausted 5xx -> NetworkError including the status", async () => {
-    const fetch500 = (async () =>
-      new Response("boom", { status: 503 })) as unknown as typeof fetch;
+    const fetch500 = (async () => new Response("boom", { status: 503 })) as unknown as typeof fetch;
     const tr = new Transport(TOKEN, { fetch: fetch500, maxRetries: 1, retryBackoffMs: 0 });
     let caught: unknown;
     try {

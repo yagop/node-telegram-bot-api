@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
-import { Context } from "../../src/core/context.js";
 import type { Api } from "../../src/core/api.js";
+import { Context } from "../../src/core/context.js";
 import type { Update } from "../../src/types/index.js";
 
 /** A minimal message update keyed for the discriminated-union accessors. */
@@ -68,9 +68,7 @@ describe("Context", () => {
   test("answerCallbackQuery() throws on a non-callback update", () => {
     const { api } = fakeApi();
     const ctx = new Context(messageUpdate(), api);
-    expect(() => ctx.answerCallbackQuery()).toThrow(
-      "this update has no callback query",
-    );
+    expect(() => ctx.answerCallbackQuery()).toThrow("this update has no callback query");
   });
 
   test("answerCallbackQuery() answers a callback update", async () => {
