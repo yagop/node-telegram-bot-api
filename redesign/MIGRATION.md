@@ -12,11 +12,11 @@ v2 is a from-scratch redesign with **no backward compatibility** (see `ARCHITECT
 | `bot.onReplyToMessage(chatId, msgId, ...)` | middleware reading `ctx.message.reply_to_message` |
 | `bot.sendMessage(chatId, text, opts)` | `api.sendMessage({ chat_id, text, ...opts })` or, in a handler, `ctx.reply(text, opts)` |
 | `bot.sendMessage(id, t, { reply_markup: { inline_keyboard: [...] } })` | `ctx.reply(t, { reply_markup: new InlineKeyboard().text('A','a').build() })` |
-| `{ reply_markup: JSON.stringify(markup) }` (manual) | a builder `.build()` or `json(value)` - the field is a branded `Json<T>` string |
+| `{ reply_markup: JSON.stringify(markup) }` (manual) | a plain object `{ inline_keyboard: [...] }` or a builder `.build()` - the field is a plain typed object; the pipeline serializes it |
 | `bot.sendPhoto(id, '/path/to/p.jpg')` | `api.sendPhoto({ chat_id, photo: await fromPath('/path/to/p.jpg') })` (from `'node-telegram-bot-api/node'`) |
 | `bot.sendPhoto(id, fs.createReadStream(...))` | `api.sendPhoto({ chat_id, photo: new InputFile(bytes) })` |
 | bare string = path **or** file_id (via `options.filepath`) | a bare string is **always** a `file_id`/URL; bytes go through `new InputFile()`/`fromPath()` |
-| `bot.sendMediaGroup(id, [{ type:'photo', media: stream }])` | `api.sendMediaGroup({ chat_id, media: new MediaGroup().photo(new InputFile(bytes)).build() })` |
+| `bot.sendMediaGroup(id, [{ type:'photo', media: stream }])` | `api.sendMediaGroup({ chat_id, media: [{ type:'photo', media: new InputFile(bytes) }] })` (or the `MediaGroup` builder) |
 | webhook via `new TelegramBot(token, { webHook: { port } })` | `createWebhookServer(bot, { path })` (`/node`) or `webhookCallback(bot)` on any runtime |
 | `bot.setWebHook(url)` | `api.setWebhook({ url })` |
 | `bot.startPolling()` / `bot.stopPolling()` / `bot.isPolling()` | `bot.startPolling()` / `bot.stop()` / `bot.isRunning()`, or `longPoll(api, opts, signal)` directly |
@@ -44,7 +44,7 @@ const { Bot, Api } = await import("node-telegram-bot-api");
 ## Mental-model shifts
 
 - **One client, single-argument methods.** `Api` mirrors the wire API: one method per Bot API method, each taking one params object. Positional ergonomics (`ctx.reply(text)`) live on `Context`.
-- **The request pipeline serializes nothing.** Structured fields (`reply_markup`, `entities`, `reply_parameters`, ...) are typed as `Json<T>` strings and serialized at the call site, in a builder or `json(value)` - not in the transport. Passing a plain object or a bare string is a *type* error.
+- **Structured fields are plain typed objects.** `reply_markup`, `entities`, `reply_parameters`, `media`, ... take a plain object/array (or a fluent builder, which returns the same plain shape); the pipeline serializes them once. No `json()` wrapper, no branded strings. A nested file is just an `InputFile` dropped into the file field - the pipeline hoists it to an `attach://` part.
 - **Composition over events.** `bot.use(mw)` and the filter helpers (`on`/`command`/`hears`) are koa-style middleware over a per-update `Context`, so sessions/auth/rate-limiting/error-boundaries wrap one another via `await next()`.
 - **Two entry points, one dispatch path.** `bot.startPolling(source)` pumps an async generator for long-running processes; `bot.handleUpdate(update)` handles a single update and is what the edge/webhook callback calls.
 - **Node helpers are opt-in.** `import ... from 'node-telegram-bot-api'` is the runtime-agnostic core; `import ... from 'node-telegram-bot-api/node'` adds `fromPath`, `createWebhookServer`, and `run`.

@@ -5,12 +5,10 @@
  * callers never hand-count them. A JS string's `.length` already counts UTF-16
  * code units - exactly the unit Telegram's `offset`/`length` use - so we record
  * `offset = text.length` before appending a styled segment and `length` as the
- * segment's own `.length`. `.build()` returns the plain text plus a branded
- * `JsonString<MessageEntity[]>`, both ready to drop into `sendMessage`.
+ * segment's own `.length`. `.build()` returns the plain text plus a plain
+ * `MessageEntity[]`, both ready to drop into `sendMessage`.
  */
 import type { MessageEntity, User } from "../types/index.js";
-import type { JsonString } from "../types/brand.js";
-import { json } from "./json.js";
 
 /** Every documented MessageEntity kind, typo-proof versus raw strings. */
 export const EntityType = {
@@ -37,7 +35,7 @@ export const EntityType = {
 
 export interface BuiltEntities {
   text: string;
-  entities: JsonString<MessageEntity[]>;
+  entities: MessageEntity[];
 }
 
 /**
@@ -112,8 +110,8 @@ export class EntityBuilder {
     return this.append(s, { type: EntityType.Blockquote });
   }
 
-  /** The accumulated text plus the entities serialized as `JsonString<MessageEntity[]>`. */
+  /** The accumulated text plus the plain `MessageEntity[]` covering each segment. */
   build(): BuiltEntities {
-    return { text: this.text, entities: json<MessageEntity[]>(this.entities) };
+    return { text: this.text, entities: this.entities };
   }
 }

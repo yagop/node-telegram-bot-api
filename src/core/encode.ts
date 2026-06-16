@@ -5,7 +5,7 @@
  * field:
  *   1. attach an `InputFile` as a multipart part,
  *   2. let a file-carrying composite (`FormPart`) write itself, or
- *   3. set a string (a `Json<T>` value or a scalar coerced with `String`).
+ *   3. set a string (an already-serialized structured field or a scalar coerced with `String`).
  *
  * The presence of *any* file is the only thing that flips the request from
  * `application/x-www-form-urlencoded` to `multipart/form-data`. There is no

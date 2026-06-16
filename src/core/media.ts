@@ -1,20 +1,16 @@
 /**
- * Nested-file builders (§6.4, ADR-011).
+ * Nested-file builders (§6.4).
  *
- * A few methods reference uploaded files by `attach://<name>` from inside a JSON
- * structure while the bytes travel as separate multipart parts: `sendMediaGroup`
- * (an InputMedia array), `sendPaidMedia` (InputPaidMedia), the sticker-set methods
- * (InputSticker), `setMyProfilePhoto`/`setBusinessAccountProfilePhoto`
- * (InputProfilePhoto) and `postStory`/`editStory` (InputStoryContent). Each builder
- * keeps the "library serializes nothing" rule (ADR-002): at `.build()` (or the
- * factory call) it mints `attach://` names, JSON-stringifies the structure with
- * those refs substituted, and returns a `FormPart` (via `AttachedMedia`) carrying
- * that string plus the keyed `InputFile`s. The encoder's `writeTo(sink, key)` branch
- * sets the destination field and registers each part - it still stringifies nothing.
+ * `sendMediaGroup` (InputMedia[]), `sendPaidMedia` (InputPaidMedia[]), the
+ * sticker-set methods (InputSticker), `setMyProfilePhoto` (InputProfilePhoto) and
+ * `postStory`/`editStory` (InputStoryContent) take a structured value whose file
+ * fields can be an uploaded `InputFile`. Under ADR-002's Option-D these are PLAIN
+ * typed objects/arrays - the pipeline's `serializeParams` walks them, hoists each
+ * nested `InputFile` to `attach://media_<i>`, and serializes.
  *
- * `build()` returns a `FilePart<T>` - honestly a FormPart, not a string - which is
- * the file-carrying arm of `Json<T>` (`= JsonString<T> | FilePart<T>`), the type of
- * every structured field; the encoder tells the two arms apart with `isFormPart`.
+ * These builders are therefore optional fluent SUGAR: each `.build()` returns the
+ * exact plain shape a caller could write by hand (with raw `InputFile`s embedded),
+ * which drops straight into the param field. No branding, no serialization here.
  */
 import type {
   InputMediaAnimation,
@@ -27,56 +23,14 @@ import type {
   InputSticker,
   InputStoryContent,
   MaskPosition,
+  MessageEntity,
   SendMediaGroupParams,
   SendPaidMediaParams,
 } from "../types/index.js";
-import type { CarriedBy, JsonString } from "../types/brand.js";
-import type { FilePart } from "./files.js";
-import { ATTACH_PREFIX, formPart, InputFile, isInputFile } from "./files.js";
+import type { InputFile } from "./files.js";
 
 /** A file-bearing param: an uploadable wrapper or a `file_id`/URL string. */
 type Media = InputFile | string;
-
-/**
- * The engine behind every nested-file builder (ADR-011). A builder hands its plain
- * value graph (typed objects with `InputFile`s sitting in their real fields) to
- * `AttachedMedia`; `build()` walks the graph, and for each `InputFile` it allocates
- * the next attach slot, lets the file build its own `attach://media_<index>` ref,
- * and registers the bytes as the matching multipart part. `file_id`/URL strings
- * pass through and `undefined` fields drop out at `JSON.stringify`.
- *
- * `build()` returns a `FilePart<T>` - honestly a FormPart at runtime, branded with
- * the logical type `T`; the only cast is attaching that phantom brand to the real
- * FormPart. The encoder recognises it via its `isFormPart` check.
- */
-class AttachedMedia<T> {
-  private index = 0;
-  private readonly files: Array<[string, InputFile]> = [];
-
-  constructor(private readonly value: unknown) {}
-
-  build(): FilePart<T> {
-    const resolved = this.resolve(this.value);
-    return formPart(JSON.stringify(resolved), this.files) as FilePart<T>;
-  }
-
-  /** Swap each `InputFile` for its attach ref (collecting the part) and recurse
-   *  through arrays/objects; pass `file_id`/URL strings and primitives through. */
-  private resolve(node: unknown): unknown {
-    if (isInputFile(node)) {
-      const ref = node.build(this.index++);
-      this.files.push([ref.slice(ATTACH_PREFIX.length), node]);
-      return ref;
-    }
-    if (Array.isArray(node)) return node.map((child) => this.resolve(child));
-    if (node !== null && typeof node === "object") {
-      return Object.fromEntries(
-        Object.entries(node).map(([key, child]) => [key, this.resolve(child)]),
-      );
-    }
-    return node;
-  }
-}
 
 // ---------------------------------------------------------------------------
 // sendMediaGroup
@@ -86,7 +40,7 @@ class AttachedMedia<T> {
 interface CaptionOptions {
   caption?: string;
   parse_mode?: string;
-  caption_entities?: JsonString<unknown[]>;
+  caption_entities?: MessageEntity[];
 }
 
 /** Options for kinds that also carry a thumbnail. */
@@ -107,12 +61,8 @@ type AnimationOptions = ThumbOptions &
 // A live photo carries TWO files: `media` (the live photo) and `photo` (the still).
 type LivePhotoOptions = CaptionOptions & Pick<InputMediaLivePhoto, "show_caption_above_media" | "has_spoiler">;
 
-/**
- * One InputMedia entry, kept fully typed: its `type` and file-bearing `media`
- * (plus `thumbnail`/`photo`, which carry files too) alongside the typed extras -
- * no `Record<string, unknown>` bag. `AttachedMedia` substitutes whichever fields
- * are an `InputFile`.
- */
+/** One InputMedia entry: its `type`, the file-bearing `media` (and `thumbnail`/`photo`),
+ *  plus the kind-specific typed extras. `serializeParams` resolves any `InputFile`. */
 type GroupItem =
   | ({ type: "photo"; media: Media } & PhotoOptions)
   | ({ type: "video"; media: Media } & VideoOptions)
@@ -122,10 +72,10 @@ type GroupItem =
   | ({ type: "live_photo"; media: Media; photo: Media } & LivePhotoOptions);
 
 /**
- * Builds the `media` argument for `sendMediaGroup`. Each `.photo()/.video()/...`
- * call records a typed InputMedia item; `.build()` returns the field's
- * `FilePart<...>`, with every `InputFile` (media or thumbnail) swapped for an
- * `attach://` ref by `AttachedMedia`.
+ * Collects items for `sendMediaGroup`'s `media`. `.build()` returns the plain
+ * InputMedia array (with raw `InputFile`s embedded). The cast bridges the builder's
+ * item union (which offers `animation`) to the field's wire union; both are
+ * interchangeable at the wire level once `serializeParams` resolves the files.
  */
 export class MediaGroup {
   private readonly items: GroupItem[] = [];
@@ -162,7 +112,7 @@ export class MediaGroup {
   }
 
   build(): SendMediaGroupParams["media"] {
-    return new AttachedMedia<CarriedBy<SendMediaGroupParams["media"]>>(this.items).build();
+    return this.items as SendMediaGroupParams["media"];
   }
 }
 
@@ -187,10 +137,9 @@ type PaidItem =
   | { type: "live_photo"; media: Media; photo: Media };
 
 /**
- * Builds the `media` argument for `sendPaidMedia` (InputPaidMedia[]). The peer of
- * `MediaGroup` (named ...Group for the same reason - `PaidMedia` is already a Bot
- * API response type): each `.photo()/.video()` records a typed item and `.build()`
- * swaps every `InputFile` (media, thumbnail or cover) for an `attach://` ref.
+ * Collects items for `sendPaidMedia`'s `media` (InputPaidMedia[]). The peer of
+ * `MediaGroup` (named ...Group because `PaidMedia` is already a Bot API response
+ * type). `.build()` returns the plain array with raw `InputFile`s embedded.
  */
 export class PaidMediaGroup {
   private readonly items: PaidItem[] = [];
@@ -212,7 +161,7 @@ export class PaidMediaGroup {
   }
 
   build(): SendPaidMediaParams["media"] {
-    return new AttachedMedia<CarriedBy<SendPaidMediaParams["media"]>>(this.items).build();
+    return this.items as SendPaidMediaParams["media"];
   }
 }
 
@@ -228,29 +177,22 @@ export interface StickerOptions {
   keywords?: string[];
 }
 
-/**
- * Build the `sticker` argument for `addStickerToSet`/`replaceStickerInSet`: a
- * single InputSticker whose `InputFile` uploads as a matching multipart part
- * (keyed `sticker_0`, distinct from the `sticker` field so it never clobbers it).
- */
-export function inputSticker(media: Media, options: StickerOptions): FilePart<InputSticker> {
-  return new AttachedMedia<InputSticker>({ sticker: media, ...options }).build();
+/** Build the `sticker` argument for `addStickerToSet`/`replaceStickerInSet`. */
+export function inputSticker(media: Media, options: StickerOptions): InputSticker {
+  return { sticker: media, ...options };
 }
 
-/**
- * Build the `stickers` argument for `createNewStickerSet`: an InputSticker array,
- * each `InputFile` riding along as its own part. Mirrors `MediaGroup`.
- */
+/** Collects the `stickers` array for `createNewStickerSet`. Mirrors `MediaGroup`. */
 export class StickerSetBuilder {
-  private readonly items: Array<{ sticker: Media } & StickerOptions> = [];
+  private readonly items: InputSticker[] = [];
 
   add(media: Media, options: StickerOptions): this {
     this.items.push({ sticker: media, ...options });
     return this;
   }
 
-  build(): FilePart<InputSticker[]> {
-    return new AttachedMedia<InputSticker[]>(this.items).build();
+  build(): InputSticker[] {
+    return this.items;
   }
 }
 
@@ -261,12 +203,12 @@ export class StickerSetBuilder {
 /** Build the `photo` argument for the profile-photo methods (InputProfilePhoto). */
 export const profilePhoto = {
   /** A static profile photo (a still image). */
-  static(media: Media): FilePart<InputProfilePhoto> {
-    return new AttachedMedia<InputProfilePhoto>({ type: "static", photo: media }).build();
+  static(media: Media): InputProfilePhoto {
+    return { type: "static", photo: media };
   },
   /** An animated profile photo (a video); `main_frame_timestamp` picks the still frame. */
-  animated(media: Media, options: { main_frame_timestamp?: number } = {}): FilePart<InputProfilePhoto> {
-    return new AttachedMedia<InputProfilePhoto>({ type: "animated", animation: media, ...options }).build();
+  animated(media: Media, options: { main_frame_timestamp?: number } = {}): InputProfilePhoto {
+    return { type: "animated", animation: media, ...options };
   },
 };
 
@@ -284,11 +226,11 @@ export interface StoryVideoOptions {
 /** Build the `content` argument for the story methods (InputStoryContent). */
 export const storyContent = {
   /** A photo story. */
-  photo(media: Media): FilePart<InputStoryContent> {
-    return new AttachedMedia<InputStoryContent>({ type: "photo", photo: media }).build();
+  photo(media: Media): InputStoryContent {
+    return { type: "photo", photo: media };
   },
   /** A video story. */
-  video(media: Media, options: StoryVideoOptions = {}): FilePart<InputStoryContent> {
-    return new AttachedMedia<InputStoryContent>({ type: "video", video: media, ...options }).build();
+  video(media: Media, options: StoryVideoOptions = {}): InputStoryContent {
+    return { type: "video", video: media, ...options };
   },
 };
