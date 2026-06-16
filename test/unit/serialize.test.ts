@@ -1,4 +1,5 @@
-import { describe, expect, test } from "bun:test";
+import { describe, test } from "node:test";
+import assert from "node:assert/strict";
 import { encodeForm } from "../../src/core/encode.js";
 import { InputFile } from "../../src/core/files.js";
 import { MediaGroupBuilder } from "../../src/core/media.js";
@@ -18,39 +19,39 @@ describe("serializeParams", () => {
       reply_markup: { inline_keyboard: [[{ text: "A", callback_data: "a" }]] },
       entities: [{ type: "bold", offset: 0, length: 2 }],
     });
-    expect(body).toBeInstanceOf(URLSearchParams);
-    expect(headers["content-type"]).toBe("application/x-www-form-urlencoded");
+    assert.ok(body instanceof URLSearchParams);
+    assert.strictEqual(headers["content-type"], "application/x-www-form-urlencoded");
     const p = body as URLSearchParams;
-    expect(p.get("chat_id")).toBe("1");
-    expect(p.get("disable_notification")).toBe("true");
-    expect(JSON.parse(p.get("reply_markup")!)).toEqual({ inline_keyboard: [[{ text: "A", callback_data: "a" }]] });
-    expect(JSON.parse(p.get("entities")!)).toEqual([{ type: "bold", offset: 0, length: 2 }]);
+    assert.strictEqual(p.get("chat_id"), "1");
+    assert.strictEqual(p.get("disable_notification"), "true");
+    assert.deepStrictEqual(JSON.parse(p.get("reply_markup")!), { inline_keyboard: [[{ text: "A", callback_data: "a" }]] });
+    assert.deepStrictEqual(JSON.parse(p.get("entities")!), [{ type: "bold", offset: 0, length: 2 }]);
   });
 
   test("array field is stringified", async () => {
     const { body } = await enc({ chat_id: 1, message_ids: [10, 11] });
-    expect((body as URLSearchParams).get("message_ids")).toBe("[10,11]");
+    assert.strictEqual((body as URLSearchParams).get("message_ids"), "[10,11]");
   });
 
   test("null/undefined fields are dropped before the wire", async () => {
     const { body } = await enc({ chat_id: 1, caption: null, reply_to_message_id: undefined, text: "keep" });
     const p = body as URLSearchParams;
-    expect(p.get("chat_id")).toBe("1");
-    expect(p.get("text")).toBe("keep");
-    expect(p.has("caption")).toBe(false);
-    expect(p.has("reply_to_message_id")).toBe(false);
+    assert.strictEqual(p.get("chat_id"), "1");
+    assert.strictEqual(p.get("text"), "keep");
+    assert.strictEqual(p.has("caption"), false);
+    assert.strictEqual(p.has("reply_to_message_id"), false);
   });
 
   test("top-level InputFile attaches under the field name (multipart)", async () => {
     const f = fileA();
     const form = (await enc({ chat_id: 1, photo: f, caption: "x" })).body as FormData;
-    expect(form.get("chat_id")).toBe("1");
-    expect(form.get("caption")).toBe("x");
+    assert.strictEqual(form.get("chat_id"), "1");
+    assert.strictEqual(form.get("caption"), "x");
     const part = form.get("photo");
-    expect(part).toBeInstanceOf(Blob);
-    expect((part as File).name).toBe("a.bin");
+    assert.ok(part instanceof Blob);
+    assert.strictEqual((part as File).name, "a.bin");
     // a top-level file is NOT renamed to media_0
-    expect(form.get("media_0")).toBeNull();
+    assert.strictEqual(form.get("media_0"), null);
   });
 
   test("nested file in a media group -> attach://media_0 + keyed part; URL passes through", async () => {
@@ -65,11 +66,11 @@ describe("serializeParams", () => {
       })
     ).body as FormData;
     const parsed = JSON.parse(form.get("media") as string) as Array<Record<string, unknown>>;
-    expect(parsed[0]!.media).toBe("attach://media_0");
-    expect(parsed[0]!.caption).toBe("A");
-    expect(parsed[1]!.media).toBe("https://x/b.jpg");
-    expect(form.get("media_0")).toBeInstanceOf(Blob);
-    expect(form.get("media_1")).toBeNull();
+    assert.strictEqual(parsed[0]!.media, "attach://media_0");
+    assert.strictEqual(parsed[0]!.caption, "A");
+    assert.strictEqual(parsed[1]!.media, "https://x/b.jpg");
+    assert.ok(form.get("media_0") instanceof Blob);
+    assert.strictEqual(form.get("media_1"), null);
   });
 
   test("live_photo carries two files (media_0 + media_1 within one item)", async () => {
@@ -78,10 +79,10 @@ describe("serializeParams", () => {
     const form = (await enc({ chat_id: 1, star_count: 1, media: [{ type: "live_photo", media: a, photo: b }] }))
       .body as FormData;
     const item = JSON.parse(form.get("media") as string)[0];
-    expect(item.media).toBe("attach://media_0");
-    expect(item.photo).toBe("attach://media_1");
-    expect(form.get("media_0")).toBeInstanceOf(Blob);
-    expect(form.get("media_1")).toBeInstanceOf(Blob);
+    assert.strictEqual(item.media, "attach://media_0");
+    assert.strictEqual(item.photo, "attach://media_1");
+    assert.ok(form.get("media_0") instanceof Blob);
+    assert.ok(form.get("media_1") instanceof Blob);
   });
 
   test("two file-capable fields in one request get disjoint slots (sendPoll)", async () => {
@@ -95,10 +96,10 @@ describe("serializeParams", () => {
         media: { type: "photo", media: b },
       })
     ).body as FormData;
-    expect(JSON.parse(form.get("explanation_media") as string).media).toBe("attach://media_0");
-    expect(JSON.parse(form.get("media") as string).media).toBe("attach://media_1");
-    expect(form.get("media_0")).toBeInstanceOf(Blob);
-    expect(form.get("media_1")).toBeInstanceOf(Blob);
+    assert.strictEqual(JSON.parse(form.get("explanation_media") as string).media, "attach://media_0");
+    assert.strictEqual(JSON.parse(form.get("media") as string).media, "attach://media_1");
+    assert.ok(form.get("media_0") instanceof Blob);
+    assert.ok(form.get("media_1") instanceof Blob);
   });
 
   test("a MediaGroupBuilder builder result serializes identically to the plain literal", async () => {
@@ -108,6 +109,6 @@ describe("serializeParams", () => {
     ).body as FormData;
     const fromLiteral = (await enc({ chat_id: 1, media: [{ type: "photo", media: a, caption: "A" }] }))
       .body as FormData;
-    expect(JSON.parse(fromBuilder.get("media") as string)).toEqual(JSON.parse(fromLiteral.get("media") as string));
+    assert.deepStrictEqual(JSON.parse(fromBuilder.get("media") as string), JSON.parse(fromLiteral.get("media") as string));
   });
 });
