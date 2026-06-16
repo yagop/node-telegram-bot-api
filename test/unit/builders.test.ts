@@ -1,10 +1,10 @@
 import { describe, expect, test } from "bun:test";
 import { EntityBuilder } from "../../src/core/entities.js";
-import { forceReply, InlineKeyboard, removeKeyboard } from "../../src/core/keyboard.js";
+import { InlineKeyboardBuilder } from "../../src/core/keyboard.js";
 
-describe("InlineKeyboard", () => {
+describe("InlineKeyboardBuilder", () => {
   test("rows produce the expected inline_keyboard shape", () => {
-    const markup = new InlineKeyboard().text("A", "a").text("B", "b").row().url("Docs", "https://x").build();
+    const markup = new InlineKeyboardBuilder().text("A", "a").text("B", "b").row().url("Docs", "https://x").build();
     expect(markup.inline_keyboard.length).toBe(2);
     expect(markup.inline_keyboard[0]).toEqual([
       { text: "A", callback_data: "a" },
@@ -14,7 +14,7 @@ describe("InlineKeyboard", () => {
   });
 
   test("trailing empty rows are dropped", () => {
-    const markup = new InlineKeyboard().text("A", "a").row().build();
+    const markup = new InlineKeyboardBuilder().text("A", "a").row().build();
     expect(markup.inline_keyboard.length).toBe(1);
   });
 });
@@ -30,20 +30,5 @@ describe("EntityBuilder", () => {
     expect(entities[0]).toEqual({ type: "bold", offset: 6, length: 5 });
     // "docs" follows "Hello world" (offset 11), length 4, with the url.
     expect(entities[1]).toEqual({ type: "text_link", offset: 11, length: 4, url: "https://x" });
-  });
-});
-
-describe("simple markup helpers", () => {
-  test("removeKeyboard() shape", () => {
-    expect(removeKeyboard()).toEqual({ remove_keyboard: true });
-    expect(removeKeyboard({ selective: true })).toEqual({ remove_keyboard: true, selective: true });
-  });
-
-  test("forceReply() shape", () => {
-    expect(forceReply()).toEqual({ force_reply: true });
-    expect(forceReply({ input_field_placeholder: "Name?" })).toEqual({
-      force_reply: true,
-      input_field_placeholder: "Name?",
-    });
   });
 });

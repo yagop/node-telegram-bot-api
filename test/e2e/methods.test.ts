@@ -31,7 +31,7 @@ import { afterAll, describe, expect, test } from "bun:test";
 import { Api } from "../../src/core/api.js";
 import { EntityBuilder } from "../../src/core/entities.js";
 import { InputFile } from "../../src/core/files.js";
-import { InlineKeyboard } from "../../src/core/keyboard.js";
+import { InlineKeyboardBuilder } from "../../src/core/keyboard.js";
 import {
   MediaGroupBuilder,
   PhotoStoryBuilder,
@@ -100,7 +100,7 @@ const samplePermissions = {
   can_invite_users: true,
 };
 
-const sampleInlineKeyboard = new InlineKeyboard().text("noop", "noop").build();
+const sampleInlineKeyboard = new InlineKeyboardBuilder().text("noop", "noop").build();
 
 /** The PNG fixture as an InputFile, fed to the attach:// builders below. */
 function e2ePng(): InputFile {
@@ -1489,7 +1489,7 @@ describe("methods", () => {
       await api.editMessageReplyMarkup({
         chat_id: chatId,
         message_id: msg.message_id,
-        reply_markup: new InlineKeyboard().url("docs", "https://core.telegram.org").build(),
+        reply_markup: new InlineKeyboardBuilder().url("docs", "https://core.telegram.org").build(),
       });
     });
   });

@@ -12,7 +12,7 @@ relative `../src` paths.
 | [`03-webhook-workers.ts`](./03-webhook-workers.ts) | `webhookCallback` as a Cloudflare Workers `fetch`, with `fastAck` + `waitUntil` | deploy with wrangler (illustrative) |
 | [`04-webhook-express.ts`](./04-webhook-express.ts) | `registerExpressWebhook` mounting the route on a (structurally-typed) app | run inside an Express server (illustrative) |
 | [`05-webhook-nextjs.ts`](./05-webhook-nextjs.ts) | `nextAppWebhook` as an App Router `export const POST` | `app/api/telegram/route.ts` in a Next.js app (illustrative) |
-| [`06-keyboards.ts`](./06-keyboards.ts) | `InlineKeyboard`, `ReplyKeyboard`, `removeKeyboard`, `forceReply`, `ctx.answerCallbackQuery` | `BOT_TOKEN=... bun examples/06-keyboards.ts` |
+| [`06-keyboards.ts`](./06-keyboards.ts) | `InlineKeyboardBuilder`, `ReplyKeyboardBuilder`, `ctx.answerCallbackQuery` | `BOT_TOKEN=... bun examples/06-keyboards.ts` |
 | [`07-formatting.ts`](./07-formatting.ts) | `EntityBuilder` + `EntityType` + `json()`, sending entities | `BOT_TOKEN=... CHAT_ID=... bun examples/07-formatting.ts` |
 | [`08-uploads.ts`](./08-uploads.ts) | `InputFile`, `fromPath` (`/node`), `MediaGroupBuilder` | `BOT_TOKEN=... CHAT_ID=... bun examples/08-uploads.ts` |
 | [`09-middleware.ts`](./09-middleware.ts) | `bot.use` for timing, an in-memory session, and an allowlist auth gate | `BOT_TOKEN=... ALLOWED_USERS=111,222 bun examples/09-middleware.ts` |

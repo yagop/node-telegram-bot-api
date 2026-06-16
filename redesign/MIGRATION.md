@@ -11,7 +11,7 @@ v2 is a from-scratch redesign with **no backward compatibility** (see `ARCHITECT
 | `bot.onText(/\/echo (.+)/, (msg, m) => ...)` | `bot.hears(/\/echo (.+)/, ctx => { ctx.match[1] })` |
 | `bot.onReplyToMessage(chatId, msgId, ...)` | middleware reading `ctx.message.reply_to_message` |
 | `bot.sendMessage(chatId, text, opts)` | `api.sendMessage({ chat_id, text, ...opts })` or, in a handler, `ctx.reply(text, opts)` |
-| `bot.sendMessage(id, t, { reply_markup: { inline_keyboard: [...] } })` | `ctx.reply(t, { reply_markup: new InlineKeyboard().text('A','a').build() })` |
+| `bot.sendMessage(id, t, { reply_markup: { inline_keyboard: [...] } })` | `ctx.reply(t, { reply_markup: new InlineKeyboardBuilder().text('A','a').build() })` |
 | `{ reply_markup: JSON.stringify(markup) }` (manual) | a plain object `{ inline_keyboard: [...] }` or a builder `.build()` - the field is a plain typed object; the pipeline serializes it |
 | `bot.sendPhoto(id, '/path/to/p.jpg')` | `api.sendPhoto({ chat_id, photo: await fromPath('/path/to/p.jpg') })` (from `'node-telegram-bot-api/node'`) |
 | `bot.sendPhoto(id, fs.createReadStream(...))` | `api.sendPhoto({ chat_id, photo: new InputFile(bytes) })` |
