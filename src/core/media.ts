@@ -12,9 +12,9 @@
  * that string plus the keyed `InputFile`s. The encoder's `writeTo(sink, key)` branch
  * sets the destination field and registers each part - it still stringifies nothing.
  *
- * `build()` returns a `FilePart<T>` - honestly a FormPart, not a string - and the
- * destination fields are typed `JsonWithInputFiles<T>` (a `Json<T>` string OR a
- * `FilePart<T>`), so no type is a lie; the encoder tells them apart with `isFormPart`.
+ * `build()` returns a `FilePart<T>` - honestly a FormPart, not a string - which is
+ * the file-carrying arm of `Json<T>` (`= JsonString<T> | FilePart<T>`), the type of
+ * every structured field; the encoder tells the two arms apart with `isFormPart`.
  */
 import type {
   InputMediaAnimation,
@@ -30,8 +30,8 @@ import type {
   SendMediaGroupParams,
   SendPaidMediaParams,
 } from "../types/index.js";
-import type { Json } from "../types/brand.js";
-import type { CarriedBy, FilePart } from "./files.js";
+import type { CarriedBy, JsonString } from "../types/brand.js";
+import type { FilePart } from "./files.js";
 import { ATTACH_PREFIX, formPart, InputFile, isInputFile } from "./files.js";
 
 /** A file-bearing param: an uploadable wrapper or a `file_id`/URL string. */
@@ -86,7 +86,7 @@ class AttachedMedia<T> {
 interface CaptionOptions {
   caption?: string;
   parse_mode?: string;
-  caption_entities?: Json<unknown[]>;
+  caption_entities?: JsonString<unknown[]>;
 }
 
 /** Options for kinds that also carry a thumbnail. */

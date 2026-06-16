@@ -1,7 +1,7 @@
 /**
  * Markup builders (§6.2, ADR-002).
  *
- * Each `.build()` returns a branded `Json<...>` string - already wire-ready - so
+ * Each `.build()` returns a branded `JsonString<...>` string - already wire-ready - so
  * it drops straight into a `reply_markup` field. The library serializes nothing;
  * these builders (and `json()`) do it at the call site.
  */
@@ -13,7 +13,7 @@ import type {
   ReplyKeyboardMarkup,
   ReplyKeyboardRemove,
 } from "../types/index.js";
-import type { Json } from "../types/brand.js";
+import type { JsonString } from "../types/brand.js";
 import { json } from "./json.js";
 
 /**
@@ -74,8 +74,8 @@ export class InlineKeyboard {
     return this.push({ text: label, pay: true });
   }
 
-  /** Serialize to a branded `Json<InlineKeyboardMarkup>`, dropping trailing empty rows. */
-  build(): Json<InlineKeyboardMarkup> {
+  /** Serialize to a branded `JsonString<InlineKeyboardMarkup>`, dropping trailing empty rows. */
+  build(): JsonString<InlineKeyboardMarkup> {
     const rows = this.rows.slice();
     while (rows.length > 0 && rows[rows.length - 1]!.length === 0) rows.pop();
     return json<InlineKeyboardMarkup>({ inline_keyboard: rows });
@@ -128,8 +128,8 @@ export class ReplyKeyboard {
     return this.push({ text: label, web_app: { url } });
   }
 
-  /** Serialize to a branded `Json<ReplyKeyboardMarkup>`, dropping trailing empty rows. */
-  build(options?: ReplyKeyboardBuildOptions): Json<ReplyKeyboardMarkup> {
+  /** Serialize to a branded `JsonString<ReplyKeyboardMarkup>`, dropping trailing empty rows. */
+  build(options?: ReplyKeyboardBuildOptions): JsonString<ReplyKeyboardMarkup> {
     const keyboard = this.rows.slice();
     while (keyboard.length > 0 && keyboard[keyboard.length - 1]!.length === 0) {
       keyboard.pop();
@@ -139,7 +139,7 @@ export class ReplyKeyboard {
 }
 
 /** Tell clients to remove the custom keyboard. */
-export function removeKeyboard(options?: { selective?: boolean }): Json<ReplyKeyboardRemove> {
+export function removeKeyboard(options?: { selective?: boolean }): JsonString<ReplyKeyboardRemove> {
   return json<ReplyKeyboardRemove>({ remove_keyboard: true, ...options });
 }
 
@@ -147,6 +147,6 @@ export function removeKeyboard(options?: { selective?: boolean }): Json<ReplyKey
 export function forceReply(options?: {
   selective?: boolean;
   input_field_placeholder?: string;
-}): Json<ForceReply> {
+}): JsonString<ForceReply> {
   return json<ForceReply>({ force_reply: true, ...options });
 }
