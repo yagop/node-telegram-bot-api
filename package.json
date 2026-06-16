@@ -45,6 +45,7 @@
     "typecheck:examples": "tsc -p examples/tsconfig.json --noEmit",
     "lint:core": "node scripts/check-core-imports.mjs",
     "check:edge": "bun scripts/check-edge-bundle.mjs",
+    "biome": "biome check --write --indent-style=space --indent-width=2 --line-width=120 --javascript-formatter-quote-style=double --semicolons=always --trailing-commas=all .",
     "check": "tsc -p tsconfig.json --noEmit && npm run typecheck:test && npm run typecheck:examples && npm run lint:core && npm run check:edge && bun test test/unit",
     "generate:types": "bun scripts/api-parser.ts"
   },
@@ -54,6 +55,7 @@
     "node": ">=18"
   },
   "devDependencies": {
+    "@biomejs/biome": "^2.5.0",
     "@types/node": "^25.9.3",
     "bun": "^1.3.14",
     "typescript": "^5.9.3"
