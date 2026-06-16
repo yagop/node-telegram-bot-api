@@ -24,7 +24,7 @@ npm install node-telegram-bot-api
 
 ESM only. Node floor is 18 (first LTS with stable global `fetch`).
 
-## Runtime support
+## 🌐 Runtime support
 
 The core uses only Web-standard APIs (`fetch`, `Blob`, `FormData`, `AbortSignal`), so it runs unchanged across:
 
@@ -43,32 +43,34 @@ Filesystem uploads (`fromPath`) and the self-hosted `node:http` webhook server a
 
 ```ts
 import { Bot, InlineKeyboard } from "node-telegram-bot-api";
-import { run } from "node-telegram-bot-api/node"; // managed runner: handles SIGINT/SIGTERM
+import { run } from "node-telegram-bot-api/node"; // managed runner: wires Ctrl-C to bot.stop()
 
 const bot = new Bot(process.env.BOT_TOKEN!);
 
+// commands, regex and update types are all middleware - registration order wins
 bot.command("start", (ctx) => ctx.reply("Hi! Send me anything."));
-
 bot.hears(/echo (.+)/, (ctx) => ctx.reply(ctx.match![1]!));
 
 bot.on("message", (ctx) =>
   ctx.reply("Pick one:", {
-    reply_markup: new InlineKeyboard().text("👍", "up").text("👎", "down").build(),
+    reply_markup: new InlineKeyboard()
+      .text("👍", "up")
+      .text("👎", "down")
+      .build(),
   }),
 );
 
+// 🔘 a tapped inline button comes back as a callback_query
 bot.on("callback_query", async (ctx) => {
   await ctx.answerCallbackQuery({ text: `You tapped ${ctx.callbackQuery!.data}` });
 });
 
-await run(bot); // or: await bot.startPolling();
+await run(bot); // core-only alternative that runs anywhere: await bot.startPolling()
 ```
 
-The core has no managed runner dependency - `await bot.startPolling()` works anywhere. `run()` just wires `Ctrl-C` to `bot.stop()`. (`startPolling` is long-poll mode; for webhooks use `webhookCallback`/`createWebhookServer`/`startWebhook` below.)
+## 📡 Calling the API directly
 
-## Calling the API directly
-
-`Api` is a 1:1 mirror of the wire API: one concrete method per Bot API method, each taking a single params object.
+`Api` mirrors the wire API 1:1 - one method per Bot API method, each taking a single params object.
 
 ```ts
 import { Api } from "node-telegram-bot-api";
@@ -76,100 +78,120 @@ import { Api } from "node-telegram-bot-api";
 const api = new Api(process.env.BOT_TOKEN!);
 const me = await api.getMe();
 await api.sendMessage({ chat_id: 12345, text: "hello" });
+// the same client is also on bot.api and ctx.api
 ```
 
-`bot.api` and `ctx.api` expose the same client.
+## 🧩 Middleware
 
-## Middleware
-
-`bot.use()` registers koa-style middleware over a per-update `Context`; `on`/`command`/`hears` are filter middleware, so they interleave and respect order. Each layer can wrap everything downstream via `await next()`.
+koa-style middleware around every update; `on`/`command`/`hears` are filters in the same chain. Wrap downstream work with `await next()`.
 
 ```ts
-// timing + error boundary around every update
+// ⏱️ time every update - and catch anything thrown downstream
 bot.use(async (ctx, next) => {
   const start = Date.now();
   try {
     await next();
   } finally {
-    console.log(`${"message" in ctx.update ? "msg" : "update"} took ${Date.now() - start}ms`);
+    console.log(`update took ${Date.now() - start}ms`);
   }
 });
 
+// 🧯 last-resort error handler
 bot.catch((err, ctx) => console.error("handler failed", err));
 ```
 
-## Keyboards & formatting
+## ⌨️ Keyboards & formatting
 
-Structured fields are **plain typed objects** - pass a literal, or use a fluent builder. The request pipeline serializes them; there's no wrapper to remember.
+Structured fields are plain typed objects - pass a literal or use a fluent builder; the pipeline serializes either.
 
 ```ts
 import { InlineKeyboard, ReplyKeyboard, removeKeyboard, EntityBuilder } from "node-telegram-bot-api";
 
 // inline keyboard
-new InlineKeyboard().text("A", "a").url("Docs", "https://core.telegram.org/bots/api").row().text("B", "b").build();
+new InlineKeyboard()
+  .text("A", "a")
+  .url("Docs", "https://core.telegram.org/bots/api")
+  .row()
+  .text("B", "b")
+  .build();
 
 // reply keyboard
-new ReplyKeyboard().text("Yes").text("No").build({ resize_keyboard: true });
+new ReplyKeyboard()
+  .text("Yes")
+  .text("No")
+  .build({ resize_keyboard: true });
 removeKeyboard();
 
 // rich text without counting UTF-16 offsets by hand
-const { text, entities } = new EntityBuilder().plain("Hello ").bold("world").link("docs", "https://x").build();
+const { text, entities } = new EntityBuilder()
+  .plain("Hello ")
+  .bold("world")
+  .link("docs", "https://x")
+  .build();
 await api.sendMessage({ chat_id, text, entities });
 
 // any structured field is just a plain object - no wrapper needed
 await api.sendMessage({ chat_id, text: "hi", link_preview_options: { is_disabled: true } });
 ```
 
-## Uploads
+## 📤 Uploads
 
-A bare string is **always** a `file_id` or URL. To upload bytes, wrap them: `new InputFile()` (web-standard data) or `fromPath()` (Node, filesystem).
+A bare string is always a `file_id` or URL. Wrap raw bytes to upload them.
 
 ```ts
 import { InputFile, MediaGroupBuilder } from "node-telegram-bot-api";
 import { fromPath } from "node-telegram-bot-api/node";
 
+// upload from disk (Node only)
 await api.sendPhoto({ chat_id, photo: await fromPath("./cat.jpg") });
-await api.sendDocument({ chat_id, document: new InputFile(new Uint8Array(bytes), { filename: "report.pdf" }) });
+// upload raw bytes (web-standard, runs anywhere)
+await api.sendDocument({ chat_id, document: new InputFile(bytes, { filename: "report.pdf" }) });
 
-// nested files (media groups) - drop a raw InputFile straight into the array;
-// the pipeline hoists it to an attach:// part for you. Or use the `MediaGroupBuilder`.
+// a raw InputFile nested in a structure is auto-hoisted to an attach:// part
 await api.sendMediaGroup({
   chat_id,
   media: [
     { type: "photo", media: new InputFile(bytesA), caption: "A" },
-    { type: "photo", media: "https://example.com/b.jpg" }, // URL -> no upload
+    { type: "photo", media: "https://example.com/b.jpg" }, // a URL is never uploaded
   ],
 });
-// equivalently, the fluent builder:
+
+// MediaGroupBuilder: optional sugar for the same array
 await api.sendMediaGroup({
   chat_id,
-  media: new MediaGroupBuilder().photo({ media: new InputFile(bytesA), caption: "A" }).photo({ media: "https://example.com/b.jpg" }).build(),
+  media: new MediaGroupBuilder()
+    .photo({ media: new InputFile(bytesA), caption: "A" })
+    .photo({ media: "https://example.com/b.jpg" })
+    .build(),
 });
 ```
 
-Every method that references a file by `attach://` from inside a structure works the
-same way - put a raw `InputFile` in the file field and the pipeline resolves it.
-Builders are optional sugar: `StickerSetBuilder` (sticker sets), `StaticProfilePhotoBuilder` /
-`AnimatedProfilePhotoBuilder` (`setMyProfilePhoto`), `PhotoStoryBuilder` / `VideoStoryBuilder` (`postStory`/
-`editStory`). Each is a class whose methods take one object using the API's own field
-names; `new X(...).build()` returns the plain shape. (`addStickerToSet` takes a plain
-`InputSticker` - there is nothing for a single-sticker builder to add.)
+Builders cover the other `attach://` methods; each `.build()` returns the plain shape.
 
 ```ts
 import { StickerSetBuilder, StaticProfilePhotoBuilder, PhotoStoryBuilder } from "node-telegram-bot-api";
 
+// collect a sticker set
 await api.createNewStickerSet({
-  user_id, name, title,
+  user_id,
+  name,
+  title,
   stickers: new StickerSetBuilder()
     .add({ sticker: new InputFile(pngBytes), format: "static", emoji_list: ["🙂"] })
     .build(),
 });
+
+// a single sticker is a plain InputSticker - no builder needed
 await api.addStickerToSet({ user_id, name, sticker: { sticker: new InputFile(pngBytes), format: "static", emoji_list: ["🙂"] } });
+
+// profile photo: Static / AnimatedProfilePhotoBuilder
 await api.setMyProfilePhoto({ photo: new StaticProfilePhotoBuilder({ photo: new InputFile(pngBytes) }).build() });
+
+// story: Photo / VideoStoryBuilder
 await api.postStory({ business_connection_id, active_period, content: new PhotoStoryBuilder({ photo: new InputFile(pngBytes) }).build() });
 ```
 
-## Webhooks
+## 🪝 Webhooks
 
 The web-standard callback is a pure `(Request) => Promise<Response>` - one function for every serverless runtime.
 
@@ -186,10 +208,12 @@ export default {
 };
 ```
 
-By default the callback awaits your handler before returning `200`. For slow handlers that risk Telegram's webhook timeout, opt into **early ACK**: the callback validates the request, returns `200` immediately, and runs the handler in the background - pass `waitUntil` so the platform keeps the worker alive until it settles (`fastAck: true` alone runs it fire-and-forget). The secret-token check is a constant-time compare either way.
+By default the callback awaits your handler before `200`. For slow handlers, opt into **early-ACK**:
 
 ```ts
 export default {
+  // ✅ return 200 immediately, then finish the handler in the background
+  // waitUntil keeps the platform alive until it settles (fastAck: true = fire-and-forget)
   fetch: (req, env, ctx) =>
     webhookCallback(bot, { secretToken: SECRET, waitUntil: (p) => ctx.waitUntil(p) })(req),
 };
@@ -229,13 +253,11 @@ server.listen(8080);
 await startWebhook(new Bot(TOKEN), { port: 8080, path: "/telegram", secretToken: SECRET });
 ```
 
-Register the URL once with `api.setWebhook({ url, secret_token })`. The `secret_token`
-is the only thing that authenticates callers (payloads are not signed), so treat it as
-required in production; put TLS termination - and any IP allowlisting - at your proxy.
+Register the URL once: `api.setWebhook({ url, secret_token })`. The `secret_token` is the only thing authenticating callers (payloads aren't signed) - treat it as required in production, and terminate TLS at your proxy.
 
-## Errors
+## ⚠️ Errors
 
-Errors preserve `cause` and expose structured fields, so you branch on values, not message substrings.
+Errors expose structured fields, so you branch on values, not message text.
 
 ```ts
 import { TelegramApiError, NetworkError, TimeoutError } from "node-telegram-bot-api";
@@ -243,6 +265,7 @@ import { TelegramApiError, NetworkError, TimeoutError } from "node-telegram-bot-
 try {
   await api.sendMessage({ chat_id, text });
 } catch (err) {
+  // 🔁 429s are auto-retried (honoring retry_after) by default - this is the manual form
   if (err instanceof TelegramApiError && err.errorCode === 429) {
     await sleep((err.retryAfter ?? 1) * 1000);
   } else if (err instanceof NetworkError || err instanceof TimeoutError) {
@@ -251,27 +274,24 @@ try {
 }
 ```
 
-(The transport already retries `429` honoring `retry_after` by default.)
+## 🛡️ Resilience & rate limiting
 
-## Resilience & rate limiting
-
-The transport retries out of the box and backs off automatically; long polling resumes through transient failures. Everything below has safe defaults - you only set what you want to change.
+Safe defaults out of the box - set only what you want to change.
 
 ```ts
 import { Api } from "node-telegram-bot-api";
 
 const api = new Api(TOKEN, {
-  // 429s honor retry_after first; network/timeout/5xx are also retried,
-  // with exponential backoff (base * 2^(n-1), capped at 30s, jittered).
+  // 🔁 retries 429 (retry_after first), network/timeout/5xx with jittered backoff
   maxRetries: 2,        // default 2
   retryBackoffMs: 300,  // default 300
 
-  // Opt-in proactive throttle (requests/sec). Omit for zero overhead.
+  // 🚦 opt-in throttle (requests/sec); omit for zero overhead
   rateLimit: { global: 30, perChat: 1 },
 });
 ```
 
-Long polling keeps running through transient errors instead of dying on the first network blip:
+Long polling resumes through transient errors instead of dying on the first blip:
 
 ```ts
 import { longPoll } from "node-telegram-bot-api";
@@ -282,13 +302,11 @@ for await (const update of longPoll(api, {
   maxBackoffMs: 60_000, // default 60s - cap between failed polls
   onError: (err) => console.warn("poll failed, backing off", err),
 }, signal)) {
-  // ...
+  // ... fatal 4xx still stops the loop; an aborted signal returns cleanly
 }
 ```
 
-Fatal `4xx` errors still stop the loop; an aborted signal returns cleanly.
-
-## Low-level update stream
+## 🌊 Low-level update stream
 
 `longPoll` is a plain async generator - `for await`, `take(n)`, filter, batch or fan out as you like.
 
@@ -302,10 +320,9 @@ for await (const update of longPoll(api, { timeout: 30 }, ac.signal)) {
 }
 ```
 
-## Debugging
+## 🐛 Debugging
 
-Set the `DEBUG` env var (the `debug`-package convention) to print internal traces to
-**stderr** - request lifecycle/retries, polling, and webhook delivery:
+Set `DEBUG` (the `debug` convention) to trace request lifecycle, polling and webhooks to **stderr**:
 
 ```sh
 DEBUG="node-telegram-bot-api:*" node app.js
@@ -313,21 +330,15 @@ DEBUG="node-telegram-bot-api:*" node app.js
 # node-telegram-bot-api:transport <- sendMessage ok +142ms
 ```
 
-Namespaces: `node-telegram-bot-api:transport`, `:polling`, `:webhook` (filter to one,
-or skip with a leading `-`, e.g. `DEBUG="node-telegram-bot-api:*,-node-telegram-bot-api:polling"`).
-Tracing is a **Node feature**: it's wired up by importing `node-telegram-bot-api/node`
-(or calling `enableDebugFromEnv()` from it). The edge-neutral core stays free of
-`process`/stderr, so on Workers/Deno Edge the traces are an inert no-op.
+Namespaces: `:transport`, `:polling`, `:webhook` (filter, or exclude one with a leading `-`). Tracing is Node-only - wired up by importing `node-telegram-bot-api/node`; on edge runtimes it's an inert no-op.
 
-## Development
+## 🛠️ Development
 
 ```sh
-bun run generate:types   # regenerate src/types/schemas.ts + src/core/api.ts from the live docs
-bun run check            # tsc (strict) + core-isolation lint + unit tests
+bun run generate:types   # regenerate types + client from the live Bot API docs
+bun run check            # tsc (strict) + core-isolation lint + edge bundle + unit tests
 bun run build            # emit dist/
 ```
-
-`bun run check` runs three gates: `tsc --strict` over `src/`, a lint that fails if anything under `src/core/` imports a `node:` module (keeping the edge bundle Node-free), and the unit-test suite (which never touches the network - `fetch` is injected).
 
 ## 👥 Contributors
 
@@ -337,6 +348,6 @@ bun run build            # emit dist/
   </a>
 </p>
 
-## License
+## 📄 License
 
 MIT
