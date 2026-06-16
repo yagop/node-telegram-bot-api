@@ -3,8 +3,8 @@
  *
  * Demonstrates the markup builders - `InlineKeyboard`, `ReplyKeyboard`,
  * `removeKeyboard()`, `forceReply()` - and handling a `callback_query` with
- * `ctx.answerCallbackQuery()`. Each builder's `.build()` returns a wire-ready
- * `Json<...>` string that drops straight into `reply_markup`.
+ * `ctx.answerCallbackQuery()`. Each builder's `.build()` returns the plain
+ * `*Markup` object that drops straight into `reply_markup`.
  *
  * Run: BOT_TOKEN=123:abc bun examples/06-keyboards.ts
  */

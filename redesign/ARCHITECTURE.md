@@ -155,7 +155,11 @@ Why a class over a `Proxy`: real methods give correct stack traces, are greppabl
 
 This does **not** tree-shake per method: a single instantiated `Api` class ships all ~180 methods regardless of which a given bot calls, since they're instance methods reachable from the constructed object. The class is still chosen for the reasons above (stack traces, greppability, no casts), not for dead-code elimination. Per-method DCE would require a free-function surface (`sendMessage(client, params)`) where unused functions drop out of the bundle - a considered alternative, rejected here for the worse call-site ergonomics and the loss of a single discoverable `api.*` namespace.
 
-### 6.2 Serialization - branded `Json<T>` strings; the pipeline serializes nothing
+### 6.2 Serialization - plain typed params, serialized once in the pipeline (Option D)
+
+> **Superseded (see ADR-002 banner).** Structured fields are now plain typed objects;
+> `serializeParams()` does the single `JSON.stringify` + `attach://` walk in `Api.request`.
+> The branded-string model below is kept for history.
 
 Telegram's wire wants structured fields (`reply_markup`, entities, `reply_parameters`, ...) as **JSON-serialized strings** on the form body. v2 takes that literally: those fields are **typed as strings**, and the value is serialized **at the call site, in the builders**, before it ever reaches the client. Serialization is not absent - it has moved out of the request pipeline. The transport and encoder only ever move strings.
 
@@ -320,6 +324,16 @@ Backward compatibility is dropped, so these are intentional:
 **Decision: D.** Rejected B (Proxy) for poor stack traces and casts; rejected C's second layer as unnecessary once serialization left the pipeline. Pros: smallest surface, plain debuggable OO, methods can't drift from types. Cons: generated output larger than a Proxy, and - because the methods are instance methods on one constructed object - the whole client ships regardless of which methods a bot calls (no per-method tree-shaking; see §6.1). Both acceptable: the output is mechanical, and per-method dead-code elimination would need a free-function surface we rejected for worse ergonomics. (Direct precedent: gotgbot generates concrete methods in Go.)
 
 ### ADR-002 - Structured args are branded `Json<T>` strings; the pipeline serializes nothing
+
+> **SUPERSEDED -> Option D adopted.** Structured `*Params` fields are now **plain typed
+> objects/arrays** (`reply_markup: InlineKeyboardMarkup`, `media: InputMedia[]`, ...), and a
+> single `serializeParams()` step (in `Api.request`, before the retry loop) does one
+> `JSON.stringify` + the `attach://` walk. The brand vocabulary (`Json<T>` / `JsonString<T>` /
+> `FilePart<T>` / `CarriedBy<J>`) and `json()` are **deleted**; the generator has one mapping
+> path (no `transformParamType`/allow-list); builders are optional sugar returning plain shapes.
+> The only construct kept is `InputFile | string` (a `Blob` can't be JSON). The lost guarantee
+> (compile-time "you forgot to serialize") is moot - the `"[object Object]"` bug class is deleted
+> because the encoder always stringifies. The original ADR is preserved below for history.
 
 **Context.** v1's eight `_fix*` helpers stringified named fields, a documented maintenance footgun. The Bot API documents these fields as "A JSON-serialized object" - i.e. strings on the wire.
 

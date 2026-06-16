@@ -20,6 +20,7 @@ relative `../src` paths.
 | [`11-longpoll-stream.ts`](./11-longpoll-stream.ts) | Consume `longPoll(api, opts, signal)` with `for await`, filter, stop via `AbortController` | `BOT_TOKEN=... bun examples/11-longpoll-stream.ts` |
 | [`12-conversation.ts`](./12-conversation.ts) | A multi-step conversation (name → age) via `ctx.state` + a per-chat step `Map` | `BOT_TOKEN=... bun examples/12-conversation.ts` |
 | [`13-webhook-node-server.ts`](./13-webhook-node-server.ts) | `createWebhookServer` (`/node`): a raw `node:http` webhook server, no framework | `BOT_TOKEN=... WEBHOOK_SECRET=... PUBLIC_URL=https://... bun examples/13-webhook-node-server.ts` |
+| [`14-photo-video-livephoto.ts`](./14-photo-video-livephoto.ts) | `sendPhoto`/`sendVideo`/`sendLivePhoto` uploading bytes only (`InputFile` + `fromPath` - no URLs, no `file_id`) | `BOT_TOKEN=... CHAT_ID=... bun examples/14-photo-video-livephoto.ts` |
 
 The framework webhook examples (03-05) target serverless/framework platforms and
 aren't standalone-runnable here, but they typecheck and show the exact wiring.

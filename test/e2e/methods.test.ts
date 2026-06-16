@@ -30,7 +30,6 @@ import { afterAll, describe, expect, test } from "bun:test";
 
 import { Api } from "../../src/core/api.js";
 import { InputFile } from "../../src/core/files.js";
-import { json } from "../../src/core/json.js";
 import { InlineKeyboard } from "../../src/core/keyboard.js";
 import { EntityBuilder } from "../../src/core/entities.js";
 import {
@@ -96,11 +95,11 @@ const api = new Api(TOKEN ?? "0:placeholder", {
 // Reusable builders for structured (Json<T>) params
 // ---------------------------------------------------------------------------
 
-const samplePermissions = json<ChatPermissions>({
+const samplePermissions = {
   can_send_messages: true,
   can_send_polls: true,
   can_invite_users: true,
-});
+};
 
 const sampleInlineKeyboard = new InlineKeyboard().text("noop", "noop").build();
 
@@ -287,7 +286,7 @@ describe("methods", () => {
       const res = await api.forwardMessages({
         chat_id: chatId,
         from_chat_id: chatId,
-        message_ids: json<number[]>([src.message_id]),
+        message_ids: [src.message_id],
       });
       expect(res).toBeDefined();
     });
@@ -311,7 +310,7 @@ describe("methods", () => {
       const res = await api.copyMessages({
         chat_id: chatId,
         from_chat_id: chatId,
-        message_ids: json<number[]>([src.message_id]),
+        message_ids: [src.message_id],
       });
       expect(res).toBeDefined();
     });
@@ -417,9 +416,9 @@ describe("methods", () => {
 
   method("sendPaidMedia", () => {
     test("sends paid media", async () => {
-      const media = json<InputPaidMedia[]>([
+      const media = [
         { type: "photo", media: "https://upload.wikimedia.org/wikipedia/commons/3/3a/Cat03.jpg" },
-      ]);
+      ];
       const msg = await api.sendPaidMedia({ chat_id: chatId, star_count: 1, media });
       expect(msg).toBeDefined();
     });
@@ -472,7 +471,7 @@ describe("methods", () => {
       const msg = await api.sendPoll({
         chat_id: chatId,
         question: "e2e poll specific?",
-        options: json<InputPollOption[]>([{ text: "a" }, { text: "b" }]),
+        options: [{ text: "a" }, { text: "b" }],
       });
       expect(msg.poll?.id).toBeTruthy();
     });
@@ -480,10 +479,10 @@ describe("methods", () => {
 
   method("sendChecklist", () => {
     test("sends a checklist", async () => {
-      const checklist = json<InputChecklist>({
+      const checklist = {
         title: "e2e checklist",
         tasks: [{ id: 1, text: "task one" }],
-      });
+      };
       const msg = await api.sendChecklist({
         business_connection_id: "e2e",
         chat_id: chatId,
@@ -522,7 +521,7 @@ describe("methods", () => {
   method("setMessageReaction", () => {
     test("reacts to a freshly-sent message", async () => {
       const msg = await api.sendMessage({ chat_id: chatId, text: "e2e setMessageReaction" });
-      const reaction = json<ReactionType[]>([{ type: "emoji", emoji: "👍" } satisfies ReactionType]);
+      const reaction = [{ type: "emoji", emoji: "👍" } satisfies ReactionType];
       const ok = await api.setMessageReaction({
         chat_id: chatId,
         message_id: msg.message_id,
@@ -963,12 +962,12 @@ describe("methods", () => {
 
   method("answerGuestQuery", () => {
     test("answers a guest query", async () => {
-      const result = json<InlineQueryResult>({
+      const result = {
         type: "article",
         id: "1",
         title: "e2e",
         input_message_content: { message_text: "e2e" },
-      } satisfies InlineQueryResult);
+      } satisfies InlineQueryResult;
       await api.answerGuestQuery({ guest_query_id: "e2e", result });
     });
   });
@@ -1021,8 +1020,8 @@ describe("methods", () => {
   method("setMyCommands", () => {
     // Self-contained: set then clear so the bot's command list is unchanged.
     test("set then clear", async () => {
-      const commands = json<BotCommand[]>([{ command: "e2e", description: "e2e command" }]);
-      const scope = json<BotCommandScopeDefault>({ type: "default" });
+      const commands = [{ command: "e2e", description: "e2e command" }];
+      const scope = { type: "default" };
       const ok = await api.setMyCommands({ commands, scope });
       expect(ok).toBe(true);
       await api.deleteMyCommands({ scope });
@@ -1107,7 +1106,7 @@ describe("methods", () => {
 
   method("setChatMenuButton", () => {
     test("sets the chat menu button", async () => {
-      await api.setChatMenuButton({ menu_button: json({ type: "default" }) });
+      await api.setChatMenuButton({ menu_button: { type: "default" } });
     });
   });
 
@@ -1197,7 +1196,7 @@ describe("methods", () => {
     test("deletes business messages", async () => {
       await api.deleteBusinessMessages({
         business_connection_id: "e2e",
-        message_ids: json<number[]>([1]),
+        message_ids: [1],
       });
     });
   });
@@ -1240,13 +1239,13 @@ describe("methods", () => {
       await api.setBusinessAccountGiftSettings({
         business_connection_id: "e2e",
         show_gift_button: true,
-        accepted_gift_types: json<AcceptedGiftTypes>({
+        accepted_gift_types: {
           unlimited_gifts: true,
           limited_gifts: true,
           unique_gifts: true,
           premium_subscription: true,
           gifts_from_channels: true,
-        }),
+        },
       });
     });
   });
@@ -1350,24 +1349,24 @@ describe("methods", () => {
 
   method("answerWebAppQuery", () => {
     test("answers a web app query", async () => {
-      const result = json<InlineQueryResult>({
+      const result = {
         type: "article",
         id: "1",
         title: "e2e",
         input_message_content: { message_text: "e2e" },
-      } satisfies InlineQueryResult);
+      } satisfies InlineQueryResult;
       await api.answerWebAppQuery({ web_app_query_id: "e2e", result });
     });
   });
 
   method("savePreparedInlineMessage", () => {
     test("saves a prepared inline message", async () => {
-      const result = json<InlineQueryResult>({
+      const result = {
         type: "article",
         id: "1",
         title: "e2e",
         input_message_content: { message_text: "e2e" },
-      } satisfies InlineQueryResult);
+      } satisfies InlineQueryResult;
       // At least one allow_* chat type is required, else "at least one chat type
       // must be allowed".
       await api.savePreparedInlineMessage({
@@ -1380,7 +1379,7 @@ describe("methods", () => {
 
   method("savePreparedKeyboardButton", () => {
     test("saves a prepared keyboard button", async () => {
-      const button = json<KeyboardButton>({ text: "e2e" } satisfies KeyboardButton);
+      const button = { text: "e2e" } satisfies KeyboardButton;
       await api.savePreparedKeyboardButton({ user_id: await targetUserId(), button });
     });
   });
@@ -1429,11 +1428,11 @@ describe("methods", () => {
         chat_id: chatId,
         photo: new InputFile(JPEG_160, { filename: "e2e.jpg", contentType: "image/jpeg" }),
       });
-      const media = json<InputMedia>({
+      const media = {
         type: "photo",
         media: "https://upload.wikimedia.org/wikipedia/commons/3/3a/Cat03.jpg",
         caption: "e2e swapped",
-      } satisfies InputMedia);
+      } satisfies InputMedia;
       await api.editMessageMedia({ chat_id: chatId, message_id: sent.message_id, media });
     });
   });
@@ -1470,10 +1469,10 @@ describe("methods", () => {
 
   method("editMessageChecklist", () => {
     test("edits a message checklist", async () => {
-      const checklist = json<InputChecklist>({
+      const checklist = {
         title: "e2e",
         tasks: [{ id: 1, text: "t" }],
-      });
+      };
       await api.editMessageChecklist({
         business_connection_id: "e2e",
         chat_id: chatId,
@@ -1503,7 +1502,7 @@ describe("methods", () => {
       const poll = await api.sendPoll({
         chat_id: chatId,
         question: "e2e stopPoll?",
-        options: json<InputPollOption[]>([{ text: "yes" }, { text: "no" }]),
+        options: [{ text: "yes" }, { text: "no" }],
       });
       const stopped = await api.stopPoll({ chat_id: chatId, message_id: poll.message_id });
       expect(stopped.is_closed).toBe(true);
@@ -1535,7 +1534,7 @@ describe("methods", () => {
       const sent = await api.sendMessage({ chat_id: chatId, text: "e2e deleteMessages" });
       const ok = await api.deleteMessages({
         chat_id: chatId,
-        message_ids: json<number[]>([sent.message_id]),
+        message_ids: [sent.message_id],
       });
       expect(ok).toBeDefined();
     });
@@ -1583,7 +1582,7 @@ describe("methods", () => {
   method("getCustomEmojiStickers", () => {
     test("returns custom emoji stickers", async () => {
       const res = await api.getCustomEmojiStickers({
-        custom_emoji_ids: json<string[]>(["5368324170671202286"]),
+        custom_emoji_ids: ["5368324170671202286"],
       });
       expect(res).toBeDefined();
     });
@@ -1672,7 +1671,7 @@ describe("methods", () => {
       const sticker = await firstStickerOf(await sharedSet("regular"));
       await api.setStickerEmojiList({
         sticker: sticker.file_id,
-        emoji_list: json<string[]>(["😎"]),
+        emoji_list: ["😎"],
       });
     });
   });
@@ -1682,7 +1681,7 @@ describe("methods", () => {
       const sticker = await firstStickerOf(await sharedSet("regular"));
       await api.setStickerKeywords({
         sticker: sticker.file_id,
-        keywords: json<string[]>(["e2e", "test"]),
+        keywords: ["e2e", "test"],
       });
     });
   });
@@ -1693,7 +1692,7 @@ describe("methods", () => {
       const sticker = await firstStickerOf(await sharedSet("mask"));
       await api.setStickerMaskPosition({
         sticker: sticker.file_id,
-        mask_position: json<MaskPosition>({ point: "forehead", x_shift: 0, y_shift: 0, scale: 1 }),
+        mask_position: { point: "forehead", x_shift: 0, y_shift: 0, scale: 1 },
       });
     });
   });
@@ -1750,7 +1749,7 @@ describe("methods", () => {
 
   method("sendRichMessage", () => {
     test("sends a rich message", async () => {
-      const rich_message = json<InputRichMessage>({ html: "<b>e2e</b>" });
+      const rich_message = { html: "<b>e2e</b>" };
       const msg = await api.sendRichMessage({ chat_id: chatId, rich_message });
       expect(msg).toBeDefined();
     });
@@ -1758,21 +1757,21 @@ describe("methods", () => {
 
   method("sendRichMessageDraft", () => {
     test("sends a rich message draft", async () => {
-      const rich_message = json<InputRichMessage>({ html: "<b>e2e</b>" });
+      const rich_message = { html: "<b>e2e</b>" };
       await api.sendRichMessageDraft({ chat_id: Number(chatId) || 1, draft_id: 1, rich_message });
     });
   });
 
   method("answerInlineQuery", () => {
     test("answers an inline query", async () => {
-      const results = json<InlineQueryResult[]>([
+      const results = [
         {
           type: "article",
           id: "1",
           title: "e2e",
           input_message_content: { message_text: "e2e" },
         },
-      ] satisfies InlineQueryResult[]);
+      ] satisfies InlineQueryResult[];
       await api.answerInlineQuery({ inline_query_id: "e2e", results });
     });
   });
@@ -1783,7 +1782,7 @@ describe("methods", () => {
 
   method("sendInvoice", () => {
     test("sends an invoice", async () => {
-      const prices = json<LabeledPrice[]>([{ label: "e2e", amount: 100 }]);
+      const prices = [{ label: "e2e", amount: 100 }];
       const msg = await api.sendInvoice({
         chat_id: chatId,
         title: "e2e",
@@ -1798,7 +1797,7 @@ describe("methods", () => {
 
   method("createInvoiceLink", () => {
     test("creates an invoice link", async () => {
-      const prices = json<LabeledPrice[]>([{ label: "e2e", amount: 100 }]);
+      const prices = [{ label: "e2e", amount: 100 }];
       const link = await api.createInvoiceLink({
         title: "e2e",
         description: "e2e invoice",
@@ -1871,7 +1870,7 @@ describe("methods", () => {
 
   method("setPassportDataErrors", () => {
     test("sets passport data errors", async () => {
-      const errors = json<PassportElementError[]>([
+      const errors = [
         {
           source: "unspecified",
           type: "personal_details",
@@ -1880,7 +1879,7 @@ describe("methods", () => {
           element_hash: btoa("e".repeat(32)),
           message: "e2e",
         },
-      ] satisfies PassportElementError[]);
+      ] satisfies PassportElementError[];
       await api.setPassportDataErrors({ user_id: await targetUserId(), errors });
     });
   });

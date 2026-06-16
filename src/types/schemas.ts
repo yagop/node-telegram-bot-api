@@ -5,7 +5,6 @@
  * Source: https://core.telegram.org/bots/api
  * Regenerate with: bun scripts/api-parser.ts
  */
-import type { Json } from "./brand.js";
 import type { InputFile } from "../core/files.js";
 
 // ---------------------------------------------------------------------------
@@ -1688,8 +1687,8 @@ export type ResponseParameters = {
 
 export type InputMediaAnimation = {
   type: string;
-  media: string;
-  thumbnail?: string;
+  media: InputFile | string;
+  thumbnail?: InputFile | string;
   caption?: string;
   parse_mode?: string;
   caption_entities?: MessageEntity[];
@@ -1702,8 +1701,8 @@ export type InputMediaAnimation = {
 
 export type InputMediaAudio = {
   type: string;
-  media: string;
-  thumbnail?: string;
+  media: InputFile | string;
+  thumbnail?: InputFile | string;
   caption?: string;
   parse_mode?: string;
   caption_entities?: MessageEntity[];
@@ -1714,8 +1713,8 @@ export type InputMediaAudio = {
 
 export type InputMediaDocument = {
   type: string;
-  media: string;
-  thumbnail?: string;
+  media: InputFile | string;
+  thumbnail?: InputFile | string;
   caption?: string;
   parse_mode?: string;
   caption_entities?: MessageEntity[];
@@ -1729,8 +1728,8 @@ export type InputMediaLink = {
 
 export type InputMediaLivePhoto = {
   type: string;
-  media: string;
-  photo: string;
+  media: InputFile | string;
+  photo: InputFile | string;
   caption?: string;
   parse_mode?: string;
   caption_entities?: MessageEntity[];
@@ -1747,7 +1746,7 @@ export type InputMediaLocation = {
 
 export type InputMediaPhoto = {
   type: string;
-  media: string;
+  media: InputFile | string;
   caption?: string;
   parse_mode?: string;
   caption_entities?: MessageEntity[];
@@ -1757,7 +1756,7 @@ export type InputMediaPhoto = {
 
 export type InputMediaSticker = {
   type: string;
-  media: string;
+  media: InputFile | string;
   emoji?: string;
 };
 
@@ -1775,9 +1774,9 @@ export type InputMediaVenue = {
 
 export type InputMediaVideo = {
   type: string;
-  media: string;
-  thumbnail?: string;
-  cover?: string;
+  media: InputFile | string;
+  thumbnail?: InputFile | string;
+  cover?: InputFile | string;
   start_timestamp?: number;
   caption?: string;
   parse_mode?: string;
@@ -1792,20 +1791,20 @@ export type InputMediaVideo = {
 
 export type InputPaidMediaLivePhoto = {
   type: string;
-  media: string;
-  photo: string;
+  media: InputFile | string;
+  photo: InputFile | string;
 };
 
 export type InputPaidMediaPhoto = {
   type: string;
-  media: string;
+  media: InputFile | string;
 };
 
 export type InputPaidMediaVideo = {
   type: string;
-  media: string;
-  thumbnail?: string;
-  cover?: string;
+  media: InputFile | string;
+  thumbnail?: InputFile | string;
+  cover?: InputFile | string;
   start_timestamp?: number;
   width?: number;
   height?: number;
@@ -1815,23 +1814,23 @@ export type InputPaidMediaVideo = {
 
 export type InputProfilePhotoStatic = {
   type: string;
-  photo: string;
+  photo: InputFile | string;
 };
 
 export type InputProfilePhotoAnimated = {
   type: string;
-  animation: string;
+  animation: InputFile | string;
   main_frame_timestamp?: number;
 };
 
 export type InputStoryContentPhoto = {
   type: string;
-  photo: string;
+  photo: InputFile | string;
 };
 
 export type InputStoryContentVideo = {
   type: string;
-  video: string;
+  video: InputFile | string;
   duration?: number;
   cover_frame_timestamp?: number;
   is_animation?: boolean;
@@ -1871,7 +1870,7 @@ export type MaskPosition = {
 };
 
 export type InputSticker = {
-  sticker: string;
+  sticker: InputFile | string;
   format: string;
   emoji_list: string[];
   mask_position?: MaskPosition;
@@ -2892,7 +2891,7 @@ export type GetUpdatesParams = {
   offset?: number;
   limit?: number;
   timeout?: number;
-  allowed_updates?: Json<string[]>;
+  allowed_updates?: string[];
 };
 export type GetUpdatesResult = Update[];
 
@@ -2901,7 +2900,7 @@ export type SetWebhookParams = {
   certificate?: InputFile | string;
   ip_address?: string;
   max_connections?: number;
-  allowed_updates?: Json<string[]>;
+  allowed_updates?: string[];
   drop_pending_updates?: boolean;
   secret_token?: string;
 };
@@ -2931,15 +2930,15 @@ export type SendMessageParams = {
   direct_messages_topic_id?: number;
   text: string;
   parse_mode?: string;
-  entities?: Json<MessageEntity[]>;
-  link_preview_options?: Json<LinkPreviewOptions>;
+  entities?: MessageEntity[];
+  link_preview_options?: LinkPreviewOptions;
   disable_notification?: boolean;
   protect_content?: boolean;
   allow_paid_broadcast?: boolean;
   message_effect_id?: string;
-  suggested_post_parameters?: Json<SuggestedPostParameters>;
-  reply_parameters?: Json<ReplyParameters>;
-  reply_markup?: Json<InlineKeyboardMarkup | ReplyKeyboardMarkup | ReplyKeyboardRemove | ForceReply>;
+  suggested_post_parameters?: SuggestedPostParameters;
+  reply_parameters?: ReplyParameters;
+  reply_markup?: InlineKeyboardMarkup | ReplyKeyboardMarkup | ReplyKeyboardRemove | ForceReply;
 };
 export type SendMessageResult = Message;
 
@@ -2952,7 +2951,7 @@ export type ForwardMessageParams = {
   disable_notification?: boolean;
   protect_content?: boolean;
   message_effect_id?: string;
-  suggested_post_parameters?: Json<SuggestedPostParameters>;
+  suggested_post_parameters?: SuggestedPostParameters;
   message_id: number;
 };
 export type ForwardMessageResult = Message;
@@ -2962,7 +2961,7 @@ export type ForwardMessagesParams = {
   message_thread_id?: number;
   direct_messages_topic_id?: number;
   from_chat_id: number | string;
-  message_ids: Json<number[]>;
+  message_ids: number[];
   disable_notification?: boolean;
   protect_content?: boolean;
 };
@@ -2977,15 +2976,15 @@ export type CopyMessageParams = {
   video_start_timestamp?: number;
   caption?: string;
   parse_mode?: string;
-  caption_entities?: Json<MessageEntity[]>;
+  caption_entities?: MessageEntity[];
   show_caption_above_media?: boolean;
   disable_notification?: boolean;
   protect_content?: boolean;
   allow_paid_broadcast?: boolean;
   message_effect_id?: string;
-  suggested_post_parameters?: Json<SuggestedPostParameters>;
-  reply_parameters?: Json<ReplyParameters>;
-  reply_markup?: Json<InlineKeyboardMarkup | ReplyKeyboardMarkup | ReplyKeyboardRemove | ForceReply>;
+  suggested_post_parameters?: SuggestedPostParameters;
+  reply_parameters?: ReplyParameters;
+  reply_markup?: InlineKeyboardMarkup | ReplyKeyboardMarkup | ReplyKeyboardRemove | ForceReply;
 };
 export type CopyMessageResult = MessageId;
 
@@ -2994,7 +2993,7 @@ export type CopyMessagesParams = {
   message_thread_id?: number;
   direct_messages_topic_id?: number;
   from_chat_id: number | string;
-  message_ids: Json<number[]>;
+  message_ids: number[];
   disable_notification?: boolean;
   protect_content?: boolean;
   remove_caption?: boolean;
@@ -3009,16 +3008,16 @@ export type SendPhotoParams = {
   photo: InputFile | string;
   caption?: string;
   parse_mode?: string;
-  caption_entities?: Json<MessageEntity[]>;
+  caption_entities?: MessageEntity[];
   show_caption_above_media?: boolean;
   has_spoiler?: boolean;
   disable_notification?: boolean;
   protect_content?: boolean;
   allow_paid_broadcast?: boolean;
   message_effect_id?: string;
-  suggested_post_parameters?: Json<SuggestedPostParameters>;
-  reply_parameters?: Json<ReplyParameters>;
-  reply_markup?: Json<InlineKeyboardMarkup | ReplyKeyboardMarkup | ReplyKeyboardRemove | ForceReply>;
+  suggested_post_parameters?: SuggestedPostParameters;
+  reply_parameters?: ReplyParameters;
+  reply_markup?: InlineKeyboardMarkup | ReplyKeyboardMarkup | ReplyKeyboardRemove | ForceReply;
 };
 export type SendPhotoResult = Message;
 
@@ -3031,16 +3030,16 @@ export type SendLivePhotoParams = {
   photo: InputFile | string;
   caption?: string;
   parse_mode?: string;
-  caption_entities?: Json<MessageEntity[]>;
+  caption_entities?: MessageEntity[];
   show_caption_above_media?: boolean;
   has_spoiler?: boolean;
   disable_notification?: boolean;
   protect_content?: boolean;
   allow_paid_broadcast?: boolean;
   message_effect_id?: string;
-  suggested_post_parameters?: Json<SuggestedPostParameters>;
-  reply_parameters?: Json<ReplyParameters>;
-  reply_markup?: Json<InlineKeyboardMarkup | ReplyKeyboardMarkup | ReplyKeyboardRemove | ForceReply>;
+  suggested_post_parameters?: SuggestedPostParameters;
+  reply_parameters?: ReplyParameters;
+  reply_markup?: InlineKeyboardMarkup | ReplyKeyboardMarkup | ReplyKeyboardRemove | ForceReply;
 };
 export type SendLivePhotoResult = Message;
 
@@ -3052,7 +3051,7 @@ export type SendAudioParams = {
   audio: InputFile | string;
   caption?: string;
   parse_mode?: string;
-  caption_entities?: Json<MessageEntity[]>;
+  caption_entities?: MessageEntity[];
   duration?: number;
   performer?: string;
   title?: string;
@@ -3061,9 +3060,9 @@ export type SendAudioParams = {
   protect_content?: boolean;
   allow_paid_broadcast?: boolean;
   message_effect_id?: string;
-  suggested_post_parameters?: Json<SuggestedPostParameters>;
-  reply_parameters?: Json<ReplyParameters>;
-  reply_markup?: Json<InlineKeyboardMarkup | ReplyKeyboardMarkup | ReplyKeyboardRemove | ForceReply>;
+  suggested_post_parameters?: SuggestedPostParameters;
+  reply_parameters?: ReplyParameters;
+  reply_markup?: InlineKeyboardMarkup | ReplyKeyboardMarkup | ReplyKeyboardRemove | ForceReply;
 };
 export type SendAudioResult = Message;
 
@@ -3076,15 +3075,15 @@ export type SendDocumentParams = {
   thumbnail?: InputFile | string;
   caption?: string;
   parse_mode?: string;
-  caption_entities?: Json<MessageEntity[]>;
+  caption_entities?: MessageEntity[];
   disable_content_type_detection?: boolean;
   disable_notification?: boolean;
   protect_content?: boolean;
   allow_paid_broadcast?: boolean;
   message_effect_id?: string;
-  suggested_post_parameters?: Json<SuggestedPostParameters>;
-  reply_parameters?: Json<ReplyParameters>;
-  reply_markup?: Json<InlineKeyboardMarkup | ReplyKeyboardMarkup | ReplyKeyboardRemove | ForceReply>;
+  suggested_post_parameters?: SuggestedPostParameters;
+  reply_parameters?: ReplyParameters;
+  reply_markup?: InlineKeyboardMarkup | ReplyKeyboardMarkup | ReplyKeyboardRemove | ForceReply;
 };
 export type SendDocumentResult = Message;
 
@@ -3102,7 +3101,7 @@ export type SendVideoParams = {
   start_timestamp?: number;
   caption?: string;
   parse_mode?: string;
-  caption_entities?: Json<MessageEntity[]>;
+  caption_entities?: MessageEntity[];
   show_caption_above_media?: boolean;
   has_spoiler?: boolean;
   supports_streaming?: boolean;
@@ -3110,9 +3109,9 @@ export type SendVideoParams = {
   protect_content?: boolean;
   allow_paid_broadcast?: boolean;
   message_effect_id?: string;
-  suggested_post_parameters?: Json<SuggestedPostParameters>;
-  reply_parameters?: Json<ReplyParameters>;
-  reply_markup?: Json<InlineKeyboardMarkup | ReplyKeyboardMarkup | ReplyKeyboardRemove | ForceReply>;
+  suggested_post_parameters?: SuggestedPostParameters;
+  reply_parameters?: ReplyParameters;
+  reply_markup?: InlineKeyboardMarkup | ReplyKeyboardMarkup | ReplyKeyboardRemove | ForceReply;
 };
 export type SendVideoResult = Message;
 
@@ -3128,16 +3127,16 @@ export type SendAnimationParams = {
   thumbnail?: InputFile | string;
   caption?: string;
   parse_mode?: string;
-  caption_entities?: Json<MessageEntity[]>;
+  caption_entities?: MessageEntity[];
   show_caption_above_media?: boolean;
   has_spoiler?: boolean;
   disable_notification?: boolean;
   protect_content?: boolean;
   allow_paid_broadcast?: boolean;
   message_effect_id?: string;
-  suggested_post_parameters?: Json<SuggestedPostParameters>;
-  reply_parameters?: Json<ReplyParameters>;
-  reply_markup?: Json<InlineKeyboardMarkup | ReplyKeyboardMarkup | ReplyKeyboardRemove | ForceReply>;
+  suggested_post_parameters?: SuggestedPostParameters;
+  reply_parameters?: ReplyParameters;
+  reply_markup?: InlineKeyboardMarkup | ReplyKeyboardMarkup | ReplyKeyboardRemove | ForceReply;
 };
 export type SendAnimationResult = Message;
 
@@ -3149,15 +3148,15 @@ export type SendVoiceParams = {
   voice: InputFile | string;
   caption?: string;
   parse_mode?: string;
-  caption_entities?: Json<MessageEntity[]>;
+  caption_entities?: MessageEntity[];
   duration?: number;
   disable_notification?: boolean;
   protect_content?: boolean;
   allow_paid_broadcast?: boolean;
   message_effect_id?: string;
-  suggested_post_parameters?: Json<SuggestedPostParameters>;
-  reply_parameters?: Json<ReplyParameters>;
-  reply_markup?: Json<InlineKeyboardMarkup | ReplyKeyboardMarkup | ReplyKeyboardRemove | ForceReply>;
+  suggested_post_parameters?: SuggestedPostParameters;
+  reply_parameters?: ReplyParameters;
+  reply_markup?: InlineKeyboardMarkup | ReplyKeyboardMarkup | ReplyKeyboardRemove | ForceReply;
 };
 export type SendVoiceResult = Message;
 
@@ -3174,9 +3173,9 @@ export type SendVideoNoteParams = {
   protect_content?: boolean;
   allow_paid_broadcast?: boolean;
   message_effect_id?: string;
-  suggested_post_parameters?: Json<SuggestedPostParameters>;
-  reply_parameters?: Json<ReplyParameters>;
-  reply_markup?: Json<InlineKeyboardMarkup | ReplyKeyboardMarkup | ReplyKeyboardRemove | ForceReply>;
+  suggested_post_parameters?: SuggestedPostParameters;
+  reply_parameters?: ReplyParameters;
+  reply_markup?: InlineKeyboardMarkup | ReplyKeyboardMarkup | ReplyKeyboardRemove | ForceReply;
 };
 export type SendVideoNoteResult = Message;
 
@@ -3186,18 +3185,18 @@ export type SendPaidMediaParams = {
   message_thread_id?: number;
   direct_messages_topic_id?: number;
   star_count: number;
-  media: Json<InputPaidMedia[]>;
+  media: InputPaidMedia[];
   payload?: string;
   caption?: string;
   parse_mode?: string;
-  caption_entities?: Json<MessageEntity[]>;
+  caption_entities?: MessageEntity[];
   show_caption_above_media?: boolean;
   disable_notification?: boolean;
   protect_content?: boolean;
   allow_paid_broadcast?: boolean;
-  suggested_post_parameters?: Json<SuggestedPostParameters>;
-  reply_parameters?: Json<ReplyParameters>;
-  reply_markup?: Json<InlineKeyboardMarkup | ReplyKeyboardMarkup | ReplyKeyboardRemove | ForceReply>;
+  suggested_post_parameters?: SuggestedPostParameters;
+  reply_parameters?: ReplyParameters;
+  reply_markup?: InlineKeyboardMarkup | ReplyKeyboardMarkup | ReplyKeyboardRemove | ForceReply;
 };
 export type SendPaidMediaResult = Message;
 
@@ -3206,12 +3205,12 @@ export type SendMediaGroupParams = {
   chat_id: number | string;
   message_thread_id?: number;
   direct_messages_topic_id?: number;
-  media: Json<(InputMediaAudio | InputMediaDocument | InputMediaLivePhoto | InputMediaPhoto | InputMediaVideo)[]>;
+  media: (InputMediaAudio | InputMediaDocument | InputMediaLivePhoto | InputMediaPhoto | InputMediaVideo)[];
   disable_notification?: boolean;
   protect_content?: boolean;
   allow_paid_broadcast?: boolean;
   message_effect_id?: string;
-  reply_parameters?: Json<ReplyParameters>;
+  reply_parameters?: ReplyParameters;
 };
 export type SendMediaGroupResult = Message[];
 
@@ -3230,9 +3229,9 @@ export type SendLocationParams = {
   protect_content?: boolean;
   allow_paid_broadcast?: boolean;
   message_effect_id?: string;
-  suggested_post_parameters?: Json<SuggestedPostParameters>;
-  reply_parameters?: Json<ReplyParameters>;
-  reply_markup?: Json<InlineKeyboardMarkup | ReplyKeyboardMarkup | ReplyKeyboardRemove | ForceReply>;
+  suggested_post_parameters?: SuggestedPostParameters;
+  reply_parameters?: ReplyParameters;
+  reply_markup?: InlineKeyboardMarkup | ReplyKeyboardMarkup | ReplyKeyboardRemove | ForceReply;
 };
 export type SendLocationResult = Message;
 
@@ -3253,9 +3252,9 @@ export type SendVenueParams = {
   protect_content?: boolean;
   allow_paid_broadcast?: boolean;
   message_effect_id?: string;
-  suggested_post_parameters?: Json<SuggestedPostParameters>;
-  reply_parameters?: Json<ReplyParameters>;
-  reply_markup?: Json<InlineKeyboardMarkup | ReplyKeyboardMarkup | ReplyKeyboardRemove | ForceReply>;
+  suggested_post_parameters?: SuggestedPostParameters;
+  reply_parameters?: ReplyParameters;
+  reply_markup?: InlineKeyboardMarkup | ReplyKeyboardMarkup | ReplyKeyboardRemove | ForceReply;
 };
 export type SendVenueResult = Message;
 
@@ -3272,9 +3271,9 @@ export type SendContactParams = {
   protect_content?: boolean;
   allow_paid_broadcast?: boolean;
   message_effect_id?: string;
-  suggested_post_parameters?: Json<SuggestedPostParameters>;
-  reply_parameters?: Json<ReplyParameters>;
-  reply_markup?: Json<InlineKeyboardMarkup | ReplyKeyboardMarkup | ReplyKeyboardRemove | ForceReply>;
+  suggested_post_parameters?: SuggestedPostParameters;
+  reply_parameters?: ReplyParameters;
+  reply_markup?: InlineKeyboardMarkup | ReplyKeyboardMarkup | ReplyKeyboardRemove | ForceReply;
 };
 export type SendContactResult = Message;
 
@@ -3284,8 +3283,8 @@ export type SendPollParams = {
   message_thread_id?: number;
   question: string;
   question_parse_mode?: string;
-  question_entities?: Json<MessageEntity[]>;
-  options: Json<InputPollOption[]>;
+  question_entities?: MessageEntity[];
+  options: InputPollOption[];
   is_anonymous?: boolean;
   type?: string;
   allows_multiple_answers?: boolean;
@@ -3294,37 +3293,37 @@ export type SendPollParams = {
   allow_adding_options?: boolean;
   hide_results_until_closes?: boolean;
   members_only?: boolean;
-  country_codes?: Json<string[]>;
-  correct_option_ids?: Json<number[]>;
+  country_codes?: string[];
+  correct_option_ids?: number[];
   explanation?: string;
   explanation_parse_mode?: string;
-  explanation_entities?: Json<MessageEntity[]>;
-  explanation_media?: Json<InputPollMedia>;
+  explanation_entities?: MessageEntity[];
+  explanation_media?: InputPollMedia;
   open_period?: number;
   close_date?: number;
   is_closed?: boolean;
   description?: string;
   description_parse_mode?: string;
-  description_entities?: Json<MessageEntity[]>;
-  media?: Json<InputPollMedia>;
+  description_entities?: MessageEntity[];
+  media?: InputPollMedia;
   disable_notification?: boolean;
   protect_content?: boolean;
   allow_paid_broadcast?: boolean;
   message_effect_id?: string;
-  reply_parameters?: Json<ReplyParameters>;
-  reply_markup?: Json<InlineKeyboardMarkup | ReplyKeyboardMarkup | ReplyKeyboardRemove | ForceReply>;
+  reply_parameters?: ReplyParameters;
+  reply_markup?: InlineKeyboardMarkup | ReplyKeyboardMarkup | ReplyKeyboardRemove | ForceReply;
 };
 export type SendPollResult = Message;
 
 export type SendChecklistParams = {
   business_connection_id: string;
   chat_id: number | string;
-  checklist: Json<InputChecklist>;
+  checklist: InputChecklist;
   disable_notification?: boolean;
   protect_content?: boolean;
   message_effect_id?: string;
-  reply_parameters?: Json<ReplyParameters>;
-  reply_markup?: Json<InlineKeyboardMarkup>;
+  reply_parameters?: ReplyParameters;
+  reply_markup?: InlineKeyboardMarkup;
 };
 export type SendChecklistResult = Message;
 
@@ -3338,9 +3337,9 @@ export type SendDiceParams = {
   protect_content?: boolean;
   allow_paid_broadcast?: boolean;
   message_effect_id?: string;
-  suggested_post_parameters?: Json<SuggestedPostParameters>;
-  reply_parameters?: Json<ReplyParameters>;
-  reply_markup?: Json<InlineKeyboardMarkup | ReplyKeyboardMarkup | ReplyKeyboardRemove | ForceReply>;
+  suggested_post_parameters?: SuggestedPostParameters;
+  reply_parameters?: ReplyParameters;
+  reply_markup?: InlineKeyboardMarkup | ReplyKeyboardMarkup | ReplyKeyboardRemove | ForceReply;
 };
 export type SendDiceResult = Message;
 
@@ -3350,7 +3349,7 @@ export type SendMessageDraftParams = {
   draft_id: number;
   text?: string;
   parse_mode?: string;
-  entities?: Json<MessageEntity[]>;
+  entities?: MessageEntity[];
 };
 export type SendMessageDraftResult = boolean;
 
@@ -3365,7 +3364,7 @@ export type SendChatActionResult = boolean;
 export type SetMessageReactionParams = {
   chat_id: number | string;
   message_id: number;
-  reaction?: Json<ReactionType[]>;
+  reaction?: ReactionType[];
   is_big?: boolean;
 };
 export type SetMessageReactionResult = boolean;
@@ -3414,7 +3413,7 @@ export type UnbanChatMemberResult = boolean;
 export type RestrictChatMemberParams = {
   chat_id: number | string;
   user_id: number;
-  permissions: Json<ChatPermissions>;
+  permissions: ChatPermissions;
   use_independent_chat_permissions?: boolean;
   until_date?: number;
 };
@@ -3471,7 +3470,7 @@ export type UnbanChatSenderChatResult = boolean;
 
 export type SetChatPermissionsParams = {
   chat_id: number | string;
-  permissions: Json<ChatPermissions>;
+  permissions: ChatPermissions;
   use_independent_chat_permissions?: boolean;
 };
 export type SetChatPermissionsResult = boolean;
@@ -3717,7 +3716,7 @@ export type AnswerCallbackQueryResult = boolean;
 
 export type AnswerGuestQueryParams = {
   guest_query_id: string;
-  result: Json<InlineQueryResult>;
+  result: InlineQueryResult;
 };
 export type AnswerGuestQueryResult = SentGuestMessage;
 
@@ -3750,25 +3749,25 @@ export type GetManagedBotAccessSettingsResult = BotAccessSettings;
 export type SetManagedBotAccessSettingsParams = {
   user_id: number;
   is_access_restricted: boolean;
-  added_user_ids?: Json<number[]>;
+  added_user_ids?: number[];
 };
 export type SetManagedBotAccessSettingsResult = boolean;
 
 export type SetMyCommandsParams = {
-  commands: Json<BotCommand[]>;
-  scope?: Json<BotCommandScope>;
+  commands: BotCommand[];
+  scope?: BotCommandScope;
   language_code?: string;
 };
 export type SetMyCommandsResult = boolean;
 
 export type DeleteMyCommandsParams = {
-  scope?: Json<BotCommandScope>;
+  scope?: BotCommandScope;
   language_code?: string;
 };
 export type DeleteMyCommandsResult = boolean;
 
 export type GetMyCommandsParams = {
-  scope?: Json<BotCommandScope>;
+  scope?: BotCommandScope;
   language_code?: string;
 };
 export type GetMyCommandsResult = BotCommand[];
@@ -3807,7 +3806,7 @@ export type GetMyShortDescriptionParams = {
 export type GetMyShortDescriptionResult = BotShortDescription;
 
 export type SetMyProfilePhotoParams = {
-  photo: Json<InputProfilePhoto>;
+  photo: InputProfilePhoto;
 };
 export type SetMyProfilePhotoResult = boolean;
 
@@ -3816,7 +3815,7 @@ export type RemoveMyProfilePhotoResult = boolean;
 
 export type SetChatMenuButtonParams = {
   chat_id?: number;
-  menu_button?: Json<MenuButton>;
+  menu_button?: MenuButton;
 };
 export type SetChatMenuButtonResult = boolean;
 
@@ -3826,7 +3825,7 @@ export type GetChatMenuButtonParams = {
 export type GetChatMenuButtonResult = MenuButton;
 
 export type SetMyDefaultAdministratorRightsParams = {
-  rights?: Json<ChatAdministratorRights>;
+  rights?: ChatAdministratorRights;
   for_channels?: boolean;
 };
 export type SetMyDefaultAdministratorRightsResult = boolean;
@@ -3846,7 +3845,7 @@ export type SendGiftParams = {
   pay_for_upgrade?: boolean;
   text?: string;
   text_parse_mode?: string;
-  text_entities?: Json<MessageEntity[]>;
+  text_entities?: MessageEntity[];
 };
 export type SendGiftResult = boolean;
 
@@ -3856,7 +3855,7 @@ export type GiftPremiumSubscriptionParams = {
   star_count: number;
   text?: string;
   text_parse_mode?: string;
-  text_entities?: Json<MessageEntity[]>;
+  text_entities?: MessageEntity[];
 };
 export type GiftPremiumSubscriptionResult = boolean;
 
@@ -3891,7 +3890,7 @@ export type ReadBusinessMessageResult = boolean;
 
 export type DeleteBusinessMessagesParams = {
   business_connection_id: string;
-  message_ids: Json<number[]>;
+  message_ids: number[];
 };
 export type DeleteBusinessMessagesResult = boolean;
 
@@ -3916,7 +3915,7 @@ export type SetBusinessAccountBioResult = boolean;
 
 export type SetBusinessAccountProfilePhotoParams = {
   business_connection_id: string;
-  photo: Json<InputProfilePhoto>;
+  photo: InputProfilePhoto;
   is_public?: boolean;
 };
 export type SetBusinessAccountProfilePhotoResult = boolean;
@@ -3930,7 +3929,7 @@ export type RemoveBusinessAccountProfilePhotoResult = boolean;
 export type SetBusinessAccountGiftSettingsParams = {
   business_connection_id: string;
   show_gift_button: boolean;
-  accepted_gift_types: Json<AcceptedGiftTypes>;
+  accepted_gift_types: AcceptedGiftTypes;
 };
 export type SetBusinessAccountGiftSettingsResult = boolean;
 
@@ -4012,12 +4011,12 @@ export type TransferGiftResult = boolean;
 
 export type PostStoryParams = {
   business_connection_id: string;
-  content: Json<InputStoryContent>;
+  content: InputStoryContent;
   active_period: number;
   caption?: string;
   parse_mode?: string;
-  caption_entities?: Json<MessageEntity[]>;
-  areas?: Json<StoryArea[]>;
+  caption_entities?: MessageEntity[];
+  areas?: StoryArea[];
   post_to_chat_page?: boolean;
   protect_content?: boolean;
 };
@@ -4036,11 +4035,11 @@ export type RepostStoryResult = Story;
 export type EditStoryParams = {
   business_connection_id: string;
   story_id: number;
-  content: Json<InputStoryContent>;
+  content: InputStoryContent;
   caption?: string;
   parse_mode?: string;
-  caption_entities?: Json<MessageEntity[]>;
-  areas?: Json<StoryArea[]>;
+  caption_entities?: MessageEntity[];
+  areas?: StoryArea[];
 };
 export type EditStoryResult = Story;
 
@@ -4052,13 +4051,13 @@ export type DeleteStoryResult = boolean;
 
 export type AnswerWebAppQueryParams = {
   web_app_query_id: string;
-  result: Json<InlineQueryResult>;
+  result: InlineQueryResult;
 };
 export type AnswerWebAppQueryResult = SentWebAppMessage;
 
 export type SavePreparedInlineMessageParams = {
   user_id: number;
-  result: Json<InlineQueryResult>;
+  result: InlineQueryResult;
   allow_user_chats?: boolean;
   allow_bot_chats?: boolean;
   allow_group_chats?: boolean;
@@ -4068,7 +4067,7 @@ export type SavePreparedInlineMessageResult = PreparedInlineMessage;
 
 export type SavePreparedKeyboardButtonParams = {
   user_id: number;
-  button: Json<KeyboardButton>;
+  button: KeyboardButton;
 };
 export type SavePreparedKeyboardButtonResult = PreparedInlineMessage;
 
@@ -4079,10 +4078,10 @@ export type EditMessageTextParams = {
   inline_message_id?: string;
   text?: string;
   parse_mode?: string;
-  entities?: Json<MessageEntity[]>;
-  link_preview_options?: Json<LinkPreviewOptions>;
-  rich_message?: Json<InputRichMessage>;
-  reply_markup?: Json<InlineKeyboardMarkup>;
+  entities?: MessageEntity[];
+  link_preview_options?: LinkPreviewOptions;
+  rich_message?: InputRichMessage;
+  reply_markup?: InlineKeyboardMarkup;
 };
 export type EditMessageTextResult = Message | boolean;
 
@@ -4093,9 +4092,9 @@ export type EditMessageCaptionParams = {
   inline_message_id?: string;
   caption?: string;
   parse_mode?: string;
-  caption_entities?: Json<MessageEntity[]>;
+  caption_entities?: MessageEntity[];
   show_caption_above_media?: boolean;
-  reply_markup?: Json<InlineKeyboardMarkup>;
+  reply_markup?: InlineKeyboardMarkup;
 };
 export type EditMessageCaptionResult = Message | boolean;
 
@@ -4104,8 +4103,8 @@ export type EditMessageMediaParams = {
   chat_id?: number | string;
   message_id?: number;
   inline_message_id?: string;
-  media: Json<InputMedia>;
-  reply_markup?: Json<InlineKeyboardMarkup>;
+  media: InputMedia;
+  reply_markup?: InlineKeyboardMarkup;
 };
 export type EditMessageMediaResult = Message | boolean;
 
@@ -4120,7 +4119,7 @@ export type EditMessageLiveLocationParams = {
   horizontal_accuracy?: number;
   heading?: number;
   proximity_alert_radius?: number;
-  reply_markup?: Json<InlineKeyboardMarkup>;
+  reply_markup?: InlineKeyboardMarkup;
 };
 export type EditMessageLiveLocationResult = Message | boolean;
 
@@ -4129,7 +4128,7 @@ export type StopMessageLiveLocationParams = {
   chat_id?: number | string;
   message_id?: number;
   inline_message_id?: string;
-  reply_markup?: Json<InlineKeyboardMarkup>;
+  reply_markup?: InlineKeyboardMarkup;
 };
 export type StopMessageLiveLocationResult = Message | boolean;
 
@@ -4137,8 +4136,8 @@ export type EditMessageChecklistParams = {
   business_connection_id: string;
   chat_id: number | string;
   message_id: number;
-  checklist: Json<InputChecklist>;
-  reply_markup?: Json<InlineKeyboardMarkup>;
+  checklist: InputChecklist;
+  reply_markup?: InlineKeyboardMarkup;
 };
 export type EditMessageChecklistResult = Message;
 
@@ -4147,7 +4146,7 @@ export type EditMessageReplyMarkupParams = {
   chat_id?: number | string;
   message_id?: number;
   inline_message_id?: string;
-  reply_markup?: Json<InlineKeyboardMarkup>;
+  reply_markup?: InlineKeyboardMarkup;
 };
 export type EditMessageReplyMarkupResult = Message | boolean;
 
@@ -4155,7 +4154,7 @@ export type StopPollParams = {
   business_connection_id?: string;
   chat_id: number | string;
   message_id: number;
-  reply_markup?: Json<InlineKeyboardMarkup>;
+  reply_markup?: InlineKeyboardMarkup;
 };
 export type StopPollResult = Poll;
 
@@ -4181,7 +4180,7 @@ export type DeleteMessageResult = boolean;
 
 export type DeleteMessagesParams = {
   chat_id: number | string;
-  message_ids: Json<number[]>;
+  message_ids: number[];
 };
 export type DeleteMessagesResult = boolean;
 
@@ -4211,9 +4210,9 @@ export type SendStickerParams = {
   protect_content?: boolean;
   allow_paid_broadcast?: boolean;
   message_effect_id?: string;
-  suggested_post_parameters?: Json<SuggestedPostParameters>;
-  reply_parameters?: Json<ReplyParameters>;
-  reply_markup?: Json<InlineKeyboardMarkup | ReplyKeyboardMarkup | ReplyKeyboardRemove | ForceReply>;
+  suggested_post_parameters?: SuggestedPostParameters;
+  reply_parameters?: ReplyParameters;
+  reply_markup?: InlineKeyboardMarkup | ReplyKeyboardMarkup | ReplyKeyboardRemove | ForceReply;
 };
 export type SendStickerResult = Message;
 
@@ -4223,7 +4222,7 @@ export type GetStickerSetParams = {
 export type GetStickerSetResult = StickerSet;
 
 export type GetCustomEmojiStickersParams = {
-  custom_emoji_ids: Json<string[]>;
+  custom_emoji_ids: string[];
 };
 export type GetCustomEmojiStickersResult = Sticker[];
 
@@ -4238,7 +4237,7 @@ export type CreateNewStickerSetParams = {
   user_id: number;
   name: string;
   title: string;
-  stickers: Json<InputSticker[]>;
+  stickers: InputSticker[];
   sticker_type?: string;
   needs_repainting?: boolean;
 };
@@ -4247,7 +4246,7 @@ export type CreateNewStickerSetResult = boolean;
 export type AddStickerToSetParams = {
   user_id: number;
   name: string;
-  sticker: Json<InputSticker>;
+  sticker: InputSticker;
 };
 export type AddStickerToSetResult = boolean;
 
@@ -4266,25 +4265,25 @@ export type ReplaceStickerInSetParams = {
   user_id: number;
   name: string;
   old_sticker: string;
-  sticker: Json<InputSticker>;
+  sticker: InputSticker;
 };
 export type ReplaceStickerInSetResult = boolean;
 
 export type SetStickerEmojiListParams = {
   sticker: string;
-  emoji_list: Json<string[]>;
+  emoji_list: string[];
 };
 export type SetStickerEmojiListResult = boolean;
 
 export type SetStickerKeywordsParams = {
   sticker: string;
-  keywords?: Json<string[]>;
+  keywords?: string[];
 };
 export type SetStickerKeywordsResult = boolean;
 
 export type SetStickerMaskPositionParams = {
   sticker: string;
-  mask_position?: Json<MaskPosition>;
+  mask_position?: MaskPosition;
 };
 export type SetStickerMaskPositionResult = boolean;
 
@@ -4318,14 +4317,14 @@ export type SendRichMessageParams = {
   chat_id: number | string;
   message_thread_id?: number;
   direct_messages_topic_id?: number;
-  rich_message: Json<InputRichMessage>;
+  rich_message: InputRichMessage;
   disable_notification?: boolean;
   protect_content?: boolean;
   allow_paid_broadcast?: boolean;
   message_effect_id?: string;
-  suggested_post_parameters?: Json<SuggestedPostParameters>;
-  reply_parameters?: Json<ReplyParameters>;
-  reply_markup?: Json<InlineKeyboardMarkup | ReplyKeyboardMarkup | ReplyKeyboardRemove | ForceReply>;
+  suggested_post_parameters?: SuggestedPostParameters;
+  reply_parameters?: ReplyParameters;
+  reply_markup?: InlineKeyboardMarkup | ReplyKeyboardMarkup | ReplyKeyboardRemove | ForceReply;
 };
 export type SendRichMessageResult = Message;
 
@@ -4333,17 +4332,17 @@ export type SendRichMessageDraftParams = {
   chat_id: number;
   message_thread_id?: number;
   draft_id: number;
-  rich_message: Json<InputRichMessage>;
+  rich_message: InputRichMessage;
 };
 export type SendRichMessageDraftResult = boolean;
 
 export type AnswerInlineQueryParams = {
   inline_query_id: string;
-  results: Json<InlineQueryResult[]>;
+  results: InlineQueryResult[];
   cache_time?: number;
   is_personal?: boolean;
   next_offset?: string;
-  button?: Json<InlineQueryResultsButton>;
+  button?: InlineQueryResultsButton;
 };
 export type AnswerInlineQueryResult = boolean;
 
@@ -4356,9 +4355,9 @@ export type SendInvoiceParams = {
   payload: string;
   provider_token?: string;
   currency: string;
-  prices: Json<LabeledPrice[]>;
+  prices: LabeledPrice[];
   max_tip_amount?: number;
-  suggested_tip_amounts?: Json<number[]>;
+  suggested_tip_amounts?: number[];
   start_parameter?: string;
   provider_data?: string;
   photo_url?: string;
@@ -4376,9 +4375,9 @@ export type SendInvoiceParams = {
   protect_content?: boolean;
   allow_paid_broadcast?: boolean;
   message_effect_id?: string;
-  suggested_post_parameters?: Json<SuggestedPostParameters>;
-  reply_parameters?: Json<ReplyParameters>;
-  reply_markup?: Json<InlineKeyboardMarkup>;
+  suggested_post_parameters?: SuggestedPostParameters;
+  reply_parameters?: ReplyParameters;
+  reply_markup?: InlineKeyboardMarkup;
 };
 export type SendInvoiceResult = Message;
 
@@ -4389,10 +4388,10 @@ export type CreateInvoiceLinkParams = {
   payload: string;
   provider_token?: string;
   currency: string;
-  prices: Json<LabeledPrice[]>;
+  prices: LabeledPrice[];
   subscription_period?: number;
   max_tip_amount?: number;
-  suggested_tip_amounts?: Json<number[]>;
+  suggested_tip_amounts?: number[];
   provider_data?: string;
   photo_url?: string;
   photo_size?: number;
@@ -4411,7 +4410,7 @@ export type CreateInvoiceLinkResult = string;
 export type AnswerShippingQueryParams = {
   shipping_query_id: string;
   ok: boolean;
-  shipping_options?: Json<ShippingOption[]>;
+  shipping_options?: ShippingOption[];
   error_message?: string;
 };
 export type AnswerShippingQueryResult = boolean;
@@ -4447,7 +4446,7 @@ export type EditUserStarSubscriptionResult = boolean;
 
 export type SetPassportDataErrorsParams = {
   user_id: number;
-  errors: Json<PassportElementError[]>;
+  errors: PassportElementError[];
 };
 export type SetPassportDataErrorsResult = boolean;
 
@@ -4460,8 +4459,8 @@ export type SendGameParams = {
   protect_content?: boolean;
   allow_paid_broadcast?: boolean;
   message_effect_id?: string;
-  reply_parameters?: Json<ReplyParameters>;
-  reply_markup?: Json<InlineKeyboardMarkup>;
+  reply_parameters?: ReplyParameters;
+  reply_markup?: InlineKeyboardMarkup;
 };
 export type SendGameResult = Message;
 
