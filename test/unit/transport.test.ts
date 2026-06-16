@@ -78,6 +78,24 @@ describe("Transport", () => {
     expect(calls.length).toBe(2); // maxRetries + 1
   });
 
+  test("429 with retry_after over maxRetryAfterMs surfaces immediately (no wait, no retry)", async () => {
+    const { fetch, calls } = jsonFetch([
+      { ok: false, error_code: 429, parameters: { retry_after: 3600 } },
+    ]);
+    // Cap at 1s: a 3600s flood-wait must NOT be honored - surface at once.
+    const tr = new Transport(TOKEN, { fetch, maxRetries: 2, maxRetryAfterMs: 1000 });
+    let caught: unknown;
+    try {
+      await tr.request("getMe");
+    } catch (err) {
+      caught = err;
+    }
+    expect(caught).toBeInstanceOf(TelegramApiError);
+    expect((caught as TelegramApiError).errorCode).toBe(429);
+    expect((caught as TelegramApiError).retryAfter).toBe(3600); // preserved for the caller
+    expect(calls.length).toBe(1); // surfaced on the first response, never retried
+  });
+
   test("network failure -> NetworkError (EFETCH)", async () => {
     const throwingFetch = (async () => {
       throw new Error("connection reset");

@@ -21,11 +21,19 @@
 
 import {
   ATTACH_PREFIX,
+  type FormPart,
   formPart,
   type InputFile,
   isInputFile,
-  type WireValue,
 } from "./files.js";
+
+/**
+ * A fully wire-ready param value: what `serializeParams` emits and `encodeForm`
+ * consumes. A scalar goes on the wire String-coerced; a top-level `InputFile` is
+ * attached under its field name; a `FormPart` carries a JSON string + nested parts.
+ * Defined here because it is the element type of `serializeParams`'s output record.
+ */
+export type WireValue = string | number | boolean | InputFile | FormPart;
 
 /** Guard against a cyclic/pathological structure (real Bot API shapes are shallow). */
 const MAX_DEPTH = 64;
@@ -41,9 +49,13 @@ export function serializeParams(params: Record<string, unknown>): Record<string,
       const files: Array<[string, InputFile]> = [];
       const json = JSON.stringify(resolve(value, slots, files, 0));
       out[key] = files.length ? formPart(json, files) : json;
+    } else if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") {
+      out[key] = value; // scalar, statically narrowed - no cast
     } else {
-      // scalar: the single point where untyped input crosses into the wire record.
-      out[key] = value as string | number | boolean;
+      // The generated param types only ever yield scalars/objects/arrays/InputFile,
+      // so this is unreachable for valid callers. Refuse a bigint/symbol/function
+      // loudly instead of emitting "[object ...]" or throwing deep in the encoder.
+      throw new TypeError(`serializeParams: unsupported value for "${key}" (${typeof value})`);
     }
   }
   return out;
