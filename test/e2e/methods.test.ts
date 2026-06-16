@@ -724,7 +724,7 @@ describe("methods", () => {
     test("sends a chat join request web app", async () => {
       await api.sendChatJoinRequestWebApp({
         chat_join_request_query_id: "e2e",
-        web_app_url: "https://example.com",
+        web_app_url: "https://core.telegram.org/bots/webapps",
       });
     });
   });
