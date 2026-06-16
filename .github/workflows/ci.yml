@@ -58,14 +58,11 @@ jobs:
         node: ["22", "24", "26"]
     steps:
       - uses: actions/checkout@v6
-      - uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: latest
       - uses: actions/setup-node@v6
         with:
           node-version: ${{ matrix.node }}
       - name: Install dependencies
-        run: bun install --frozen-lockfile || bun install
+        run: npm install --no-audit --no-fund
       - name: Run unit tests with Node
         run: npm run test:node:unit
 
