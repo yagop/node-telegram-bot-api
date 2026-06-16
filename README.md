@@ -1,12 +1,22 @@
-# node-telegram-bot-api
+<h1 align="center">Node.js Telegram Bot API</h1>
 
+<div align=center>
 A runtime-agnostic TypeScript client for the [Telegram Bot API](https://core.telegram.org/bots/api).
+
+[![Bot API](https://img.shields.io/badge/Bot%20API-v.10.1-00aced.svg?style=flat-square&logo=telegram)](https://core.telegram.org/bots/api)
+[![npm package](https://img.shields.io/npm/v/node-telegram-bot-api?logo=npm&style=flat-square)](https://www.npmjs.org/package/node-telegram-bot-api)
+
+[![https://telegram.me/node_telegram_bot_api](https://img.shields.io/badge/💬%20Telegram-Channel-blue.svg?style=flat-square)](https://telegram.me/node_telegram_bot_api)
+[![https://t.me/+_IC8j_b1wSFlZTVk](https://img.shields.io/badge/💬%20Telegram-Group-blue.svg?style=flat-square)](https://t.me/+_IC8j_b1wSFlZTVk)
+[![https://telegram.me/Yago_Perez](https://img.shields.io/badge/💬%20Telegram-Yago_Perez-blue.svg?style=flat-square)](https://telegram.me/Yago_Perez)
 
 The core imports only Web-standard APIs, so the same code runs on **Node 18+, Bun, Deno, Cloudflare Workers, Vercel Edge and Deno Deploy**. Node-only conveniences (filesystem uploads, a self-hosted webhook server, a managed polling runner) live in the `node-telegram-bot-api/node` subpath.
 
 > **v2 is a from-scratch redesign with no backward compatibility.** Coming from v1? See [`redesign/MIGRATION.md`](./redesign/MIGRATION.md). The design and its rationale are in [`redesign/ARCHITECTURE.md`](./redesign/ARCHITECTURE.md).
 
-## Install
+</div>
+
+## 📦 Install
 
 ```sh
 npm install node-telegram-bot-api
@@ -29,7 +39,7 @@ The core uses only Web-standard APIs (`fetch`, `Blob`, `FormData`, `AbortSignal`
 
 Filesystem uploads (`fromPath`) and the self-hosted `node:http` webhook server are the only Node-bound pieces; they live in `node-telegram-bot-api/node`.
 
-## Quick start - a polling bot
+## 🚀 Usage
 
 ```ts
 import { Bot, InlineKeyboard } from "node-telegram-bot-api";
@@ -318,6 +328,14 @@ bun run build            # emit dist/
 ```
 
 `bun run check` runs three gates: `tsc --strict` over `src/`, a lint that fails if anything under `src/core/` imports a `node:` module (keeping the edge bundle Node-free), and the unit-test suite (which never touches the network - `fetch` is injected).
+
+## 👥 Contributors
+
+<p align="center">
+  <a href="https://github.com/yagop/node-telegram-bot-api/graphs/contributors">
+    <img src="https://contrib.rocks/image?repo=yagop/node-telegram-bot-api" />
+  </a>
+</p>
 
 ## License
 
