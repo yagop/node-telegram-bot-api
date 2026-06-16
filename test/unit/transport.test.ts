@@ -1,5 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { Transport } from "../../src/core/transport.js";
+import { InputFile } from "../../src/core/files.js";
 import {
   NetworkError,
   TelegramApiError,
@@ -154,6 +155,47 @@ describe("Transport", () => {
     const result = await tr.request<boolean>("getMe");
     expect(result).toBe(true);
     expect(calls.length).toBe(2);
+  });
+
+  test("retried streamed upload re-sends the buffered body (no stream re-consumption)", async () => {
+    // The body is encoded once and reused; a ReadableStream-backed InputFile is
+    // drained to a Blob a single time, so the 502 retry must still carry the bytes.
+    let i = 0;
+    const sizes: number[] = [];
+    const flakyFetch = (async (_url: string | URL | Request, init?: RequestInit) => {
+      i += 1;
+      sizes.push(((init?.body as FormData).get("photo") as Blob).size);
+      if (i === 1) return new Response("upstream error", { status: 502 });
+      return new Response(JSON.stringify({ ok: true, result: true }));
+    }) as unknown as typeof fetch;
+    const stream = new ReadableStream<Uint8Array>({
+      start(c) {
+        c.enqueue(new Uint8Array([1, 2, 3, 4, 5]));
+        c.close();
+      },
+    });
+    const tr = new Transport(TOKEN, { fetch: flakyFetch, maxRetries: 2, retryBackoffMs: 0 });
+    const result = await tr.request<boolean>("sendPhoto", { chat_id: 1, photo: new InputFile(stream) });
+    expect(result).toBe(true);
+    expect(sizes).toEqual([5, 5]); // both attempts saw the full 5-byte body
+  });
+
+  test("a body-read failure is transient: retried, then wrapped as NetworkError", async () => {
+    let i = 0;
+    // Headers arrive (status 200) but the body read rejects mid-stream.
+    const brokenBodyFetch = (async () => {
+      i += 1;
+      return { status: 200, text: () => Promise.reject(new Error("stream broke")) } as unknown as Response;
+    }) as unknown as typeof fetch;
+    const tr = new Transport(TOKEN, { fetch: brokenBodyFetch, maxRetries: 1, retryBackoffMs: 0 });
+    let caught: unknown;
+    try {
+      await tr.request("getMe");
+    } catch (err) {
+      caught = err;
+    }
+    expect(caught).toBeInstanceOf(NetworkError);
+    expect(i).toBe(2); // retried once before surfacing
   });
 
   test("exhausted 5xx -> NetworkError including the status", async () => {

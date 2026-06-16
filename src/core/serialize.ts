@@ -19,14 +19,20 @@
  * rather than colliding.
  */
 
-import { ATTACH_PREFIX, formPart, type InputFile, isInputFile } from "./files.js";
+import {
+  ATTACH_PREFIX,
+  formPart,
+  type InputFile,
+  isInputFile,
+  type WireValue,
+} from "./files.js";
 
 /** Guard against a cyclic/pathological structure (real Bot API shapes are shallow). */
 const MAX_DEPTH = 64;
 
-export function serializeParams(params: Record<string, unknown>): Record<string, unknown> {
+export function serializeParams(params: Record<string, unknown>): Record<string, WireValue> {
   const slots = { next: 0 };
-  const out: Record<string, unknown> = {};
+  const out: Record<string, WireValue> = {};
   for (const [key, value] of Object.entries(params)) {
     if (value == null) continue;
     if (isInputFile(value)) {
@@ -36,7 +42,8 @@ export function serializeParams(params: Record<string, unknown>): Record<string,
       const json = JSON.stringify(resolve(value, slots, files, 0));
       out[key] = files.length ? formPart(json, files) : json;
     } else {
-      out[key] = value; // scalar
+      // scalar: the single point where untyped input crosses into the wire record.
+      out[key] = value as string | number | boolean;
     }
   }
   return out;

@@ -10,6 +10,7 @@
 
 import { debug } from "./debug.js";
 import { encodeForm } from "./encode.js";
+import type { WireValue } from "./files.js";
 import {
   type ApiErrorParameters,
   NetworkError,
@@ -118,7 +119,7 @@ export class Transport {
   }
 
   /** For long polling the client timeout must outlast the server-side wait. */
-  private effectiveTimeout(method: string, params?: Record<string, unknown>): number {
+  private effectiveTimeout(method: string, params?: Record<string, WireValue>): number {
     if (method === "getUpdates" && params && typeof params.timeout === "number" && params.timeout > 0) {
       return params.timeout * 1000 + 10_000;
     }
@@ -127,7 +128,7 @@ export class Transport {
 
   async request<R>(
     method: string,
-    params?: Record<string, unknown>,
+    params?: Record<string, WireValue>,
     signal?: AbortSignal,
   ): Promise<R> {
     const url = `${this.apiRoot}/bot${this.token}/${method}`;
@@ -140,21 +141,31 @@ export class Transport {
       await this.limiter.acquire(params?.chat_id as string | number | undefined, signal);
     }
 
+    // Encode ONCE: the body is reused across every retry. Re-encoding per attempt
+    // would re-consume a one-shot `ReadableStream` `InputFile`, so a retry of a
+    // streamed upload would fail on an already-drained stream. A `FormData` /
+    // `URLSearchParams` body is safe to send repeatedly.
+    const { body, headers } = await encodeForm(params ?? {});
+
     // Bounded: at most `maxRetries + 1` attempts (the first send plus one retry
     // per allowed retry). `attempt` doubles as the loop counter and the retry
     // count; every error path either retries via `continue` or throws, so the
     // bound is a hard ceiling rather than the termination condition.
     for (let attempt = 0; attempt <= this.maxRetries; attempt++) {
-      const { body, headers } = await encodeForm(params ?? {});
       const timeoutSignal = timeoutMs > 0 ? AbortSignal.timeout(timeoutMs) : undefined;
       const { signal: composed, cleanup } = combineSignals([signal, timeoutSignal]);
 
       let response: Response;
+      let text: string;
       try {
         response = await this.fetchImpl(url, { method: "POST", body, headers, signal: composed });
+        // Read the body inside the try so a mid-stream read failure (connection
+        // dropped after the headers) is classified and retried like any other
+        // transient transport error, not thrown raw past the error hierarchy.
+        text = await response.text();
       } catch (err) {
         if (signal?.aborted) throw err; // caller cancelled - propagate verbatim
-        // Transient throws (fetch reject / our timeout): retry with backoff.
+        // Transient throws (fetch reject / body-read failure / our timeout): retry.
         if (attempt < this.maxRetries) {
           const wait = this.backoff(attempt + 1);
           log("%s transient error; retry %d/%d in %dms", method, attempt + 1, this.maxRetries, wait);
@@ -167,10 +178,8 @@ export class Transport {
         cleanup();
       }
 
-      // Server-side 5xx is transient: retry without parsing the body. Read the
-      // body once regardless so we can surface a precise error when exhausted.
+      // Server-side 5xx is transient: retry without parsing the body.
       if (response.status >= 500) {
-        const text = await response.text();
         if (attempt < this.maxRetries) {
           const wait = this.backoff(attempt + 1);
           log("%s HTTP %d; retry %d/%d in %dms", method, response.status, attempt + 1, this.maxRetries, wait);
@@ -185,7 +194,6 @@ export class Transport {
         throw new NetworkError(`Server error ${response.status} on ${method}`);
       }
 
-      const text = await response.text();
       let json: ApiResponse<R>;
       try {
         json = JSON.parse(text) as ApiResponse<R>;

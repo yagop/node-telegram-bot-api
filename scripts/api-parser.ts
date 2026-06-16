@@ -351,7 +351,6 @@ const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 const PRELUDE_NAMES = new Set([
   "ChatId",
   "ReplyMarkup",
-  "InputProfilePhotoInput",
   "ParseMode",
 ]);
 
@@ -371,14 +370,6 @@ export type ReplyMarkup =
   | ReplyKeyboardMarkup
   | ReplyKeyboardRemove
   | ForceReply;
-
-/**
- * Builder input for setMyProfilePhoto / setBusinessAccountProfilePhoto: the
- * photo/animation field accepts raw file data; the library attaches it.
- */
-export type InputProfilePhotoInput =
-  | { type: "static"; photo: InputFile }
-  | { type: "animated"; animation: InputFile; main_frame_timestamp?: number };
 `;
 
 function emitFields(fields: Field[]): string {

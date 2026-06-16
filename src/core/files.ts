@@ -9,10 +9,10 @@
  *
  * `FormPart` is the escape hatch for composites that carry files referenced
  * from inside a JSON structure (`sendMediaGroup`, sticker sets, profile photos,
- * story content). Such a builder serializes at the call site and writes itself to
- * the form via `writeTo(sink, key)` - `key` being the param field it was found at,
- * so one builder shape serves fields with different names (`media`, `stickers`,
- * `photo`, `content`). The encoder still stringifies nothing.
+ * story content). `serializeParams` produces one - the already-serialized JSON
+ * string plus the keyed parts its `attach://` refs point at - and the encoder
+ * sets the string under the field name and attaches each part. The encoder still
+ * stringifies nothing.
  */
 
 export type InputFileData = Blob | Uint8Array | ReadableStream<Uint8Array>;
@@ -49,25 +49,17 @@ export function isInputFile(value: unknown): value is InputFile {
 }
 
 /**
- * What a `FormPart` writes into. Implemented by the encoder; `set` records a
- * plain string field, `attach` registers a multipart file part keyed by name
- * (the same name a JSON `attach://<name>` reference points at).
- */
-export interface FormSink {
-  set(key: string, value: string): void;
-  attach(key: string, file: InputFile): void;
-}
-
-/**
- * A file-carrying composite that writes itself into the form. `serializeParams`
- * produces one for a structured field that contained nested `InputFile`s: it holds
- * the JSON (with `attach://` refs) plus the keyed parts, and `writeTo` sets the
- * field string + registers each part. The encoder still stringifies nothing.
+ * A file-carrying composite produced by `serializeParams` for a structured field
+ * that contained nested `InputFile`s: the already-serialized JSON (with `attach://`
+ * refs) plus the keyed parts those refs point at. The encoder sets `json` under the
+ * field name and attaches each part - it still stringifies nothing (ADR-011).
  */
 export interface FormPart {
   readonly __formPart: true;
-  /** Write into `sink` under `key` - the param field name the encoder found it at. */
-  writeTo(sink: FormSink, key: string): void;
+  /** The serialized JSON (with `attach://` refs) to set under the param's field name. */
+  readonly json: string;
+  /** The multipart parts the `attach://` refs point at, each `[partName, file]`. */
+  readonly files: ReadonlyArray<readonly [string, InputFile]>;
 }
 
 export function isFormPart(value: unknown): value is FormPart {
@@ -78,24 +70,20 @@ export function isFormPart(value: unknown): value is FormPart {
   );
 }
 
-/**
- * Build a `FormPart` for a nested-file builder that has already serialized its
- * JSON and collected the files its `attach://<name>` refs point at. On encode it
- * writes the JSON under the param's field name and registers each keyed part - so
- * the builder serializes, the encoder only moves strings and files (ADR-011).
- */
+/** Build a `FormPart` from a serialized JSON string and the files its refs point at. */
 export function formPart(
   json: string,
   files: ReadonlyArray<readonly [string, InputFile]>,
 ): FormPart {
-  return {
-    __formPart: true,
-    writeTo(sink, key) {
-      sink.set(key, json);
-      for (const [name, file] of files) sink.attach(name, file);
-    },
-  };
+  return { __formPart: true, json, files };
 }
+
+/**
+ * A fully wire-ready param value: what `serializeParams` emits and `encodeForm`
+ * consumes. A scalar goes on the wire String-coerced; a top-level `InputFile` is
+ * attached under its field name; a `FormPart` carries a JSON string + nested parts.
+ */
+export type WireValue = string | number | boolean | InputFile | FormPart;
 
 /** Normalize any `InputFile.data` into a `Blob` for `FormData`. */
 export async function inputFileToBlob(file: InputFile): Promise<Blob> {
