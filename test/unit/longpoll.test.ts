@@ -1,7 +1,7 @@
 import { describe, expect, test } from "bun:test";
-import { longPoll } from "../../src/core/longpoll.js";
 import type { Api } from "../../src/core/api.js";
 import { NetworkError, TelegramApiError } from "../../src/core/errors.js";
+import { longPoll } from "../../src/core/longpoll.js";
 import type { Update } from "../../src/types/index.js";
 
 /** A minimal `Update` carrying just `update_id` for assertions. */
@@ -10,9 +10,10 @@ function upd(id: number): Update {
 }
 
 /** Build a fake `Api` whose `getUpdates` runs the given step functions in order. */
-function fakeApi(
-  steps: Array<(params: { offset?: number }) => Update[] | Promise<Update[]>>,
-): { api: Api; offsets: Array<number | undefined> } {
+function fakeApi(steps: Array<(params: { offset?: number }) => Update[] | Promise<Update[]>>): {
+  api: Api;
+  offsets: Array<number | undefined>;
+} {
   const offsets: Array<number | undefined> = [];
   let i = 0;
   const api = {

@@ -8,10 +8,10 @@
  * caller's concern: an abort returns cleanly, anything else rethrows.
  */
 
+import type { Update } from "../types/index.js";
 import type { Api } from "./api.js";
 import { debug } from "./debug.js";
 import { isTransientError } from "./errors.js";
-import type { Update } from "../types/index.js";
 
 export interface LongPollOptions {
   offset?: number;
@@ -48,11 +48,7 @@ const DEFAULT_MAX_BACKOFF = 60_000;
 
 const log = debug("polling");
 
-export async function* longPoll(
-  api: Api,
-  options: LongPollOptions = {},
-  signal?: AbortSignal,
-): AsyncGenerator<Update> {
+export async function* longPoll(api: Api, options: LongPollOptions = {}, signal?: AbortSignal): AsyncGenerator<Update> {
   let offset = options.offset;
   const timeout = options.timeout ?? 30;
   const limit = options.limit;

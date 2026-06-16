@@ -73,12 +73,7 @@ export class TelegramApiError extends TelegramBotError {
 
 /** True for an `AbortController`/timeout abort, across runtimes. */
 export function isAbortError(err: unknown): boolean {
-  return (
-    typeof err === "object" &&
-    err !== null &&
-    "name" in err &&
-    (err as { name?: unknown }).name === "AbortError"
-  );
+  return typeof err === "object" && err !== null && "name" in err && (err as { name?: unknown }).name === "AbortError";
 }
 
 /**

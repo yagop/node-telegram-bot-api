@@ -11,7 +11,7 @@
 
 import http from "node:http";
 import process from "node:process";
-import { nodeFrameworkWebhook, type NodeLikeRequest, type NodeLikeResponse } from "../core/adapters.js";
+import { type NodeLikeRequest, type NodeLikeResponse, nodeFrameworkWebhook } from "../core/adapters.js";
 import type { Bot } from "../core/bot.js";
 import type { WebhookOptions } from "../core/webhook.js";
 
@@ -30,10 +30,7 @@ export interface WebhookServerOptions extends WebhookOptions {
  * server.listen(8443);
  * ```
  */
-export function createWebhookServer(
-  bot: Bot,
-  options: WebhookServerOptions = {},
-): http.Server {
+export function createWebhookServer(bot: Bot, options: WebhookServerOptions = {}): http.Server {
   const path = options.path ?? "/";
   const handler = nodeFrameworkWebhook(bot, options);
 

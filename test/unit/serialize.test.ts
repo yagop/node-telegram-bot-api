@@ -1,8 +1,8 @@
 import { describe, expect, test } from "bun:test";
 import { encodeForm } from "../../src/core/encode.js";
-import { serializeParams } from "../../src/core/serialize.js";
 import { InputFile } from "../../src/core/files.js";
 import { MediaGroupBuilder } from "../../src/core/media.js";
+import { serializeParams } from "../../src/core/serialize.js";
 
 /** Plain params -> serializeParams -> encodeForm. */
 const enc = (p: Record<string, unknown>) => encodeForm(serializeParams(p));
@@ -55,10 +55,15 @@ describe("serializeParams", () => {
 
   test("nested file in a media group -> attach://media_0 + keyed part; URL passes through", async () => {
     const a = fileA();
-    const form = (await enc({
-      chat_id: 1,
-      media: [{ type: "photo", media: a, caption: "A" }, { type: "photo", media: "https://x/b.jpg" }],
-    })).body as FormData;
+    const form = (
+      await enc({
+        chat_id: 1,
+        media: [
+          { type: "photo", media: a, caption: "A" },
+          { type: "photo", media: "https://x/b.jpg" },
+        ],
+      })
+    ).body as FormData;
     const parsed = JSON.parse(form.get("media") as string) as Array<Record<string, unknown>>;
     expect(parsed[0]!.media).toBe("attach://media_0");
     expect(parsed[0]!.caption).toBe("A");
@@ -70,7 +75,8 @@ describe("serializeParams", () => {
   test("live_photo carries two files (media_0 + media_1 within one item)", async () => {
     const a = fileA();
     const b = fileB();
-    const form = (await enc({ chat_id: 1, star_count: 1, media: [{ type: "live_photo", media: a, photo: b }] })).body as FormData;
+    const form = (await enc({ chat_id: 1, star_count: 1, media: [{ type: "live_photo", media: a, photo: b }] }))
+      .body as FormData;
     const item = JSON.parse(form.get("media") as string)[0];
     expect(item.media).toBe("attach://media_0");
     expect(item.photo).toBe("attach://media_1");
@@ -81,12 +87,14 @@ describe("serializeParams", () => {
   test("two file-capable fields in one request get disjoint slots (sendPoll)", async () => {
     const a = fileA();
     const b = fileB();
-    const form = (await enc({
-      chat_id: 1,
-      question: "q",
-      explanation_media: { type: "photo", media: a },
-      media: { type: "photo", media: b },
-    })).body as FormData;
+    const form = (
+      await enc({
+        chat_id: 1,
+        question: "q",
+        explanation_media: { type: "photo", media: a },
+        media: { type: "photo", media: b },
+      })
+    ).body as FormData;
     expect(JSON.parse(form.get("explanation_media") as string).media).toBe("attach://media_0");
     expect(JSON.parse(form.get("media") as string).media).toBe("attach://media_1");
     expect(form.get("media_0")).toBeInstanceOf(Blob);
@@ -95,8 +103,11 @@ describe("serializeParams", () => {
 
   test("a MediaGroupBuilder builder result serializes identically to the plain literal", async () => {
     const a = fileA();
-    const fromBuilder = (await enc({ chat_id: 1, media: new MediaGroupBuilder().photo({ media: a, caption: "A" }).build() })).body as FormData;
-    const fromLiteral = (await enc({ chat_id: 1, media: [{ type: "photo", media: a, caption: "A" }] })).body as FormData;
+    const fromBuilder = (
+      await enc({ chat_id: 1, media: new MediaGroupBuilder().photo({ media: a, caption: "A" }).build() })
+    ).body as FormData;
+    const fromLiteral = (await enc({ chat_id: 1, media: [{ type: "photo", media: a, caption: "A" }] }))
+      .body as FormData;
     expect(JSON.parse(fromBuilder.get("media") as string)).toEqual(JSON.parse(fromLiteral.get("media") as string));
   });
 });

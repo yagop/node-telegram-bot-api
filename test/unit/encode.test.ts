@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { encodeForm } from "../../src/core/encode.js";
-import { InputFile, formPart } from "../../src/core/files.js";
+import { formPart, InputFile } from "../../src/core/files.js";
 
 // encodeForm is the pure wire-record consumer (a Record<string, WireValue>): per
 // field it attaches an InputFile, spreads a FormPart's JSON + parts, or sets a

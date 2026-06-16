@@ -26,8 +26,7 @@ const API_OUT = new URL("../src/core/api.ts", import.meta.url);
 /** Keep generated output ASCII: replace any em dash (U+2014) / ellipsis (U+2026) that leaks in from doc text. */
 const EM_DASH = String.fromCharCode(0x2014);
 const ELLIPSIS = String.fromCharCode(0x2026);
-const ascii = (s: string): string =>
-  s.split(EM_DASH).join("-").split(ELLIPSIS).join("...");
+const ascii = (s: string): string => s.split(EM_DASH).join("-").split(ELLIPSIS).join("...");
 
 // ---------------------------------------------------------------------------
 // Record model - one entry per <h4> in #dev_page_content
@@ -129,7 +128,12 @@ function splitUnion(s: string): string[] {
     .replace(/,\s*and\s+/gi, ", ")
     .replace(/\s+and\s+/gi, ", ")
     .replace(/\s+or\s+/gi, ", ");
-  return t.includes(",") ? t.split(",").map((x) => x.trim()).filter(Boolean) : [s.trim()];
+  return t.includes(",")
+    ? t
+        .split(",")
+        .map((x) => x.trim())
+        .filter(Boolean)
+    : [s.trim()];
 }
 
 function mapScalar(s: string): string {
@@ -169,15 +173,7 @@ function mapType(raw: string): string {
 // only those field NAMES, and only on `Input*` types - never `*.url`, venue/
 // location coords, `photo_url`, or any response type.
 
-const FILE_FIELDS = new Set([
-  "media",
-  "thumbnail",
-  "photo",
-  "cover",
-  "animation",
-  "video",
-  "sticker",
-]);
+const FILE_FIELDS = new Set(["media", "thumbnail", "photo", "cover", "animation", "video", "sticker"]);
 
 // ---------------------------------------------------------------------------
 // Reply-type extraction from method prose
@@ -217,14 +213,11 @@ function parseReturn(method: string, descRaw: string): string {
   if (RETURN_OVERRIDES[method]) return RETURN_OVERRIDES[method];
   const d = descRaw.replace(/\s+/g, " ").trim();
 
-  if (/otherwise\s+True\s+is\s+returned/i.test(d) && /Message\s+is\s+returned/.test(d))
-    return "Message | boolean";
+  if (/otherwise\s+True\s+is\s+returned/i.test(d) && /Message\s+is\s+returned/.test(d)) return "Message | boolean";
   if (/[Aa]rray of MessageId/.test(d)) return "MessageId[]";
 
   // "(an) array of X object(s) ... is returned" / "Returns an Array of X"
-  let m =
-    d.match(/[Rr]eturns an Array of ([A-Z][A-Za-z]+)/) ||
-    d.match(/[Aa]rray of ([A-Z][A-Za-z]+) objects?/);
+  let m = d.match(/[Rr]eturns an Array of ([A-Z][A-Za-z]+)/) || d.match(/[Aa]rray of ([A-Z][A-Za-z]+) objects?/);
   if (m) return `${m[1]}[]`;
 
   if (/MessageId of the .*is returned|Returns the MessageId/.test(d)) return "MessageId";
@@ -241,7 +234,9 @@ function parseReturn(method: string, descRaw: string): string {
     d.match(/[Rr]eturns (?:a|an) ([A-Z][A-Za-z]+) object/);
   if (m) return m[1];
   // "the ... X (object) is returned"
-  m = d.match(/the (?:new |uploaded |stopped |edited |sent |revoked |created )?([A-Z][A-Za-z]+) (?:object )?is returned/);
+  m = d.match(
+    /the (?:new |uploaded |stopped |edited |sent |revoked |created )?([A-Z][A-Za-z]+) (?:object )?is returned/,
+  );
   if (m) return m[1];
   // "Returns X on success." / "Returns the uploaded X"
   m = d.match(/[Rr]eturns (?:the (?:new |edited |uploaded )?)?([A-Z][A-Za-z]+)(?: on success| objects?)?\b/);
@@ -328,10 +323,7 @@ for (const rec of records) {
     });
   } else if (rec.rows.length) {
     types.push({ name: rec.name, fields: fieldsFromRows(rec, false) });
-  } else if (
-    rec.liItems.length >= 2 &&
-    rec.liItems.every((x) => /^[A-Z][A-Za-z0-9]*$/.test(x.trim()))
-  ) {
+  } else if (rec.liItems.length >= 2 && rec.liItems.every((x) => /^[A-Z][A-Za-z0-9]*$/.test(x.trim()))) {
     // No field table, but a bullet list of type-name links → "one of" union.
     unions.push({ name: rec.name, members: rec.liItems.map((x) => x.trim()).filter(Boolean) });
   } else {
@@ -348,11 +340,7 @@ const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 // `InputFile` is NOT listed here: it is no longer defined in schemas.ts; it is
 // imported from the Phase-1 core class (../core/files.js). It is therefore still
 // a "known" name for the empty-object filter, handled separately below.
-const PRELUDE_NAMES = new Set([
-  "ChatId",
-  "ReplyMarkup",
-  "ParseMode",
-]);
+const PRELUDE_NAMES = new Set(["ChatId", "ReplyMarkup", "ParseMode"]);
 
 const PRELUDE = `// ---------------------------------------------------------------------------
 // Library-specific helpers (not 1:1 documented objects)
@@ -374,9 +362,7 @@ export type ReplyMarkup =
 
 function emitFields(fields: Field[]): string {
   if (!fields.length) return "Record<string, never>";
-  const body = fields
-    .map((f) => `  ${f.name}${f.optional ? "?" : ""}: ${f.type};`)
-    .join("\n");
+  const body = fields.map((f) => `  ${f.name}${f.optional ? "?" : ""}: ${f.type};`).join("\n");
   return `{\n${body}\n}`;
 }
 
@@ -389,8 +375,7 @@ const defined = new Set<string>([
   "InputFile", // imported from ../core/files.js, not emitted as a placeholder
 ]);
 const referenced = new Set<string>();
-const collect = (ts: string) =>
-  ts.match(/[A-Z][A-Za-z0-9]*/g)?.forEach((n) => referenced.add(n));
+const collect = (ts: string) => ts.match(/[A-Z][A-Za-z0-9]*/g)?.forEach((n) => referenced.add(n));
 for (const t of types) t.fields.forEach((f) => collect(f.type));
 for (const m of methods) {
   m.fields.forEach((f) => collect(f.type));
@@ -398,9 +383,7 @@ for (const m of methods) {
 }
 for (const u of unions) u.members.forEach((n) => referenced.add(n));
 
-const emptyTypes = [...new Set(emptyTypeCandidates)]
-  .filter((n) => referenced.has(n) && !defined.has(n))
-  .sort();
+const emptyTypes = [...new Set(emptyTypeCandidates)].filter((n) => referenced.has(n) && !defined.has(n)).sort();
 
 // Fail loudly rather than emit `unknown`/`never`.
 if (unmapped.size) {
@@ -437,9 +420,7 @@ out.push(`\n// -----------------------------------------------------------------
 // ---------------------------------------------------------------------------\n`);
 out.push(
   `export type Update =\n` +
-    updateVariants
-      .map((f) => `  | ({ update_id: number } & { ${f.name}: ${f.type} })`)
-      .join("\n") +
+    updateVariants.map((f) => `  | ({ update_id: number } & { ${f.name}: ${f.type} })`).join("\n") +
     `;\n`,
 );
 
