@@ -1,0 +1,90 @@
+name: CI
+
+on:
+  push:
+    branches: [master, main, feat/v2, feat/v2-core]
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      run_integration:
+        description: "Run e2e tests against api.telegram.org (requires TEST_TELEGRAM_TOKEN secret)"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+# Cancel in-progress runs for the same PR/branch when a new commit is pushed.
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  typecheck:
+    name: Typecheck
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: npm
+      - name: Install dependencies
+        run: npm ci || npm install --no-audit --no-fund
+      - name: tsc --noEmit
+        run: npm run typecheck
+
+  unit-bun:
+    name: Unit tests (Bun)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - name: Install dependencies
+        run: bun install --frozen-lockfile || bun install
+      - name: Run unit tests with Bun
+        run: npm run test
+
+  build:
+    name: Build (dist)
+    runs-on: ubuntu-latest
+    needs: typecheck
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: npm
+      - name: Install dependencies
+        run: npm ci || npm install --no-audit --no-fund
+      - name: Build
+        run: npm run build
+      - name: Verify dist artefacts
+        run: |
+          test -f dist/core/index.js
+          test -f dist/core/index.d.ts
+          test -f dist/node/index.js
+          test -f dist/node/index.d.ts
+          test -f dist/types/index.js
+          test -f dist/types/index.d.ts
+
+  integration:
+    name: E2E tests (api.telegram.org)
+    runs-on: ubuntu-latest
+    needs: typecheck
+    if: github.event_name == 'workflow_dispatch' && inputs.run_integration
+    steps:
+      - uses: actions/checkout@v6
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - name: Install dependencies
+        run: bun install --frozen-lockfile || bun install
+      - name: Run e2e tests
+        env:
+          TEST_TELEGRAM_TOKEN: ${{ secrets.TEST_TELEGRAM_TOKEN }}
+          TEST_GROUP_ID: ${{ secrets.TEST_GROUP_ID }}
+          TEST_USER_ID: ${{ secrets.TEST_USER_ID }}
+        run: npm run test:e2e
