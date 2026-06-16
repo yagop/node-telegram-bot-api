@@ -15,7 +15,7 @@
  */
 
 import type { Bot } from "./bot.js";
-import { webhookCallback, type WebhookOptions } from "./webhook.js";
+import { type WebhookOptions, webhookCallback } from "./webhook.js";
 
 /**
  * Minimal structural shape of a Node-style request (Express / Connect / Node http).
@@ -43,10 +43,7 @@ export interface NodeLikeResponse {
  * export const POST = nextAppWebhook(bot);
  * ```
  */
-export function nextAppWebhook(
-  bot: Bot,
-  options?: WebhookOptions,
-): (request: Request) => Promise<Response> {
+export function nextAppWebhook(bot: Bot, options?: WebhookOptions): (request: Request) => Promise<Response> {
   return webhookCallback(bot, options);
 }
 
@@ -65,17 +62,13 @@ export function nodeFrameworkWebhook(
 ): (req: NodeLikeRequest, res: NodeLikeResponse) => Promise<void> {
   const handle = webhookCallback(bot, options);
 
-  return async function nodeHandler(
-    req: NodeLikeRequest,
-    res: NodeLikeResponse,
-  ): Promise<void> {
+  return async function nodeHandler(req: NodeLikeRequest, res: NodeLikeResponse): Promise<void> {
     // Accumulate the raw body. Decode Uint8Array chunks; append strings as-is.
     // No node `Buffer` - `TextDecoder` is a Web standard available everywhere.
     const decoder = new TextDecoder();
     let body = "";
     for await (const chunk of req) {
-      body +=
-        typeof chunk === "string" ? chunk : decoder.decode(chunk, { stream: true });
+      body += typeof chunk === "string" ? chunk : decoder.decode(chunk, { stream: true });
     }
     body += decoder.decode(); // flush any trailing multi-byte sequence
 

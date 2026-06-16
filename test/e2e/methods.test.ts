@@ -29,9 +29,9 @@
 import { afterAll, describe, expect, test } from "bun:test";
 
 import { Api } from "../../src/core/api.js";
+import { EntityBuilder } from "../../src/core/entities.js";
 import { InputFile } from "../../src/core/files.js";
 import { InlineKeyboard } from "../../src/core/keyboard.js";
-import { EntityBuilder } from "../../src/core/entities.js";
 import {
   MediaGroupBuilder,
   PhotoStoryBuilder,
@@ -415,9 +415,7 @@ describe("methods", () => {
 
   method("sendPaidMedia", () => {
     test("sends paid media", async () => {
-      const media = [
-        { type: "photo", media: "https://upload.wikimedia.org/wikipedia/commons/3/3a/Cat03.jpg" },
-      ];
+      const media = [{ type: "photo", media: "https://upload.wikimedia.org/wikipedia/commons/3/3a/Cat03.jpg" }];
       const msg = await api.sendPaidMedia({ chat_id: chatId, star_count: 1, media });
       expect(msg).toBeDefined();
     });
@@ -1606,9 +1604,7 @@ describe("methods", () => {
         user_id: await targetUserId(),
         name,
         title: "e2e",
-        stickers: new StickerSetBuilder()
-          .add({ sticker: e2eSticker(), format: "static", emoji_list: ["🙂"] })
-          .build(),
+        stickers: new StickerSetBuilder().add({ sticker: e2eSticker(), format: "static", emoji_list: ["🙂"] }).build(),
       });
       // Revert: drop the set we just created so the test stays self-contained.
       await api.deleteStickerSet({ name });
@@ -1733,9 +1729,7 @@ describe("methods", () => {
         user_id: await targetUserId(),
         name,
         title: "e2e",
-        stickers: new StickerSetBuilder()
-          .add({ sticker: e2eSticker(), format: "static", emoji_list: ["🙂"] })
-          .build(),
+        stickers: new StickerSetBuilder().add({ sticker: e2eSticker(), format: "static", emoji_list: ["🙂"] }).build(),
       });
       const ok = await api.deleteStickerSet({ name });
       expect(ok).toBe(true);
@@ -1942,9 +1936,7 @@ describe("methods", () => {
   // -------------------------------------------------------------------------
 
   test("coverage - every Api method has a describe", () => {
-    const apiMethods = Object.getOwnPropertyNames(Api.prototype).filter(
-      (n) => n !== "constructor" && n !== "request",
-    );
+    const apiMethods = Object.getOwnPropertyNames(Api.prototype).filter((n) => n !== "constructor" && n !== "request");
     const missing = apiMethods.filter((m) => !describedMethods.has(m));
     const extra = [...describedMethods].filter((m) => !apiMethods.includes(m));
     expect({ missing, extra }).toEqual({ missing: [], extra: [] });

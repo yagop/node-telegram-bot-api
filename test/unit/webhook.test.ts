@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
-import { webhookCallback, safeEqual } from "../../src/core/webhook.js";
 import type { Bot } from "../../src/core/bot.js";
+import { safeEqual, webhookCallback } from "../../src/core/webhook.js";
 import type { Update } from "../../src/types/index.js";
 
 /** A fake Bot exposing only handleUpdate, recording the updates it receives. */
@@ -55,9 +55,7 @@ describe("webhookCallback", () => {
   test("GET -> 405", async () => {
     const { bot } = fakeBot();
     const handle = webhookCallback(bot, { secretToken: "s" });
-    const res = await handle(
-      new Request("https://h/hook", { method: "GET" }),
-    );
+    const res = await handle(new Request("https://h/hook", { method: "GET" }));
     expect(res.status).toBe(405);
   });
 

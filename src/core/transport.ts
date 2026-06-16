@@ -10,17 +10,17 @@
 
 import { debug } from "./debug.js";
 import { encodeForm } from "./encode.js";
-import type { WireValue } from "./serialize.js";
 import {
   type ApiErrorParameters,
+  isAbortError,
   NetworkError,
   ParseError,
   TelegramApiError,
   TelegramBotError,
   TimeoutError,
-  isAbortError,
 } from "./errors.js";
 import { RateLimiter, type RateLimitOptions } from "./ratelimiter.js";
+import type { WireValue } from "./serialize.js";
 
 export interface TransportOptions {
   /** API origin. Default `https://api.telegram.org`. */
@@ -136,11 +136,7 @@ export class Transport {
     return this.timeoutMs;
   }
 
-  async request<R>(
-    method: string,
-    params?: Record<string, WireValue>,
-    signal?: AbortSignal,
-  ): Promise<R> {
+  async request<R>(method: string, params?: Record<string, WireValue>, signal?: AbortSignal): Promise<R> {
     const url = `${this.apiRoot}/bot${this.token}/${method}`;
     const timeoutMs = this.effectiveTimeout(method, params);
     log("-> %s", method);
@@ -229,7 +225,12 @@ export class Transport {
           await delay(retryAfter * 1000, signal);
           continue;
         }
-        log("%s 429; retry_after %ds exceeds maxRetryAfterMs (%dms) - surfacing", method, retryAfter, this.maxRetryAfterMs);
+        log(
+          "%s 429; retry_after %ds exceeds maxRetryAfterMs (%dms) - surfacing",
+          method,
+          retryAfter,
+          this.maxRetryAfterMs,
+        );
       }
 
       log("<- %s error %d %s", method, json.error_code, json.description);

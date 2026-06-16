@@ -8,7 +8,6 @@
  * return `T | undefined` without unsafe casts.
  */
 
-import type { Api } from "./api.js";
 import type {
   AnswerCallbackQueryParams,
   AnswerCallbackQueryResult,
@@ -21,6 +20,7 @@ import type {
   Update,
   User,
 } from "../types/index.js";
+import type { Api } from "./api.js";
 
 export class Context {
   readonly update: Update;
@@ -113,10 +113,7 @@ export class Context {
    * Send a message to the inferred chat. Throws if no chat id can be derived
    * from the update (e.g. an inline query carries no chat).
    */
-  reply(
-    text: string,
-    other?: Omit<SendMessageParams, "chat_id" | "text">,
-  ): Promise<SendMessageResult> {
+  reply(text: string, other?: Omit<SendMessageParams, "chat_id" | "text">): Promise<SendMessageResult> {
     const chatId = this.chatId;
     if (chatId === undefined) {
       throw new Error("ctx.reply: cannot infer a chat id from this update");

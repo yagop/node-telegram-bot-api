@@ -1,4 +1,5 @@
 #!/usr/bin/env bun
+import { dirname, join } from "node:path";
 /**
  * CI edge-safety gate (ADR-009): the runtime-agnostic core (`src/core/**`) must
  * bundle for a browser/edge target with **zero** Node dependencies.
@@ -21,19 +22,54 @@
  * Exit 0 if the core is Node-free, 1 otherwise.
  */
 import { fileURLToPath } from "node:url";
-import { dirname, join } from "node:path";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const ENTRY = join(ROOT, "src", "core", "index.ts");
 
 /** Node built-in module names that may appear without the `node:` prefix. */
 const BUILTINS = new Set([
-  "assert", "async_hooks", "buffer", "child_process", "cluster", "console",
-  "constants", "crypto", "dgram", "diagnostics_channel", "dns", "domain",
-  "events", "fs", "http", "http2", "https", "inspector", "module", "net", "os",
-  "path", "perf_hooks", "process", "punycode", "querystring", "readline", "repl",
-  "stream", "string_decoder", "sys", "timers", "tls", "trace_events", "tty",
-  "url", "util", "v8", "vm", "wasi", "worker_threads", "zlib",
+  "assert",
+  "async_hooks",
+  "buffer",
+  "child_process",
+  "cluster",
+  "console",
+  "constants",
+  "crypto",
+  "dgram",
+  "diagnostics_channel",
+  "dns",
+  "domain",
+  "events",
+  "fs",
+  "http",
+  "http2",
+  "https",
+  "inspector",
+  "module",
+  "net",
+  "os",
+  "path",
+  "perf_hooks",
+  "process",
+  "punycode",
+  "querystring",
+  "readline",
+  "repl",
+  "stream",
+  "string_decoder",
+  "sys",
+  "timers",
+  "tls",
+  "trace_events",
+  "tty",
+  "url",
+  "util",
+  "v8",
+  "vm",
+  "wasi",
+  "worker_threads",
+  "zlib",
 ]);
 
 /** True if `spec` resolves to a Node builtin, with or without the `node:` prefix. */
@@ -65,9 +101,7 @@ const noNodeBuiltins = {
       return undefined;
     });
     build.onLoad({ filter: /.*/, namespace: "node-leak" }, (args) => {
-      throw new Error(
-        `Node builtin "${args.path}" is not available on a browser/edge target`,
-      );
+      throw new Error(`Node builtin "${args.path}" is not available on a browser/edge target`);
     });
   },
 };

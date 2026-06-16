@@ -12,12 +12,12 @@
  * webhooks are mutually exclusive and webhook serving stays out of edge-neutral core.
  */
 
+import type { Update, UpdateType } from "../types/index.js";
 import { Api } from "./api.js";
 import { compose, type Middleware } from "./compose.js";
 import { Context } from "./context.js";
-import { longPoll, type LongPollOptions } from "./longpoll.js";
+import { type LongPollOptions, longPoll } from "./longpoll.js";
 import type { TransportOptions } from "./transport.js";
-import type { Update, UpdateType } from "../types/index.js";
 
 export interface BotOptions extends TransportOptions {}
 
@@ -60,9 +60,7 @@ export class Bot {
    * and trailing args). Sets `ctx.match` to the trimmed args string ("" if none).
    */
   command(name: string | string[], ...handlers: Middleware<Context>[]): this {
-    const names = (Array.isArray(name) ? name : [name]).map((n) =>
-      n.replace(/^\//, ""),
-    );
+    const names = (Array.isArray(name) ? name : [name]).map((n) => n.replace(/^\//, ""));
     const re = new RegExp(`^\\/(${names.map(escapeRegExp).join("|")})(@\\w+)?(?:\\s+(.*))?$`, "s");
     const run = compose(handlers) satisfies Composed;
     return this.use((ctx, next) => {
@@ -80,10 +78,7 @@ export class Bot {
    * a RegExp matches when `text.match(re)` is non-null (sets `ctx.match` to the
    * `RegExpMatchArray`).
    */
-  hears(
-    trigger: string | RegExp | Array<string | RegExp>,
-    ...handlers: Middleware<Context>[]
-  ): this {
+  hears(trigger: string | RegExp | Array<string | RegExp>, ...handlers: Middleware<Context>[]): this {
     const triggers = Array.isArray(trigger) ? trigger : [trigger];
     const run = compose(handlers) satisfies Composed;
     return this.use((ctx, next) => {

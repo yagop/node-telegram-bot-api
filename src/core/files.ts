@@ -63,18 +63,11 @@ export interface FormPart {
 }
 
 export function isFormPart(value: unknown): value is FormPart {
-  return (
-    typeof value === "object" &&
-    value !== null &&
-    (value as { __formPart?: unknown }).__formPart === true
-  );
+  return typeof value === "object" && value !== null && (value as { __formPart?: unknown }).__formPart === true;
 }
 
 /** Build a `FormPart` from a serialized JSON string and the files its refs point at. */
-export function formPart(
-  json: string,
-  files: ReadonlyArray<readonly [string, InputFile]>,
-): FormPart {
+export function formPart(json: string, files: ReadonlyArray<readonly [string, InputFile]>): FormPart {
   return { __formPart: true, json, files };
 }
 

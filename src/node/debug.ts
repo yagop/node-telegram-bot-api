@@ -24,8 +24,7 @@ export function compileDebugFilter(env: string): (namespace: string) => boolean 
     if (token.startsWith("-")) skips.push(toRegExp(token.slice(1)));
     else names.push(toRegExp(token));
   }
-  return (namespace) =>
-    names.some((re) => re.test(namespace)) && !skips.some((re) => re.test(namespace));
+  return (namespace) => names.some((re) => re.test(namespace)) && !skips.some((re) => re.test(namespace));
 }
 
 /** Turn one pattern (with `*` wildcards) into an anchored RegExp. */

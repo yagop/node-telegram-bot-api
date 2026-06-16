@@ -106,10 +106,7 @@ function stripComments(line) {
  * replaced with spaces (preserving column positions).
  */
 function stripStringContents(line) {
-  return line.replace(
-    /(["'`])((?:\\.|(?!\1)[^\\])*)\1/g,
-    (_m, q, body) => q + " ".repeat(body.length) + q,
-  );
+  return line.replace(/(["'`])((?:\\.|(?!\1)[^\\])*)\1/g, (_m, q, body) => q + " ".repeat(body.length) + q);
 }
 
 /**
@@ -122,15 +119,7 @@ function stripStringContents(line) {
  * `Blob`, `FormData`, `TextDecoder`, `AbortSignal`, `Response`, `Request`,
  * `URLSearchParams`, ...) are intentionally absent and never flagged.
  */
-const NODE_GLOBALS = [
-  "Buffer",
-  "process",
-  "global",
-  "__dirname",
-  "__filename",
-  "setImmediate",
-  "clearImmediate",
-];
+const NODE_GLOBALS = ["Buffer", "process", "global", "__dirname", "__filename", "setImmediate", "clearImmediate"];
 
 /**
  * Build the matcher for a single Node global.
@@ -152,9 +141,7 @@ const GLOBAL_PATTERNS = NODE_GLOBALS.map((name) => ({ name, re: globalMatcher(na
  * even though `process` is preceded by a `.` (so the matcher above skips it).
  * Flag `globalThis.<denied>` for any denied global reachable off `globalThis`.
  */
-const GLOBALTHIS_PATTERN = new RegExp(
-  `\\bglobalThis\\s*\\.\\s*(?<name>${NODE_GLOBALS.join("|")})(?![\\w$])`,
-);
+const GLOBALTHIS_PATTERN = new RegExp(`\\bglobalThis\\s*\\.\\s*(?<name>${NODE_GLOBALS.join("|")})(?![\\w$])`);
 
 const files = collectTsFiles(CORE_DIR);
 const importOffenders = [];

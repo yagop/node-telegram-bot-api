@@ -1,11 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import {
-  NetworkError,
-  ParseError,
-  TelegramApiError,
-  TelegramBotError,
-  TimeoutError,
-} from "../../src/core/errors.js";
+import { NetworkError, ParseError, TelegramApiError, TelegramBotError, TimeoutError } from "../../src/core/errors.js";
 
 describe("error hierarchy", () => {
   test("TelegramBotError carries a code and defaults to EUNKNOWN", () => {
