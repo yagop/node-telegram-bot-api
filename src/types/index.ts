@@ -1,2 +1,2 @@
 export * from "./schemas.js";
-export type { Json } from "./brand.js";
+export type { Json, JsonString } from "./brand.js";
