@@ -2,10 +2,11 @@ import { describe, expect, test } from "bun:test";
 import { encodeForm } from "../../src/core/encode.js";
 import { InputFile, formPart } from "../../src/core/files.js";
 
-// encodeForm is the pure wire-record consumer: per field it attaches an InputFile,
-// lets a FormPart write itself, or sets a string/String-coerced scalar. The
-// param-side serialization (objects -> JSON, nested InputFile -> attach://) lives
-// in serializeParams and is covered by serialize.test.ts.
+// encodeForm is the pure wire-record consumer (a Record<string, WireValue>): per
+// field it attaches an InputFile, spreads a FormPart's JSON + parts, or sets a
+// string/String-coerced scalar. The param-side serialization (objects -> JSON,
+// nested InputFile -> attach://, null-stripping) lives in serializeParams and is
+// covered by serialize.test.ts.
 describe("encodeForm", () => {
   test("no files -> URLSearchParams + urlencoded content-type", async () => {
     const { body, headers } = await encodeForm({
@@ -34,20 +35,6 @@ describe("encodeForm", () => {
     expect(photo).toBeInstanceOf(Blob);
     expect((photo as File).name).toBe("p.png");
     expect((photo as Blob).size).toBe(3);
-  });
-
-  test("null/undefined fields are skipped", async () => {
-    const { body } = await encodeForm({
-      chat_id: 1,
-      caption: null,
-      reply_to_message_id: undefined,
-      text: "keep",
-    });
-    const params = body as URLSearchParams;
-    expect(params.get("chat_id")).toBe("1");
-    expect(params.get("text")).toBe("keep");
-    expect(params.has("caption")).toBe(false);
-    expect(params.has("reply_to_message_id")).toBe(false);
   });
 
   test("a FormPart writes its field string + keyed parts (multipart)", async () => {
