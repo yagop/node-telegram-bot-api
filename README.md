@@ -115,14 +115,14 @@ await api.sendMessage({ chat_id, text: "hi", link_preview_options: { is_disabled
 A bare string is **always** a `file_id` or URL. To upload bytes, wrap them: `new InputFile()` (web-standard data) or `fromPath()` (Node, filesystem).
 
 ```ts
-import { InputFile, MediaGroup } from "node-telegram-bot-api";
+import { InputFile, MediaGroupBuilder } from "node-telegram-bot-api";
 import { fromPath } from "node-telegram-bot-api/node";
 
 await api.sendPhoto({ chat_id, photo: await fromPath("./cat.jpg") });
 await api.sendDocument({ chat_id, document: new InputFile(new Uint8Array(bytes), { filename: "report.pdf" }) });
 
 // nested files (media groups) - drop a raw InputFile straight into the array;
-// the pipeline hoists it to an attach:// part for you. Or use the MediaGroup builder.
+// the pipeline hoists it to an attach:// part for you. Or use the `MediaGroupBuilder`.
 await api.sendMediaGroup({
   chat_id,
   media: [
@@ -133,28 +133,30 @@ await api.sendMediaGroup({
 // equivalently, the fluent builder:
 await api.sendMediaGroup({
   chat_id,
-  media: new MediaGroup().photo(new InputFile(bytesA), { caption: "A" }).photo("https://example.com/b.jpg").build(),
+  media: new MediaGroupBuilder().photo({ media: new InputFile(bytesA), caption: "A" }).photo({ media: "https://example.com/b.jpg" }).build(),
 });
 ```
 
 Every method that references a file by `attach://` from inside a structure works the
 same way - put a raw `InputFile` in the file field and the pipeline resolves it.
-Fluent builders are optional sugar: `StickerSetBuilder` / `inputSticker` (sticker
-sets), `profilePhoto` (`setMyProfilePhoto`), `storyContent` (`postStory`/`editStory`).
-Each `.build()` (or factory call) returns the plain shape:
+Builders are optional sugar: `StickerSetBuilder` (sticker sets), `StaticProfilePhotoBuilder` /
+`AnimatedProfilePhotoBuilder` (`setMyProfilePhoto`), `PhotoStoryBuilder` / `VideoStoryBuilder` (`postStory`/
+`editStory`). Each is a class whose methods take one object using the API's own field
+names; `new X(...).build()` returns the plain shape. (`addStickerToSet` takes a plain
+`InputSticker` - there is nothing for a single-sticker builder to add.)
 
 ```ts
-import { StickerSetBuilder, inputSticker, profilePhoto, storyContent } from "node-telegram-bot-api";
+import { StickerSetBuilder, StaticProfilePhotoBuilder, PhotoStoryBuilder } from "node-telegram-bot-api";
 
 await api.createNewStickerSet({
   user_id, name, title,
   stickers: new StickerSetBuilder()
-    .add(new InputFile(pngBytes), { format: "static", emoji_list: ["🙂"] })
+    .add({ sticker: new InputFile(pngBytes), format: "static", emoji_list: ["🙂"] })
     .build(),
 });
-await api.addStickerToSet({ user_id, name, sticker: inputSticker(new InputFile(pngBytes), { format: "static", emoji_list: ["🙂"] }) });
-await api.setMyProfilePhoto({ photo: profilePhoto.static(new InputFile(pngBytes)) });
-await api.postStory({ business_connection_id, active_period, content: storyContent.photo(new InputFile(pngBytes)) });
+await api.addStickerToSet({ user_id, name, sticker: { sticker: new InputFile(pngBytes), format: "static", emoji_list: ["🙂"] } });
+await api.setMyProfilePhoto({ photo: new StaticProfilePhotoBuilder({ photo: new InputFile(pngBytes) }).build() });
+await api.postStory({ business_connection_id, active_period, content: new PhotoStoryBuilder({ photo: new InputFile(pngBytes) }).build() });
 ```
 
 ## Webhooks
