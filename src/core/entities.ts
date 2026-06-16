@@ -6,10 +6,10 @@
  * code units - exactly the unit Telegram's `offset`/`length` use - so we record
  * `offset = text.length` before appending a styled segment and `length` as the
  * segment's own `.length`. `.build()` returns the plain text plus a branded
- * `Json<MessageEntity[]>`, both ready to drop into `sendMessage`.
+ * `JsonString<MessageEntity[]>`, both ready to drop into `sendMessage`.
  */
 import type { MessageEntity, User } from "../types/index.js";
-import type { Json } from "../types/brand.js";
+import type { JsonString } from "../types/brand.js";
 import { json } from "./json.js";
 
 /** Every documented MessageEntity kind, typo-proof versus raw strings. */
@@ -37,7 +37,7 @@ export const EntityType = {
 
 export interface BuiltEntities {
   text: string;
-  entities: Json<MessageEntity[]>;
+  entities: JsonString<MessageEntity[]>;
 }
 
 /**
@@ -112,7 +112,7 @@ export class EntityBuilder {
     return this.append(s, { type: EntityType.Blockquote });
   }
 
-  /** The accumulated text plus the entities serialized as `Json<MessageEntity[]>`. */
+  /** The accumulated text plus the entities serialized as `JsonString<MessageEntity[]>`. */
   build(): BuiltEntities {
     return { text: this.text, entities: json<MessageEntity[]>(this.entities) };
   }

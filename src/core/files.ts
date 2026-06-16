@@ -15,8 +15,6 @@
  * `photo`, `content`). The encoder still stringifies nothing.
  */
 
-import type { Json } from "../types/brand.js";
-
 export type InputFileData = Blob | Uint8Array | ReadableStream<Uint8Array>;
 
 export interface InputFileMeta {
@@ -68,24 +66,12 @@ export interface FormPart {
 }
 
 /**
- * What a nested-file builder's `build()` actually returns: a `FormPart` at runtime
- * (it carries `attach://` refs + the matching parts), branded with the logical type
- * `T` it serializes to. This is the honest counterpart to `Json<T>` - the bytes mean
- * the value is NOT a string, so it is not a `Json<T>`.
+ * What a nested-file builder's `build()` returns: a `FormPart` at runtime (it carries
+ * `attach://` refs + the matching parts), branded with the logical type `T` it
+ * serializes to. It is the file-carrying arm of `Json<T>` (see `../types/brand.ts`):
+ * a structured field accepts a plain `JsonString<T>` OR a `FilePart<T>`.
  */
 export type FilePart<T> = FormPart & { readonly __files: T };
-
-/**
- * The honest type for a structured field that may carry uploads: either a plain
- * `Json<T>` string (from `json()` or a file-free builder) or a `FilePart<T>` (a
- * builder that injected `attach://` refs + parts). The encoder accepts both - it
- * checks `isFormPart` before treating a value as a string.
- */
-export type JsonWithInputFiles<T> = Json<T> | FilePart<T>;
-
-/** The logical payload `T` carried by a `JsonWithInputFiles<T>` field - lets a
- *  builder return the exact `FilePart<T>` a field wants without respelling its type. */
-export type CarriedBy<J> = J extends JsonWithInputFiles<infer T> ? T : never;
 
 export function isFormPart(value: unknown): value is FormPart {
   return (
