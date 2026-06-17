@@ -94,3 +94,33 @@ describe("Bot routing", () => {
     assert.strictEqual(caught, boom);
   });
 });
+
+describe("Bot polling", () => {
+  test("startPolling throws if called while already running (keeps isRunning truthful)", async () => {
+    const bot = newBot();
+    // A source whose first `next()` blocks until we resolve it, so the pump
+    // stays parked with `running === true`.
+    const waiters: Array<() => void> = [];
+    const source: AsyncIterable<Update> = {
+      [Symbol.asyncIterator]() {
+        return {
+          next: () =>
+            new Promise<IteratorResult<Update>>((resolve) => {
+              waiters.push(() => resolve({ done: true, value: undefined as unknown as Update }));
+            }),
+        };
+      },
+    };
+
+    const first = bot.startPolling(source);
+    await Promise.resolve(); // let `running = true` apply synchronously
+    assert.strictEqual(bot.isRunning(), true);
+
+    await assert.rejects(() => bot.startPolling(source), /already running/);
+
+    // Draining the source ends the first run cleanly.
+    waiters.forEach((fn) => fn());
+    await first;
+    assert.strictEqual(bot.isRunning(), false);
+  });
+});

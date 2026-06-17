@@ -71,9 +71,17 @@ export class TelegramApiError extends TelegramBotError {
   }
 }
 
-/** True for an `AbortController`/timeout abort, across runtimes. */
+/**
+ * True for an `AbortController`/timeout abort, across runtimes. Matches both the
+ * classic `AbortError` name and the `TimeoutError` DOMException that
+ * `AbortSignal.timeout()` aborts with (per the HTML spec; Node >=18, Deno,
+ * Cloudflare Workers), so the transport classifies our own client timeout as a
+ * `TimeoutError` rather than falling through to `NetworkError`.
+ */
 export function isAbortError(err: unknown): boolean {
-  return typeof err === "object" && err !== null && "name" in err && (err as { name?: unknown }).name === "AbortError";
+  if (typeof err !== "object" || err === null || !("name" in err)) return false;
+  const name = (err as { name?: unknown }).name;
+  return name === "AbortError" || name === "TimeoutError";
 }
 
 /**

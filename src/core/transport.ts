@@ -9,6 +9,7 @@
  */
 
 import { debug } from "./debug.js";
+import { delay } from "./delay.js";
 import { encodeForm } from "./encode.js";
 import {
   type ApiErrorParameters,
@@ -78,21 +79,6 @@ function combineSignals(signals: Array<AbortSignal | undefined>): {
     cleanups.push(() => s.removeEventListener("abort", onAbort));
   }
   return { signal: controller.signal, cleanup: () => cleanups.forEach((fn) => fn()) };
-}
-
-function delay(ms: number, signal?: AbortSignal): Promise<void> {
-  return new Promise((resolve, reject) => {
-    if (signal?.aborted) return reject(signal.reason);
-    const timer = setTimeout(() => {
-      signal?.removeEventListener("abort", onAbort);
-      resolve();
-    }, ms);
-    const onAbort = () => {
-      clearTimeout(timer);
-      reject(signal?.reason);
-    };
-    signal?.addEventListener("abort", onAbort, { once: true });
-  });
 }
 
 export class Transport {

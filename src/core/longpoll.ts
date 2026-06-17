@@ -11,6 +11,7 @@
 import type { Update } from "../types/index.js";
 import type { Api } from "./api.js";
 import { debug } from "./debug.js";
+import { delay } from "./delay.js";
 import { isTransientError } from "./errors.js";
 
 export interface LongPollOptions {
@@ -25,22 +26,6 @@ export interface LongPollOptions {
   maxBackoffMs?: number;
   /** Observe each transient error before the loop backs off and resumes. */
   onError?: (err: unknown) => void;
-}
-
-/** Resolve after `ms`, or reject with the signal's reason if it aborts. */
-function delay(ms: number, signal?: AbortSignal): Promise<void> {
-  return new Promise((resolve, reject) => {
-    if (signal?.aborted) return reject(signal.reason);
-    const timer = setTimeout(() => {
-      signal?.removeEventListener("abort", onAbort);
-      resolve();
-    }, ms);
-    const onAbort = () => {
-      clearTimeout(timer);
-      reject(signal?.reason);
-    };
-    signal?.addEventListener("abort", onAbort, { once: true });
-  });
 }
 
 const BASE_BACKOFF = 1000;
