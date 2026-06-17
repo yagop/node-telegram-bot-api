@@ -136,6 +136,33 @@ describe("Transport", () => {
     assert.strictEqual((caught as TimeoutError).code, "ETIMEOUT");
   });
 
+  test("client timeout (AbortSignal.timeout -> TimeoutError DOMException) classifies as TimeoutError, not NetworkError", async () => {
+    // Mirror what real `fetch` does under `AbortSignal.timeout()`: it rejects with
+    // a DOMException whose `name` is "TimeoutError" (NOT "AbortError"), per the
+    // HTML spec. Before the isAbortError fix this fell through to NetworkError.
+    const timeoutFetch = ((_url: string, init?: RequestInit) =>
+      new Promise<Response>((_resolve, reject) => {
+        const signal = init?.signal;
+        if (!signal) return;
+        if (signal.aborted) return reject({ name: "TimeoutError", message: "signal timed out" });
+        signal.addEventListener(
+          "abort",
+          () => reject({ name: "TimeoutError", message: "signal timed out" }),
+          { once: true },
+        );
+      })) as unknown as typeof fetch;
+    const tr = new Transport(TOKEN, { fetch: timeoutFetch, timeoutMs: 5, maxRetries: 0 });
+    let caught: unknown;
+    try {
+      await tr.request("getMe");
+    } catch (err) {
+      caught = err;
+    }
+    assert.ok(caught instanceof TimeoutError, "expected TimeoutError, got NetworkError (timeout misclassified)");
+    assert.strictEqual((caught as TimeoutError).code, "ETIMEOUT");
+    assert.ok(!(caught instanceof NetworkError));
+  });
+
   test("transient network throw then success retries and resolves (fetch called twice)", async () => {
     let i = 0;
     const calls: number[] = [];
