@@ -104,28 +104,16 @@ describe("Transport", () => {
   });
 
   test("timeout -> TimeoutError when our signal aborts", async () => {
-    // Fake fetch rejects only when the passed signal aborts, with an AbortError.
-    const abortAwareFetch = ((_url: string, init?: RequestInit) =>
-      new Promise<Response>((_resolve, reject) => {
-        const signal = init?.signal;
-        if (!signal) return;
-        if (signal.aborted) {
-          const e = new Error("aborted");
-          e.name = "AbortError";
-          return reject(e);
-        }
-        signal.addEventListener(
-          "abort",
-          () => {
-            const e = new Error("aborted");
-            e.name = "AbortError";
-            reject(e);
-          },
-          { once: true },
-        );
-      })) as unknown as typeof fetch;
+    // When the per-request timeout fires, fetch rejects with an AbortError;
+    // mirror that rejection directly (driving the real unref'd AbortSignal.timeout
+    // here would leave the test promise pending once the event loop drains).
+    const abortingFetch = (async () => {
+      const e = new Error("aborted");
+      e.name = "AbortError";
+      throw e;
+    }) as unknown as typeof fetch;
     // maxRetries: 0 so our timeout surfaces immediately as a TimeoutError.
-    const tr = new Transport(TOKEN, { fetch: abortAwareFetch, timeoutMs: 5, maxRetries: 0 });
+    const tr = new Transport(TOKEN, { fetch: abortingFetch, maxRetries: 0 });
     let caught: unknown;
     try {
       await tr.request("getMe");
@@ -140,18 +128,12 @@ describe("Transport", () => {
     // Mirror what real `fetch` does under `AbortSignal.timeout()`: it rejects with
     // a DOMException whose `name` is "TimeoutError" (NOT "AbortError"), per the
     // HTML spec. Before the isAbortError fix this fell through to NetworkError.
-    const timeoutFetch = ((_url: string, init?: RequestInit) =>
-      new Promise<Response>((_resolve, reject) => {
-        const signal = init?.signal;
-        if (!signal) return;
-        if (signal.aborted) return reject({ name: "TimeoutError", message: "signal timed out" });
-        signal.addEventListener(
-          "abort",
-          () => reject({ name: "TimeoutError", message: "signal timed out" }),
-          { once: true },
-        );
-      })) as unknown as typeof fetch;
-    const tr = new Transport(TOKEN, { fetch: timeoutFetch, timeoutMs: 5, maxRetries: 0 });
+    // A DOMException is not an Error, so reject with that bare shape - directly,
+    // since the real timeout timer is unref'd and would hang under node:test.
+    const timeoutFetch = (async () => {
+      throw { name: "TimeoutError", message: "signal timed out" };
+    }) as unknown as typeof fetch;
+    const tr = new Transport(TOKEN, { fetch: timeoutFetch, maxRetries: 0 });
     let caught: unknown;
     try {
       await tr.request("getMe");
