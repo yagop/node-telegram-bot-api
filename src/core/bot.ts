@@ -123,8 +123,15 @@ export class Bot {
    * Pump an update source (default `longPoll`) through `handleUpdate` until
    * `stop()` aborts. Resolves when the source is exhausted or aborted. This is
    * long-poll mode; for webhooks use `webhookCallback`/`createWebhookServer`.
+   *
+   * Not re-entrant: calling it while a previous pump is still active throws, so
+   * `isRunning()` stays truthful and the prior `AbortController` is never
+   * orphaned. Stop the running loop (`stop()`, then `await` its promise) first.
    */
   async startPolling(source?: AsyncIterable<Update>, options?: LongPollOptions): Promise<void> {
+    if (this.running) {
+      throw new Error("startPolling is already running; call stop() and await the previous run first");
+    }
     const controller = new AbortController();
     this.controller = controller;
     this.running = true;

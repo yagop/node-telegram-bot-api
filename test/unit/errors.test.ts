@@ -1,6 +1,13 @@
 import { describe, test } from "node:test";
 import assert from "node:assert/strict";
-import { NetworkError, ParseError, TelegramApiError, TelegramBotError, TimeoutError } from "../../src/core/errors.js";
+import {
+  isAbortError,
+  NetworkError,
+  ParseError,
+  TelegramApiError,
+  TelegramBotError,
+  TimeoutError,
+} from "../../src/core/errors.js";
 
 describe("error hierarchy", () => {
   test("TelegramBotError carries a code and defaults to EUNKNOWN", () => {
@@ -65,5 +72,28 @@ describe("error hierarchy", () => {
     const timeout = new TimeoutError("t", { cause });
     assert.strictEqual(net.cause, cause);
     assert.strictEqual(timeout.cause, cause);
+  });
+
+  describe("isAbortError", () => {
+    test("matches a classic AbortError", () => {
+      const e = new Error("aborted");
+      e.name = "AbortError";
+      assert.strictEqual(isAbortError(e), true);
+    });
+
+    test("matches the TimeoutError DOMException from AbortSignal.timeout()", () => {
+      // Real `AbortSignal.timeout()` aborts with a DOMException whose `name` is
+      // "TimeoutError" (HTML spec, Node >=18). This is the production shape the
+      // transport sees when its own client timeout fires.
+      const e = { name: "TimeoutError", message: "signal timed out" };
+      assert.strictEqual(isAbortError(e), true);
+    });
+
+    test("returns false for a plain network error and non-objects", () => {
+      assert.strictEqual(isAbortError(new Error("connection reset")), false);
+      assert.strictEqual(isAbortError(null), false);
+      assert.strictEqual(isAbortError(undefined), false);
+      assert.strictEqual(isAbortError("AbortError"), false);
+    });
   });
 });
