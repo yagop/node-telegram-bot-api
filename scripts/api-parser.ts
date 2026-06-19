@@ -517,6 +517,9 @@ export class Api {
 for (const m of methods) {
   const C = cap(m.name);
   const result = `T.${C}Result`;
+  // TSDoc link to the official Bot API page for this method. TypeDoc renders it
+  // in the generated reference; the anchor is the method name lowercased.
+  apiOut.push(`  /** {@link https://core.telegram.org/bots/api#${m.name.toLowerCase()} ${m.name}} */`);
   const hasFields = m.fields.length > 0;
   const allOptional = hasFields && m.fields.every((f) => f.optional);
 
