@@ -249,15 +249,15 @@ An animated profile photo (a video); `main_frame_timestamp` picks the still fram
 | `match`? | string \| RegExpMatchArray |
 | `state` | Record<string, unknown> |
 | `update` | [Update](#update) |
-| `callbackQuery` | void |
-| `channelPost` | void |
-| `chat` | void |
-| `chatId` | void |
-| `editedChannelPost` | void |
-| `editedMessage` | void |
-| `from` | void |
-| `inlineQuery` | void |
-| `message` | void |
+| `callbackQuery` | [CallbackQuery](#callbackquery) \| undefined |
+| `channelPost` | [Message](#message) \| undefined |
+| `chat` | [Chat](#chat) \| undefined |
+| `chatId` | number \| undefined |
+| `editedChannelPost` | [Message](#message) \| undefined |
+| `editedMessage` | [Message](#message) \| undefined |
+| `from` | [User](#user) \| undefined |
+| `inlineQuery` | [InlineQuery](#inlinequery) \| undefined |
+| `message` | [Message](#message) \| undefined |
 
 ### `EntityBuilder`
 
@@ -490,8 +490,8 @@ Telegram answered with `{ ok: false }`. Carries the structured error fields.
 | `parameters`? | [ApiErrorParameters](#apierrorparameters) |
 | `stack`? | string |
 | `stackTraceLimit` | number |
-| `migrateToChatId` | void |
-| `retryAfter` | void |
+| `migrateToChatId` | number \| undefined |
+| `retryAfter` | number \| undefined |
 
 ### `TelegramBotError`
 
@@ -3930,16 +3930,6 @@ type InlineQueryResultPhoto = {
 };
 ```
 
-### `InlineQueryResultsButton`
-
-```ts
-type InlineQueryResultsButton = {
-  start_parameter?: string;
-  text: string;
-  web_app?: [WebAppInfo](#webappinfo);
-};
-```
-
 ### `InlineQueryResultVenue`
 
 ```ts
@@ -3999,6 +3989,16 @@ type InlineQueryResultVoice = {
   type: string;
   voice_duration?: number;
   voice_url: string;
+};
+```
+
+### `InlineQueryResultsButton`
+
+```ts
+type InlineQueryResultsButton = {
+  start_parameter?: string;
+  text: string;
+  web_app?: [WebAppInfo](#webappinfo);
 };
 ```
 
@@ -4588,17 +4588,6 @@ type LocationAddress = {
 };
 ```
 
-### `LoginUrl`
-
-```ts
-type LoginUrl = {
-  bot_username?: string;
-  forward_text?: string;
-  request_write_access?: boolean;
-  url: string;
-};
-```
-
 ### `LogOutParams`
 
 ```ts
@@ -4609,6 +4598,17 @@ type LogOutParams = Record<string, never>;
 
 ```ts
 type LogOutResult = boolean;
+```
+
+### `LoginUrl`
+
+```ts
+type LoginUrl = {
+  bot_username?: string;
+  forward_text?: string;
+  request_write_access?: boolean;
+  url: string;
+};
 ```
 
 ### `ManagedBotCreated`
@@ -4960,16 +4960,6 @@ type OwnedGiftRegular = {
 };
 ```
 
-### `OwnedGifts`
-
-```ts
-type OwnedGifts = {
-  gifts: [OwnedGift](#ownedgift)[];
-  next_offset?: string;
-  total_count: number;
-};
-```
-
 ### `OwnedGiftUnique`
 
 ```ts
@@ -4983,6 +4973,16 @@ type OwnedGiftUnique = {
   sender_user?: [User](#user);
   transfer_star_count?: number;
   type: string;
+};
+```
+
+### `OwnedGifts`
+
+```ts
+type OwnedGifts = {
+  gifts: [OwnedGift](#ownedgift)[];
+  next_offset?: string;
+  total_count: number;
 };
 ```
 
@@ -5465,18 +5465,6 @@ type ReadBusinessMessageParams = {
 type ReadBusinessMessageResult = boolean;
 ```
 
-### `RefundedPayment`
-
-```ts
-type RefundedPayment = {
-  currency: string;
-  invoice_payload: string;
-  provider_payment_charge_id?: string;
-  telegram_payment_charge_id: string;
-  total_amount: number;
-};
-```
-
 ### `RefundStarPaymentParams`
 
 ```ts
@@ -5490,6 +5478,18 @@ type RefundStarPaymentParams = {
 
 ```ts
 type RefundStarPaymentResult = boolean;
+```
+
+### `RefundedPayment`
+
+```ts
+type RefundedPayment = {
+  currency: string;
+  invoice_payload: string;
+  provider_payment_charge_id?: string;
+  telegram_payment_charge_id: string;
+  total_amount: number;
+};
 ```
 
 ### `RemoveBusinessAccountProfilePhotoParams`
@@ -8605,18 +8605,18 @@ const EntityType: {
 };
 ```
 
-### `nextPagesWebhook`
-
-Next.js Pages API uses the same `(req, res)` handler.
-
-```ts
-const nextPagesWebhook: (bot: [Bot](#bot), options?: [WebhookOptions](#webhookoptions)) => (req: [NodeLikeRequest](#nodelikerequest), res: [NodeLikeResponse](#nodelikeresponse)) => Promise<void>;
-```
-
 ### `UPDATE_TYPES`
 
 `Update` field names dispatched as events (every `Update` payload key except `update_id`).
 
 ```ts
 const UPDATE_TYPES: readonly ["message", "edited_message", "channel_post", "edited_channel_post", "business_connection", "business_message", "edited_business_message", "deleted_business_messages", "guest_message", "message_reaction", "message_reaction_count", "inline_query", "chosen_inline_result", "callback_query", "shipping_query", "pre_checkout_query", "purchased_paid_media", "poll", "poll_answer", "my_chat_member", "chat_member", "chat_join_request", "chat_boost", "removed_chat_boost", "managed_bot"];
+```
+
+### `nextPagesWebhook`
+
+Next.js Pages API uses the same `(req, res)` handler.
+
+```ts
+const nextPagesWebhook: (bot: [Bot](#bot), options?: [WebhookOptions](#webhookoptions)) => (req: [NodeLikeRequest](#nodelikerequest), res: [NodeLikeResponse](#nodelikeresponse)) => Promise<void>;
 ```

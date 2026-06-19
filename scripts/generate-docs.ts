@@ -65,7 +65,7 @@ function collect(node: Obj): void {
 }
 collect(doc);
 
-const byName = <T extends Obj>(arr: T[]) => arr.slice().sort((a, b) => a.name.localeCompare(b.name));
+const byName = <T extends Obj>(arr: T[]) => arr.slice().sort((a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0));
 const classes = byName(collected.filter((c) => c.kind === K.Class));
 const interfaces = byName(collected.filter((c) => c.kind === K.Interface));
 const functions = byName(collected.filter((c) => c.kind === K.Function));
@@ -130,10 +130,15 @@ function renderType(t: Obj | undefined, inline = true, indent = ""): string {
     case "reflection":
       return renderDeclType(t.declaration, inline, indent);
     case "mapped":
-      return "{ [K in keyof T]: ... }";
+      // TypeDoc shape: { parameter, parameterType, templateType, readonlyModifier?,
+      // optionalModifier?, nameType? }. Render the templateType as the value, with
+      // the optional modifiers inlined so `{ +readonly [P in K]?: V }` survives.
+      return `{ ${t.readonlyModifier ? `${t.readonlyModifier}readonly ` : ""}[${t.parameter ?? "K"} in ${renderType(t.parameterType, inline, indent)}]${t.optionalModifier ? `${t.optionalModifier}?` : ""}: ${renderType(t.templateType, inline, indent)} }`;
     case "template-literal": {
+      // TypeDoc shape: { head: string, tail: [[type, sep], ...] }. Each tail
+      // entry is a substitution type followed by its literal separator.
       let s = `\`${t.head ?? ""}`;
-      for (const part of t.tail || []) s += `\${${renderType(part[0]?.type ?? part.type, inline, indent)}}${part[1] ?? part.text ?? ""}`;
+      for (const [sub, sep] of t.tail || []) s += `\${${renderType(sub, inline, indent)}}${sep ?? ""}`;
       return `${s}\``;
     }
     case "unknown":
@@ -206,8 +211,8 @@ function telegramLink(comment: Obj | undefined): string | null {
 
 // Members of a class/interface, grouped by kind.
 const membersOf = (r: Obj) => r.children || [];
-const methodsOf = (r: Obj) => membersOf(r).filter((m) => m.kind === K.Method || m.kind === K.Function);
-const propsOf = (r: Obj) => membersOf(r).filter((m) => m.kind === K.Property || m.kind === K.Accessor);
+const methodsOf = (r: Obj) => membersOf(r).filter((m: Obj) => m.kind === K.Method || m.kind === K.Function);
+const propsOf = (r: Obj) => membersOf(r).filter((m: Obj) => m.kind === K.Property || m.kind === K.Accessor);
 
 // --- emitters ---
 
@@ -234,7 +239,15 @@ function emitClass(c: Obj): string {
   const props = propsOf(c);
   if (props.length) {
     out.push("", "#### Properties", "", "| Property | Type |", "| --- | --- |");
-    for (const p of props) out.push(`| \`${p.name}\`${p.flags?.isOptional ? "?" : ""} | ${escCell(renderType(p.getSignature?.[0]?.type ?? p.type, true)) || "void"} |`);
+    for (const p of props) {
+      // Accessor .getSignature is a single signature object in TypeDoc 0.28
+      // (not an array), and the accessor has no own .type; guard both shapes.
+      // escCell is mandatory: accessor types are unions like `T | undefined`
+      // whose raw `|` would split the table cell.
+      const acc = Array.isArray(p.getSignature) ? p.getSignature[0]?.type : p.getSignature?.type;
+      const ty = escCell(renderType(acc ?? p.type, true)) || "void";
+      out.push(`| \`${p.name}\`${p.flags?.isOptional ? "?" : ""} | ${ty} |`);
+    }
   }
   return out.join("\n");
 }
@@ -261,7 +274,7 @@ function emitInterface(i: Obj): string {
   const sum = renderSummary(i.comment);
   if (sum) out.push("", sum);
   const props = propsOf(i);
-  const calls = membersOf(i).filter((m) => m.kind === K.CallSignature);
+  const calls = membersOf(i).filter((m: Obj) => m.kind === K.CallSignature);
   if (props.length) {
     out.push("", "| Property | Type |", "| --- | --- |");
     for (const p of props) out.push(`| \`${p.name}\`${p.flags?.isOptional ? "?" : ""} | ${escCell(renderType(p.type, true)) || "void"} |`);
@@ -279,7 +292,7 @@ function emitInterface(i: Obj): string {
 function emitEnum(e: Obj): string {
   const out: string[] = [];
   out.push(`### \`${e.name}\``);
-  const members = membersOf(e).filter((m) => m.kind === K.EnumMember);
+  const members = membersOf(e).filter((m: Obj) => m.kind === K.EnumMember);
   if (members.length) {
     out.push("", "| Member | Value |", "| --- | --- |");
     for (const m of members) {
@@ -289,6 +302,14 @@ function emitEnum(e: Obj): string {
   }
   return out.join("\n");
 }
+
+// Self-tests for the renderers that the current public surface never exercises
+// (mapped / template-literal / conditional). Run with `bun test test/unit/generate-docs.test.ts`.
+// TypeDoc JSON node shapes are documented at:
+//   mapped         { parameter, parameterType, templateType, readonlyModifier?, optionalModifier?, nameType? }
+//   template-lit   { head: string, tail: [[type, string], ...] }
+//   conditional    { checkType, extendsType, trueType, falseType }
+export const __test = { renderType, slug, byName };
 
 // ---------------------------------------------------------------- assemble ---
 
