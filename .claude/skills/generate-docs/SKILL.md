@@ -33,7 +33,7 @@ token and no network - TypeDoc reads the local TypeScript source.
    `excludeInternal`).
 2. **JSON -> `doc/api.md`.** A small hand-written renderer walks the JSON and
    emits Markdown: a methods table per class (with each method's params, return
-   type, and a "Bot API" link), param/return tables for functions, property
+   type, and a per-method description), param/return tables for functions, property
    tables for interfaces, and a section per type alias / variable / enum. Type
    references to other documented declarations become in-page links. It imports
    TypeDoc's public `ReflectionKind` enum so the kind numbers track the
@@ -57,13 +57,14 @@ Regenerate after any change to the **public surface**:
 You do **not** need to run it for changes to method *bodies* that don't change a
 signature, or for private/internal code.
 
-## The Bot API links
+## The per-method description column
 
-Every generated `Api` method carries a TSDoc comment (emitted by the type
-generator, `scripts/api-parser.ts`) of the form
-`/** {@link https://core.telegram.org/bots/api#sendmessage sendMessage} */`. The
-renderer turns that into the method's "Bot API" column link. To change those
-links, change the generator - do not hand-edit `src/core/api.ts`.
+Each class method's "Description" column renders the full comment summary:
+for generated `Api` methods that is the `{@link}` to the official Bot API page
+(emitted as a TSDoc comment by the type generator, `scripts/api-parser.ts`);
+for hand-written library methods (`Bot.command`, `Context.reply`, builders) it
+is the prose description. To change the `Api` links, change the type generator -
+do not hand-edit `src/core/api.ts`.
 
 ## Verify before committing
 
