@@ -19,7 +19,6 @@ const ENTRY_POINTS = ["src/core/index.ts", "src/node/index.ts"];
 const TSCONFIG = "tsconfig.json";
 const JSON_OUT = "doc/api.json";
 const MD_OUT = "doc/api.md";
-const BASE_URL = "https://core.telegram.org/bots/api";
 
 // ---------------------------------------------------------------- Stage 1 ----
 
@@ -202,13 +201,6 @@ function renderPart(p: Obj): string {
 const renderSummary = (comment: Obj | undefined) =>
   comment?.summary?.map(renderPart).join("").trim() || "";
 
-function telegramLink(comment: Obj | undefined): string | null {
-  for (const p of comment?.summary || []) {
-    if (p.tag === "@link" && typeof p.target === "string" && p.target.startsWith(BASE_URL)) return p.target;
-  }
-  return null;
-}
-
 // Members of a class/interface, grouped by kind.
 const membersOf = (r: Obj) => r.children || [];
 const methodsOf = (r: Obj) => membersOf(r).filter((m: Obj) => m.kind === K.Method || m.kind === K.Function);
@@ -224,7 +216,7 @@ function emitClass(c: Obj): string {
   const sigsOf = (m: Obj) => m.signatures || [];
   const methods = methodsOf(c);
   if (methods.length) {
-    out.push("", "#### Methods", "", "| Method | Params | Returns | Bot API |", "| --- | --- | --- | --- |");
+    out.push("", "#### Methods", "", "| Method | Params | Returns | Description |", "| --- | --- | --- | --- |");
     for (const m of methods) {
       const sig = sigsOf(m)[0];
       if (!sig) continue;
@@ -232,8 +224,12 @@ function emitClass(c: Obj): string {
         .map((p: Obj) => `\`${p.flags?.isRest ? "..." : ""}${p.name}${p.flags?.isOptional ? "?" : ""}\`: ${escCell(renderType(p.type, true))}`)
         .join(", ");
       const ret = escCell(renderType(sig.type, true));
-      const link = telegramLink(sig.comment || m.comment);
-      out.push(`| \`${m.name}\` | ${params || "-"} | ${ret || "void"} | ${link ? `[${m.name}](${link})` : "-"} |`);
+      // Render the full comment summary: for generated Api methods this is the
+      // {@link} -> the official Bot API page; for hand-written library methods
+      // (Bot.command, Context.reply, builders) it is the prose description that
+      // would otherwise be dropped.
+      const desc = escCell(renderSummary(sig.comment || m.comment));
+      out.push(`| \`${m.name}\` | ${params || "-"} | ${ret || "void"} | ${desc || "-"} |`);
     }
   }
   const props = propsOf(c);

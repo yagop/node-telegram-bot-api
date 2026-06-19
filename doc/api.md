@@ -19,7 +19,7 @@ An animated profile photo (a video); `main_frame_timestamp` picks the still fram
 
 #### Methods
 
-| Method | Params | Returns | Bot API |
+| Method | Params | Returns | Description |
 | --- | --- | --- | --- |
 | `build` | - | [InputProfilePhoto](#inputprofilephoto) | - |
 
@@ -27,7 +27,7 @@ An animated profile photo (a video); `main_frame_timestamp` picks the still fram
 
 #### Methods
 
-| Method | Params | Returns | Bot API |
+| Method | Params | Returns | Description |
 | --- | --- | --- | --- |
 | `addStickerToSet` | `params`: [AddStickerToSetParams](#addstickertosetparams), `signal?`: AbortSignal | Promise<boolean> | [addStickerToSet](https://core.telegram.org/bots/api#addstickertoset) |
 | `answerCallbackQuery` | `params`: [AnswerCallbackQueryParams](#answercallbackqueryparams), `signal?`: AbortSignal | Promise<boolean> | [answerCallbackQuery](https://core.telegram.org/bots/api#answercallbackquery) |
@@ -214,17 +214,17 @@ An animated profile photo (a video); `main_frame_timestamp` picks the still fram
 
 #### Methods
 
-| Method | Params | Returns | Bot API |
+| Method | Params | Returns | Description |
 | --- | --- | --- | --- |
-| `catch` | `handler`: (err: unknown, ctx: [Context](#context)) => unknown | this | - |
-| `command` | `name`: string \| string[], `...handlers`: [Middleware](#middleware)<[Context](#context)>[] | this | - |
-| `handleUpdate` | `update`: [Update](#update) | Promise<void> | - |
-| `hears` | `trigger`: string \| RegExp \| (string \| RegExp)[], `...handlers`: [Middleware](#middleware)<[Context](#context)>[] | this | - |
+| `catch` | `handler`: (err: unknown, ctx: [Context](#context)) => unknown | this | Install the error boundary. Errors thrown by the chain are routed here. |
+| `command` | `name`: string \| string[], `...handlers`: [Middleware](#middleware)<[Context](#context)>[] | this | Match a message/channel-post text starting with `/name` (also `/name@bot` and trailing args). Sets `ctx.match` to the trimmed args string ("" if none). |
+| `handleUpdate` | `update`: [Update](#update) | Promise<void> | Build a Context and run the composed chain; route errors to `catch`. |
+| `hears` | `trigger`: string \| RegExp \| (string \| RegExp)[], `...handlers`: [Middleware](#middleware)<[Context](#context)>[] | this | Match message text: a string matches exactly (sets `ctx.match` to the text); a RegExp matches when `text.match(re)` is non-null (sets `ctx.match` to the `RegExpMatchArray`). |
 | `isRunning` | - | boolean | - |
-| `on` | `kind`: "message" \| "edited_message" \| "channel_post" \| "edited_channel_post" \| "business_connection" \| "business_message" \| "edited_business_message" \| "deleted_business_messages" \| "guest_message" \| "message_reaction" \| "message_reaction_count" \| "inline_query" \| "chosen_inline_result" \| "callback_query" \| "shipping_query" \| "pre_checkout_query" \| "purchased_paid_media" \| "poll" \| "poll_answer" \| "my_chat_member" \| "chat_member" \| "chat_join_request" \| "chat_boost" \| "removed_chat_boost" \| "managed_bot" \| ("message" \| "edited_message" \| "channel_post" \| "edited_channel_post" \| "business_connection" \| "business_message" \| "edited_business_message" \| "deleted_business_messages" \| "guest_message" \| "message_reaction" \| "message_reaction_count" \| "inline_query" \| "chosen_inline_result" \| "callback_query" \| "shipping_query" \| "pre_checkout_query" \| "purchased_paid_media" \| "poll" \| "poll_answer" \| "my_chat_member" \| "chat_member" \| "chat_join_request" \| "chat_boost" \| "removed_chat_boost" \| "managed_bot")[], `...handlers`: [Middleware](#middleware)<[Context](#context)>[] | this | - |
-| `startPolling` | `source?`: AsyncIterable<[Update](#update), any, any>, `options?`: [LongPollOptions](#longpolloptions) | Promise<void> | - |
-| `stop` | - | void | - |
-| `use` | `...mw`: [Middleware](#middleware)<[Context](#context)>[] | this | - |
+| `on` | `kind`: "message" \| "edited_message" \| "channel_post" \| "edited_channel_post" \| "business_connection" \| "business_message" \| "edited_business_message" \| "deleted_business_messages" \| "guest_message" \| "message_reaction" \| "message_reaction_count" \| "inline_query" \| "chosen_inline_result" \| "callback_query" \| "shipping_query" \| "pre_checkout_query" \| "purchased_paid_media" \| "poll" \| "poll_answer" \| "my_chat_member" \| "chat_member" \| "chat_join_request" \| "chat_boost" \| "removed_chat_boost" \| "managed_bot" \| ("message" \| "edited_message" \| "channel_post" \| "edited_channel_post" \| "business_connection" \| "business_message" \| "edited_business_message" \| "deleted_business_messages" \| "guest_message" \| "message_reaction" \| "message_reaction_count" \| "inline_query" \| "chosen_inline_result" \| "callback_query" \| "shipping_query" \| "pre_checkout_query" \| "purchased_paid_media" \| "poll" \| "poll_answer" \| "my_chat_member" \| "chat_member" \| "chat_join_request" \| "chat_boost" \| "removed_chat_boost" \| "managed_bot")[], `...handlers`: [Middleware](#middleware)<[Context](#context)>[] | this | Run `handlers` only when the given payload key (e.g. `"message"`, `"callback_query"`) is present on the update. |
+| `startPolling` | `source?`: AsyncIterable<[Update](#update), any, any>, `options?`: [LongPollOptions](#longpolloptions) | Promise<void> | Pump an update source (default `longPoll`) through `handleUpdate` until `stop()` aborts. Resolves when the source is exhausted or aborted. This is long-poll mode; for webhooks use `webhookCallback`/`createWebhookServer`.  Not re-entrant: calling it while a previous pump is still active throws, so `isRunning()` stays truthful and the prior `AbortController` is never orphaned. Stop the running loop (`stop()`, then `await` its promise) first. |
+| `stop` | - | void | Abort the running pump loop. |
+| `use` | `...mw`: [Middleware](#middleware)<[Context](#context)>[] | this | Register one or more middleware to run on every update. |
 
 #### Properties
 
@@ -236,10 +236,10 @@ An animated profile photo (a video); `main_frame_timestamp` picks the still fram
 
 #### Methods
 
-| Method | Params | Returns | Bot API |
+| Method | Params | Returns | Description |
 | --- | --- | --- | --- |
-| `answerCallbackQuery` | `other?`: Omit<[AnswerCallbackQueryParams](#answercallbackqueryparams), "callback_query_id"> | Promise<boolean> | - |
-| `reply` | `text`: string, `other?`: Omit<[SendMessageParams](#sendmessageparams), "chat_id" \| "text"> | Promise<[Message](#message)> | - |
+| `answerCallbackQuery` | `other?`: Omit<[AnswerCallbackQueryParams](#answercallbackqueryparams), "callback_query_id"> | Promise<boolean> | Answer the callback query that triggered this update. Throws if the update is not a callback query. |
+| `reply` | `text`: string, `other?`: Omit<[SendMessageParams](#sendmessageparams), "chat_id" \| "text"> | Promise<[Message](#message)> | Send a message to the inferred chat. Throws if no chat id can be derived from the update (e.g. an inline query carries no chat). |
 
 #### Properties
 
@@ -266,20 +266,20 @@ UTF-16 code units (JS string `.length`).
 
 #### Methods
 
-| Method | Params | Returns | Bot API |
+| Method | Params | Returns | Description |
 | --- | --- | --- | --- |
 | `blockquote` | `s`: string | this | - |
 | `bold` | `s`: string | this | - |
-| `build` | - | [BuiltEntities](#builtentities) | - |
+| `build` | - | [BuiltEntities](#builtentities) | The accumulated text plus the plain `MessageEntity[]` covering each segment. |
 | `code` | `s`: string | this | - |
 | `customEmoji` | `s`: string, `customEmojiId`: string | this | - |
 | `italic` | `s`: string | this | - |
-| `link` | `s`: string, `url`: string | this | - |
-| `plain` | `s`: string | this | - |
+| `link` | `s`: string, `url`: string | this | A text_link entity pointing at `url`. |
+| `plain` | `s`: string | this | Append unstyled text. |
 | `pre` | `s`: string, `language?`: string | this | - |
 | `spoiler` | `s`: string | this | - |
 | `strikethrough` | `s`: string | this | - |
-| `textMention` | `s`: string, `user`: [User](#user) | this | - |
+| `textMention` | `s`: string, `user`: [User](#user) | this | A text_mention entity for a user without a username. |
 | `underline` | `s`: string | this | - |
 
 ### `InlineKeyboardBuilder`
@@ -289,18 +289,18 @@ starts a new one.
 
 #### Methods
 
-| Method | Params | Returns | Bot API |
+| Method | Params | Returns | Description |
 | --- | --- | --- | --- |
-| `build` | - | [InlineKeyboardMarkup](#inlinekeyboardmarkup) | - |
-| `copyText` | `label`: string, `text`: string | this | - |
-| `loginUrl` | `label`: string, `url`: string | this | - |
-| `pay` | `label`: string | this | - |
-| `row` | - | this | - |
-| `switchInline` | `label`: string, `query`: string | this | - |
-| `switchInlineCurrent` | `label`: string, `query`: string | this | - |
-| `text` | `label`: string, `callbackData`: string | this | - |
-| `url` | `label`: string, `url`: string | this | - |
-| `webApp` | `label`: string, `url`: string | this | - |
+| `build` | - | [InlineKeyboardMarkup](#inlinekeyboardmarkup) | The keyboard as a plain `InlineKeyboardMarkup`, dropping trailing empty rows. |
+| `copyText` | `label`: string, `text`: string | this | A button that copies text to the clipboard. |
+| `loginUrl` | `label`: string, `url`: string | this | A Login URL button. |
+| `pay` | `label`: string | this | A pay button. |
+| `row` | - | this | Start a new (empty) row. |
+| `switchInline` | `label`: string, `query`: string | this | Switch to inline mode in another chat. |
+| `switchInlineCurrent` | `label`: string, `query`: string | this | Switch to inline mode in the current chat. |
+| `text` | `label`: string, `callbackData`: string | this | A callback button. |
+| `url` | `label`: string, `url`: string | this | An HTTP/tg:// URL button. |
+| `webApp` | `label`: string, `url`: string | this | A Web App button. |
 
 ### `InputFile`
 
@@ -308,9 +308,9 @@ Explicit, web-standard wrapper for uploadable bytes.
 
 #### Methods
 
-| Method | Params | Returns | Bot API |
+| Method | Params | Returns | Description |
 | --- | --- | --- | --- |
-| `build` | `index`: number | string | - |
+| `build` | `index`: number | string | This file's wire reference when it occupies attach slot `index`: `attach://media_<index>`. The matching multipart part is keyed `media_<index>` (the ref without the scheme). `InputFile` owns the naming convention; the slot index is allocated by `AttachedMedia` during its build pass (ADR-011). |
 
 #### Properties
 
@@ -329,13 +329,13 @@ level once `serializeParams` resolves the files.
 
 #### Methods
 
-| Method | Params | Returns | Bot API |
+| Method | Params | Returns | Description |
 | --- | --- | --- | --- |
 | `animation` | `item`: Omit<[InputMediaAnimation](#inputmediaanimation), "type"> | this | - |
 | `audio` | `item`: Omit<[InputMediaAudio](#inputmediaaudio), "type"> | this | - |
 | `build` | - | ([InputMediaLivePhoto](#inputmedialivephoto) \| [InputMediaPhoto](#inputmediaphoto) \| [InputMediaVideo](#inputmediavideo) \| [InputMediaAudio](#inputmediaaudio) \| [InputMediaDocument](#inputmediadocument))[] | - |
 | `document` | `item`: Omit<[InputMediaDocument](#inputmediadocument), "type"> | this | - |
-| `livePhoto` | `item`: Omit<[InputMediaLivePhoto](#inputmedialivephoto), "type"> | this | - |
+| `livePhoto` | `item`: Omit<[InputMediaLivePhoto](#inputmedialivephoto), "type"> | this | A live photo: `media` is the live photo, `photo` the still cover. Both upload. |
 | `photo` | `item`: Omit<[InputMediaPhoto](#inputmediaphoto), "type"> | this | - |
 | `video` | `item`: Omit<[InputMediaVideo](#inputmediavideo), "type"> | this | - |
 
@@ -345,9 +345,9 @@ A transport-level failure: DNS, connection reset, fetch threw, etc.
 
 #### Methods
 
-| Method | Params | Returns | Bot API |
+| Method | Params | Returns | Description |
 | --- | --- | --- | --- |
-| `captureStackTrace` | `targetObject`: object, `constructorOpt?`: Function | void | - |
+| `captureStackTrace` | `targetObject`: object, `constructorOpt?`: Function | void | Creates a `.stack` property on `targetObject`, which when accessed returns a string representing the location in the code at which `Error.captureStackTrace()` was called.  ```js const myObject = {}; Error.captureStackTrace(myObject); myObject.stack;  // Similar to `new Error().stack` ```  The first line of the trace will be prefixed with `${myObject.name}: ${myObject.message}`.  The optional `constructorOpt` argument accepts a function. If given, all frames above `constructorOpt`, including `constructorOpt`, will be omitted from the generated stack trace.  The `constructorOpt` argument is useful for hiding implementation details of error generation from the user. For instance:  ```js function a() {   b(); }  function b() {   c(); }  function c() {   // Create an error without stack trace to avoid calculating the stack trace twice.   const { stackTraceLimit } = Error;   Error.stackTraceLimit = 0;   const error = new Error();   Error.stackTraceLimit = stackTraceLimit;    // Capture the stack trace above function b   Error.captureStackTrace(error, b); // Neither function c, nor b is included in the stack trace   throw error; }  a(); ``` |
 | `prepareStackTrace` | `err`: Error, `stackTraces`: CallSite[] | any | - |
 
 #### Properties
@@ -369,10 +369,10 @@ response type). `.build()` returns the plain array with raw `InputFile`s embedde
 
 #### Methods
 
-| Method | Params | Returns | Bot API |
+| Method | Params | Returns | Description |
 | --- | --- | --- | --- |
 | `build` | - | [InputPaidMedia](#inputpaidmedia)[] | - |
-| `livePhoto` | `item`: Omit<[InputPaidMediaLivePhoto](#inputpaidmedialivephoto), "type"> | this | - |
+| `livePhoto` | `item`: Omit<[InputPaidMediaLivePhoto](#inputpaidmedialivephoto), "type"> | this | A live photo: `media` is the live photo, `photo` the still cover. Both upload. |
 | `photo` | `item`: Omit<[InputPaidMediaPhoto](#inputpaidmediaphoto), "type"> | this | - |
 | `video` | `item`: Omit<[InputPaidMediaVideo](#inputpaidmediavideo), "type"> | this | - |
 
@@ -382,9 +382,9 @@ The response body could not be parsed as the expected JSON envelope.
 
 #### Methods
 
-| Method | Params | Returns | Bot API |
+| Method | Params | Returns | Description |
 | --- | --- | --- | --- |
-| `captureStackTrace` | `targetObject`: object, `constructorOpt?`: Function | void | - |
+| `captureStackTrace` | `targetObject`: object, `constructorOpt?`: Function | void | Creates a `.stack` property on `targetObject`, which when accessed returns a string representing the location in the code at which `Error.captureStackTrace()` was called.  ```js const myObject = {}; Error.captureStackTrace(myObject); myObject.stack;  // Similar to `new Error().stack` ```  The first line of the trace will be prefixed with `${myObject.name}: ${myObject.message}`.  The optional `constructorOpt` argument accepts a function. If given, all frames above `constructorOpt`, including `constructorOpt`, will be omitted from the generated stack trace.  The `constructorOpt` argument is useful for hiding implementation details of error generation from the user. For instance:  ```js function a() {   b(); }  function b() {   c(); }  function c() {   // Create an error without stack trace to avoid calculating the stack trace twice.   const { stackTraceLimit } = Error;   Error.stackTraceLimit = 0;   const error = new Error();   Error.stackTraceLimit = stackTraceLimit;    // Capture the stack trace above function b   Error.captureStackTrace(error, b); // Neither function c, nor b is included in the stack trace   throw error; }  a(); ``` |
 | `prepareStackTrace` | `err`: Error, `stackTraces`: CallSite[] | any | - |
 
 #### Properties
@@ -405,7 +405,7 @@ A photo story for `postStory`/`editStory`. `.build()` returns the `InputStoryCon
 
 #### Methods
 
-| Method | Params | Returns | Bot API |
+| Method | Params | Returns | Description |
 | --- | --- | --- | --- |
 | `build` | - | [InputStoryContent](#inputstorycontent) | - |
 
@@ -421,7 +421,7 @@ bound for long-lived bots that talk to many distinct chats.
 
 #### Methods
 
-| Method | Params | Returns | Bot API |
+| Method | Params | Returns | Description |
 | --- | --- | --- | --- |
 | `acquire` | `chatId`: string \| number \| undefined, `signal?`: AbortSignal | Promise<void> | - |
 
@@ -432,14 +432,14 @@ starts a new one.
 
 #### Methods
 
-| Method | Params | Returns | Bot API |
+| Method | Params | Returns | Description |
 | --- | --- | --- | --- |
-| `build` | `options?`: [ReplyKeyboardBuildOptions](#replykeyboardbuildoptions) | [ReplyKeyboardMarkup](#replykeyboardmarkup) | - |
-| `requestContact` | `label`: string | this | - |
-| `requestLocation` | `label`: string | this | - |
-| `row` | - | this | - |
-| `text` | `label`: string | this | - |
-| `webApp` | `label`: string, `url`: string | this | - |
+| `build` | `options?`: [ReplyKeyboardBuildOptions](#replykeyboardbuildoptions) | [ReplyKeyboardMarkup](#replykeyboardmarkup) | The keyboard as a plain `ReplyKeyboardMarkup`, dropping trailing empty rows. |
+| `requestContact` | `label`: string | this | Request the user's phone number. |
+| `requestLocation` | `label`: string | this | Request the user's location. |
+| `row` | - | this | Start a new (empty) row. |
+| `text` | `label`: string | this | A plain text button. |
+| `webApp` | `label`: string, `url`: string | this | A Web App button. |
 
 ### `StaticProfilePhotoBuilder`
 
@@ -447,7 +447,7 @@ A static profile photo (a still image). `.build()` returns the `InputProfilePhot
 
 #### Methods
 
-| Method | Params | Returns | Bot API |
+| Method | Params | Returns | Description |
 | --- | --- | --- | --- |
 | `build` | - | [InputProfilePhoto](#inputprofilephoto) | - |
 
@@ -461,7 +461,7 @@ so `addStickerToSet`/`replaceStickerInSet` take that plain object directly.
 
 #### Methods
 
-| Method | Params | Returns | Bot API |
+| Method | Params | Returns | Description |
 | --- | --- | --- | --- |
 | `add` | `sticker`: [InputSticker](#inputsticker) | this | - |
 | `build` | - | [InputSticker](#inputsticker)[] | - |
@@ -472,9 +472,9 @@ Telegram answered with `{ ok: false }`. Carries the structured error fields.
 
 #### Methods
 
-| Method | Params | Returns | Bot API |
+| Method | Params | Returns | Description |
 | --- | --- | --- | --- |
-| `captureStackTrace` | `targetObject`: object, `constructorOpt?`: Function | void | - |
+| `captureStackTrace` | `targetObject`: object, `constructorOpt?`: Function | void | Creates a `.stack` property on `targetObject`, which when accessed returns a string representing the location in the code at which `Error.captureStackTrace()` was called.  ```js const myObject = {}; Error.captureStackTrace(myObject); myObject.stack;  // Similar to `new Error().stack` ```  The first line of the trace will be prefixed with `${myObject.name}: ${myObject.message}`.  The optional `constructorOpt` argument accepts a function. If given, all frames above `constructorOpt`, including `constructorOpt`, will be omitted from the generated stack trace.  The `constructorOpt` argument is useful for hiding implementation details of error generation from the user. For instance:  ```js function a() {   b(); }  function b() {   c(); }  function c() {   // Create an error without stack trace to avoid calculating the stack trace twice.   const { stackTraceLimit } = Error;   Error.stackTraceLimit = 0;   const error = new Error();   Error.stackTraceLimit = stackTraceLimit;    // Capture the stack trace above function b   Error.captureStackTrace(error, b); // Neither function c, nor b is included in the stack trace   throw error; }  a(); ``` |
 | `prepareStackTrace` | `err`: Error, `stackTraces`: CallSite[] | any | - |
 
 #### Properties
@@ -497,9 +497,9 @@ Telegram answered with `{ ok: false }`. Carries the structured error fields.
 
 #### Methods
 
-| Method | Params | Returns | Bot API |
+| Method | Params | Returns | Description |
 | --- | --- | --- | --- |
-| `captureStackTrace` | `targetObject`: object, `constructorOpt?`: Function | void | - |
+| `captureStackTrace` | `targetObject`: object, `constructorOpt?`: Function | void | Creates a `.stack` property on `targetObject`, which when accessed returns a string representing the location in the code at which `Error.captureStackTrace()` was called.  ```js const myObject = {}; Error.captureStackTrace(myObject); myObject.stack;  // Similar to `new Error().stack` ```  The first line of the trace will be prefixed with `${myObject.name}: ${myObject.message}`.  The optional `constructorOpt` argument accepts a function. If given, all frames above `constructorOpt`, including `constructorOpt`, will be omitted from the generated stack trace.  The `constructorOpt` argument is useful for hiding implementation details of error generation from the user. For instance:  ```js function a() {   b(); }  function b() {   c(); }  function c() {   // Create an error without stack trace to avoid calculating the stack trace twice.   const { stackTraceLimit } = Error;   Error.stackTraceLimit = 0;   const error = new Error();   Error.stackTraceLimit = stackTraceLimit;    // Capture the stack trace above function b   Error.captureStackTrace(error, b); // Neither function c, nor b is included in the stack trace   throw error; }  a(); ``` |
 | `prepareStackTrace` | `err`: Error, `stackTraces`: CallSite[] | any | - |
 
 #### Properties
@@ -519,9 +519,9 @@ The request exceeded the configured client timeout.
 
 #### Methods
 
-| Method | Params | Returns | Bot API |
+| Method | Params | Returns | Description |
 | --- | --- | --- | --- |
-| `captureStackTrace` | `targetObject`: object, `constructorOpt?`: Function | void | - |
+| `captureStackTrace` | `targetObject`: object, `constructorOpt?`: Function | void | Creates a `.stack` property on `targetObject`, which when accessed returns a string representing the location in the code at which `Error.captureStackTrace()` was called.  ```js const myObject = {}; Error.captureStackTrace(myObject); myObject.stack;  // Similar to `new Error().stack` ```  The first line of the trace will be prefixed with `${myObject.name}: ${myObject.message}`.  The optional `constructorOpt` argument accepts a function. If given, all frames above `constructorOpt`, including `constructorOpt`, will be omitted from the generated stack trace.  The `constructorOpt` argument is useful for hiding implementation details of error generation from the user. For instance:  ```js function a() {   b(); }  function b() {   c(); }  function c() {   // Create an error without stack trace to avoid calculating the stack trace twice.   const { stackTraceLimit } = Error;   Error.stackTraceLimit = 0;   const error = new Error();   Error.stackTraceLimit = stackTraceLimit;    // Capture the stack trace above function b   Error.captureStackTrace(error, b); // Neither function c, nor b is included in the stack trace   throw error; }  a(); ``` |
 | `prepareStackTrace` | `err`: Error, `stackTraces`: CallSite[] | any | - |
 
 #### Properties
@@ -543,15 +543,15 @@ waits exactly long enough for one to refill (abortable).
 
 #### Methods
 
-| Method | Params | Returns | Bot API |
+| Method | Params | Returns | Description |
 | --- | --- | --- | --- |
-| `take` | `signal?`: AbortSignal | Promise<void> | - |
+| `take` | `signal?`: AbortSignal | Promise<void> | Wait until a token is available, then consume one. The post-wait recheck closes the concurrent-oversell race: two `take()`s that both see an empty bucket compute the same wait, but on wake the first refills+decrements and the second's recheck sees the empty bucket again and waits another cycle - so the configured rate is never exceeded even under burst contention. The decrement happens only once the wait is in the past, so an aborted take consumes no token. |
 
 ### `Transport`
 
 #### Methods
 
-| Method | Params | Returns | Bot API |
+| Method | Params | Returns | Description |
 | --- | --- | --- | --- |
 | `request` | `method`: string, `params?`: Record<string, WireValue>, `signal?`: AbortSignal | Promise<R> | - |
 
@@ -567,7 +567,7 @@ A video story for `postStory`/`editStory`. `.build()` returns the `InputStoryCon
 
 #### Methods
 
-| Method | Params | Returns | Bot API |
+| Method | Params | Returns | Description |
 | --- | --- | --- | --- |
 | `build` | - | [InputStoryContent](#inputstorycontent) | - |
 
