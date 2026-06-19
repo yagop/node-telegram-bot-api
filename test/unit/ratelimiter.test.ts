@@ -98,4 +98,55 @@ describe("RateLimiter", () => {
     }
     assert.strictEqual((caught as Error).message, "stop waiting");
   });
+
+  test("concurrent takes on an empty bucket never oversell the burst", async () => {
+    // Regression for the take-after-take race: pre-fix, two takes that both saw
+    // an empty bucket both slept the same wait and both decremented on wake,
+    // letting burst+1 through. Post-fix (recheck loop), the second take sees the
+    // bucket drained again after its wait and waits another cycle.
+    const clock = fakeClock();
+    const bucket = new TokenBucket(1000, { burst: 1, now: clock.now });
+    await bucket.take(); // drain the single burst token
+
+    // Two concurrent takes from the empty bucket. With rate 1000/s the first
+    // wait is ~1ms; advance the clock so the refill catches up.
+    const p1 = bucket.take();
+    const p2 = bucket.take();
+    clock.advance(1000);
+    await p1; // first take resolves as soon as a token has accrued
+
+    // The second take must NOT have resolved at the same instant - it should
+    // still be waiting for the next refill. Confirm, then release it.
+    assert.strictEqual(await settledNextTick(p2), false);
+    clock.advance(1000);
+    await p2;
+    assert.strictEqual(true, true);
+  });
+
+  test("per-chat buckets are evicted LRU past maxChatBuckets", async () => {
+    const clock = fakeClock();
+    const limiter = new RateLimiter({ perChat: 1, maxChatBuckets: 2, now: clock.now });
+
+    // Each acquire drains its chat's single-token bucket; advance the fake clock
+    // before every acquire so refill() sees a full bucket and take() resolves
+    // immediately (no real-timer wait).
+    const acquireFresh = async (chat: string): Promise<void> => {
+      clock.advance(10_000);
+      await limiter.acquire(chat);
+    };
+    // Inspect the private map's insertion order to verify LRU behavior directly.
+    const keys = (): string[] =>
+      [...(limiter as unknown as { chats: Map<string, unknown> }).chats.keys()];
+
+    await acquireFresh("A");
+    await acquireFresh("B");
+    assert.deepStrictEqual(keys(), ["A", "B"]);
+
+    await acquireFresh("A"); // LRU touch: A moves to MRU; order is now B, A
+    assert.deepStrictEqual(keys(), ["B", "A"]);
+
+    await acquireFresh("C"); // at capacity -> evict LRU (B), insert C; order A, C
+    assert.deepStrictEqual(keys(), ["A", "C"]);
+    assert.strictEqual(keys().length, 2);
+  });
 });

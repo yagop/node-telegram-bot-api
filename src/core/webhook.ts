@@ -106,11 +106,17 @@ export function webhookCallback(bot: Bot, options: WebhookOptions = {}): (reques
     log("update %d", update.update_id);
 
     if (earlyAck) {
-      // Validate, kick off the handler, and ACK now. The bot's own catch boundary
-      // handles errors inside handleUpdate; we still attach a defensive `.catch`
-      // so a rejection escaping it can't surface as an unhandled rejection.
-      const work = Promise.resolve(bot.handleUpdate(update)).catch(() => {
-        /* swallowed: handleUpdate has its own error boundary */
+      // Validate, kick off the handler, and ACK now. The 200 is already sent, so
+      // a handler rejection can never reach the caller; `.catch` keeps it from
+      // surfacing as an unhandled rejection. With a `bot.catch()` boundary the
+      // rejection was already routed there and this catch never fires; without
+      // one, `handleUpdate` rethrows and we'd otherwise drop the error silently
+      // - log it (message + stack) so a handler bug stays debuggable. The error
+      // is rendered explicitly because `%o` would JSON-stringify an `Error` to
+      // `{}` (Errors carry their fields on non-enumerable properties).
+      const work = Promise.resolve(bot.handleUpdate(update)).catch((err: unknown) => {
+        const detail = err instanceof Error ? err.stack ?? err.message : String(err);
+        log("background handleUpdate failed for update %d: %s", update.update_id, detail);
       });
       if (waitUntil !== undefined) waitUntil(work);
       log("update %d: acked 200, handling in background", update.update_id);

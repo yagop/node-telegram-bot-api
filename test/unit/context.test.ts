@@ -96,4 +96,42 @@ describe("Context", () => {
     });
     assert.strictEqual(ctx.chatId, 444);
   });
+
+  test("chat / chatId resolve for every variant that carries a chat (regression)", () => {
+    const { api } = fakeApi();
+    const chat = { id: 4242, type: "private" };
+    // The variants the v1 of this getter used to miss (business_message,
+    // guest_message, deleted_business_messages, message_reaction_count,
+    // chat_boost, removed_chat_boost). Each MUST expose ctx.chat / ctx.chatId so
+    // ctx.reply works in handlers registered via bot.on(<kind>, ...).
+    const cases: Array<{ kind: string; payload: Record<string, unknown> }> = [
+      { kind: "business_message", payload: { message_id: 1, date: 0, chat, text: "bm" } },
+      { kind: "edited_business_message", payload: { message_id: 1, date: 0, chat, text: "ebm" } },
+      { kind: "deleted_business_messages", payload: { business_connection_id: "x", chat, message_ids: [1] } },
+      { kind: "guest_message", payload: { message_id: 1, date: 0, chat, text: "gm" } },
+      { kind: "message_reaction_count", payload: { chat, message_id: 1, date: 0, reactions: [] } },
+      { kind: "chat_boost", payload: { chat, boost: { boost_id: "b", source: { source: "premium" }, add_date: 0 } } },
+      { kind: "removed_chat_boost", payload: { chat, boost_id: "b", remove_date: 0, source: { source: "premium" } } },
+    ];
+    for (const { kind, payload } of cases) {
+      const ctx = new Context({ update_id: 1, [kind]: payload } as unknown as Update, api);
+      assert.strictEqual(ctx.chat?.id, 4242, `${kind} should resolve a chat`);
+      assert.strictEqual(ctx.chatId, 4242, `${kind} should resolve chatId`);
+    }
+  });
+
+  test("from resolves for variants whose actor is a User (regression)", () => {
+    const { api } = fakeApi();
+    const user = { id: 5050, is_bot: false, first_name: "U" };
+    const cases: Array<{ kind: string; payload: Record<string, unknown> }> = [
+      { kind: "business_connection", payload: { id: "bc", user, user_chat_id: 1, date: 0, is_enabled: true } },
+      { kind: "business_message", payload: { message_id: 1, date: 0, chat: { id: 1, type: "private" }, from: user, text: "x" } },
+      { kind: "guest_message", payload: { message_id: 1, date: 0, chat: { id: 1, type: "private" }, from: user, text: "x" } },
+      { kind: "managed_bot", payload: { user, bot: { id: 2, is_bot: true, first_name: "B" } } },
+    ];
+    for (const { kind, payload } of cases) {
+      const ctx = new Context({ update_id: 1, [kind]: payload } as unknown as Update, api);
+      assert.strictEqual(ctx.from?.id, 5050, `${kind} should resolve a from user`);
+    }
+  });
 });
