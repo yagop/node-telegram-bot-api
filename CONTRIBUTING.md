@@ -42,6 +42,26 @@ that is wrong). The full flow, including the rare generator extensions, is in th
 `update-bot-api` skill (`.claude/skills/update-bot-api/SKILL.md`).
 
 
+### Generating the API reference
+
+`doc/api.md` is a complete API reference, generated from the TypeScript source
+in two stages: TypeDoc serializes the project to `doc/api.json`, then
+`scripts/generate-docs.ts` walks that JSON into Markdown. Each `Api` method links
+to its Bot API page (the `{@link}` comments in `src/core/api.ts`, also
+emitted by the type generator). Regenerate whenever the public surface changes:
+
+```bash
+$ npm run generate:docs   # TypeDoc -> doc/api.json -> doc/api.md
+```
+
+`doc/api.md` is checked in; `doc/api.json` is an intermediate (gitignored).
+Confirm regeneration leaves no diff:
+
+```bash
+$ git diff --exit-code doc/api.md
+```
+
+
 ### Running tests
 
 The contributor gate is `npm run check` - run it before opening a PR. It chains
