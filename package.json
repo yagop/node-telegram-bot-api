@@ -49,7 +49,8 @@
     "format": "biome check --write --indent-style=space --line-width=120 ./src",
     "check": "npm run typecheck && npm run typecheck:test && npm run typecheck:examples && npm run lint:core && npm run check:edge && npm test",
     "generate:types": "bun scripts/api-parser.ts",
-    "prepublishOnly": "npm run build"
+    "prepublishOnly": "npm run build",
+    "generate:docs": "bun scripts/generate-docs.ts"
   },
   "author": "Yago Pérez <yagoperezs@gmail.com>",
   "license": "MIT",
@@ -62,6 +63,7 @@
     "@types/node": "^25.9.3",
     "bun": "^1.3.14",
     "tsx": "^4.22.3",
+    "typedoc": "^0.28.19",
     "typescript": "^5.9.3"
   },
   "repository": {
