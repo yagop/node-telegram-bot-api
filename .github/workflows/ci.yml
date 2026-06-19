@@ -33,8 +33,12 @@ jobs:
           node-version: 24
       - name: Install dependencies
         run: bun install --frozen-lockfile || bun install
-      - name: tsc --noEmit
+      - name: tsc --noEmit (src)
         run: npm run typecheck
+      - name: tsc --noEmit (test/)
+        run: npm run typecheck:test
+      - name: tsc --noEmit (examples/)
+        run: npm run typecheck:examples
 
   unit-bun:
     name: Unit tests (Bun)
