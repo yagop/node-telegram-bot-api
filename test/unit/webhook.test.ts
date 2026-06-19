@@ -1,7 +1,9 @@
-import { describe, test } from "node:test";
+import { afterEach, describe, test } from "node:test";
 import assert from "node:assert/strict";
 import type { Bot } from "../../src/core/bot.js";
+import { type DebugSink, getDebugSink, setDebugSink } from "../../src/core/debug.js";
 import { safeEqual, webhookCallback } from "../../src/core/webhook.js";
+import { compileDebugFilter } from "../../src/node/debug.js";
 import type { Update } from "../../src/types/index.js";
 
 /** A fake Bot exposing only handleUpdate, recording the updates it receives. */
@@ -161,6 +163,39 @@ describe("webhookCallback", () => {
     assert.strictEqual(res.status, 200);
     // The promise handed to waitUntil resolves (rejection is swallowed).
     assert.strictEqual(await captured, undefined);
+  });
+
+  test("fastAck logs a rejecting handler when no bot.catch() recovers it", async () => {
+    // With debug tracing captured, a handler rejection that escapes handleUpdate
+    // (no bot.catch() boundary) must surface in the log instead of vanishing.
+    const original = getDebugSink();
+    setDebugSink({
+      enabled: (ns) => ns === "node-telegram-bot-api:webhook",
+      write: (ns, line) => lines.push([ns, line]),
+    });
+    const lines: Array<[string, string]> = [];
+    try {
+      const bot = {
+        handleUpdate: () => Promise.reject(new Error("handler boom")),
+      } as unknown as Bot;
+      const handle = webhookCallback(bot, { fastAck: true });
+      const res = await handle(
+        new Request("https://h/hook", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify(UPDATE),
+        }),
+      );
+      assert.strictEqual(res.status, 200);
+      // Let the background `.catch` (which writes the log line) settle.
+      await new Promise((r) => setTimeout(r, 0));
+      assert.ok(
+        lines.some(([, line]) => line.includes("background handleUpdate failed") && line.includes("handler boom")),
+        `expected a failure log line, got: ${JSON.stringify(lines)}`,
+      );
+    } finally {
+      setDebugSink(original);
+    }
   });
 
   test("missing secret header runs the compare and fails with 401", async () => {
