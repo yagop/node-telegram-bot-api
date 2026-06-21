@@ -1,9 +1,16 @@
 version: "{build}"
 
 # AppVeyor is the Windows CI (Actions covers Linux on Bun + Node). The repo
-# ships bun.lock, not package-lock.json, so `npm ci` is unusable here — use
+# ships bun.lock, not package-lock.json, so `npm ci` is unusable here -> use
 # `npm install`, matching the Actions unit-node job. Same gate as Actions:
 # typecheck, then the Node (tsx) unit runner.
+#
+# `--ignore-scripts`: this job runs node-only (tsc + the tsx unit runner) and
+# never invokes bun, but `bun` is a devDependency whose postinstall downloads a
+# platform binary and hard-fails on Windows (no @oven/bun-windows-x64-baseline),
+# which would abort the whole install. Skipping lifecycle scripts sidesteps it;
+# tsx/esbuild still work because esbuild resolves its native binary from an
+# optionalDependency package (@esbuild/win32-x64), not from its postinstall.
 environment:
   matrix:
     - nodejs_version: "22"
@@ -15,7 +22,7 @@ install:
   - ps: Install-Product node $env:nodejs_version x64
   - node --version
   - npm --version
-  - npm install --no-audit --no-fund
+  - npm install --no-audit --no-fund --ignore-scripts
 
 test_script:
   - npm run typecheck
