@@ -15,6 +15,12 @@ version: "{build}"
 # `node --test`, which Windows shells do not expand and Node only globs itself
 # since v21. Node 20 would receive the literal pattern and find no tests. This
 # matches the Actions matrix (22/24/26).
+#
+# `image`: the default AppVeyor image is Windows Server 2012 R2, on which Node 24
+# refuses to run ("supported on Windows 10 / Server 2016 or higher"). Pin the
+# Visual Studio 2022 image (Server 2022) so the modern Node line installs.
+image: Visual Studio 2022
+
 environment:
   matrix:
     - nodejs_version: "22"
