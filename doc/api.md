@@ -746,12 +746,13 @@ export const POST = nextAppWebhook(bot);
 ### `nodeFrameworkWebhook()`
 
 An `(req, res) => Promise<void>` handler for Express / Connect / Next.js Pages
-API. Reads the raw request body off the stream, builds a Web `Request`, runs
-the core callback, and writes the Web `Response` back onto `res`.
+API. Reads the request body, builds a Web `Request`, runs the core callback, and
+writes the Web `Response` back onto `res`.
 
-We always read the raw stream (ignoring any body parser that may have already
-populated `req.body`): it is the simplest correct path and keeps this adapter
-independent of body-parsing middleware.
+Body source: if a parser already populated `req.body` (e.g. `express.json()`,
+which also *consumes* the stream) it is used directly; otherwise the raw stream
+is drained. This works whether or not a body parser ran upstream - draining
+unconditionally would yield an empty body behind a global `express.json()`.
 
 | Param | Type |
 | --- | --- |
@@ -913,6 +914,7 @@ Typed here so core never imports `node:http`.
 
 | Property | Type |
 | --- | --- |
+| `body`? | unknown |
 | `headers` | Record<string, string \| string[] \| undefined> |
 | `method`? | string |
 | `url`? | string |
@@ -949,6 +951,7 @@ Requests-per-second limits. Either field may be omitted to disable that tier.
 
 | Property | Type |
 | --- | --- |
+| `allowUnauthenticated`? | boolean |
 | `fastAck`? | boolean |
 | `hostname`? | string |
 | `path`? | string |
@@ -972,6 +975,7 @@ Requests-per-second limits. Either field may be omitted to disable that tier.
 
 | Property | Type |
 | --- | --- |
+| `allowUnauthenticated`? | boolean |
 | `fastAck`? | boolean |
 | `secretToken`? | string |
 | `waitUntil`? | (promise: Promise<unknown>) => void |
@@ -980,6 +984,7 @@ Requests-per-second limits. Either field may be omitted to disable that tier.
 
 | Property | Type |
 | --- | --- |
+| `allowUnauthenticated`? | boolean |
 | `fastAck`? | boolean |
 | `path`? | string |
 | `secretToken`? | string |

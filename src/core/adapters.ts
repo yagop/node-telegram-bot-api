@@ -25,6 +25,12 @@ export interface NodeLikeRequest {
   method?: string;
   url?: string;
   headers: Record<string, string | string[] | undefined>;
+  /**
+   * A body a parser may have already populated (e.g. Express's `express.json()`,
+   * which leaves a parsed object and *consumes* the stream). When present it is
+   * used directly; otherwise the raw stream below is drained. See {@link readBody}.
+   */
+  body?: unknown;
   [Symbol.asyncIterator](): AsyncIterableIterator<string | Uint8Array>;
 }
 
@@ -48,13 +54,40 @@ export function nextAppWebhook(bot: Bot, options?: WebhookOptions): (request: Re
 }
 
 /**
- * An `(req, res) => Promise<void>` handler for Express / Connect / Next.js Pages
- * API. Reads the raw request body off the stream, builds a Web `Request`, runs
- * the core callback, and writes the Web `Response` back onto `res`.
+ * Resolve the request body to a JSON string the core callback can parse.
  *
- * We always read the raw stream (ignoring any body parser that may have already
- * populated `req.body`): it is the simplest correct path and keeps this adapter
- * independent of body-parsing middleware.
+ * Prefers a pre-parsed `req.body` (an upstream parser both populates it and
+ * consumes the stream, so re-draining would yield ""): a string passes through, a
+ * `Buffer`/`Uint8Array` is decoded, and anything else (a parsed object) is
+ * re-stringified. With no `req.body`, the raw stream is drained - decoding
+ * `Uint8Array` chunks via the Web-standard `TextDecoder` (no node `Buffer`).
+ */
+async function readBody(req: NodeLikeRequest): Promise<string> {
+  const pre = req.body;
+  if (pre !== undefined && pre !== null) {
+    if (typeof pre === "string") return pre;
+    if (pre instanceof Uint8Array) return new TextDecoder().decode(pre);
+    return JSON.stringify(pre);
+  }
+
+  const decoder = new TextDecoder();
+  let body = "";
+  for await (const chunk of req) {
+    body += typeof chunk === "string" ? chunk : decoder.decode(chunk, { stream: true });
+  }
+  body += decoder.decode(); // flush any trailing multi-byte sequence
+  return body;
+}
+
+/**
+ * An `(req, res) => Promise<void>` handler for Express / Connect / Next.js Pages
+ * API. Reads the request body, builds a Web `Request`, runs the core callback, and
+ * writes the Web `Response` back onto `res`.
+ *
+ * Body source: if a parser already populated `req.body` (e.g. `express.json()`,
+ * which also *consumes* the stream) it is used directly; otherwise the raw stream
+ * is drained. This works whether or not a body parser ran upstream - draining
+ * unconditionally would yield an empty body behind a global `express.json()`.
  */
 export function nodeFrameworkWebhook(
   bot: Bot,
@@ -63,14 +96,7 @@ export function nodeFrameworkWebhook(
   const handle = webhookCallback(bot, options);
 
   return async function nodeHandler(req: NodeLikeRequest, res: NodeLikeResponse): Promise<void> {
-    // Accumulate the raw body. Decode Uint8Array chunks; append strings as-is.
-    // No node `Buffer` - `TextDecoder` is a Web standard available everywhere.
-    const decoder = new TextDecoder();
-    let body = "";
-    for await (const chunk of req) {
-      body += typeof chunk === "string" ? chunk : decoder.decode(chunk, { stream: true });
-    }
-    body += decoder.decode(); // flush any trailing multi-byte sequence
+    const body = await readBody(req);
 
     // Copy single-value headers into a Web `Headers`. Array-valued headers
     // (rare for webhook requests) are joined per the HTTP convention.

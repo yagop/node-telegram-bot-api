@@ -93,7 +93,7 @@ describe("webhookCallback", () => {
       },
     } as unknown as Bot;
 
-    const handle = webhookCallback(bot, { fastAck: true });
+    const handle = webhookCallback(bot, { fastAck: true, allowUnauthenticated: true });
     const res = await handle(
       new Request("https://h/hook", {
         method: "POST",
@@ -122,6 +122,7 @@ describe("webhookCallback", () => {
 
     let captured: Promise<unknown> | undefined;
     const handle = webhookCallback(bot, {
+      allowUnauthenticated: true,
       waitUntil: (p) => {
         captured = p;
       },
@@ -148,6 +149,7 @@ describe("webhookCallback", () => {
 
     let captured: Promise<unknown> | undefined;
     const handle = webhookCallback(bot, {
+      allowUnauthenticated: true,
       waitUntil: (p) => {
         captured = p;
       },
@@ -178,7 +180,7 @@ describe("webhookCallback", () => {
       const bot = {
         handleUpdate: () => Promise.reject(new Error("handler boom")),
       } as unknown as Bot;
-      const handle = webhookCallback(bot, { fastAck: true });
+      const handle = webhookCallback(bot, { fastAck: true, allowUnauthenticated: true });
       const res = await handle(
         new Request("https://h/hook", {
           method: "POST",
@@ -196,6 +198,24 @@ describe("webhookCallback", () => {
     } finally {
       setDebugSink(original);
     }
+  });
+
+  test("no secret and no opt-out -> throws at setup", () => {
+    const { bot } = fakeBot();
+    assert.throws(() => webhookCallback(bot), /requires `secretToken`/);
+    assert.throws(() => webhookCallback(bot, {}), /requires `secretToken`/);
+  });
+
+  test("no secret but allowUnauthenticated -> ok (no throw)", () => {
+    const { bot } = fakeBot();
+    assert.doesNotThrow(() => webhookCallback(bot, { allowUnauthenticated: true }));
+  });
+
+  test("malformed secret token -> throws at setup", () => {
+    const { bot } = fakeBot();
+    assert.throws(() => webhookCallback(bot, { secretToken: "" }), /Invalid `secretToken`/);
+    assert.throws(() => webhookCallback(bot, { secretToken: "has spaces" }), /Invalid `secretToken`/);
+    assert.throws(() => webhookCallback(bot, { secretToken: "a".repeat(257) }), /Invalid `secretToken`/);
   });
 
   test("missing secret header runs the compare and fails with 401", async () => {

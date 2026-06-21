@@ -29,16 +29,37 @@
 import type { Update } from "../types/index.js";
 import type { Bot } from "./bot.js";
 import { debug } from "./debug.js";
+import { TelegramBotError } from "./errors.js";
 
 const log = debug("webhook");
+
+/**
+ * The charset/length Telegram allows for `secret_token` (Bot API `setWebhook`):
+ * 1-256 of `A-Z`, `a-z`, `0-9`, `_`, `-`. A value outside this can never match the
+ * header Telegram sends, so we reject it at setup rather than 401-ing every update.
+ */
+const SECRET_TOKEN_RE = /^[A-Za-z0-9_-]{1,256}$/;
 
 export interface WebhookOptions {
   /**
    * If set, the `X-Telegram-Bot-Api-Secret-Token` request header must match it,
-   * else the callback responds 401. Mirrors `setWebhook`'s `secret_token`.
-   * Compared in constant time (see {@link safeEqual}).
+   * else the callback responds 401. Mirrors `setWebhook`'s `secret_token` (set the
+   * same value in both places). Must be 1-256 chars of `[A-Za-z0-9_-]`; an invalid
+   * value throws at setup. Compared in constant time (see {@link safeEqual}).
+   *
+   * REQUIRED unless {@link WebhookOptions.allowUnauthenticated} is set: webhook
+   * payloads are unsigned, so this header is the only thing authenticating a caller.
    */
   secretToken?: string;
+
+  /**
+   * Opt out of the required-secret check. When `true`, a callback may be created
+   * WITHOUT a `secretToken` - use only when authentication is enforced at another
+   * layer (a reverse proxy, mTLS, or an unguessable URL path). Without either a
+   * `secretToken` or this flag, {@link webhookCallback} throws at setup, so an
+   * unauthenticated webhook is never created by accident.
+   */
+  allowUnauthenticated?: boolean;
 
   /**
    * Early-ACK mode. When `true`, the handler returns `200` **immediately** after
@@ -77,7 +98,26 @@ export function safeEqual(a: string, b: string): boolean {
 }
 
 export function webhookCallback(bot: Bot, options: WebhookOptions = {}): (request: Request) => Promise<Response> {
-  const { secretToken, fastAck, waitUntil } = options;
+  const { secretToken, allowUnauthenticated, fastAck, waitUntil } = options;
+
+  // Secure by default: a webhook callback requires a secret token. The only way
+  // to create one without is to opt out explicitly (auth enforced elsewhere), so
+  // an unauthenticated endpoint can never be stood up by accident.
+  if (secretToken === undefined) {
+    if (allowUnauthenticated !== true) {
+      throw new TelegramBotError(
+        "webhookCallback requires `secretToken` (matching setWebhook's secret_token). " +
+          "Set it, or pass `allowUnauthenticated: true` if auth is enforced at another layer.",
+        { code: "EPARAM" },
+      );
+    }
+  } else if (!SECRET_TOKEN_RE.test(secretToken)) {
+    throw new TelegramBotError(
+      "Invalid `secretToken`: must be 1-256 characters of A-Z, a-z, 0-9, _ or - (per setWebhook).",
+      { code: "EPARAM" },
+    );
+  }
+
   // Providing a waitUntil hook implies fast-ACK behavior.
   const earlyAck = fastAck === true || waitUntil !== undefined;
 
