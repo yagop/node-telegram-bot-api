@@ -125,7 +125,9 @@ await api.sendMessage({ chat_id, text: "hi", link_preview_options: { is_disabled
 
 ## 📤 Uploads
 
-A bare string is always a `file_id` or URL. Wrap raw bytes to upload them.
+A bare string is always a `file_id` or URL. Wrap raw bytes to upload them. Pass a
+`filename` with the right extension - the core does no content sniffing, so the name is
+what Telegram sees (`fromPath` uses the basename).
 
 ```ts
 import { InputFile, MediaGroupBuilder } from "node-telegram-bot-api";
@@ -140,7 +142,7 @@ await api.sendDocument({ chat_id, document: new InputFile(bytes, { filename: "re
 await api.sendMediaGroup({
   chat_id,
   media: [
-    { type: "photo", media: new InputFile(bytesA), caption: "A" },
+    { type: "photo", media: new InputFile(bytesA, { filename: "a.jpg" }), caption: "A" },
     { type: "photo", media: "https://telegram.org/example/photo.jpg" },
   ],
 });
@@ -149,7 +151,7 @@ await api.sendMediaGroup({
 await api.sendMediaGroup({
   chat_id,
   media: new MediaGroupBuilder()
-    .photo({ media: new InputFile(bytesA), caption: "A" })
+    .photo({ media: new InputFile(bytesA, { filename: "a.jpg" }), caption: "A" })
     .photo({ media: "https://telegram.org/example/photo.jpg" })
     .build(),
 });
@@ -166,18 +168,18 @@ await api.createNewStickerSet({
   name,
   title,
   stickers: new StickerSetBuilder()
-    .add({ sticker: new InputFile(pngBytes), format: "static", emoji_list: ["🙂"] })
+    .add({ sticker: new InputFile(pngBytes, { filename: "sticker.png" }), format: "static", emoji_list: ["🙂"] })
     .build(),
 });
 
 // a single sticker is a plain InputSticker - no builder needed
-await api.addStickerToSet({ user_id, name, sticker: { sticker: new InputFile(pngBytes), format: "static", emoji_list: ["🙂"] } });
+await api.addStickerToSet({ user_id, name, sticker: { sticker: new InputFile(pngBytes, { filename: "sticker.png" }), format: "static", emoji_list: ["🙂"] } });
 
 // profile photo: Static / AnimatedProfilePhotoBuilder
-await api.setMyProfilePhoto({ photo: new StaticProfilePhotoBuilder({ photo: new InputFile(pngBytes) }).build() });
+await api.setMyProfilePhoto({ photo: new StaticProfilePhotoBuilder({ photo: new InputFile(pngBytes, { filename: "avatar.png" }) }).build() });
 
 // story: Photo / VideoStoryBuilder
-await api.postStory({ business_connection_id, active_period, content: new PhotoStoryBuilder({ photo: new InputFile(pngBytes) }).build() });
+await api.postStory({ business_connection_id, active_period, content: new PhotoStoryBuilder({ photo: new InputFile(pngBytes, { filename: "story.png" }) }).build() });
 ```
 
 ## 🪝 Webhooks
