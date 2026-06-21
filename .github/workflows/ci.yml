@@ -39,6 +39,10 @@ jobs:
         run: npm run typecheck:test
       - name: tsc --noEmit (examples/)
         run: npm run typecheck:examples
+      - name: Core stays Node-free (lint:core)
+        run: npm run lint:core
+      - name: Core bundles edge-safe (check:edge)
+        run: npm run check:edge
 
   unit-bun:
     name: Unit tests (Bun)
