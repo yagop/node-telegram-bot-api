@@ -40,7 +40,7 @@
     "build": "tsc -p tsconfig.build.json",
     "typecheck": "tsc --noEmit",
     "test": "bun test test/unit",
-    "test:node:unit": "node scripts/run-node-unit.mjs",
+    "test:node:unit": "node --test --import tsx \"test/unit/*.test.ts\"",
     "test:e2e": "bun test --timeout 300000 test/e2e",
     "typecheck:test": "tsc -p test/tsconfig.json --noEmit",
     "typecheck:examples": "tsc -p examples/tsconfig.json --noEmit",
