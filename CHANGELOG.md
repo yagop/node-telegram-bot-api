@@ -5,6 +5,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased][Unreleased]
 
+## [1.1.1][1.1.1] - 2026-06-22
+
 ### Added
 
 - `request.fetch` and `request.fetchOptions` options (on the `TelegramBot`
@@ -814,4 +816,5 @@ Fixed:
 [0.68.0]:https://github.com/yagop/node-telegram-bot-api/releases/tag/v0.68.0
 [1.0.0]:https://github.com/yagop/node-telegram-bot-api/releases/tag/v1.0.0
 [1.1.0]:https://github.com/yagop/node-telegram-bot-api/releases/tag/v1.1.0
-[Unreleased]:https://github.com/yagop/node-telegram-bot-api/compare/v1.1.0...master
+[1.1.1]:https://github.com/yagop/node-telegram-bot-api/releases/tag/v1.1.1
+[Unreleased]:https://github.com/yagop/node-telegram-bot-api/compare/v1.1.1...master
