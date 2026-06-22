@@ -73,3 +73,51 @@ describe("HttpClient 429 handling", () => {
     assert.equal(calls, 1);
   });
 });
+
+describe("HttpClient custom fetch / fetchOptions", () => {
+  afterEach(() => {
+    globalThis.fetch = originalFetch;
+  });
+
+  it("uses request.fetch instead of the global fetch", async () => {
+    // The global must NOT be called when a custom fetch is supplied.
+    globalThis.fetch = (async () => {
+      throw new Error("global fetch should not be called");
+    }) as typeof fetch;
+
+    let used = 0;
+    const custom: typeof fetch = async () =>
+      new Response(JSON.stringify(ok), { status: 200, headers: { "content-type": "application/json" } });
+    const spy: typeof fetch = (input, init) => {
+      used++;
+      return custom(input, init);
+    };
+
+    const client = new HttpClient("TOKEN", { request: { fetch: spy } });
+    const result = await client.request<{ id: number }>("getMe");
+    assert.deepEqual(result, { id: 1 });
+    assert.equal(used, 1, "the injected fetch should be used");
+  });
+
+  it("merges fetchOptions (e.g. dispatcher) into the init, controlled fields win", async () => {
+    let seen: (RequestInit & { dispatcher?: unknown }) | undefined;
+    const dispatcher = { marker: "proxy-agent" };
+    const spy: typeof fetch = async (_input, init) => {
+      seen = init as RequestInit & { dispatcher?: unknown };
+      return new Response(JSON.stringify(ok), { status: 200, headers: { "content-type": "application/json" } });
+    };
+
+    const client = new HttpClient("TOKEN", {
+      request: {
+        fetch: spy,
+        // method must NOT be overridable; dispatcher must pass through.
+        fetchOptions: { dispatcher, method: "GET" } as RequestInit & { dispatcher?: unknown },
+      },
+    });
+    await client.request("getMe");
+
+    assert.equal(seen?.dispatcher, dispatcher, "dispatcher is forwarded to fetch");
+    assert.equal(seen?.method, "POST", "the client's method wins over fetchOptions");
+    assert.ok(seen?.signal, "the client's abort signal is preserved");
+  });
+});
