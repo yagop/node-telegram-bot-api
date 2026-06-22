@@ -62,6 +62,26 @@ bot.on('message', (msg) => {
 
 More runnable examples live in the [`examples/`](./examples) directory.
 
+## 🌐 Proxy / custom transport
+
+Requests use the built-in `fetch`. To route a **single bot instance** through a
+proxy (without affecting the rest of the process), pass an undici `dispatcher` via
+`request.fetchOptions`:
+
+```ts
+import TelegramBot from 'node-telegram-bot-api';
+import { ProxyAgent } from 'undici';
+
+const bot = new TelegramBot(token, {
+  polling: true,
+  request: { fetchOptions: { dispatcher: new ProxyAgent('http://127.0.0.1:8080') } },
+});
+```
+
+For full control you can supply your own `fetch` implementation instead via
+`request.fetch` (useful for custom proxying, instrumentation, or tests). Both are
+scoped to that bot instance, so different bots can use different proxies.
+
 ## 📚 Documentation
 
 * [Usage][usage]

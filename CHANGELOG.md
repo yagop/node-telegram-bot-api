@@ -5,6 +5,26 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased][Unreleased]
 
+### Added
+
+- `request.fetch` and `request.fetchOptions` options (on the `TelegramBot`
+  constructor / `HttpClient`), for per-instance transport customization. Pass a
+  custom `fetch` implementation (e.g. undici's `fetch` bound to a `ProxyAgent`),
+  or extra fetch init such as an undici `dispatcher`, scoped to a single bot
+  instance - no `setGlobalDispatcher`, so other clients in the process are
+  unaffected. This restores the per-instance proxy capability that the legacy
+  `request.agent` provided before the move to the built-in `fetch`. (#1319)
+
+  ```ts
+  import TelegramBot from "node-telegram-bot-api";
+  import { ProxyAgent } from "undici";
+
+  const bot = new TelegramBot(token, {
+    polling: true,
+    request: { fetchOptions: { dispatcher: new ProxyAgent("http://127.0.0.1:8080") } },
+  });
+  ```
+
 ## [1.1.0][1.1.0] - 2026-06-13
 
 ### Bot API 10.1 (June 11, 2026)

@@ -56,6 +56,28 @@ export interface HttpClientOptions {
      * to opt out. Defaults to `2`.
      */
     maxRetriesOn429?: number;
+    /**
+     * Custom `fetch` implementation, used in place of the global `fetch` for
+     * every request from this client. The seam for per-instance proxying,
+     * instrumentation, or test doubles - e.g. wrap undici's `fetch` bound to a
+     * `ProxyAgent` dispatcher (no `setGlobalDispatcher`, so other clients in the
+     * process are unaffected). Defaults to `globalThis.fetch`.
+     */
+    fetch?: typeof fetch;
+    /**
+     * Extra `fetch` init merged into every request - the place to pass options
+     * the standard `RequestInit` does not type, most notably an undici
+     * `dispatcher` for a per-instance proxy:
+     *
+     * ```ts
+     * import { ProxyAgent } from "undici";
+     * new TelegramBot(token, { request: { fetchOptions: { dispatcher: new ProxyAgent(proxyUrl) } } });
+     * ```
+     *
+     * The client's own `method`/`body`/`headers`/`signal` always win over these,
+     * so they cannot be overridden here. `dispatcher` is Node-only (undici).
+     */
+    fetchOptions?: RequestInit & { dispatcher?: unknown };
   };
 }
 
@@ -193,14 +215,22 @@ export class HttpClient {
     }
     const timer = timeoutMs ? setTimeout(() => controller.abort(new Error("HTTP timeout")), timeoutMs) : null;
 
+    // Per-instance fetch seam: a caller-supplied `fetch` (e.g. undici bound to a
+    // ProxyAgent) replaces the global; `fetchOptions` are merged in first so the
+    // controlled fields below always win and a caller cannot clobber the
+    // method/body/headers/abort signal.
+    const fetchImpl = this.options.request?.fetch ?? fetch;
+    const extraInit = this.options.request?.fetchOptions;
+
     let response: Response;
     try {
-      response = await fetch(url, {
+      response = await fetchImpl(url, {
+        ...extraInit,
         method: "POST",
         body: body as BodyInit | undefined,
         headers,
         signal: controller.signal,
-      });
+      } as RequestInit);
     } catch (err) {
       throw new FatalError(err as Error);
     } finally {
