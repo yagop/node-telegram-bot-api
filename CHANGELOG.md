@@ -25,6 +25,16 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   });
   ```
 
+### Fixed
+
+- `editMessageMedia` now accepts a Buffer / stream / local file path for the new
+  `media` (and its `thumbnail` / `cover`), uploading it via an `attach://` part -
+  previously only a file_id / URL or the legacy `attach://<local-path>` form
+  worked. Resolved through the same `_buildMediaItems` pipeline as
+  `sendMediaGroup`; string callers and the old `attach://<local-path>` form are
+  unaffected.
+  ([#1189](https://github.com/yagop/node-telegram-bot-api/issues/1189))
+
 ## [1.1.0][1.1.0] - 2026-06-13
 
 ### Bot API 10.1 (June 11, 2026)

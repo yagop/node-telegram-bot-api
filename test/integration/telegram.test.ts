@@ -1419,6 +1419,16 @@ describe("Telegram Bot API (integration)", () => {
       assert.ok(edited === true || typeof edited === "object");
     });
 
+    it("replaces a photo using a Buffer upload", async () => {
+      const sent = await bot.sendPhoto(GROUP_ID, STICKER_THUMB_PATH);
+      const buf = fs.readFileSync(PHOTO_PATH);
+      const edited = await bot.editMessageMedia(
+        { type: "photo", media: buf, fileOptions: { filename: "photo.png", contentType: "image/png" } },
+        { chat_id: GROUP_ID, message_id: sent.message_id },
+      );
+      assert.ok(edited === true || typeof edited === "object");
+    });
+
     it("replaces a photo using a Telegram file_id (with caption + reply_markup)", async () => {
       // Send a different image first so swapping in `photoFileId` is a real change.
       const sent = await bot.sendPhoto(GROUP_ID, STICKER_THUMB_PATH);
