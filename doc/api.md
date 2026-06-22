@@ -158,8 +158,8 @@
         * [.getStickerSet(name, [options])](#TelegramBot+getStickerSet) ⇒ <code>Promise</code>
         * [.getCustomEmojiStickers(customEmojiIds, [options])](#TelegramBot+getCustomEmojiStickers) ⇒ <code>Promise</code>
         * [.uploadStickerFile(userId, sticker, [stickerFormat], [options], [fileOptions])](#TelegramBot+uploadStickerFile) ⇒ <code>Promise</code>
-        * [.createNewStickerSet(userId, name, title, pngSticker, emojis, [options], [fileOptions])](#TelegramBot+createNewStickerSet) ⇒ <code>Promise</code>
-        * [.addStickerToSet(userId, name, sticker, emojis, [stickerType], [options], [fileOptions])](#TelegramBot+addStickerToSet) ⇒ <code>Promise</code>
+        * [.createNewStickerSet([params])](#TelegramBot+createNewStickerSet) ⇒ <code>Promise</code>
+        * [.addStickerToSet([params])](#TelegramBot+addStickerToSet) ⇒ <code>Promise</code>
         * [.setStickerPositionInSet(sticker, position, [options])](#TelegramBot+setStickerPositionInSet) ⇒ <code>Promise</code>
         * [.deleteStickerFromSet(sticker, [options])](#TelegramBot+deleteStickerFromSet) ⇒ <code>Promise</code>
         * [.replaceStickerInSet(userId, name, oldSticker, [options])](#TelegramBot+replaceStickerInSet) ⇒ <code>Promise</code>
@@ -2410,7 +2410,11 @@ accepted for the primary `media`.
 
 <a name="TelegramBot+createNewStickerSet"></a>
 
-### telegramBot.createNewStickerSet(userId, name, title, pngSticker, emojis, [options], [fileOptions]) ⇒ <code>Promise</code>
+### telegramBot.createNewStickerSet([params]) ⇒ <code>Promise</code>
+Create a new sticker set owned by a user. Each entry in `stickers` is an
+{@link InputStickerInput} whose `sticker` accepts a file (Buffer / stream /
+local path, uploaded as an `attach://` part) or a file_id / URL string, plus
+the sticker's `format`, `emoji_list`, and optional `mask_position`/`keywords`.
 
 **Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
 
@@ -2420,17 +2424,14 @@ accepted for the primary `media`.
 
 | Param | Type | Description |
 | --- | --- | --- |
-| userId | <code>Number</code> |  |
-| name | <code>String</code> |  |
-| title | <code>String</code> |  |
-| pngSticker | <code>String \| Stream \| Buffer</code> |  |
-| emojis | <code>String</code> |  |
-| [options] | <code>Object</code> |  |
-| [fileOptions] | <code>Object</code> | Additional file options |
+| [params] | <code>Object</code> | Additional Telegram query options |
 
 <a name="TelegramBot+addStickerToSet"></a>
 
-### telegramBot.addStickerToSet(userId, name, sticker, emojis, [stickerType], [options], [fileOptions]) ⇒ <code>Promise</code>
+### telegramBot.addStickerToSet([params]) ⇒ <code>Promise</code>
+Add a sticker to an existing set. The `sticker` is an
+{@link InputStickerInput} whose `sticker` field accepts a file (Buffer /
+stream / local path, uploaded as an `attach://` part) or a file_id / URL string.
 
 **Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
 
@@ -2440,13 +2441,7 @@ accepted for the primary `media`.
 
 | Param | Type | Description |
 | --- | --- | --- |
-| userId | <code>Number</code> |  |
-| name | <code>String</code> |  |
-| sticker | <code>String \| Stream \| Buffer</code> |  |
-| emojis | <code>String</code> |  |
-| [stickerType] | <code>Object</code> |  |
-| [options] | <code>Object</code> |  |
-| [fileOptions] | <code>Object</code> | Additional file options |
+| [params] | <code>Object</code> | Additional Telegram query options |
 
 <a name="TelegramBot+setStickerPositionInSet"></a>
 

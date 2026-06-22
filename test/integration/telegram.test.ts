@@ -2259,7 +2259,12 @@ describe("Telegram Bot API (integration)", () => {
       assert.ok(uploadedFileId.length > 0);
       await sleep(1100);
 
-      await bot.createNewStickerSet(USER_ID, setName, "Integration Test Set", STICKER_PATH, "😀");
+      await bot.createNewStickerSet({
+        user_id: USER_ID,
+        name: setName,
+        title: "Integration Test Set",
+        stickers: [{ sticker: STICKER_PATH, format: "static", emoji_list: ["😀"] }],
+      });
     });
 
     after(async () => {
@@ -2273,7 +2278,11 @@ describe("Telegram Bot API (integration)", () => {
     });
 
     it("addStickerToSet appends a sticker", async () => {
-      const ok = await bot.addStickerToSet(USER_ID, setName, STICKER_WEBP_PATH, "🎈");
+      const ok = await bot.addStickerToSet({
+        user_id: USER_ID,
+        name: setName,
+        sticker: { sticker: STICKER_WEBP_PATH, format: "static", emoji_list: ["🎈"] },
+      });
       assert.equal(ok, true);
       const set = await bot.getStickerSet(setName);
       assert.ok(set.stickers.length >= 2);
@@ -2338,8 +2347,12 @@ describe("Telegram Bot API (integration)", () => {
       const me = await bot.getMe();
       maskSetName = `m${TIMESTAMP}_by_${me.username}`;
       await sleep(1100);
-      await bot.createNewStickerSet(USER_ID, maskSetName, "Integration Mask Set", STICKER_PATH, "😀", {
+      await bot.createNewStickerSet({
+        user_id: USER_ID,
+        name: maskSetName,
+        title: "Integration Mask Set",
         sticker_type: "mask",
+        stickers: [{ sticker: STICKER_PATH, format: "static", emoji_list: ["😀"] }],
       });
     });
 
@@ -2365,8 +2378,12 @@ describe("Telegram Bot API (integration)", () => {
       const me = await bot.getMe();
       emojiSetName = `e${TIMESTAMP}_by_${me.username}`;
       await sleep(1100);
-      await bot.createNewStickerSet(USER_ID, emojiSetName, "Integration Emoji Set", STICKER_EMOJI_PATH, "😀", {
+      await bot.createNewStickerSet({
+        user_id: USER_ID,
+        name: emojiSetName,
+        title: "Integration Emoji Set",
         sticker_type: "custom_emoji",
+        stickers: [{ sticker: STICKER_EMOJI_PATH, format: "static", emoji_list: ["😀"] }],
       });
     });
 
