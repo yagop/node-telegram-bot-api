@@ -1,6 +1,6 @@
 {
   "name": "node-telegram-bot-api",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Telegram Bot API — modern TypeScript rewrite with generated types",
   "type": "module",
   "main": "./dist/index.js",
