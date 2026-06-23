@@ -87,10 +87,12 @@ bot.catch((err, ctx) => console.error("handler failed", err));
 Structured fields are plain typed objects - pass a literal or use a fluent builder; the pipeline serializes either.
 
 ```ts
-import { InlineKeyboardBuilder, ReplyKeyboardBuilder, EntityBuilder } from "node-telegram-bot-api";
+import { Bot, InlineKeyboardBuilder, ReplyKeyboardBuilder, EntityBuilder } from "node-telegram-bot-api";
+
+const bot = new Bot(process.env.BOT_TOKEN!);
 
 // 🎛️ inline keyboard as reply_markup
-await api.sendMessage({
+await bot.api.sendMessage({
   chat_id,
   text: "Choose:",
   reply_markup: new InlineKeyboardBuilder()
@@ -102,7 +104,7 @@ await api.sendMessage({
 });
 
 // ⌨️ reply keyboard as reply_markup
-await api.sendMessage({
+await bot.api.sendMessage({
   chat_id,
   text: "Yes or no?",
   reply_markup: new ReplyKeyboardBuilder()
@@ -117,10 +119,10 @@ const { text, entities } = new EntityBuilder()
   .bold("world")
   .link("docs", "https://github.com/yagop/node-telegram-bot-api")
   .build();
-await api.sendMessage({ chat_id, text, entities });
+await bot.api.sendMessage({ chat_id, text, entities });
 
 // any structured field is just a plain object - no wrapper needed
-await api.sendMessage({ chat_id, text: "hi", link_preview_options: { is_disabled: true } });
+await bot.api.sendMessage({ chat_id, text: "hi", link_preview_options: { is_disabled: true } });
 ```
 
 ## 📤 Uploads
@@ -130,16 +132,18 @@ A bare string is always a `file_id` or URL. Wrap raw bytes to upload them. Pass 
 what Telegram sees (`fromPath` uses the basename).
 
 ```ts
-import { InputFile, MediaGroupBuilder } from "node-telegram-bot-api";
+import { Bot, InputFile, MediaGroupBuilder } from "node-telegram-bot-api";
 import { fromPath } from "node-telegram-bot-api/node";
 
+const bot = new Bot(process.env.BOT_TOKEN!);
+
 // upload from disk (Node only)
-await api.sendPhoto({ chat_id, photo: await fromPath("./cat.jpg") });
+await bot.api.sendPhoto({ chat_id, photo: await fromPath("./cat.jpg") });
 // upload raw bytes (web-standard, runs anywhere)
-await api.sendDocument({ chat_id, document: new InputFile(bytes, { filename: "report.pdf" }) });
+await bot.api.sendDocument({ chat_id, document: new InputFile(bytes, { filename: "report.pdf" }) });
 
 // a raw InputFile nested in a structure is auto-hoisted to an attach:// part
-await api.sendMediaGroup({
+await bot.api.sendMediaGroup({
   chat_id,
   media: [
     { type: "photo", media: new InputFile(bytesA, { filename: "a.jpg" }), caption: "A" },
@@ -148,7 +152,7 @@ await api.sendMediaGroup({
 });
 
 // MediaGroupBuilder: optional sugar for the same array
-await api.sendMediaGroup({
+await bot.api.sendMediaGroup({
   chat_id,
   media: new MediaGroupBuilder()
     .photo({ media: new InputFile(bytesA, { filename: "a.jpg" }), caption: "A" })
@@ -160,10 +164,18 @@ await api.sendMediaGroup({
 Builders cover the other `attach://` methods; each `.build()` returns the plain shape.
 
 ```ts
-import { StickerSetBuilder, StaticProfilePhotoBuilder, PhotoStoryBuilder } from "node-telegram-bot-api";
+import {
+  Bot,
+  InputFile,
+  StickerSetBuilder,
+  StaticProfilePhotoBuilder,
+  PhotoStoryBuilder,
+} from "node-telegram-bot-api";
+
+const bot = new Bot(process.env.BOT_TOKEN!);
 
 // collect a sticker set
-await api.createNewStickerSet({
+await bot.api.createNewStickerSet({
   user_id,
   name,
   title,
@@ -173,13 +185,23 @@ await api.createNewStickerSet({
 });
 
 // a single sticker is a plain InputSticker - no builder needed
-await api.addStickerToSet({ user_id, name, sticker: { sticker: new InputFile(pngBytes, { filename: "sticker.png" }), format: "static", emoji_list: ["🙂"] } });
+await bot.api.addStickerToSet({
+  user_id,
+  name,
+  sticker: { sticker: new InputFile(pngBytes, { filename: "sticker.png" }), format: "static", emoji_list: ["🙂"] },
+});
 
 // profile photo: Static / AnimatedProfilePhotoBuilder
-await api.setMyProfilePhoto({ photo: new StaticProfilePhotoBuilder({ photo: new InputFile(pngBytes, { filename: "avatar.png" }) }).build() });
+await bot.api.setMyProfilePhoto({
+  photo: new StaticProfilePhotoBuilder({ photo: new InputFile(pngBytes, { filename: "avatar.png" }) }).build(),
+});
 
 // story: Photo / VideoStoryBuilder
-await api.postStory({ business_connection_id, active_period, content: new PhotoStoryBuilder({ photo: new InputFile(pngBytes, { filename: "story.png" }) }).build() });
+await bot.api.postStory({
+  business_connection_id,
+  active_period,
+  content: new PhotoStoryBuilder({ photo: new InputFile(pngBytes, { filename: "story.png" }) }).build(),
+});
 ```
 
 ## 🪝 Webhooks
@@ -205,7 +227,7 @@ By default the callback awaits your handler before `200`. For slow handlers, opt
 export default {
   // ✅ return 200 immediately, then finish the handler in the background
   // waitUntil keeps the platform alive until it settles (fastAck: true = fire-and-forget)
-  fetch: (req, env, ctx) =>
+  fetch: (req: Request, _env: unknown, ctx: { waitUntil(promise: Promise<unknown>): void }) =>
     webhookCallback(bot, { secretToken: SECRET, waitUntil: (p) => ctx.waitUntil(p) })(req),
 };
 ```

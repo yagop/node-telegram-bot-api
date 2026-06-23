@@ -11,23 +11,23 @@
  *
  * Run: BOT_TOKEN=123:abc CHAT_ID=12345 bun examples/08-uploads.ts
  */
-import { Api, InputFile, MediaGroupBuilder } from "node-telegram-bot-api";
+import { Bot, InputFile, MediaGroupBuilder } from "node-telegram-bot-api";
 import { fromPath } from "node-telegram-bot-api/node";
 
-const api = new Api(process.env.BOT_TOKEN!);
+const bot = new Bot(process.env.BOT_TOKEN!);
 const chatId = Number(process.env.CHAT_ID ?? "0");
 
 if (chatId !== 0) {
   // 1) In-memory bytes → a tiny text document.
   const bytes = new TextEncoder().encode("hello from a Uint8Array\n");
-  await api.sendDocument({
+  await bot.api.sendDocument({
     chat_id: chatId,
     document: new InputFile(bytes, { filename: "hello.txt", contentType: "text/plain" }),
     caption: "Sent from memory",
   });
 
   // 2) A photo by URL (a plain string is a file_id or URL, sent as-is).
-  await api.sendPhoto({
+  await bot.api.sendPhoto({
     chat_id: chatId,
     photo: "https://picsum.photos/seed/ntba/600/400",
     caption: "Sent by URL",
@@ -35,7 +35,7 @@ if (chatId !== 0) {
 
   // 3) A file from disk via `fromPath` (uncomment once you have a real path):
   //    const local = await fromPath("./avatar.png");
-  //    await api.sendPhoto({ chat_id: chatId, photo: local });
+  //    await bot.api.sendPhoto({ chat_id: chatId, photo: local });
   void fromPath; // referenced so the import is exercised in the example
 
   // 4) An album. `new MediaGroupBuilder().build()` mints attach:// refs for any InputFile.
@@ -44,7 +44,7 @@ if (chatId !== 0) {
     .photo({ media: "https://picsum.photos/seed/b/400" })
     .photo({ media: new InputFile(bytes, { filename: "note.txt" }) }) // mixes uploads + URLs freely
     .build();
-  await api.sendMediaGroup({ chat_id: chatId, media: album });
+  await bot.api.sendMediaGroup({ chat_id: chatId, media: album });
 
   console.log("Uploads sent.");
 } else {
