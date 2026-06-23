@@ -7,6 +7,7 @@ v2 is a from-scratch redesign with **no backward compatibility** (see `ARCHITECT
 | `const TelegramBot = require('node-telegram-bot-api')` | `import { Bot } from 'node-telegram-bot-api'` (ESM-only) |
 | `new TelegramBot(token, { polling: true })` | `const bot = new Bot(token); bot.startPolling()` |
 | `new TelegramBot(token)` (for one-off calls) | `import { Api } from 'node-telegram-bot-api'; const api = new Api(token)` |
+| `request.fetchOptions.dispatcher` / proxy options | inject a custom Undici `fetch`: `new Api(token, { fetch: (url, init) => fetch(url, { ...init, dispatcher }) })` |
 | `bot.on('message', msg => ...)` | `bot.on('message', ctx => ...)` - a router over `Context`, not an `EventEmitter` |
 | `bot.onText(/\/echo (.+)/, (msg, m) => ...)` | `bot.hears(/\/echo (.+)/, ctx => { ctx.match[1] })` |
 | `bot.onReplyToMessage(chatId, msgId, ...)` | middleware reading `ctx.message.reply_to_message` |
