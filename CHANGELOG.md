@@ -5,6 +5,28 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased][Unreleased]
 
+## [1.1.2][1.1.2] - 2026-06-24
+
+### Added
+
+- **CommonJS consumption restored.** The package now ships a dual ESM + CJS
+  build (produced by `zshy`): the `package.json` `exports` map exposes both an
+  `import` and a `require` condition (with their own `.d.ts` / `.d.cts` typings),
+  so the library can be loaded with either syntax —
+
+  ```js
+  // CommonJS
+  const { TelegramBot } = require("node-telegram-bot-api");
+
+  // ESM (unchanged)
+  import TelegramBot from "node-telegram-bot-api";
+  ```
+
+  The v1.0.0 dynamic-import workaround
+  (`const { default: TelegramBot } = await import("node-telegram-bot-api")`) is
+  no longer required. Source maps are emitted for both module formats, and each
+  CJS artifact references its own map.
+
 ## [1.1.1][1.1.1] - 2026-06-22
 
 ### Added
@@ -817,4 +839,5 @@ Fixed:
 [1.0.0]:https://github.com/yagop/node-telegram-bot-api/releases/tag/v1.0.0
 [1.1.0]:https://github.com/yagop/node-telegram-bot-api/releases/tag/v1.1.0
 [1.1.1]:https://github.com/yagop/node-telegram-bot-api/releases/tag/v1.1.1
-[Unreleased]:https://github.com/yagop/node-telegram-bot-api/compare/v1.1.1...master
+[1.1.2]:https://github.com/yagop/node-telegram-bot-api/releases/tag/v1.1.2
+[Unreleased]:https://github.com/yagop/node-telegram-bot-api/compare/v1.1.2...master

@@ -36,6 +36,7 @@
   ],
   "scripts": {
     "build": "zshy --project tsconfig.build.json",
+    "postbuild": "node scripts/fix-cjs-sourcemaps.mjs",
     "prepare": "npm run build",
     "typecheck": "tsc --noEmit",
     "generate:types": "bun scripts/api-parser.ts",
