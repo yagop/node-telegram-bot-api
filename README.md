@@ -21,8 +21,9 @@ Node.js module to interact with the official [Telegram Bot API](https://core.tel
 npm i node-telegram-bot-api
 ```
 
-> ✍️ **Note:** This package is **ESM-only** and requires **Node.js ≥ 18**. Use
-> `import` (not `require`). **TypeScript types are bundled** — do **not** install
+> ✍️ **Note:** This package provides both **ESM** and **CommonJS (CJS)** builds and
+> requires **Node.js ≥ 18**. Use `import` in ESM projects or destructured
+> `require` in CommonJS projects. **TypeScript types are bundled** — do **not** install
 > `@types/node-telegram-bot-api` (it would shadow the bundled, more accurate
 > types). Upgrading from `0.6x`? See the [migration notes in the changelog][migration].
 
@@ -58,6 +59,13 @@ bot.on('message', (msg) => {
   // send a message to the chat acknowledging receipt of their message
   bot.sendMessage(chatId, 'Received your message');
 });
+```
+
+```js
+const { TelegramBot } = require('node-telegram-bot-api');
+
+const token = 'YOUR_TELEGRAM_BOT_TOKEN';
+const bot = new TelegramBot(token, { polling: true });
 ```
 
 More runnable examples live in the [`examples/`](./examples) directory.

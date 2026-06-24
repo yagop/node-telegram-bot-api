@@ -1,14 +1,21 @@
 {
   "name": "node-telegram-bot-api",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "description": "Telegram Bot API — modern TypeScript rewrite with generated types",
   "type": "module",
-  "main": "./dist/index.js",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
     }
   },
   "files": [
@@ -28,7 +35,7 @@
     "typescript"
   ],
   "scripts": {
-    "build": "tsc -p tsconfig.build.json",
+    "build": "zshy --project tsconfig.build.json",
     "prepare": "npm run build",
     "typecheck": "tsc --noEmit",
     "generate:types": "bun scripts/api-parser.ts",
@@ -46,7 +53,12 @@
   "devDependencies": {
     "@types/node": "^25.6.2",
     "tsx": "^4.22.3",
-    "typescript": "^5.7.0"
+    "typescript": "^5.7.0",
+    "zshy": "^0.7.3"
+  },
+  "zshy": {
+    "exports": "./src/index.ts",
+    "noEdit": true
   },
   "repository": {
     "type": "git",
