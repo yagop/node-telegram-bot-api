@@ -11,7 +11,7 @@
 
 </div>
 
-> **v2 is a from-scratch redesign, no v1 compatibility.** Coming from v1? See [`redesign/MIGRATION.md`](./redesign/MIGRATION.md); design rationale in [`redesign/ARCHITECTURE.md`](./redesign/ARCHITECTURE.md).
+> **v2 is a from-scratch redesign, no v1 compatibility.** Coming from v1? See the [v1 -> v2 migration guide](./CHANGELOG.md) in the changelog.
 
 ## 📦 Install
 

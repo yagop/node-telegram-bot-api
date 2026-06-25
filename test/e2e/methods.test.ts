@@ -16,9 +16,11 @@
  * gift / managed-bot / passport, etc.) WILL FAIL when run live in this environment.
  * That is intended - the suite no longer masks those rejections.
  *
- * RUNNING THE FULL SUITE LOGS THE BOT OUT: `logOut` and `close` are the LAST two
- * describe blocks and terminate the bot session (~10 min lockout). Acceptable for
- * a droppable test bot. Anything placed after them would 401.
+ * RUNNING THE FULL SUITE DOES NOT LOG THE BOT OUT: the session terminators `logOut`
+ * and `close` (and other bot-bricking methods) are `test.skip`-ed, so a full run leaves
+ * the bot usable. They stay registered as the LAST two describe blocks so the coverage
+ * guard still sees them; un-skipping them terminates the session (~10 min lockout), and
+ * anything placed after them would 401.
  *
  * Credentials come from the environment (loaded from `.env` by `bun test`):
  *   NODE_TELEGRAM_TOKEN, TEST_GROUP_ID, TEST_USER_ID.

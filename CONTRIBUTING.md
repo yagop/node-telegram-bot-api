@@ -77,8 +77,9 @@ $ npm run test:node:unit      # same suite via Node's node:test + tsx
 
 The e2e suite hits the real `api.telegram.org` and needs credentials, read from
 `.env` (Bun loads it automatically): `NODE_TELEGRAM_TOKEN`, `TEST_GROUP_ID`,
-`TEST_USER_ID`. It is slow, flood-limited, and its last two blocks (`logOut`,
-`close`) terminate the bot session, so run it scoped, only via:
+`TEST_USER_ID`. The session terminators (`logOut`, `close`) are `test.skip`-ed, so a
+full run will not log the bot out, but it is slow, flood-limited, and env-limited
+methods fail by design - so run it scoped, only via:
 
 ```bash
 $ npm run test:e2e            # bun test --timeout 300000 test/e2e
@@ -90,11 +91,13 @@ run, flood limits, and fixture gotchas.
 
 ### Building
 
-The published artifact in `dist/` is produced by the TypeScript compiler
-(there is no babel step anymore):
+The published artifact in `dist/` is a dual ESM + CJS build produced by `zshy`
+(ESM `*.js` / `*.d.ts` plus CommonJS `*.cjs` / `*.d.cts`), exposed via the
+`exports` map's `import`/`require` conditions. A `postbuild` step repairs the
+CJS source-map references:
 
 ```bash
-$ npm run build   # tsc -p tsconfig.build.json
+$ npm run build   # zshy --project tsconfig.build.json (then postbuild fixes CJS source maps)
 ```
 
 [coc]:https://github.com/yagop/node-telegram-bot-api/blob/master/CODE_OF_CONDUCT.md

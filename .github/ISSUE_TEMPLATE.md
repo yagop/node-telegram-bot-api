@@ -18,7 +18,7 @@ Reporting a Bug.
 I have read:
 
 * [README / usage](https://github.com/yagop/node-telegram-bot-api#readme)
-* [v1 -> v2 migration guide](https://github.com/yagop/node-telegram-bot-api/blob/master/redesign/MIGRATION.md)
+* [v1 -> v2 migration guide](https://github.com/yagop/node-telegram-bot-api/blob/master/CHANGELOG.md)
 
 I am using the latest version of the library.
 

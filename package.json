@@ -1,7 +1,7 @@
 {
   "name": "node-telegram-bot-api",
   "version": "2.0.0-alpha.0",
-  "description": "Telegram Bot API - runtime-agnostic TypeScript client (v2). See redesign/ARCHITECTURE.md.",
+  "description": "Telegram Bot API - runtime-agnostic TypeScript client (v2).",
   "type": "module",
   "main": "./dist/core/index.cjs",
   "module": "./dist/core/index.js",
