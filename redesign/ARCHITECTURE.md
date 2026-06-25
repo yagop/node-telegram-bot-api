@@ -303,7 +303,7 @@ Backward compatibility is dropped, so these are intentional:
 7. **Polling:** `TelegramBotPolling` and `startPolling`/`stopPolling`/`isPolling` -> `bot.startPolling()`/`bot.stop()`/`bot.isRunning()` or `longPoll()` directly.
 8. **Errors:** `EFATAL` splits into `NetworkError`/`TimeoutError`; `TelegramError` → `TelegramApiError` with structured fields. `.code` strings are preserved.
 9. **`Update` is a discriminated union** - `update.message` only exists on the message variant.
-10. **ESM-only, web-standard.** No CommonJS build. Node floor stays at 18 (first LTS with stable global `fetch`). Subpath exports: core at `.`, Node helpers at `./node`.
+10. **Web-standard core, dual ESM+CJS package.** The source and `src/core` use only Web-standard APIs, but the published package ships both ESM (`*.js`/`*.d.ts`) and CommonJS (`*.cjs`/`*.d.cts`) via `zshy`, so it can be `import`ed or `require`d; `src/core` stays Node-free, so the edge story is unchanged. Node floor stays at 18 (first LTS with stable global `fetch`). Subpath exports: core at `.`, Node helpers at `./node`.
 
 ---
 

@@ -4,7 +4,7 @@ v2 is a from-scratch redesign with **no backward compatibility** (see `ARCHITECT
 
 | Before (v1) | After (v2) |
 |-------------|------------|
-| `const TelegramBot = require('node-telegram-bot-api')` | `import { Bot } from 'node-telegram-bot-api'` (ESM-only) |
+| `const TelegramBot = require('node-telegram-bot-api')` | `import { Bot } from 'node-telegram-bot-api'` (or `const { Bot } = require(...)` - both work) |
 | `new TelegramBot(token, { polling: true })` | `const bot = new Bot(token); bot.startPolling()` |
 | `new TelegramBot(token)` (for raw API calls) | `const bot = new Bot(token); await bot.api.getMe()` |
 | `request.fetchOptions.dispatcher` / proxy options | inject a custom Undici `fetch`: `new Bot(token, { fetch: (url, init) => fetch(url, { ...init, dispatcher }) })` |
@@ -25,7 +25,7 @@ v2 is a from-scratch redesign with **no backward compatibility** (see `ARCHITECT
 | `EFATAL` | split into `NetworkError` (`EFETCH`) and `TimeoutError` (`ETIMEOUT`) |
 | `update.message` always `Message \| undefined` | `Update` is a discriminated union - `if ('message' in update) update.message` narrows |
 | `bot.getMe(...)` etc. (positional + options) | every method takes a single params object: `bot.api.getMe()`, `bot.api.getChat({ chat_id })` |
-| CommonJS, Node-only | ESM-only, web-standard core; runs on Node 18+, Bun, Deno, Workers, edge |
+| CommonJS, Node-only | web-standard core (Node 18+, Bun, Deno, Workers, edge); published dual ESM+CJS, so `import` or `require` both work |
 
 ## Longer examples
 
@@ -179,18 +179,19 @@ await bot.api.getMe();
 
 ## Runtime & module format
 
-v2 is **ESM-only** - there is no CommonJS build, no `require()` entry, and no UMD/CJS shim. This is the largest single source of breakage for existing integrations: any project still on `require('node-telegram-bot-api')` will fail at load, and the failure is immediate (a module-resolution error), not a runtime surprise. Be honest about the blast radius before upgrading - CommonJS codebases, older bundler configs, and tools that can't load ESM are all affected.
-
-The **package name is intentionally retained** (`node-telegram-bot-api`) even though v2 shares no API surface with v1. This is a deliberate semver-major: the name carries the install base and the docs/SEO, and v2 owns the lineage. The cost is that `npm install node-telegram-bot-api` on an old tutorial now lands you on a completely different API - the version (`^2`) is the only signal, so pin it.
-
-**CJS interop path.** If you must consume v2 from a CommonJS module, use a dynamic `import()`, which is available in CJS:
+v2's **source and runtime-agnostic core are ESM / web-standard**, but the **published package is dual-module**: `zshy` emits both an ESM build (`*.js` / `*.d.ts`) and a CommonJS build (`*.cjs` / `*.d.cts`), and the `package.json` `exports` map exposes both `import` and `require` conditions. So unlike v1, the module system is **not** a migration blocker - a CommonJS project can keep calling `require()`:
 
 ```js
-// CommonJS consumer
-const { Bot, Api } = await import("node-telegram-bot-api");
+// CommonJS
+const { Bot, Api } = require("node-telegram-bot-api");
+
+// ESM
+import { Bot, Api } from "node-telegram-bot-api";
 ```
 
-`await import()` works at the top level of an ESM module and inside any `async` function in CJS. A plain top-level `require()` will not - that's the breaking constraint, not an oversight.
+The real break from v1 is the **API surface** (no `TelegramBot` class, single-argument methods, middleware instead of events - see the table above and the breaking-changes list), not the way you load the module. The runtime-agnostic core still imports only web-standard APIs, so it runs unchanged on Node 18+, Bun, Deno, and edge runtimes; the CommonJS build is purely a convenience for Node consumers and pulls no Node dependency into the core.
+
+The **package name is intentionally retained** (`node-telegram-bot-api`) even though v2 shares no API surface with v1. This is a deliberate semver-major: the name carries the install base and the docs/SEO, and v2 owns the lineage. The cost is that `npm install node-telegram-bot-api` on an old tutorial now lands you on a completely different API - the version (`^2`) is the only signal, so pin it.
 
 ## Mental-model shifts
 
