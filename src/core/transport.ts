@@ -9,10 +9,11 @@
  */
 
 import { debug } from "./debug.js";
-import { delay } from "./delay.js";
+import { backoff, delay } from "./delay.js";
 import { encodeForm } from "./encode.js";
 import {
   type ApiErrorParameters,
+  HTTP_STATUS_TOO_MANY_REQUESTS,
   isAbortError,
   NetworkError,
   ParseError,
@@ -108,12 +109,6 @@ export class Transport {
     if (options.rateLimit) this.limiter = new RateLimiter(options.rateLimit);
   }
 
-  /** Exponential backoff for transient retries: `base * 2^(attempt-1)`, capped, with jitter. */
-  private backoff(attempt: number): number {
-    const exp = Math.min(this.retryBackoffMs * 2 ** (attempt - 1), MAX_BACKOFF);
-    return exp * (0.5 + Math.random() * 0.5);
-  }
-
   /** For long polling the client timeout must outlast the server-side wait. */
   private effectiveTimeout(method: string, params?: Record<string, WireValue>): number {
     if (method === "getUpdates" && params && typeof params.timeout === "number" && params.timeout > 0) {
@@ -159,7 +154,7 @@ export class Transport {
         if (signal?.aborted) throw err; // caller cancelled - propagate verbatim
         // Transient throws (fetch reject / body-read failure / our timeout): retry.
         if (attempt < this.maxRetries) {
-          const wait = this.backoff(attempt + 1);
+          const wait = backoff(attempt + 1, this.retryBackoffMs, MAX_BACKOFF);
           log("%s transient error; retry %d/%d in %dms", method, attempt + 1, this.maxRetries, wait);
           await delay(wait, signal);
           continue;
@@ -173,7 +168,7 @@ export class Transport {
       // Server-side 5xx is transient: retry without parsing the body.
       if (response.status >= 500) {
         if (attempt < this.maxRetries) {
-          const wait = this.backoff(attempt + 1);
+          const wait = backoff(attempt + 1, this.retryBackoffMs, MAX_BACKOFF);
           log("%s HTTP %d; retry %d/%d in %dms", method, response.status, attempt + 1, this.maxRetries, wait);
           await delay(wait, signal);
           continue;
@@ -201,7 +196,7 @@ export class Transport {
         return json.result;
       }
 
-      if (json.error_code === 429 && attempt < this.maxRetries) {
+      if (json.error_code === HTTP_STATUS_TOO_MANY_REQUESTS && attempt < this.maxRetries) {
         const retryAfter = json.parameters?.retry_after ?? 1;
         // Honor `retry_after` only up to the cap (0 = no cap). A longer flood-wait is
         // surfaced immediately (caller reads err.retryAfter) rather than hanging the

@@ -62,7 +62,7 @@ describe("longPoll", () => {
     const seen: number[] = [];
     for await (const update of longPoll(
       api,
-      { maxBackoffMs: 1 }, // keep backoff ~0 (jittered <=1ms)
+      { retryDelayMs: 1 }, // short retry so the test doesn't wait the 1s default
       controller.signal,
     )) {
       seen.push(update.update_id);
@@ -70,6 +70,30 @@ describe("longPoll", () => {
 
     assert.deepStrictEqual(seen, [5, 6]);
     // Offsets per call: 1st undefined, 2nd 6 (after yielding 5), 3rd 6 (no advance across failure).
+    assert.deepStrictEqual(offsets, [undefined, 6, 6]);
+  });
+
+  test("resumes after a 429 without advancing offset (a flood never kills the loop)", async () => {
+    const controller = new AbortController();
+    const { api, offsets } = fakeApi([
+      () => [upd(5)], // success: yields 5, offset advances to 6
+      () => {
+        // 429 with retry_after 0 -> honored (waits ~0ms) and retried, not fatal.
+        throw new TelegramApiError(429, "Too Many Requests", { retry_after: 0 });
+      },
+      () => {
+        controller.abort();
+        return [upd(6)]; // resume at the same offset, yields 6
+      },
+    ]);
+
+    const seen: number[] = [];
+    for await (const update of longPoll(api, {}, controller.signal)) {
+      seen.push(update.update_id);
+    }
+
+    assert.deepStrictEqual(seen, [5, 6]);
+    // Offset is NOT advanced across the 429 (same as a transient error).
     assert.deepStrictEqual(offsets, [undefined, 6, 6]);
   });
 
@@ -82,7 +106,7 @@ describe("longPoll", () => {
 
     let caught: unknown;
     try {
-      for await (const _ of longPoll(api, { maxBackoffMs: 1 })) {
+      for await (const _ of longPoll(api, { retryDelayMs: 1 })) {
         // no-op
       }
     } catch (err) {

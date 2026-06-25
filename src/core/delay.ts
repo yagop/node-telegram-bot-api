@@ -1,6 +1,7 @@
 /**
- * Abortable timer helpers shared across core (transport backoff, long-poll
- * backoff, rate-limit waits). Edge-safe: only the Web-standard `setTimeout`.
+ * Abortable timer + backoff helpers shared across core (transport retry,
+ * long-poll loop, rate-limit waits). Edge-safe: only the Web-standard
+ * `setTimeout` and `Math.random`.
  */
 
 /**
@@ -21,4 +22,14 @@ export function delay(ms: number, signal?: AbortSignal): Promise<void> {
     };
     signal?.addEventListener("abort", onAbort, { once: true });
   });
+}
+
+/**
+ * Exponential backoff with full-range jitter: `baseMs * 2^(attempt-1)`, capped
+ * at `capMs`, then scaled to a random 50-100% of that. `attempt` is 1-based (the
+ * first retry is 1). Used by the transport's per-request retry.
+ */
+export function backoff(attempt: number, baseMs: number, capMs: number): number {
+  const exp = Math.min(baseMs * 2 ** (attempt - 1), capMs);
+  return exp * (0.5 + Math.random() * 0.5);
 }

@@ -707,9 +707,10 @@ Cloudflare Workers), so the transport classifies our own client timeout as a
 
 Classifies an error as transient (worth retrying) vs fatal.
 
-True for a `NetworkError`, a `TimeoutError`, or a `TelegramApiError` whose
-`errorCode >= 500` (server-side failure). A 429 is *not* treated here - the
-transport handles it separately via its `retry_after` path.
+True for a `NetworkError`, a `TimeoutError`, or a `TelegramApiError` that is a
+429 (rate limit) or `errorCode >= 500` (server-side failure). When retrying,
+honor `err.retryAfter` if present (a 429 carries it), else fall back to a
+default delay.
 
 | Param | Type |
 | --- | --- |
@@ -718,6 +719,8 @@ transport handles it separately via its `retry_after` path.
 **Returns:** boolean
 
 ### `longPoll()`
+
+Async-generator update source (ADR-004): long-polls `getUpdates` and yields each update until the signal aborts.
 
 | Param | Type |
 | --- | --- |
@@ -901,10 +904,10 @@ field name and attaches each part - it still stringifies nothing (ADR-011).
 | --- | --- |
 | `allowedUpdates`? | string[] |
 | `limit`? | number |
-| `maxBackoffMs`? | number |
 | `offset`? | number |
 | `onError`? | (err: unknown) => void |
 | `retry`? | boolean |
+| `retryDelayMs`? | number |
 | `timeout`? | number |
 
 ### `NodeLikeRequest`
@@ -8608,6 +8611,16 @@ const EntityType: {
   readonly Underline: "underline";
   readonly Url: "url";
 };
+```
+
+### `HTTP_STATUS_TOO_MANY_REQUESTS`
+
+HTTP 429 "Too Many Requests". Mirrors `node:http2`'s
+`constants.HTTP_STATUS_TOO_MANY_REQUESTS`, redefined here because `src/core`
+stays Node-free (no `node:*` imports).
+
+```ts
+const HTTP_STATUS_TOO_MANY_REQUESTS: 429;
 ```
 
 ### `UPDATE_TYPES`

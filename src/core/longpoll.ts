@@ -1,18 +1,8 @@
-/**
- * Async-generator update source (ADR-004).
- *
- * Replaces the bespoke polling class with the shape it always was:
- * `while (running) yield* updates`. Offset tracking and cancellation are just a
- * loop plus an `AbortSignal`. Because it is a plain async iterable, callers can
- * `for await` it, `take(n)`, filter, or fan out. The loop's error policy is the
- * caller's concern: an abort returns cleanly, anything else rethrows.
- */
-
 import type { Update } from "../types/index.js";
 import type { Api } from "./api.js";
 import { debug } from "./debug.js";
 import { delay } from "./delay.js";
-import { isTransientError } from "./errors.js";
+import { TelegramApiError, isTransientError } from "./errors.js";
 
 export interface LongPollOptions {
   offset?: number;
@@ -20,29 +10,34 @@ export interface LongPollOptions {
   /** Long-poll seconds passed to Telegram. Default 30. */
   timeout?: number;
   allowedUpdates?: string[];
-  /** Resume the loop on transient (network/timeout/5xx) errors. Default true. */
+  /** Resume the loop on transient errors (network / timeout / 5xx / 429). Default true. */
   retry?: boolean;
-  /** Cap for the exponential backoff between failed polls, in ms. Default 60000. */
-  maxBackoffMs?: number;
-  /** Observe each transient error before the loop backs off and resumes. */
+  /** Delay before re-polling after a transient error that carries no `retry_after`, in ms. Default 1000. */
+  retryDelayMs?: number;
+  /** Observe each transient error before the loop waits and resumes. */
   onError?: (err: unknown) => void;
 }
 
-const BASE_BACKOFF = 1000;
-const DEFAULT_MAX_BACKOFF = 60_000;
+const DEFAULT_POLL_TIMEOUT = 30; // 30 seconds
+const DEFAULT_RETRY_DELAY = 1000; // 1 second, when the error carries no retry_after
 
 const log = debug("polling");
 
+/** A transient error's `retry_after` in ms (only `TelegramApiError` carries one), or undefined. */
+function retryAfterMs(err: unknown): number | undefined {
+  const seconds = err instanceof TelegramApiError ? err.retryAfter : undefined;
+  return seconds === undefined ? undefined : seconds * 1000;
+}
+
+/** Async-generator update source (ADR-004): long-polls `getUpdates` and yields each update until the signal aborts. */
 export async function* longPoll(api: Api, options: LongPollOptions = {}, signal?: AbortSignal): AsyncGenerator<Update> {
   let offset = options.offset;
-  const timeout = options.timeout ?? 30;
+  const timeout = options.timeout ?? DEFAULT_POLL_TIMEOUT;
   const limit = options.limit;
   const allowed = options.allowedUpdates;
   const retry = options.retry ?? true;
-  const maxBackoffMs = options.maxBackoffMs ?? DEFAULT_MAX_BACKOFF;
+  const retryDelayMs = options.retryDelayMs ?? DEFAULT_RETRY_DELAY;
   const onError = options.onError;
-
-  let failures = 0;
 
   log("started (timeout=%ds)", timeout);
   while (!signal?.aborted) {
@@ -58,22 +53,25 @@ export async function* longPoll(api: Api, options: LongPollOptions = {}, signal?
         signal,
       );
     } catch (err) {
-      if (signal?.aborted) return; // cancelled - swallow the abort error
-      if (!retry || !isTransientError(err)) throw err; // fatal - surface it
+      // cancelled - swallow the abort error
+      if (signal?.aborted) return;
+      // fatal - surface it
+      if (!retry || !isTransientError(err)) throw err;
       onError?.(err);
-      failures += 1;
-      const exp = Math.min(BASE_BACKOFF * 2 ** (failures - 1), maxBackoffMs);
-      const wait = exp * (0.5 + Math.random() * 0.5);
-      log("getUpdates failed; backoff %dms (failure %d)", Math.round(wait), failures);
+      // Honor the error's retry_after (e.g. a 429 flood-wait) when present, else
+      // the default delay; re-poll WITHOUT advancing the offset.
+      const wait = retryAfterMs(err) ?? retryDelayMs;
+      log("getUpdates failed; retry in %dms", Math.round(wait));
       try {
         await delay(wait, signal);
       } catch {
-        return; // aborted during backoff
+        // aborted during the wait
+        return;
       }
-      continue; // retry WITHOUT advancing offset
+      // retry WITHOUT advancing offset
+      continue;
     }
 
-    failures = 0; // reset backoff after any successful poll
     if (updates.length > 0) log("%d update(s)", updates.length);
     for (const update of updates) {
       yield update;

@@ -13,6 +13,13 @@ export interface ApiErrorParameters {
   migrate_to_chat_id?: number;
 }
 
+/**
+ * HTTP 429 "Too Many Requests". Mirrors `node:http2`'s
+ * `constants.HTTP_STATUS_TOO_MANY_REQUESTS`, redefined here because `src/core`
+ * stays Node-free (no `node:*` imports).
+ */
+export const HTTP_STATUS_TOO_MANY_REQUESTS = 429;
+
 export class TelegramBotError extends Error {
   /** Stable, machine-readable code (e.g. `ETELEGRAM`, `EFETCH`). */
   readonly code: string;
@@ -87,12 +94,13 @@ export function isAbortError(err: unknown): boolean {
 /**
  * Classifies an error as transient (worth retrying) vs fatal.
  *
- * True for a `NetworkError`, a `TimeoutError`, or a `TelegramApiError` whose
- * `errorCode >= 500` (server-side failure). A 429 is *not* treated here - the
- * transport handles it separately via its `retry_after` path.
+ * True for a `NetworkError`, a `TimeoutError`, or a `TelegramApiError` that is a
+ * 429 (rate limit) or `errorCode >= 500` (server-side failure). When retrying,
+ * honor `err.retryAfter` if present (a 429 carries it), else fall back to a
+ * default delay.
  */
 export function isTransientError(err: unknown): boolean {
   if (err instanceof NetworkError || err instanceof TimeoutError) return true;
-  if (err instanceof TelegramApiError) return err.errorCode >= 500;
+  if (err instanceof TelegramApiError) return err.errorCode === HTTP_STATUS_TOO_MANY_REQUESTS || err.errorCode >= 500;
   return false;
 }

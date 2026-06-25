@@ -2,6 +2,7 @@ import { describe, test } from "node:test";
 import assert from "node:assert/strict";
 import {
   isAbortError,
+  isTransientError,
   NetworkError,
   ParseError,
   TelegramApiError,
@@ -94,6 +95,26 @@ describe("error hierarchy", () => {
       assert.strictEqual(isAbortError(null), false);
       assert.strictEqual(isAbortError(undefined), false);
       assert.strictEqual(isAbortError("AbortError"), false);
+    });
+  });
+
+  describe("isTransientError", () => {
+    test("true for NetworkError and TimeoutError", () => {
+      assert.strictEqual(isTransientError(new NetworkError("reset")), true);
+      assert.strictEqual(isTransientError(new TimeoutError("timed out")), true);
+    });
+
+    test("true for a 429 (rate limit) and any 5xx TelegramApiError", () => {
+      assert.strictEqual(isTransientError(new TelegramApiError(429, "Too Many Requests")), true);
+      assert.strictEqual(isTransientError(new TelegramApiError(500, "Internal")), true);
+      assert.strictEqual(isTransientError(new TelegramApiError(502, "Bad Gateway")), true);
+    });
+
+    test("false for fatal 4xx (other than 429) and non-errors", () => {
+      assert.strictEqual(isTransientError(new TelegramApiError(400, "Bad Request")), false);
+      assert.strictEqual(isTransientError(new TelegramApiError(401, "Unauthorized")), false);
+      assert.strictEqual(isTransientError(new Error("plain")), false);
+      assert.strictEqual(isTransientError(null), false);
     });
   });
 });
