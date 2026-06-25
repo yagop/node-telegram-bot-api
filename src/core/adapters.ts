@@ -106,7 +106,7 @@ export function nodeFrameworkWebhook(
       headers.set(name, Array.isArray(value) ? value.join(", ") : value);
     }
 
-    const request = new Request("http://localhost" + (req.url ?? "/"), {
+    const request = new Request(`http://localhost${req.url ?? "/"}`, {
       method: req.method ?? "POST",
       headers,
       body,
@@ -128,7 +128,7 @@ export function nodeFrameworkWebhook(
  */
 export function registerExpressWebhook(
   bot: Bot,
-  app: { post(path: string, handler: (req: any, res: any) => unknown): unknown },
+  app: { post(path: string, handler: (req: NodeLikeRequest, res: NodeLikeResponse) => unknown): unknown },
   options: WebhookOptions & { path: string },
 ): void {
   app.post(options.path, nodeFrameworkWebhook(bot, options));

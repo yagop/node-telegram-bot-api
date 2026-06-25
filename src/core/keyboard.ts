@@ -17,16 +17,18 @@ import type {
  * starts a new one.
  */
 export class InlineKeyboardBuilder {
-  private readonly rows: InlineKeyboardButton[][] = [[]];
+  private current: InlineKeyboardButton[] = [];
+  private readonly rows: InlineKeyboardButton[][] = [this.current];
 
   private push(button: InlineKeyboardButton): this {
-    this.rows[this.rows.length - 1]!.push(button);
+    this.current.push(button);
     return this;
   }
 
   /** Start a new (empty) row. */
   row(): this {
-    this.rows.push([]);
+    this.current = [];
+    this.rows.push(this.current);
     return this;
   }
 
@@ -73,7 +75,7 @@ export class InlineKeyboardBuilder {
   /** The keyboard as a plain `InlineKeyboardMarkup`, dropping trailing empty rows. */
   build(): InlineKeyboardMarkup {
     const rows = this.rows.slice();
-    while (rows.length > 0 && rows[rows.length - 1]!.length === 0) rows.pop();
+    while (rows.at(-1)?.length === 0) rows.pop();
     return { inline_keyboard: rows };
   }
 }
@@ -91,16 +93,18 @@ export interface ReplyKeyboardBuildOptions {
  * starts a new one.
  */
 export class ReplyKeyboardBuilder {
-  private readonly rows: KeyboardButton[][] = [[]];
+  private current: KeyboardButton[] = [];
+  private readonly rows: KeyboardButton[][] = [this.current];
 
   private push(button: KeyboardButton): this {
-    this.rows[this.rows.length - 1]!.push(button);
+    this.current.push(button);
     return this;
   }
 
   /** Start a new (empty) row. */
   row(): this {
-    this.rows.push([]);
+    this.current = [];
+    this.rows.push(this.current);
     return this;
   }
 
@@ -127,9 +131,7 @@ export class ReplyKeyboardBuilder {
   /** The keyboard as a plain `ReplyKeyboardMarkup`, dropping trailing empty rows. */
   build(options?: ReplyKeyboardBuildOptions): ReplyKeyboardMarkup {
     const keyboard = this.rows.slice();
-    while (keyboard.length > 0 && keyboard[keyboard.length - 1]!.length === 0) {
-      keyboard.pop();
-    }
+    while (keyboard.at(-1)?.length === 0) keyboard.pop();
     return { keyboard, ...options };
   }
 }
