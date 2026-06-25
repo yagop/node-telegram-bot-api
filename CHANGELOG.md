@@ -5,6 +5,26 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased][Unreleased]
 
+### Added
+
+- **Dual ESM + CJS build.** The package is now built with `zshy`, which emits
+  both ESM (`*.js` / `*.d.ts`) and CommonJS (`*.cjs` / `*.d.cts`) from the
+  TypeScript source. The `package.json` `exports` map gains a `require`
+  condition (with its own `.d.cts` typings) for every subpath (`.`, `./node`,
+  `./types`), so the library can be loaded either way:
+
+  ```js
+  // CommonJS
+  const { Bot } = require("node-telegram-bot-api");
+
+  // ESM (unchanged)
+  import { Bot } from "node-telegram-bot-api";
+  ```
+
+  `src/core` stays Node-free, so the edge / runtime-agnostic story is unchanged.
+  Source maps are emitted for both formats; each CJS artifact references its own
+  map, guarded by a `postbuild` step (`scripts/fix-cjs-sourcemaps.mjs`).
+
 ## [1.1.0][1.1.0] - 2026-06-13
 
 ### Bot API 10.1 (June 11, 2026)

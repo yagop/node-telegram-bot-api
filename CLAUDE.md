@@ -5,7 +5,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## What this is
 
 `node-telegram-bot-api` v2: a from-scratch, runtime-agnostic TypeScript Telegram Bot API client.
-ESM-only, Node 18+, also runs on Bun, Deno, Cloudflare Workers, and Vercel/Deno Edge. There is
+Node 18+, also runs on Bun, Deno, Cloudflare Workers, and Vercel/Deno Edge. The source is
+ESM/web-standard; the **published** package is dual-module - `zshy` emits both ESM (`*.js`/`*.d.ts`)
+and CJS (`*.cjs`/`*.d.cts`), exposed via the `exports` map's `import`/`require` conditions, so it can
+be `import`ed or `require`d. `src/core` stays Node-free, so the edge story is unchanged. There is
 **no v1 compatibility**. The full design rationale and ADRs live in `redesign/ARCHITECTURE.md` -
 read it before any non-trivial change; `redesign/MIGRATION.md` is the v1->v2 cheatsheet.
 
@@ -28,7 +31,7 @@ npm test                          # unit tests via Bun (test/unit)
 npm run test:node:unit            # unit tests via Node's node:test + tsx (CI runs this on Node 22/24/26)
 npm run test:e2e                  # LIVE tests against api.telegram.org (see Testing)
 
-npm run build                     # tsc -> dist/ (core, node, types subpaths)
+npm run build                     # zshy -> dist/ dual ESM+CJS (core, node, types subpaths); postbuild repairs CJS source-map refs
 npm run generate:types            # regenerate generated sources from live Bot API docs
 ```
 
