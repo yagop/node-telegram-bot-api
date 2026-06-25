@@ -9,7 +9,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Commands
 
 ```bash
-npm run build            # tsc -p tsconfig.build.json → dist/ (src only)
+npm run build            # zshy --project tsconfig.build.json → dist/ dual ESM+CJS (*.js/*.d.ts + *.cjs/*.d.cts); a postbuild step repairs the CJS source-map refs
 npm run typecheck        # tsc --noEmit over BOTH src/ and test/
 npm run generate:types   # bun scripts/api-parser.ts → regenerate src/types/schemas.ts
 ```
@@ -22,7 +22,7 @@ There is **no separate lint step** — `npm run typecheck` under `strict` is the
 
 ## Module system gotchas
 
-- **ESM-only, `NodeNext`.** Every relative import inside `src/` and `test/` must carry a `.js` extension (e.g. `import { ... } from "./errors.js"`) even though the source is `.ts`. Omitting it breaks the build.
+- **Source tree is ESM, `NodeNext`.** Every relative import inside `src/` and `test/` must carry a `.js` extension (e.g. `import { ... } from "./errors.js"`) even though the source is `.ts`. Omitting it breaks the build. The **published package**, though, is dual-module: `zshy` emits both ESM (`*.js` / `*.d.ts`) and CJS (`*.cjs` / `*.d.cts`), and the `package.json` `exports` map exposes both `import` and `require` conditions — so consumers can `require()` the library as well as `import` it (see `scripts/fix-cjs-sourcemaps.mjs` for the postbuild that points the CJS artifacts at their own source maps).
 - Tests execute TypeScript directly through `tsx` (esbuild under the hood). esbuild ships a **platform-specific native binary** — if `node_modules` was populated on a different OS/arch the test runner fails with a "you installed esbuild for another platform" error; fix with `npm install` on this machine.
 - The suite is written against `node:test` + `node:assert/strict` so it runs identically on Node and Bun.
 
