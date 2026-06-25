@@ -79,7 +79,12 @@ function combineSignals(signals: Array<AbortSignal | undefined>): {
     s.addEventListener("abort", onAbort, { once: true });
     cleanups.push(() => s.removeEventListener("abort", onAbort));
   }
-  return { signal: controller.signal, cleanup: () => cleanups.forEach((fn) => fn()) };
+  return {
+    signal: controller.signal,
+    cleanup: () => {
+      for (const fn of cleanups) fn();
+    },
+  };
 }
 
 export class Transport {

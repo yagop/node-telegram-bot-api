@@ -46,7 +46,7 @@ export function debug(area: string): Debugger {
   const namespace = `${DEBUG_PREFIX}:${area}`;
   return (message, ...args) => {
     const active = sink;
-    if (active && active.enabled(namespace)) {
+    if (active?.enabled(namespace)) {
       active.write(namespace, format(message, args));
     }
   };

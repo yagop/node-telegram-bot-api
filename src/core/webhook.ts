@@ -155,7 +155,7 @@ export function webhookCallback(bot: Bot, options: WebhookOptions = {}): (reques
       // is rendered explicitly because `%o` would JSON-stringify an `Error` to
       // `{}` (Errors carry their fields on non-enumerable properties).
       const work = Promise.resolve(bot.handleUpdate(update)).catch((err: unknown) => {
-        const detail = err instanceof Error ? err.stack ?? err.message : String(err);
+        const detail = err instanceof Error ? (err.stack ?? err.message) : String(err);
         log("background handleUpdate failed for update %d: %s", update.update_id, detail);
       });
       if (waitUntil !== undefined) waitUntil(work);

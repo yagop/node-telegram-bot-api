@@ -2,7 +2,7 @@ import type { Update } from "../types/index.js";
 import type { Api } from "./api.js";
 import { debug } from "./debug.js";
 import { delay } from "./delay.js";
-import { TelegramApiError, isTransientError } from "./errors.js";
+import { isTransientError, TelegramApiError } from "./errors.js";
 
 export interface LongPollOptions {
   offset?: number;

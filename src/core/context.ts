@@ -110,10 +110,7 @@ const fromOf: { [K in UpdateType]: (u: Variant<K>) => User | undefined } = {
  * is the single controlled bridge from the per-row narrowed type to a uniform
  * `(u: Update) => R` (TS can't track the narrowing through the loop variable).
  */
-function resolve<K extends UpdateType, R>(
-  update: Update,
-  table: { [P in K]: (u: Variant<P>) => R },
-): R | undefined {
+function resolve<K extends UpdateType, R>(update: Update, table: { [P in K]: (u: Variant<P>) => R }): R | undefined {
   for (const k of UPDATE_TYPES) {
     if (k in update) {
       return (table as Record<UpdateType, (u: Update) => R>)[k](update);
