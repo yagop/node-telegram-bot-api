@@ -4,64 +4,180 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this is
 
-`node-telegram-bot-api` — a Node.js client for the [Telegram Bot API](https://core.telegram.org/bots/api). This branch (`feat/typescript`) is the TypeScript rewrite: hand-written source in `src/` compiles to `dist/` (the published artifact). The latest release lives on `master`; PRs target `master`.
+`node-telegram-bot-api` v2: a from-scratch, runtime-agnostic TypeScript Telegram Bot API client.
+Node 18+, also runs on Bun, Deno, Cloudflare Workers, and Vercel/Deno Edge. The source is
+ESM/web-standard; the **published** package is dual-module - `zshy` emits both ESM (`*.js`/`*.d.ts`)
+and CJS (`*.cjs`/`*.d.cts`), exposed via the `exports` map's `import`/`require` conditions, so it can
+be `import`ed or `require`d. `src/core` stays Node-free, so the edge story is unchanged. There is
+**no v1 compatibility**; the v1->v2 migration cheatsheet lives in `CHANGELOG.md`.
+
+Current development happens on `feat/v2-core`; the base/release branch is `master`.
 
 ## Commands
 
-```bash
-npm run build            # zshy --project tsconfig.build.json → dist/ dual ESM+CJS (*.js/*.d.ts + *.cjs/*.d.cts); a postbuild step repairs the CJS source-map refs
-npm run typecheck        # tsc --noEmit over BOTH src/ and test/
-npm run generate:types   # bun scripts/api-parser.ts → regenerate src/types/schemas.ts
+Bun is the primary toolchain (it is a devDependency and runs the unit suite and generator).
+
+```sh
+bun install                       # install deps (CI uses --frozen-lockfile)
+
+npm run check                     # full local gate: typecheck (x3) + lint:core + check:edge + unit tests
+npm run typecheck                 # tsc --noEmit over src (strict)
+npm run typecheck:test            # tsc over test/ (needs bun types installed)
+npm run lint:core                 # FAILS if src/core touches node:* or Node globals (see below)
+npm run check:edge                # FAILS if src/core bundles a Node builtin (even transitively)
+
+npm test                          # unit tests via Bun (test/unit)
+npm run test:node:unit            # unit tests via Node's node:test + tsx (CI runs this on Node 22/24/26)
+npm run test:e2e                  # LIVE tests against api.telegram.org (see Testing)
+
+npm run build                     # zshy -> dist/ dual ESM+CJS (core, node, types subpaths); postbuild repairs CJS source-map refs
+npm run generate:types            # regenerate generated sources from live Bot API docs
 ```
 
-There is **no separate lint step** — `npm run typecheck` under `strict` is the static-analysis gate. (The instructions in `test/README.md` mentioning `mocha`/`eslint` are stale; the suite is built on `node:test`.)
+Run a single unit test:
 
-### Tests
-
-**See the `run-tests` skill** (`.claude/skills/run-tests/SKILL.md`) for how to run the unit and integration suites. In short: prefer `bun` (it auto-loads `.env`), `node` also works; integration tests hit `api.telegram.org` and require `NODE_TELEGRAM_TOKEN`, `TEST_GROUP_ID`, `TEST_USER_ID` (readable from `.env`). The full integration suite is slow — scope a run to the method you changed with `bun test -t '<method>' test/integration/telegram.test.ts`, and only run the whole suite when you touch a core/shared part of the request pipeline. Some methods need special chat conditions (e.g. a forum-enabled `TEST_GROUP_ID`).
-
-## Module system gotchas
-
-- **Source tree is ESM, `NodeNext`.** Every relative import inside `src/` and `test/` must carry a `.js` extension (e.g. `import { ... } from "./errors.js"`) even though the source is `.ts`. Omitting it breaks the build. The **published package**, though, is dual-module: `zshy` emits both ESM (`*.js` / `*.d.ts`) and CJS (`*.cjs` / `*.d.cts`), and the `package.json` `exports` map exposes both `import` and `require` conditions — so consumers can `require()` the library as well as `import` it (see `scripts/fix-cjs-sourcemaps.mjs` for the postbuild that points the CJS artifacts at their own source maps).
-- Tests execute TypeScript directly through `tsx` (esbuild under the hood). esbuild ships a **platform-specific native binary** — if `node_modules` was populated on a different OS/arch the test runner fails with a "you installed esbuild for another platform" error; fix with `npm install` on this machine.
-- The suite is written against `node:test` + `node:assert/strict` so it runs identically on Node and Bun.
+```sh
+bun test test/unit/transport.test.ts          # one file
+bun test -t "429 then success retries"        # by test-name substring
+```
 
 ## Architecture
 
-The whole public surface is re-exported from `src/index.ts`: the `TelegramBot` class (both default and named export), the `TelegramBotPolling` / `TelegramBotWebHook` / `HttpClient` classes, the full set of generated request/reply types, and the error hierarchy.
+Three source folders, one published package, exposed via subpath exports (`.`, `./node`, `./types`):
 
-### Request pipeline (the important part)
-
-`src/telegram.ts` holds the `TelegramBot` class (~2000 lines, one method per Bot API method). Every API call funnels through the same path:
-
+```text
+src/
+  core/   runtime-agnostic. Bot, Context, compose, the single Api client, Transport,
+          serializeParams + encodeForm, InputFile, the markup / entity / media builders
+          (optional sugar), longPoll, webhookCallback, framework webhook adapters
+          (Express / Next.js), errors. Web-standard APIs only.
+          -> zero node:* imports; runs on Node 18+ / Bun / Deno / Workers / edge.
+  node/   the ONLY folder allowed to import node:*. Node-only sugar: fromPath() (fs
+          uploads), createWebhookServer() (node:http -> delegates to core's
+          webhookCallback), the managed run() polling runner, the DEBUG stderr sink.
+  types/  the generated schema (re-exported by core): discriminated Update, the generated
+          Api method signatures / *Params / *Result types, expanded MessageEntity.
 ```
-<apiMethod>()  →  _form() / _sendFile()  →  _request()  →  http.request()
+
+The `exports` map points `.` at the core, `./node` at the Node helpers, and `./types` at the
+schema; each subpath ships ESM + CJS with matching typings:
+
+```jsonc
+// package.json
+"exports": {
+  ".": {
+    "import":  { "types": "./dist/core/index.d.ts",  "default": "./dist/core/index.js"  },
+    "require": { "types": "./dist/core/index.d.cts", "default": "./dist/core/index.cjs" }
+  },
+  "./node":  { /* same shape -> dist/node/*  */ },
+  "./types": { /* same shape -> dist/types/* */ }
+}
 ```
 
-- **`_request()` normalizes the payload** before it goes out. A series of `_fix*` helpers JSON-stringify structured fields that the Bot API expects as strings on form bodies — `reply_markup`, the `*_entities` family, `reply_parameters`, `suggested_post_parameters`, `link_preview_options`, `areas`, `message_ids`. Strings are passed through untouched, so callers may pre-serialize. **When adding a method with a new structured field, add/extend the matching `_fix*` step** — this is what the unit tests assert on.
-- **`_sendFile()` handles uploads.** `prepareFile()` (in `src/utils.ts`) turns a filesystem path / `Buffer` / stream into a multipart `PreparedFile`, or, when given a plain string that isn't an existing path, treats it as a Telegram `file_id` or public URL (no upload). The path-vs-fileId behavior is gated by `options.filepath`. Thumbnails and multi-file methods use `attach://<name>` references into the form data.
-- **`src/http.ts` (`HttpClient`) is the only place that touches `fetch`.** It builds the URL (`{baseApiUrl}/bot{token}[/test]/{method}`), picks `x-www-form-urlencoded` vs `multipart/form-data` (streams are buffered to `Buffer` first), and unwraps Telegram's `{ ok, result, description, error_code }` envelope. On `ok` it returns `result`; on `429` it sleeps `retry_after` and retries up to `maxRetriesOn429` (default 2); otherwise it throws.
+`import { Bot } from "node-telegram-bot-api"` is the runtime-agnostic core; `import { fromPath }
+from "node-telegram-bot-api/node"` opts into the Node helpers. The core-vs-node isolation is a CI
+rule (`lint:core` + `check:edge`), not a package boundary, so the edge bundle never drags in a Node
+builtin.
 
-### Inbound updates
+### The Api client
 
-`processUpdate(update)` is the single dispatcher for incoming updates, regardless of source. It emits `"message"` plus the matching content-type sub-event (`"text"`, `"photo"`, …), runs registered `onText` regexps and `onReplyToMessage` listeners, and for non-message updates emits the corresponding event (`callback_query`, `chat_member`, etc.). `TelegramBot` extends `EventEmitter`; the regex/reply listeners are kept in in-process arrays on the instance.
+One **generated** `Api` class - no `Proxy`, no `RawApi`/`Api` split. One concrete method per Bot
+API method, each a one-liner over a shared `request()`, taking a single params object plus an
+optional trailing `AbortSignal` (`getMe(signal?)`, `sendMessage(params, signal?)`). Real methods
+give correct stack traces, are greppable, and need no casts; adding a method is a regenerate, never
+a hand-written body. `Bot` holds an `Api`; `ctx.api` and `bot.api` expose it. The whole client
+ships regardless of which methods a bot calls (no per-method tree-shaking - a deliberate trade for
+the single discoverable `api.*` namespace).
 
-`src/polling.ts` (a `getUpdates` long-poll loop) and `src/webhook.ts` (an HTTP server) are the two update sources — both ultimately call `bot.processUpdate`. Polling and webhook are **mutually exclusive** and guarded against being active simultaneously.
+### Request pipeline (the only place serialization happens)
 
-### Errors
+`Api.request` -> `serializeParams` (one `JSON.stringify` + `attach://` walk for nested files) ->
+`encodeForm` -> `Transport` (injectable `fetch`, 429/transient retry with jittered backoff,
+`{ok,result}` envelope unwrap). Structured fields (`reply_markup`, entities, `reply_parameters`,
+media, ...) are **plain typed objects/arrays** that `serializeParams` stringifies once. Builders
+(`InlineKeyboardBuilder`, `EntityBuilder`, `MediaGroupBuilder`, plus the sticker / profile-photo /
+story builders) are **optional sugar** whose `.build()` returns the same plain shape - a literal
+object works identically. `EntityType` is the typo-proof constant for entity kinds.
 
-`src/errors.ts` defines one base class and three codes, also reachable via the static `TelegramBot.errors`:
+Every request goes out as form encoding: `x-www-form-urlencoded`, or `multipart/form-data` iff an
+`InputFile` is present (the only thing that flips the body type). `encodeForm` has exactly three
+branches: attach an `InputFile` as a part / spread a form-part composite (its JSON string + nested
+parts) / set a string. `InputFile` wraps web-standard data only (`Blob | Uint8Array |
+ReadableStream<Uint8Array>`); `fromPath()` (`/node`) is the only fs-backed constructor. File-bearing
+params are `InputFile | string` - a bare string is always a `file_id`/URL, never a path. Nested
+files (`sendMediaGroup`, sticker sets, ...) are hoisted to `attach://<name>` parts by
+`serializeParams`.
 
-- `FatalError` (`EFATAL`) — network failure or programmer error.
-- `ParseError` (`EPARSE`) — response wasn't valid JSON.
-- `TelegramError` (`ETELEGRAM`) — the API returned `ok: false`. Integration tests routinely branch on `err.code === "ETELEGRAM"` to tolerate chat-specific rejections.
+### Dispatch
 
-### Types & schemas
+koa-style middleware over a per-update `Context`. `bot.use(mw)` registers middleware; `bot.on(kind)`,
+`bot.command(name)`, `bot.hears(trigger)` are filter middleware in the same chain - registration
+order wins, and each can wrap everything downstream via `await next()` (sessions, auth, rate-limit,
+error boundaries). `Context` bundles the raw `update`, the typed `api`, a mutable `state` bag, and
+chat-inferring shortcuts (`ctx.reply`, `ctx.answerCallbackQuery`). Update sources are async
+generators - `longPoll(api, opts, signal)` replaces the old polling class. Two entry points share
+**one** dispatch path: `bot.startPolling()` pumps `longPoll`; `bot.handleUpdate(update)` handles a
+single update and is what `webhookCallback` calls.
 
-`src/types/schemas.ts` is **generated** — do not hand-edit it. `scripts/api-parser.ts` (run with `npm run generate:types`, i.e. `bun scripts/api-parser.ts`) fetches <https://core.telegram.org/bots/api>, walks the docs with Bun's `HTMLRewriter`, and emits plain TypeScript `type` aliases (no Zod, no runtime validation): every documented object, the abstract "one of" objects as unions, and per method a `<Method>Params` (the full documented request) plus a `<Method>Result` (reply type parsed from the method's prose, with a `RETURN_OVERRIDES` fallback). The file is kept **docs-faithful** — it contains only what the API page documents; it deliberately does **not** emit convenience option aliases. Each `telegram.ts` method types its trailing options argument inline as `Omit<<Method>Params, <args passed positionally>>` (e.g. `Omit<SendMessageParams, "chat_id" | "text">`), so the positional-vs-options split lives next to the method that defines it, not in the generated file. The generator is strict: any unmappable type string or unresolved reply type is a hard error rather than `unknown`, and types carry no index signatures. A small hand-written prelude in the parser supplies library-only names (`ChatId`, `ReplyMarkup`, `InputProfilePhotoInput`, `InputFile`, `ParseMode`, `MESSAGE_TYPES`/`MessageType`). When Telegram adds methods/fields, re-run the generator instead of editing by hand. `src/internal/` has small dependency-free helpers (`debug`, magic-byte `file-type` sniffing, `mime` lookup).
+### Webhooks
 
-## Testing approach
+`webhookCallback(bot)` is a pure `(Request) => Promise<Response>` (Cloudflare Workers, Deno Deploy,
+Vercel Edge, Bun.serve, Next.js App Router). Thin adapters mount it on an existing server:
+`registerExpressWebhook`, `nodeFrameworkWebhook` (an `(req, res)` handler), `nextAppWebhook`. The
+Node `createWebhookServer` (`/node`) adapts a `node:http` request and delegates to the same
+callback - no duplicate request-handling logic.
 
-Unit tests **stub `globalThis.fetch`** to capture outgoing requests and assert the wire format (URL, body params, that structured fields were serialized, that uploads built the right `FormData`) — no network, no token. Integration tests run the real thing against `api.telegram.org`, throttle ~1.1s between calls to respect rate limits, and deliberately skip irreversible mutations (`logOut`, `close`, `setMyName`, profile-photo changes, sticker-set deletion, …).
+### Transport & errors
 
-For how to actually run, scope, and credential the suites — and which changes require a full-suite run — see the **`run-tests` skill** (`.claude/skills/run-tests/SKILL.md`).
+`Transport` is the only module touching `fetch`; it is injectable (`opts.fetch`) so tests pass a
+fake instead of monkeypatching globals. It merges the per-request timeout with the caller's signal
+via `combineSignals` over `AbortSignal.timeout` (deliberately not `AbortSignal.any`, which needs
+Node 18.17/20.3), unwraps the envelope, and retries: `429`s honor `retry_after` up to
+`maxRetryAfterMs` (default 60s; a longer flood-wait surfaces immediately as a `TelegramApiError`),
+transient failures (`NetworkError`/`TimeoutError`/5xx, classified by `isTransientError`) retry up to
+`maxRetries` (default 2) with exponential jittered backoff. Opt-in proactive rate limiting
+(`opts.rateLimit: { global?, perChat? }`) via a token-bucket keyed on `chat_id` - off by default,
+zero overhead when unset.
+
+Errors (`src/core/errors.ts`): a `TelegramBotError` base preserving `cause`, plus `NetworkError`,
+`TimeoutError`, `ParseError`, `TelegramApiError` (structured `errorCode`/`description`/`parameters`
++ a `retryAfter` getter). Callers branch on values (`err.errorCode === 429`, `err.retryAfter`),
+never on message text.
+
+## Critical invariants
+
+- **`src/core/api.ts` and `src/types/schemas.ts` are GENERATED** by `scripts/api-parser.ts` from
+  the live Bot API docs. Do not hand-edit them; change the generator and run `npm run generate:types`.
+  Adding a Bot API method = regenerate, never a hand-written method body. (See the `update-bot-api`
+  skill for the full flow, including the hand-added `Bot`/`Context` sugar.)
+- **`src/core` must stay Node-free.** No `node:*` imports, no bare-builtin imports, no Node globals
+  (`Buffer`, `process`, `setImmediate`, ...). Enforced by both `lint:core` (static) and `check:edge`
+  (bundler). Anything needing Node goes in `src/node`.
+- **Keep generated runtime lists in lockstep with their source types** (e.g. `UPDATE_TYPES`,
+  `MESSAGE_TYPES`) via the both-direction compile-time asserts already in place; `satisfies` alone
+  misses absent keys.
+- **ASCII only** in code, comments, and commit messages: use `-`, `->`, `...` - never em dashes or
+  smart quotes (a commit hook rejects them; emoji are fine).
+- TypeScript style: prefer `type` over `interface`; never emit `any`; avoid `unknown` and index
+  signatures. Prose-enum string fields (e.g. `MessageEntity.type`) are deliberately kept `string`,
+  not narrowed to unions.
+- Tests inject a fake `fetch` rather than monkeypatching globals, and must be deterministic across
+  the Node 22/24/26 CI matrix - do not rely on a real unref'd timer (e.g. `AbortSignal.timeout`)
+  firing as the only thing keeping the event loop alive; settle fakes directly.
+
+## Testing
+
+Unit tests (`test/unit`, no network) run under both Bun and Node. The e2e suite (`test/e2e`) hits
+the **real** api.telegram.org with one `describe` per Bot API method; it has no skip-if-no-token
+guard and uses the strict "the call resolving is the assertion" model. The session terminators
+(`logOut`, `close`) and other bot-bricking methods are `test.skip`-ed, so a full run does **not**
+log the bot out - but it is slow, flood-limited, and env-limited methods (forum-only, payments, ...)
+fail by design, so scope a run to what you changed. It reads `NODE_TELEGRAM_TOKEN`, `TEST_GROUP_ID`,
+`TEST_USER_ID` from `.env`. Run it only via `npm run test:e2e`. The `run-tests` skill is the
+authority on scoping a run, flood limits, and fixture gotchas.
+
+## Project skills (`.claude/skills/`)
+
+Authoritative playbooks - consult them for these workflows: `run-tests` (running/scoping/debugging
+the suites), `generate-docs` (regenerating the API reference after a public method change),
+`update-bot-api` (adding a new Bot API version), `release` (version bump + publish).

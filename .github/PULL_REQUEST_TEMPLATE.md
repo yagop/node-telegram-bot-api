@@ -4,10 +4,9 @@ For example, if your PR passes all tests, you would mark the option as so:
 - [x] All tests pass
 Note the 'x' in between the square brackets '[]'
 -->
-- [ ] All unit tests pass (`npm run test:node:unit`)
-- [ ] All integration tests pass (`npm run test:node:integration`)
-- [ ] `npm run typecheck` is clean
-- [ ] `doc/api.md` is up to date (`bun run generate:docs` leaves no diff — required when a `TelegramBot` method signature changed)
+- [ ] `npm run check` is clean (typecheck src + test + examples, `lint:core`, `check:edge`, unit suite)
+- [ ] `npm run build` is clean
+- [ ] Generated files are untouched / regenerated (`src/types/schemas.ts` and `src/core/api.ts` come from `npm run generate:types`; never hand-edit)
 
 ### Description
 
@@ -28,60 +27,43 @@ For example,
 
 ### Running the test suite
 
-The project ships two test layers and supports both the Node.js native test
-runner and Bun. All scripts assume `npm install` (or `bun install`) has been
-run first.
+The project ships two test layers and runs under both Bun and Node. All scripts
+assume `npm install` (or `bun install`) has been run first.
 
 #### Unit tests
 
 Pure unit tests with no network. Safe to run anywhere — no token required.
 
 ```bash
-npm run test:node:unit     # Node — node:test runner via tsx
-npm run test:bun:unit      # Bun — bun:test runner
+npm test                  # Bun (bun:test) — the default unit run
+npm run test:node:unit    # Node (node:test via tsx)
 ```
 
-#### Integration tests
+The full local gate is `npm run check` — it chains the typechecks (`src` +
+`test` + `examples`), `lint:core` and `check:edge` (keeping `src/core` free of
+`node:*` imports / Node globals / bundled builtins), and the unit suite.
 
-Hit `api.telegram.org` directly. Tests that would mutate irreversible bot
-configuration (e.g. `logOut`, `close`, `deleteWebHook`, `setMyName`,
-`setMyProfilePhoto`, `deleteStickerSet`, …) are deliberately skipped.
+#### E2E tests
 
-**Required environment variables**
+Hit `api.telegram.org` directly. Methods that would brick the shared test bot
+or need a chat it lacks (e.g. `logOut`, `close`, the forum-topic ops, …) are
+`test.skip`-ed so the suite never terminates the session or floods. There is
+**no skip-if-no-token guard** — without valid credentials the real calls reject
+and the tests fail by design.
+
+**Required environment variables** (read from `.env`; Bun loads it automatically)
 
 | Var | Purpose |
 | --- | --- |
-| `NODE_TELEGRAM_TOKEN` | Bot token (or `TEST_TELEGRAM_TOKEN` as fallback). Create one via [@BotFather](https://t.me/BotFather). |
+| `NODE_TELEGRAM_TOKEN` | Bot token (`TEST_TELEGRAM_TOKEN` is read as a fallback). Create one via [@BotFather](https://t.me/BotFather). |
 | `TEST_GROUP_ID` | Chat id where the bot can send messages (group or private). |
 | `TEST_USER_ID` | A user id the bot can resolve in `TEST_GROUP_ID`. |
 
-**Optional**
-
-| Var | Default | Purpose |
-| --- | --- | --- |
-| `TEST_STICKER_SET_NAME` | `pusheen` | Name of a public sticker set used in sticker tests. |
-| `TEST_CUSTOM_EMOJI_ID` | `5368324170671202286` | A custom emoji id used by `getCustomEmojiStickers()`. |
-
 ```bash
-NODE_TELEGRAM_TOKEN="<your-bot-token>" \
-TEST_GROUP_ID="-1001234567890" \
-TEST_USER_ID="123456789" \
-  npm run test:node:integration
-
-# Bun equivalent
-NODE_TELEGRAM_TOKEN="<your-bot-token>" \
-TEST_GROUP_ID="-1001234567890" \
-TEST_USER_ID="123456789" \
-  npm run test:bun:integration
+npm run test:e2e    # bun test --timeout 300000 test/e2e
 ```
 
 > **Tip:** add the bot to a private test group, grab its id with
 > [`@RawDataBot`](https://t.me/RawDataBot) (or any update logger), and
-> use that id for `TEST_GROUP_ID`. `TEST_GROUP_ID` accepts the canonical
-> negative form (`-100…`) or a positive number — the suite normalizes it.
-
-#### Typecheck
-
-```bash
-npm run typecheck          # tsc --noEmit
-```
+> use that id for `TEST_GROUP_ID`. The suite is slow and flood-limited, so run
+> it scoped to the methods you changed (see the `run-tests` skill).

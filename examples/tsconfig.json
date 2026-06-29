@@ -1,9 +1,18 @@
 {
-  "extends": "../tsconfig.json",
   "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "lib": ["ES2022"],
+    "types": ["node"],
+    "strict": true,
+    "skipLibCheck": true,
     "noEmit": true,
-    "rootDir": ".",
-    "skipLibCheck": true
+    "baseUrl": "..",
+    "paths": {
+      "node-telegram-bot-api": ["src/core/index.ts"],
+      "node-telegram-bot-api/node": ["src/node/index.ts"]
+    }
   },
-  "include": ["**/*.ts", "**/*.d.ts"]
+  "include": ["."]
 }

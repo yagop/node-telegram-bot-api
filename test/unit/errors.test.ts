@@ -1,76 +1,120 @@
-import { describe, it } from "node:test";
+import { describe, test } from "node:test";
 import assert from "node:assert/strict";
-
 import {
-  BaseError,
-  FatalError,
+  isAbortError,
+  isTransientError,
+  NetworkError,
   ParseError,
-  TelegramError,
-  errors,
-} from "../../src/errors.js";
+  TelegramApiError,
+  TelegramBotError,
+  TimeoutError,
+} from "../../src/core/errors.js";
 
-describe("errors", () => {
-  describe("BaseError", () => {
-    it("formats message with code prefix", () => {
-      const err = new BaseError("EX", "boom");
-      assert.equal(err.code, "EX");
-      assert.equal(err.message, "EX: boom");
+describe("error hierarchy", () => {
+  test("TelegramBotError carries a code and defaults to EUNKNOWN", () => {
+    const base = new TelegramBotError("oops");
+    assert.ok(base instanceof Error);
+    assert.strictEqual(base.code, "EUNKNOWN");
+    assert.strictEqual(base.name, "TelegramBotError");
+
+    const withCode = new TelegramBotError("p", { code: "EPARAM" });
+    assert.strictEqual(withCode.code, "EPARAM");
+  });
+
+  test("NetworkError is a TelegramBotError with code EFETCH", () => {
+    const cause = new Error("reset");
+    const err = new NetworkError("net", { cause });
+    assert.ok(err instanceof TelegramBotError);
+    assert.strictEqual(err.code, "EFETCH");
+    assert.strictEqual(err.cause, cause);
+  });
+
+  test("TimeoutError is a TelegramBotError with code ETIMEOUT", () => {
+    const err = new TimeoutError();
+    assert.ok(err instanceof TelegramBotError);
+    assert.strictEqual(err.code, "ETIMEOUT");
+  });
+
+  test("ParseError is a TelegramBotError with code EPARSE and responseText", () => {
+    const err = new ParseError("bad", { responseText: "<html>" });
+    assert.ok(err instanceof TelegramBotError);
+    assert.strictEqual(err.code, "EPARSE");
+    assert.strictEqual(err.responseText, "<html>");
+  });
+
+  test("TelegramApiError exposes errorCode/description/code and retryAfter", () => {
+    const err = new TelegramApiError(429, "Too Many Requests", {
+      retry_after: 7,
+    });
+    assert.ok(err instanceof TelegramBotError);
+    assert.strictEqual(err.code, "ETELEGRAM");
+    assert.strictEqual(err.errorCode, 429);
+    assert.strictEqual(err.description, "Too Many Requests");
+    assert.strictEqual(err.parameters?.retry_after, 7);
+    assert.strictEqual(err.retryAfter, 7); // getter reads parameters.retry_after
+  });
+
+  test("TelegramApiError.retryAfter is undefined without parameters", () => {
+    const err = new TelegramApiError(400, "Bad Request");
+    assert.strictEqual(err.retryAfter, undefined);
+    assert.strictEqual(err.migrateToChatId, undefined);
+  });
+
+  test("TelegramApiError.migrateToChatId reads parameters.migrate_to_chat_id", () => {
+    const err = new TelegramApiError(400, "migrate", {
+      migrate_to_chat_id: -100123,
+    });
+    assert.strictEqual(err.migrateToChatId, -100123);
+  });
+
+  test("cause is preserved when passed", () => {
+    const cause = new Error("root");
+    const net = new NetworkError("n", { cause });
+    const timeout = new TimeoutError("t", { cause });
+    assert.strictEqual(net.cause, cause);
+    assert.strictEqual(timeout.cause, cause);
+  });
+
+  describe("isAbortError", () => {
+    test("matches a classic AbortError", () => {
+      const e = new Error("aborted");
+      e.name = "AbortError";
+      assert.strictEqual(isAbortError(e), true);
     });
 
-    it("serializes to JSON via toJSON()", () => {
-      const err = new BaseError("EX", "boom");
-      assert.deepEqual(err.toJSON(), { code: "EX", message: "EX: boom" });
+    test("matches the TimeoutError DOMException from AbortSignal.timeout()", () => {
+      // Real `AbortSignal.timeout()` aborts with a DOMException whose `name` is
+      // "TimeoutError" (HTML spec, Node >=18). This is the production shape the
+      // transport sees when its own client timeout fires.
+      const e = { name: "TimeoutError", message: "signal timed out" };
+      assert.strictEqual(isAbortError(e), true);
     });
 
-    it("preserves prototype chain so instanceof works after re-throw", () => {
-      const err = new BaseError("EX", "boom");
-      assert.ok(err instanceof BaseError);
-      assert.ok(err instanceof Error);
+    test("returns false for a plain network error and non-objects", () => {
+      assert.strictEqual(isAbortError(new Error("connection reset")), false);
+      assert.strictEqual(isAbortError(null), false);
+      assert.strictEqual(isAbortError(undefined), false);
+      assert.strictEqual(isAbortError("AbortError"), false);
     });
   });
 
-  describe("FatalError", () => {
-    it("accepts a string message", () => {
-      const err = new FatalError("network down");
-      assert.equal(err.code, "EFATAL");
-      assert.equal(err.message, "EFATAL: network down");
-      assert.equal(err.cause, undefined);
+  describe("isTransientError", () => {
+    test("true for NetworkError and TimeoutError", () => {
+      assert.strictEqual(isTransientError(new NetworkError("reset")), true);
+      assert.strictEqual(isTransientError(new TimeoutError("timed out")), true);
     });
 
-    it("captures the cause when constructed from an Error", () => {
-      const root = new Error("disconnected");
-      const err = new FatalError(root);
-      assert.equal(err.code, "EFATAL");
-      assert.equal(err.message, "EFATAL: disconnected");
-      assert.equal(err.cause, root);
-      assert.equal(err.stack, root.stack);
+    test("true for a 429 (rate limit) and any 5xx TelegramApiError", () => {
+      assert.strictEqual(isTransientError(new TelegramApiError(429, "Too Many Requests")), true);
+      assert.strictEqual(isTransientError(new TelegramApiError(500, "Internal")), true);
+      assert.strictEqual(isTransientError(new TelegramApiError(502, "Bad Gateway")), true);
     });
-  });
 
-  describe("ParseError", () => {
-    it("attaches the response object", () => {
-      const response = { status: 500, body: "<html>" };
-      const err = new ParseError("bad json", response);
-      assert.equal(err.code, "EPARSE");
-      assert.deepEqual(err.response, response);
+    test("false for fatal 4xx (other than 429) and non-errors", () => {
+      assert.strictEqual(isTransientError(new TelegramApiError(400, "Bad Request")), false);
+      assert.strictEqual(isTransientError(new TelegramApiError(401, "Unauthorized")), false);
+      assert.strictEqual(isTransientError(new Error("plain")), false);
+      assert.strictEqual(isTransientError(null), false);
     });
-  });
-
-  describe("TelegramError", () => {
-    it("attaches the response object", () => {
-      const response = { status: 400, body: { ok: false, description: "x" } };
-      const err = new TelegramError("400 Bad Request", response);
-      assert.equal(err.code, "ETELEGRAM");
-      assert.deepEqual(err.response, response);
-    });
-  });
-
-  it("re-exports the full error registry", () => {
-    assert.deepEqual(Object.keys(errors).sort(), [
-      "BaseError",
-      "FatalError",
-      "ParseError",
-      "TelegramError",
-    ]);
   });
 });

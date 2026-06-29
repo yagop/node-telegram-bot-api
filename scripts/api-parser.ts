@@ -1,13 +1,13 @@
 /**
- * scripts/api-parser.ts — Telegram Bot API type generator.
+ * scripts/api-parser.ts - Telegram Bot API type generator.
  *
  * Fetches the live Bot API reference (https://core.telegram.org/bots/api),
  * walks the documentation with Bun's streaming `HTMLRewriter`, and emits
- * `src/types/schemas.ts` — plain TypeScript `type` aliases (no Zod, no runtime
+ * `src/types/schemas.ts` - plain TypeScript `type` aliases (no Zod, no runtime
  * validation) covering:
  *
  *   - every documented object as `export type Name = { ... }`
- *   - abstract "it can be one of …" objects as union aliases
+ *   - abstract "it can be one of ..." objects as union aliases
  *   - per method: `<Method>Params` (full request), `<Method>Options`
  *     (request minus the positional args `telegram.ts` passes explicitly), and
  *     `<Method>Result` (the reply type parsed from the method's prose)
@@ -16,14 +16,20 @@
  *
  * The generator is deliberately strict: any documented type string it cannot
  * map, or any method whose reply type it cannot resolve, is a hard error
- * (logged, non-zero exit) — it never falls back to `unknown`.
+ * (logged, non-zero exit) - it never falls back to `unknown`.
  */
 
 const API_URL = "https://core.telegram.org/bots/api";
 const OUT = new URL("../src/types/schemas.ts", import.meta.url);
+const API_OUT = new URL("../src/core/api.ts", import.meta.url);
+
+/** Keep generated output ASCII: replace any em dash (U+2014) / ellipsis (U+2026) that leaks in from doc text. */
+const EM_DASH = String.fromCharCode(0x2014);
+const ELLIPSIS = String.fromCharCode(0x2026);
+const ascii = (s: string): string => s.split(EM_DASH).join("-").split(ELLIPSIS).join("...");
 
 // ---------------------------------------------------------------------------
-// Record model — one entry per <h4> in #dev_page_content
+// Record model - one entry per <h4> in #dev_page_content
 // ---------------------------------------------------------------------------
 
 interface Rec {
@@ -122,7 +128,12 @@ function splitUnion(s: string): string[] {
     .replace(/,\s*and\s+/gi, ", ")
     .replace(/\s+and\s+/gi, ", ")
     .replace(/\s+or\s+/gi, ", ");
-  return t.includes(",") ? t.split(",").map((x) => x.trim()).filter(Boolean) : [s.trim()];
+  return t.includes(",")
+    ? t
+        .split(",")
+        .map((x) => x.trim())
+        .filter(Boolean)
+    : [s.trim()];
 }
 
 function mapScalar(s: string): string {
@@ -131,7 +142,9 @@ function mapScalar(s: string): string {
   if (/^String$/.test(s)) return "string";
   if (/^Boolean$/.test(s)) return "boolean";
   if (/^True$/.test(s)) return "true";
-  if (/^InputFile$/.test(s)) return "InputFile";
+  // A bare `InputFile` always also accepts a file_id / URL string (ADR-006). This
+  // is the one surviving param construct after ADR-002's reversal to plain params.
+  if (/^InputFile$/.test(s)) return "InputFile | string";
   if (/^[A-Z][A-Za-z0-9]*$/.test(s)) return s; // reference to another type
   unmapped.add(s);
   return "never";
@@ -147,6 +160,20 @@ function mapType(raw: string): string {
   if (parts.length > 1) return [...new Set(parts.map(mapType))].join(" | ");
   return mapScalar(s);
 }
+
+// ---------------------------------------------------------------------------
+// File-target fields on `Input*` types (ADR-006)
+// ---------------------------------------------------------------------------
+//
+// Under ADR-002's reversal (plain params, serialize in the pipeline) there is no
+// param-only type transform: a param field is the SAME plain mapped type as a
+// response field (one mapping path). The one exception is upload ergonomics: the
+// nested file-target fields on the `Input*` types are documented "String" but also
+// accept an uploaded `InputFile` (the encoder resolves it to `attach://`). Widen
+// only those field NAMES, and only on `Input*` types - never `*.url`, venue/
+// location coords, `photo_url`, or any response type.
+
+const FILE_FIELDS = new Set(["media", "thumbnail", "photo", "cover", "animation", "video", "sticker"]);
 
 // ---------------------------------------------------------------------------
 // Reply-type extraction from method prose
@@ -186,21 +213,18 @@ function parseReturn(method: string, descRaw: string): string {
   if (RETURN_OVERRIDES[method]) return RETURN_OVERRIDES[method];
   const d = descRaw.replace(/\s+/g, " ").trim();
 
-  if (/otherwise\s+True\s+is\s+returned/i.test(d) && /Message\s+is\s+returned/.test(d))
-    return "Message | boolean";
+  if (/otherwise\s+True\s+is\s+returned/i.test(d) && /Message\s+is\s+returned/.test(d)) return "Message | boolean";
   if (/[Aa]rray of MessageId/.test(d)) return "MessageId[]";
 
-  // "(an) array of X object(s) … is returned" / "Returns an Array of X"
-  let m =
-    d.match(/[Rr]eturns an Array of ([A-Z][A-Za-z]+)/) ||
-    d.match(/[Aa]rray of ([A-Z][A-Za-z]+) objects?/);
+  // "(an) array of X object(s) ... is returned" / "Returns an Array of X"
+  let m = d.match(/[Rr]eturns an Array of ([A-Z][A-Za-z]+)/) || d.match(/[Aa]rray of ([A-Z][A-Za-z]+) objects?/);
   if (m) return `${m[1]}[]`;
 
   if (/MessageId of the .*is returned|Returns the MessageId/.test(d)) return "MessageId";
   if (/Message\s+is\s+returned|the sent Message|the edited Message|the stopped Message|in form of a Message/.test(d))
     return "Message";
 
-  // "as (a) X object" — e.g. "the new invite link as ChatInviteLink object"
+  // "as (a) X object" - e.g. "the new invite link as ChatInviteLink object"
   m = d.match(/\bas (?:a |an )?([A-Z][A-Za-z]+) object/);
   if (m) return m[1];
   // "in form of a X object" / "(a|an) X object is returned" / "Returns a X object"
@@ -209,8 +233,10 @@ function parseReturn(method: string, descRaw: string): string {
     d.match(/(?:a|an) ([A-Z][A-Za-z]+) object is returned/) ||
     d.match(/[Rr]eturns (?:a|an) ([A-Z][A-Za-z]+) object/);
   if (m) return m[1];
-  // "the … X (object) is returned"
-  m = d.match(/the (?:new |uploaded |stopped |edited |sent |revoked |created )?([A-Z][A-Za-z]+) (?:object )?is returned/);
+  // "the ... X (object) is returned"
+  m = d.match(
+    /the (?:new |uploaded |stopped |edited |sent |revoked |created )?([A-Z][A-Za-z]+) (?:object )?is returned/,
+  );
   if (m) return m[1];
   // "Returns X on success." / "Returns the uploaded X"
   m = d.match(/[Rr]eturns (?:the (?:new |edited |uploaded )?)?([A-Z][A-Za-z]+)(?: on success| objects?)?\b/);
@@ -272,7 +298,14 @@ function fieldsFromRows(rec: Rec, isMethod: boolean): Field[] {
   const c = colIndices(rec.headers);
   return rec.rows.map((row) => {
     const fname = (row[c.name] ?? "").trim();
-    const type = mapType(row[c.type] ?? "");
+    // One mapping path for params AND response objects: plain mapped types. Params
+    // are serialized in the pipeline (ADR-002 -> Option-D), not pre-branded.
+    let type = mapType(row[c.type] ?? "");
+    // Upload ergonomics: a documented-"String" file-target field on an `Input*` type
+    // also accepts an `InputFile` (resolved to attach:// in the encoder).
+    if (rec.name.startsWith("Input") && FILE_FIELDS.has(fname) && type === "string") {
+      type = "InputFile | string";
+    }
     const optional = isMethod
       ? (row[c.required] ?? "").trim() !== "Yes"
       : /^Optional\b/.test((row[c.desc] ?? "").trim());
@@ -290,10 +323,7 @@ for (const rec of records) {
     });
   } else if (rec.rows.length) {
     types.push({ name: rec.name, fields: fieldsFromRows(rec, false) });
-  } else if (
-    rec.liItems.length >= 2 &&
-    rec.liItems.every((x) => /^[A-Z][A-Za-z0-9]*$/.test(x.trim()))
-  ) {
+  } else if (rec.liItems.length >= 2 && rec.liItems.every((x) => /^[A-Z][A-Za-z0-9]*$/.test(x.trim()))) {
     // No field table, but a bullet list of type-name links → "one of" union.
     unions.push({ name: rec.name, members: rec.liItems.map((x) => x.trim()).filter(Boolean) });
   } else {
@@ -307,14 +337,10 @@ const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 // Emit
 // ---------------------------------------------------------------------------
 
-const PRELUDE_NAMES = new Set([
-  "ChatId",
-  "ReplyMarkup",
-  "InputProfilePhotoInput",
-  "InputFile",
-  "MessageType",
-  "ParseMode",
-]);
+// `InputFile` is NOT listed here: it is no longer defined in schemas.ts; it is
+// imported from the Phase-1 core class (../core/files.js). It is therefore still
+// a "known" name for the empty-object filter, handled separately below.
+const PRELUDE_NAMES = new Set(["ChatId", "ReplyMarkup", "ParseMode"]);
 
 const PRELUDE = `// ---------------------------------------------------------------------------
 // Library-specific helpers (not 1:1 documented objects)
@@ -326,72 +352,17 @@ export type ChatId = number | string;
 /** Text formatting mode accepted by \`parse_mode\` fields. */
 export type ParseMode = "Markdown" | "MarkdownV2" | "HTML";
 
-/** Anything accepted in a file slot: file_id / URL (string) or local data. */
-export type InputFile = string | Buffer | NodeJS.ReadableStream;
-
 /** Union of the four reply-markup objects. */
 export type ReplyMarkup =
   | InlineKeyboardMarkup
   | ReplyKeyboardMarkup
   | ReplyKeyboardRemove
   | ForceReply;
-
-/**
- * Builder input for setMyProfilePhoto / setBusinessAccountProfilePhoto: the
- * photo/animation field accepts raw file data; the library attaches it.
- */
-export type InputProfilePhotoInput =
-  | { type: "static"; photo: InputFile }
-  | { type: "animated"; animation: InputFile; main_frame_timestamp?: number };
-
-/** Message content sub-event names emitted by \`processUpdate\`. */
-export const MESSAGE_TYPES = [
-  "text",
-  "animation",
-  "audio",
-  "channel_chat_created",
-  "contact",
-  "delete_chat_photo",
-  "dice",
-  "document",
-  "game",
-  "group_chat_created",
-  "invoice",
-  "left_chat_member",
-  "location",
-  "migrate_from_chat_id",
-  "migrate_to_chat_id",
-  "new_chat_members",
-  "new_chat_photo",
-  "new_chat_title",
-  "passport_data",
-  "photo",
-  "pinned_message",
-  "poll",
-  "sticker",
-  "successful_payment",
-  "supergroup_chat_created",
-  "video",
-  "video_note",
-  "voice",
-  "video_chat_started",
-  "video_chat_ended",
-  "video_chat_participants_invited",
-  "video_chat_scheduled",
-  "message_auto_delete_timer_changed",
-  "chat_invite_link",
-  "chat_member_updated",
-  "web_app_data",
-  "message_reaction",
-] as const;
-export type MessageType = (typeof MESSAGE_TYPES)[number];
 `;
 
 function emitFields(fields: Field[]): string {
   if (!fields.length) return "Record<string, never>";
-  const body = fields
-    .map((f) => `  ${f.name}${f.optional ? "?" : ""}: ${f.type};`)
-    .join("\n");
+  const body = fields.map((f) => `  ${f.name}${f.optional ? "?" : ""}: ${f.type};`).join("\n");
   return `{\n${body}\n}`;
 }
 
@@ -401,10 +372,10 @@ const defined = new Set<string>([
   ...types.map((t) => t.name),
   ...unions.map((u) => u.name),
   ...PRELUDE_NAMES,
+  "InputFile", // imported from ../core/files.js, not emitted as a placeholder
 ]);
 const referenced = new Set<string>();
-const collect = (ts: string) =>
-  ts.match(/[A-Z][A-Za-z0-9]*/g)?.forEach((n) => referenced.add(n));
+const collect = (ts: string) => ts.match(/[A-Z][A-Za-z0-9]*/g)?.forEach((n) => referenced.add(n));
 for (const t of types) t.fields.forEach((f) => collect(f.type));
 for (const m of methods) {
   m.fields.forEach((f) => collect(f.type));
@@ -412,9 +383,7 @@ for (const m of methods) {
 }
 for (const u of unions) u.members.forEach((n) => referenced.add(n));
 
-const emptyTypes = [...new Set(emptyTypeCandidates)]
-  .filter((n) => referenced.has(n) && !defined.has(n))
-  .sort();
+const emptyTypes = [...new Set(emptyTypeCandidates)].filter((n) => referenced.has(n) && !defined.has(n)).sort();
 
 // Fail loudly rather than emit `unknown`/`never`.
 if (unmapped.size) {
@@ -424,38 +393,68 @@ if (unmapped.size) {
 }
 
 const out: string[] = [];
-out.push(`/* eslint-disable */
+out.push(`// biome-ignore-all lint: generated
+// biome-ignore-all format: generated
+// biome-ignore-all assist/source/organizeImports: generated
 /**
- * AUTO-GENERATED by scripts/api-parser.ts — DO NOT EDIT BY HAND.
+ * AUTO-GENERATED by scripts/api-parser.ts - DO NOT EDIT BY HAND.
  *
  * Source: ${API_URL}
  * Regenerate with: bun scripts/api-parser.ts
  */
+import type { InputFile } from "../core/files.js";
 `);
 out.push(PRELUDE);
 
-// `Update`'s field names, emitted as a runtime list so `processUpdate` can
-// iterate every dispatchable update kind instead of mirroring the type by hand.
+// `Update` is emitted as a DISCRIMINATED UNION (ADR-007): one variant per
+// payload key, each `{ update_id: number } & { <key>: <Type> }`. This lets
+// `if ('message' in u)` narrow `u.message` to `Message`, instead of the v1
+// all-optional object where every field was `T | undefined`.
 const updateDef = types.find((t) => t.name === "Update");
 if (!updateDef) throw new Error("Could not find the `Update` object in the parsed docs");
-const updateKeys = updateDef.fields.map((f) => f.name).filter((n) => n !== "update_id");
+const updateVariants = updateDef.fields.filter((f) => f.name !== "update_id");
+const updateKeys = updateVariants.map((f) => f.name);
+
+out.push(`\n// ---------------------------------------------------------------------------
+// Update - discriminated union (ADR-007), one variant per payload key
+// ---------------------------------------------------------------------------\n`);
 out.push(
-  `\n/** \`Update\` field names dispatched as events by \`processUpdate\` (every \`Update\` field except \`update_id\`). */\n` +
+  `export type Update =\n` +
+    updateVariants.map((f) => `  | ({ update_id: number } & { ${f.name}: ${f.type} })`).join("\n") +
+    `;\n`,
+);
+
+// All payload keys across every `Update` variant. A discriminated union's
+// `keyof` is only the common key (`update_id`), so distribute over the union
+// (via a naked type parameter) to collect each variant's own keys, then union
+// them.
+out.push(
+  `\n/** \`keyof\` distributed over a union (each member's keys, unioned). */\n` +
+    `type _KeysOfUnion<T> = T extends unknown ? keyof T : never;\n` +
+    `/** Every payload key across all \`Update\` variants. */\n` +
+    `type _UpdateKeys = _KeysOfUnion<Update>;\n`,
+);
+
+out.push(
+  `\n/** \`Update\` field names dispatched as events (every \`Update\` payload key except \`update_id\`). */\n` +
     `export const UPDATE_TYPES = [\n` +
     updateKeys.map((n) => `  ${JSON.stringify(n)},`).join("\n") +
-    `\n] as const satisfies readonly Exclude<keyof Update, "update_id">[];\n` +
+    `\n] as const satisfies readonly Exclude<_UpdateKeys, "update_id">[];\n` +
     `export type UpdateType = (typeof UPDATE_TYPES)[number];\n` +
     `\n// Compile-time proof that UPDATE_TYPES stays in lockstep with \`Update\`: the\n` +
-    `// \`satisfies\` above rejects any entry that is not an \`Update\` field, and this\n` +
-    `// rejects the reverse - an \`Update\` field that is missing from UPDATE_TYPES.\n` +
+    `// \`satisfies\` above rejects any entry that is not an \`Update\` payload key, and\n` +
+    `// this rejects the reverse - a payload key that is missing from UPDATE_TYPES.\n` +
     `type _AssertNever<T extends never> = T;\n` +
-    `type _UpdateTypesAreExhaustive = _AssertNever<Exclude<Exclude<keyof Update, "update_id">, UpdateType>>;\n`,
+    `type _UpdateTypesAreExhaustive = _AssertNever<Exclude<Exclude<_UpdateKeys, "update_id">, UpdateType>>;\n`,
 );
 
 out.push(`\n// ---------------------------------------------------------------------------
 // Objects
 // ---------------------------------------------------------------------------\n`);
-for (const t of types) out.push(`export type ${t.name} = ${emitFields(t.fields)};\n`);
+for (const t of types) {
+  if (t.name === "Update") continue; // emitted above as a discriminated union
+  out.push(`export type ${t.name} = ${emitFields(t.fields)};\n`);
+}
 
 if (emptyTypes.length) {
   out.push(`\n// Placeholder objects (documented as holding no fields)\n`);
@@ -476,13 +475,88 @@ for (const m of methods) {
   out.push(`export type ${C}Result = ${m.ret};\n`);
 }
 
-await Bun.write(OUT, out.join("\n"));
+await Bun.write(OUT, ascii(out.join("\n")));
+
+// ---------------------------------------------------------------------------
+// Emit the single generated `Api` class (ADR-001) → src/core/api.ts
+// ---------------------------------------------------------------------------
+//
+// One concrete method per Bot API method, each a one-liner over the shared
+// `request()`. No Proxy, no Raw/Api split. Every method takes a single `params`
+// argument plus an optional trailing `signal`. Types come from the types barrel
+// via a namespace import (`T.SendMessageParams`, `T.Message`, ...) so we never
+// maintain a giant import list.
+
+const apiOut: string[] = [];
+apiOut.push(`// biome-ignore-all lint: generated
+// biome-ignore-all format: generated
+// biome-ignore-all assist/source/organizeImports: generated
+/** AUTO-GENERATED by scripts/api-parser.ts - DO NOT EDIT BY HAND. */
+import { Transport, type TransportOptions } from "./transport.js";
+import { serializeParams } from "./serialize.js";
+import type * as T from "../types/index.js";
+
+export class Api {
+  protected readonly transport: Transport;
+
+  constructor(token: string, options?: TransportOptions) {
+    this.transport = new Transport(token, options);
+  }
+
+  protected request<R>(
+    method: string,
+    params?: Record<string, unknown>,
+    signal?: AbortSignal,
+  ): Promise<R> {
+    // ADR-002 (Option-D): structured params are plain objects; serialize once here
+    // (before the transport retry loop) into the wire-ready record encodeForm takes.
+    return this.transport.request<R>(method, params ? serializeParams(params) : params, signal);
+  }
+`);
+
+for (const m of methods) {
+  const C = cap(m.name);
+  const result = `T.${C}Result`;
+  // TSDoc link to the official Bot API page for this method. TypeDoc renders it
+  // in the generated reference; the anchor is the method name lowercased.
+  apiOut.push(`  /** {@link https://core.telegram.org/bots/api#${m.name.toLowerCase()} ${m.name}} */`);
+  const hasFields = m.fields.length > 0;
+  const allOptional = hasFields && m.fields.every((f) => f.optional);
+
+  if (!hasFields) {
+    // No params at all → no params argument, pass `undefined`.
+    apiOut.push(
+      `  ${m.name}(signal?: AbortSignal): Promise<${result}> {\n` +
+        `    return this.request<${result}>(${JSON.stringify(m.name)}, undefined, signal);\n` +
+        `  }`,
+    );
+  } else if (allOptional) {
+    // Every field optional → params is optional.
+    apiOut.push(
+      `  ${m.name}(params?: T.${C}Params, signal?: AbortSignal): Promise<${result}> {\n` +
+        `    return this.request<${result}>(${JSON.stringify(m.name)}, params, signal);\n` +
+        `  }`,
+    );
+  } else {
+    // At least one required field → params is required.
+    apiOut.push(
+      `  ${m.name}(params: T.${C}Params, signal?: AbortSignal): Promise<${result}> {\n` +
+        `    return this.request<${result}>(${JSON.stringify(m.name)}, params, signal);\n` +
+        `  }`,
+    );
+  }
+}
+
+apiOut.push(`}\n`);
+
+await Bun.write(API_OUT, ascii(apiOut.join("\n")));
 
 // ---------------------------------------------------------------------------
 // Report
 // ---------------------------------------------------------------------------
 
 console.log(`✓ wrote ${OUT.pathname}`);
+console.log(`✓ wrote ${API_OUT.pathname}`);
 console.log(`  objects:        ${types.length}`);
 console.log(`  unions:         ${unions.length}`);
 console.log(`  empty objects:  ${emptyTypes.length} (${emptyTypes.join(", ") || "none"})`);

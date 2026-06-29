@@ -1,13 +1,9 @@
-<h1 align="center">Node.js Telegram Bot API</h1>
+<h1 align="center">✨ A Modern Telegram Bot API Library ✨</h1>
 
-<div align="center">
-
-Node.js module to interact with the official [Telegram Bot API](https://core.telegram.org/bots/api).
-
+<div align=center>
 
 [![Bot API](https://img.shields.io/badge/Bot%20API-v.10.1-00aced.svg?style=flat-square&logo=telegram)](https://core.telegram.org/bots/api)
 [![npm package](https://img.shields.io/npm/v/node-telegram-bot-api?logo=npm&style=flat-square)](https://www.npmjs.org/package/node-telegram-bot-api)
-[![Coverage Status](https://img.shields.io/codecov/c/github/yagop/node-telegram-bot-api?style=flat-square&logo=codecov)](https://codecov.io/gh/yagop/node-telegram-bot-api)
 
 [![https://telegram.me/node_telegram_bot_api](https://img.shields.io/badge/💬%20Telegram-Channel-blue.svg?style=flat-square)](https://telegram.me/node_telegram_bot_api)
 [![https://t.me/+_IC8j_b1wSFlZTVk](https://img.shields.io/badge/💬%20Telegram-Group-blue.svg?style=flat-square)](https://t.me/+_IC8j_b1wSFlZTVk)
@@ -15,108 +11,347 @@ Node.js module to interact with the official [Telegram Bot API](https://core.tel
 
 </div>
 
+> **v2 is a from-scratch redesign, no v1 compatibility.** Coming from v1? See the [v1 -> v2 migration guide](./CHANGELOG.md) in the changelog.
+
 ## 📦 Install
 
 ```sh
-npm i node-telegram-bot-api
+npm install node-telegram-bot-api
 ```
+
+> **Runs on **Bun, modern Node.js, Deno, Cloudflare Workers and Vercel Functions λ**
 
 ## 🚀 Usage
 
 ```ts
-import TelegramBot from 'node-telegram-bot-api';
-// For CommonJS use:
-// const { TelegramBot } = require('node-telegram-bot-api');
+import { Bot, InlineKeyboardBuilder } from "node-telegram-bot-api";
+import { run } from "node-telegram-bot-api/node"; // managed runner: wires Ctrl-C to bot.stop()
 
-// replace the value below with the Telegram token you receive from @BotFather
-const token = 'YOUR_TELEGRAM_BOT_TOKEN';
+const bot = new Bot(process.env.BOT_TOKEN!);
 
-// Create a bot that uses 'polling' to fetch new updates
-const bot = new TelegramBot(token, { polling: true });
+// commands, regex and update types are all middleware - registration order wins
+bot.command("start", (ctx) => ctx.reply("Hi! Send me anything."));
+bot.hears(/echo (.+)/, (ctx) => ctx.reply(ctx.match![1]!));
 
-// Matches "/echo [whatever]" - the leading ^ anchors the command to the start of
-// the message, so it won't match "/echo" embedded in a URL or mid-sentence.
-bot.onText(/^\/echo (.+)/, (msg, match) => {
-  // 'msg' is the received Message from Telegram
-  // 'match' is the result of executing the regexp above on the text content
-  // of the message
+bot.on("message", (ctx) =>
+  ctx.reply("Pick one:", {
+    reply_markup: new InlineKeyboardBuilder()
+      .text("👍", "up")
+      .text("👎", "down")
+      .build(),
+  }),
+);
 
-  const chatId = msg.chat.id;
-  const resp = match?.[1] ?? ''; // the captured "whatever"
-
-  // send back the matched "whatever" to the chat
-  bot.sendMessage(chatId, resp);
+// 🔘 a tapped inline button comes back as a callback_query
+bot.on("callback_query", async (ctx) => {
+  await ctx.answerCallbackQuery({ text: `You tapped ${ctx.callbackQuery!.data}` });
 });
 
-// Listen for any kind of message. There are different kinds of messages.
-bot.on('message', (msg) => {
-  const chatId = msg.chat.id;
-
-  // send a message to the chat acknowledging receipt of their message
-  bot.sendMessage(chatId, 'Received your message');
-});
+await run(bot); // core-only alternative that runs anywhere: await bot.startPolling()
 ```
 
-More runnable examples live in the [`examples/`](./examples) directory.
+## 📡 Calling the API directly
 
-## 🌐 Proxy / custom transport
-
-Requests use the built-in `fetch`. To route a **single bot instance** through a
-proxy (without affecting the rest of the process), pass an undici `dispatcher` via
-`request.fetchOptions`:
+`Api` mirrors the wire API 1:1 - one method per Bot API method, each taking a single params object.
 
 ```ts
-import TelegramBot from 'node-telegram-bot-api';
-import { ProxyAgent } from 'undici';
+import { Api } from "node-telegram-bot-api";
 
-const bot = new TelegramBot(token, {
-  polling: true,
-  request: { fetchOptions: { dispatcher: new ProxyAgent('http://127.0.0.1:8080') } },
+const api = new Api(process.env.BOT_TOKEN!);
+const me = await api.getMe();
+await api.sendMessage({ chat_id: 12345, text: "hello" });
+// the same client is also on bot.api and ctx.api
+```
+
+## 🧩 Middleware
+
+koa-style middleware around every update; `on`/`command`/`hears` are filters in the same chain. Wrap downstream work with `await next()`.
+
+```ts
+// ⏱️ time every update - and catch anything thrown downstream
+bot.use(async (ctx, next) => {
+  const start = Date.now();
+  try {
+    await next();
+  } finally {
+    console.log(`update took ${Date.now() - start}ms`);
+  }
+});
+
+// 🧯 last-resort error handler
+bot.catch((err, ctx) => console.error("handler failed", err));
+```
+
+## ⌨️ Keyboards & formatting
+
+Structured fields are plain typed objects - pass a literal or use a fluent builder; the pipeline serializes either.
+
+```ts
+import { Bot, InlineKeyboardBuilder, ReplyKeyboardBuilder, EntityBuilder } from "node-telegram-bot-api";
+
+const bot = new Bot(process.env.BOT_TOKEN!);
+
+// 🎛️ inline keyboard as reply_markup
+await bot.api.sendMessage({
+  chat_id,
+  text: "Choose:",
+  reply_markup: new InlineKeyboardBuilder()
+    .text("A", "a")
+    .url("Docs", "https://core.telegram.org/bots/api")
+    .row()
+    .text("B", "b")
+    .build(),
+});
+
+// ⌨️ reply keyboard as reply_markup
+await bot.api.sendMessage({
+  chat_id,
+  text: "Yes or no?",
+  reply_markup: new ReplyKeyboardBuilder()
+    .text("Yes")
+    .text("No")
+    .build({ resize_keyboard: true }),
+});
+
+// ✍️ rich text - EntityBuilder computes UTF-16 offsets for you
+const { text, entities } = new EntityBuilder()
+  .plain("Hello ")
+  .bold("world")
+  .link("docs", "https://github.com/yagop/node-telegram-bot-api")
+  .build();
+await bot.api.sendMessage({ chat_id, text, entities });
+
+// any structured field is just a plain object - no wrapper needed
+await bot.api.sendMessage({ chat_id, text: "hi", link_preview_options: { is_disabled: true } });
+```
+
+## 📤 Uploads
+
+A bare string is always a `file_id` or URL. Wrap raw bytes to upload them. Pass a
+`filename` with the right extension - the core does no content sniffing, so the name is
+what Telegram sees (`fromPath` uses the basename).
+
+```ts
+import { Bot, InputFile, MediaGroupBuilder } from "node-telegram-bot-api";
+import { fromPath } from "node-telegram-bot-api/node";
+
+const bot = new Bot(process.env.BOT_TOKEN!);
+
+// upload from disk (Node only)
+await bot.api.sendPhoto({ chat_id, photo: await fromPath("./cat.jpg") });
+// upload raw bytes (web-standard, runs anywhere)
+await bot.api.sendDocument({ chat_id, document: new InputFile(bytes, { filename: "report.pdf" }) });
+
+// a raw InputFile nested in a structure is auto-hoisted to an attach:// part
+await bot.api.sendMediaGroup({
+  chat_id,
+  media: [
+    { type: "photo", media: new InputFile(bytesA, { filename: "a.jpg" }), caption: "A" },
+    { type: "photo", media: "https://telegram.org/example/photo.jpg" },
+  ],
+});
+
+// MediaGroupBuilder: optional sugar for the same array
+await bot.api.sendMediaGroup({
+  chat_id,
+  media: new MediaGroupBuilder()
+    .photo({ media: new InputFile(bytesA, { filename: "a.jpg" }), caption: "A" })
+    .photo({ media: "https://telegram.org/example/photo.jpg" })
+    .build(),
 });
 ```
 
-For full control you can supply your own `fetch` implementation instead via
-`request.fetch` (useful for custom proxying, instrumentation, or tests). Both are
-scoped to that bot instance, so different bots can use different proxies.
+Builders cover the other `attach://` methods; each `.build()` returns the plain shape.
 
-## 📚 Documentation
+```ts
+import {
+  Bot,
+  InputFile,
+  StickerSetBuilder,
+  StaticProfilePhotoBuilder,
+  PhotoStoryBuilder,
+} from "node-telegram-bot-api";
 
-* [Usage][usage]
-* [Examples][examples]
-* [Migration guide (0.6x → 1.0)][migration]
-* [Tutorials][tutorials]
-* [Help Information][help]
-* [API Reference][api] — generated from source; the package also ships its own TypeScript types, and method signatures mirror the [official Bot API][bot-api]
-* [Contributing to the Project][contributing]
+const bot = new Bot(process.env.BOT_TOKEN!);
 
-_**Note**: Code for the latest release resides on the **master** branch, and
-pull requests should target **master**._
+// collect a sticker set
+await bot.api.createNewStickerSet({
+  user_id,
+  name,
+  title,
+  stickers: new StickerSetBuilder()
+    .add({ sticker: new InputFile(pngBytes, { filename: "sticker.png" }), format: "static", emoji_list: ["🙂"] })
+    .build(),
+});
 
+// a single sticker is a plain InputSticker - no builder needed
+await bot.api.addStickerToSet({
+  user_id,
+  name,
+  sticker: { sticker: new InputFile(pngBytes, { filename: "sticker.png" }), format: "static", emoji_list: ["🙂"] },
+});
 
-## 💭 Community
+// profile photo: Static / AnimatedProfilePhotoBuilder
+await bot.api.setMyProfilePhoto({
+  photo: new StaticProfilePhotoBuilder({ photo: new InputFile(pngBytes, { filename: "avatar.png" }) }).build(),
+});
 
-We thank all the developers in the Open-Source community who continuously
-take their time and effort in advancing this project.
-See our [list of contributors][contributors].
+// story: Photo / VideoStoryBuilder
+await bot.api.postStory({
+  business_connection_id,
+  active_period,
+  content: new PhotoStoryBuilder({ photo: new InputFile(pngBytes, { filename: "story.png" }) }).build(),
+});
+```
 
-We have a [Telegram channel][tg-channel] where we post updates on
-the Project. Head over and subscribe!
+## 🪝 Webhooks
 
-We also have a [Telegram  group][tg-group] to discuss issues related to this library.
+The web-standard callback is a pure `(Request) => Promise<Response>` - one function for every serverless runtime.
 
-Some things built using this library that might interest you:
+**Cloudflare Workers / Bun.serve / Deno Deploy / Vercel Edge:**
 
-* [tgfancy](https://github.com/GochoMugo/tgfancy): A fancy, higher-level wrapper for Telegram Bot API
-* [node-telegram-bot-api-middleware](https://github.com/idchlife/node-telegram-bot-api-middleware): Middleware for node-telegram-bot-api
-* [teleirc](https://github.com/FruitieX/teleirc): A simple Telegram ↔ IRC gateway
-* [bot-brother](https://github.com/SerjoPepper/bot-brother): Node.js library to help you easily create telegram bots
-* [redbot](https://github.com/guidone/node-red-contrib-chatbot): A Node-RED plugin to create telegram bots visually
-* [node-telegram-keyboard-wrapper](https://github.com/alexandercerutti/node-telegram-keyboard-wrapper): A wrapper to improve keyboards structures creation through a more easy-to-see way (supports Inline Keyboards, Reply Keyboard, Remove Keyboard and Force Reply)
-* [beetube-bot](https://github.com/kodjunkie/beetube-bot): A telegram bot for music, videos, movies, EDM tracks, torrent downloads, files and more.
-* [telegram-inline-calendar](https://github.com/VDS13/telegram-inline-calendar): Date and time picker and inline calendar for Node.js telegram bots.
-* [telegram-captcha](https://github.com/VDS13/telegram-captcha): Telegram bot to protect Telegram groups from automatic bots.
-* [@toptl/node-telegram-bot-api](https://github.com/top-tl/node-telegram-bot-api): Plugin for TOP.TL, the Telegram directory. Auto-tracks bot stats and enables vote checking.
+```ts
+import { Bot, webhookCallback } from "node-telegram-bot-api";
 
+const bot = new Bot(TOKEN);
+bot.on("message", (ctx) => ctx.reply("hi from the edge"));
+
+export default {
+  fetch: webhookCallback(bot, { secretToken: SECRET }),
+};
+```
+
+By default the callback awaits your handler before `200`. For slow handlers, opt into **early-ACK**:
+
+```ts
+export default {
+  // ✅ return 200 immediately, then finish the handler in the background
+  // waitUntil keeps the platform alive until it settles (fastAck: true = fire-and-forget)
+  fetch: (req: Request, _env: unknown, ctx: { waitUntil(promise: Promise<unknown>): void }) =>
+    webhookCallback(bot, { secretToken: SECRET, waitUntil: (p) => ctx.waitUntil(p) })(req),
+};
+```
+
+**Next.js App Router** (`app/api/bot/route.ts`):
+
+```ts
+import { Bot, nextAppWebhook } from "node-telegram-bot-api";
+const bot = new Bot(process.env.BOT_TOKEN!);
+export const POST = nextAppWebhook(bot, { secretToken: process.env.SECRET });
+```
+
+**Express** (mount on an app you already have):
+
+```ts
+import express from "express";
+import { Bot, registerExpressWebhook } from "node-telegram-bot-api";
+
+const app = express();
+const bot = new Bot(TOKEN);
+registerExpressWebhook(bot, app, { path: "/telegram", secretToken: SECRET });
+app.listen(3000);
+```
+
+**Self-hosted Node server** (`node-telegram-bot-api/node`):
+
+```ts
+import { Bot } from "node-telegram-bot-api";
+import { createWebhookServer, startWebhook } from "node-telegram-bot-api/node";
+
+// Low-level: you own the server and the port.
+const server = createWebhookServer(new Bot(TOKEN), { path: "/telegram", secretToken: SECRET });
+server.listen(8080);
+
+// Or the managed one-liner (listen + graceful shutdown, the webhook peer of run()):
+await startWebhook(new Bot(TOKEN), { port: 8080, path: "/telegram", secretToken: SECRET });
+```
+
+Register the URL once: `api.setWebhook({ url, secret_token })`. The `secret_token` is the only thing authenticating callers (payloads aren't signed) - treat it as required in production, and terminate TLS at your proxy.
+
+## ⚠️ Errors
+
+Errors expose structured fields, so you branch on values, not message text.
+
+```ts
+import { TelegramApiError, NetworkError, TimeoutError } from "node-telegram-bot-api";
+
+try {
+  await api.sendMessage({ chat_id, text });
+} catch (err) {
+  // 🔁 429s are auto-retried (honoring retry_after) by default - this is the manual form
+  if (err instanceof TelegramApiError && err.errorCode === 429) {
+    await sleep((err.retryAfter ?? 1) * 1000);
+  } else if (err instanceof NetworkError || err instanceof TimeoutError) {
+    // transient transport failure
+  }
+}
+```
+
+## 🛡️ Resilience & rate limiting
+
+Safe defaults out of the box - set only what you want to change.
+
+```ts
+import { Api } from "node-telegram-bot-api";
+
+const api = new Api(TOKEN, {
+  // 🔁 retries 429 (retry_after first), network/timeout/5xx with jittered backoff
+  maxRetries: 2,        // default 2
+  retryBackoffMs: 300,  // default 300
+
+  // 🚦 opt-in throttle (requests/sec); omit for zero overhead
+  rateLimit: { global: 30, perChat: 1 },
+});
+```
+
+Long polling resumes through transient errors instead of dying on the first blip:
+
+```ts
+import { longPoll } from "node-telegram-bot-api";
+
+for await (const update of longPoll(api, {
+  timeout: 30,
+  retry: true,          // default true - resume on transient errors, keep the offset
+  maxBackoffMs: 60_000, // default 60s - cap between failed polls
+  onError: (err) => console.warn("poll failed, backing off", err),
+}, signal)) {
+  // ... fatal 4xx still stops the loop; an aborted signal returns cleanly
+}
+```
+
+## 🌊 Low-level update stream
+
+`longPoll` is a plain async generator - `for await`, `take(n)`, filter, batch or fan out as you like.
+
+```ts
+import { Api, longPoll } from "node-telegram-bot-api";
+
+const api = new Api(TOKEN);
+const ac = new AbortController();
+for await (const update of longPoll(api, { timeout: 30 }, ac.signal)) {
+  console.log(update.update_id);
+}
+```
+
+## 🐛 Debugging
+
+Set `DEBUG` (the `debug` convention) to trace request lifecycle, polling and webhooks to **stderr**:
+
+```sh
+DEBUG="node-telegram-bot-api:*" node app.js
+# node-telegram-bot-api:transport -> sendMessage
+# node-telegram-bot-api:transport <- sendMessage ok +142ms
+```
+
+Namespaces: `:transport`, `:polling`, `:webhook` (filter, or exclude one with a leading `-`). Tracing is Node-only - wired up by importing `node-telegram-bot-api/node`; on edge runtimes it's an inert no-op.
+
+## 🛠️ Development
+
+```sh
+bun run generate:types   # regenerate types + client from the live Bot API docs
+bun run check            # tsc (strict) + core-isolation lint + edge bundle + unit tests
+bun run build            # emit dist/
+```
 
 ## 👥 Contributors
 
@@ -126,20 +361,6 @@ Some things built using this library that might interest you:
   </a>
 </p>
 
-## License
+## 📄 License
 
-**The MIT License (MIT)**
-
-Copyright © 2019 Yago
-
-[usage]:https://github.com/yagop/node-telegram-bot-api/tree/master/doc/usage.md
-[examples]:https://github.com/yagop/node-telegram-bot-api/tree/master/examples
-[migration]:https://github.com/yagop/node-telegram-bot-api/blob/master/CHANGELOG.md#migrating-from-v067x
-[api]:https://github.com/yagop/node-telegram-bot-api/tree/master/doc/api.md
-[bot-api]:https://core.telegram.org/bots/api
-[help]:https://github.com/yagop/node-telegram-bot-api/tree/master/doc/help.md
-[tutorials]:https://github.com/yagop/node-telegram-bot-api/tree/master/doc/tutorials.md
-[contributing]:https://github.com/yagop/node-telegram-bot-api/tree/master/CONTRIBUTING.md
-[contributors]:https://github.com/yagop/node-telegram-bot-api/graphs/contributors
-[tg-channel]:https://telegram.me/node_telegram_bot_api
-[tg-group]:https://t.me/+UTbprHdcw0JdZdbL
+MIT

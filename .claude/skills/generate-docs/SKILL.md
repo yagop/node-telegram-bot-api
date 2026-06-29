@@ -1,85 +1,91 @@
 ---
 name: generate-docs
-description: How to (re)generate the API reference doc/api.md for node-telegram-bot-api. Use whenever a public TelegramBot method is added, removed, or has its signature/parameters/return type changed, or when a PR check reports doc/api.md is out of date. Covers the bun generator script, what it does and does NOT capture, and how to verify the result is committed.
+description: How to (re)generate the API reference doc/api.md for node-telegram-bot-api. Use whenever a public Api method, class, function, or type is added/removed/changed, or when a PR check reports doc/api.md is out of date. Covers the two-stage pipeline (TypeDoc -> doc/api.json -> doc/api.md via scripts/generate-docs.ts), what it does and does not capture, and how to verify the result is committed.
 ---
 
 # Generating doc/api.md
 
 `doc/api.md` is the human-readable API reference. It is **generated**, not
-hand-edited, and it is **checked into git** - so it must be regenerated and
-committed whenever the public method surface changes.
+hand-edited, and **checked into git** - so it must be regenerated and committed
+whenever the public surface changes. The intermediate `doc/api.json` is
+gitignored.
 
 ## Command
 
 ```bash
-bun run generate:docs        # = bun scripts/api-doc.ts
+npm run generate:docs        # == bun scripts/generate-docs.ts
 ```
 
-This rewrites `doc/api.md` in place and prints a summary
-(`Wrote doc/api.md: N methods, M static props.`). It needs no token, no
-network, and no extra dependencies (only the `typescript` that's already
-installed).
+This runs the two stages (see below) and prints a summary of how many classes,
+functions, interfaces, enums, type aliases, and variables it wrote. It needs no
+token and no network - TypeDoc reads the local TypeScript source.
 
-The script is runtime-agnostic (only `node:fs/promises` + the `typescript`
-package), so either runner works:
+## The two-stage pipeline
 
-```bash
-bun scripts/api-doc.ts     # what `generate:docs` uses
-node scripts/api-doc.ts    # Node >=23.6 / 24 strips the TS types natively
-```
+`scripts/generate-docs.ts` deliberately separates parsing from presentation:
+
+1. **TypeDoc -> `doc/api.json`.** The script boots TypeDoc on the package entry
+   points (`src/core/index.ts`, `src/node/index.ts`) and calls
+   `app.generateJson(project, ...)`. TypeDoc owns the type graph - generics,
+   unions, literal types, intersections, and cross-references - and serializes
+   the full project reflection to JSON. Private, protected, and `@internal`
+   members are excluded (`excludePrivate` / `excludeProtected` /
+   `excludeInternal`).
+2. **JSON -> `doc/api.md`.** A small hand-written renderer walks the JSON and
+   emits Markdown: a methods table per class (with each method's params, return
+   type, and a per-method description), param/return tables for functions, property
+   tables for interfaces, and a section per type alias / variable / enum. Type
+   references to other documented declarations become in-page links. It imports
+   TypeDoc's public `ReflectionKind` enum so the kind numbers track the
+   installed TypeDoc version.
+
+Why the split: TypeDoc is the robust parser; the script is the only place that
+decides what the docs *look* like. The JSON stays on disk as an inspectable
+intermediate.
 
 ## When to run
 
-Run it after any change that alters the **public surface of the `TelegramBot`
-class** in `src/telegram.ts`:
+Regenerate after any change to the **public surface**:
 
-- adding, removing, or renaming a public method
-- changing a method's parameters (count, names, optionality) or return type
-- adding/removing a public `static` property
+- adding, removing, or renaming a class, function, interface, enum, variable, or
+  exported type alias;
+- changing a method's parameters, return type, or its `Api`-method `{@link}`
+  comment;
+- regenerating types with `npm run generate:types` (new methods/types appear
+  automatically).
 
-You do **not** need to run it for changes to method *bodies* that don't touch
-the signature, or for changes outside `src/telegram.ts`.
+You do **not** need to run it for changes to method *bodies* that don't change a
+signature, or for private/internal code.
 
-## How it works
+## The per-method description column
 
-`scripts/api-doc.ts` walks the `TelegramBot` class with the TypeScript compiler
-API (syntax only, no type checker) and emits a jsdoc2md-style reference: a table
-of contents plus one section per public method (signature, `Returns`, a `See`
-link to the matching Telegram Bot API method, and a parameter table). It
-documents **only** the class's own public members - no inherited `EventEmitter`
-methods, no "Defined in" source links, and no dump of the generated
-request/reply types.
-
-Details worth knowing when output looks off:
-
-- **The Telegram `See` link** is derived from the first string literal passed to
-  `this._form(...)` / `this._sendFile(...)` / `this._request(...)` in the method
-  body. A method that delegates to another method (no direct `_form` call) gets
-  **no** `See` link - that's expected.
-- **Types are simplified** for readability: `ChatId -> Number | String`,
-  `FileInput -> String | Stream | Buffer`, an options bag (`...Params` /
-  `FileMeta`) -> `Object`, `Promise<X> -> Promise`, arrays -> `Array`, unknown
-  object types -> `Object`. Extend the `mapToken` / `displayReturn` tables in
-  the script if a new primitive needs a friendly name.
-- **An options parameter named `form`** is displayed as `[options]`.
-- **Descriptions are blank** unless the method carries a JSDoc summary or
-  `@param` tags. The TS rewrite dropped the old hand-written prose, so most
-  cells are empty by design. To enrich a method, add a JSDoc block above it in
-  `src/telegram.ts` - the generator picks up the summary and `@param` text
-  automatically. Do not hand-edit `doc/api.md`; it will be overwritten.
-
-This is separate from `npm run generate:types` (which regenerates
-`src/types/schemas.ts` from the live Telegram docs). If you regenerate types and
-that adds/changes methods, regenerate docs too.
+Each class method's "Description" column renders the full comment summary:
+for generated `Api` methods that is the `{@link}` to the official Bot API page
+(emitted as a TSDoc comment by the type generator, `scripts/api-parser.ts`);
+for hand-written library methods (`Bot.command`, `Context.reply`, builders) it
+is the prose description. To change the `Api` links, change the type generator -
+do not hand-edit `src/core/api.ts`.
 
 ## Verify before committing
 
 The doc must match the source. Confirm regenerating produces no diff:
 
 ```bash
-bun run generate:docs
+npm run generate:docs
 git diff --exit-code doc/api.md   # exit 0 = up to date
 ```
 
 If `git diff` shows changes, commit the regenerated `doc/api.md` alongside your
-code change.
+code change. `doc/api.json` is gitignored - never commit it.
+
+This is separate from `npm run generate:types` (which regenerates
+`src/types/schemas.ts` and `src/core/api.ts` from the live Telegram docs). If you
+regenerate types and that adds/changes the public surface, regenerate docs too.
+
+## Tweak the presentation
+
+Output layout (tables vs. fenced blocks, what gets a heading, how a type renders)
+lives entirely in `scripts/generate-docs.ts`. In particular `renderType` handles
+each TypeDoc type variant; add a case there if a new type shape renders poorly,
+and `slug()` must keep matching GitHub's anchor algorithm (it preserves
+underscores) so in-page links resolve.

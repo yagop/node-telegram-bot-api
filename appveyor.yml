@@ -1,9 +1,30 @@
 version: "{build}"
 
+# AppVeyor is the Windows CI (Actions covers Linux on Bun + Node). The repo
+# ships bun.lock, not package-lock.json, so `npm ci` is unusable here -> use
+# `npm install`, matching the Actions unit-node job. Same gate as Actions:
+# typecheck, then the Node (tsx) unit runner.
+#
+# `--ignore-scripts`: this job runs node-only (tsc + the tsx unit runner) and
+# never invokes bun, but `bun` is a devDependency whose postinstall downloads a
+# platform binary and hard-fails on Windows (no @oven/bun-windows-x64-baseline),
+# which would abort the whole install. Skipping lifecycle scripts sidesteps it;
+# tsx/esbuild still work because esbuild resolves its native binary from an
+# optionalDependency package (@esbuild/win32-x64), not from its postinstall.
+# Node 21+ only: `test:node:unit` passes the `test/unit/*.test.ts` glob to
+# `node --test`, which Windows shells do not expand and Node only globs itself
+# since v21. Node 20 would receive the literal pattern and find no tests. This
+# matches the Actions matrix (22/24/26).
+#
+# `image`: the default AppVeyor image is Windows Server 2012 R2, on which Node 24
+# refuses to run ("supported on Windows 10 / Server 2016 or higher"). Pin the
+# Visual Studio 2022 image (Server 2022) so the modern Node line installs.
+image: Visual Studio 2022
+
 environment:
   matrix:
     - nodejs_version: "22"
-    - nodejs_version: "20"
+    - nodejs_version: "24"
 
 platform: x64
 
@@ -11,7 +32,7 @@ install:
   - ps: Install-Product node $env:nodejs_version x64
   - node --version
   - npm --version
-  - npm ci
+  - npm install --no-audit --no-fund --ignore-scripts
 
 test_script:
   - npm run typecheck

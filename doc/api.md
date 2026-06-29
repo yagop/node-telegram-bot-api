@@ -1,3320 +1,8640 @@
-# API Reference
-
-**Note:** If you are looking for available [events](usage.md#events) or usage of api, please refer [`usage.md`](usage.md).
-
-> Generated from `src/telegram.ts` by `scripts/api-doc.ts` - do not edit by hand.
-
-<a name="TelegramBot"></a>
-
-## TelegramBot
-
-**Kind**: global class
-
-**See**: https://core.telegram.org/bots/api
-
-* [TelegramBot](#TelegramBot)
-    * [new TelegramBot(token, [options])](#new_TelegramBot_new)
-    * _instance_
-        * [.on(event, listener)](#TelegramBot+on) ⇒ <code>Object</code>
-        * [.startPolling([options])](#TelegramBot+startPolling) ⇒ <code>Promise</code>
-        * [.stopPolling([options])](#TelegramBot+stopPolling) ⇒ <code>Promise</code>
-        * [.isPolling()](#TelegramBot+isPolling) ⇒ <code>Boolean</code>
-        * [.openWebHook()](#TelegramBot+openWebHook) ⇒ <code>Promise</code>
-        * [.closeWebHook()](#TelegramBot+closeWebHook) ⇒ <code>Promise</code>
-        * [.hasOpenWebHook()](#TelegramBot+hasOpenWebHook) ⇒ <code>Boolean</code>
-        * [.onText(regexp, callback)](#TelegramBot+onText)
-        * [.removeTextListener(regexp)](#TelegramBot+removeTextListener) ⇒ <code>Object</code>
-        * [.clearTextListeners()](#TelegramBot+clearTextListeners)
-        * [.onReplyToMessage(chatId, messageId, callback)](#TelegramBot+onReplyToMessage) ⇒ <code>Number</code>
-        * [.removeReplyListener(replyListenerId)](#TelegramBot+removeReplyListener) ⇒ <code>Object</code>
-        * [.clearReplyListeners()](#TelegramBot+clearReplyListeners) ⇒ <code>Array</code>
-        * [.processUpdate(update)](#TelegramBot+processUpdate)
-        * [.getFileLink(fileId, [options])](#TelegramBot+getFileLink) ⇒ <code>Promise</code>
-        * [.getFileStream(fileId, [options])](#TelegramBot+getFileStream) ⇒ <code>stream.Readable</code>
-        * [.downloadFile(fileId, downloadDir, [options])](#TelegramBot+downloadFile) ⇒ <code>Promise</code>
-        * [.getUpdates([options])](#TelegramBot+getUpdates) ⇒ <code>Promise</code>
-        * [.setWebhook(url, [options], [fileOptions])](#TelegramBot+setWebhook) ⇒ <code>Promise</code>
-        * [.deleteWebhook([options])](#TelegramBot+deleteWebhook) ⇒ <code>Promise</code>
-        * [.getWebhookInfo([options])](#TelegramBot+getWebhookInfo) ⇒ <code>Promise</code>
-        * [~~.setWebHook(url, [options], [fileOptions])~~](#TelegramBot+setWebHook) ⇒ <code>Promise</code>
-        * [~~.deleteWebHook([options])~~](#TelegramBot+deleteWebHook) ⇒ <code>Promise</code>
-        * [~~.getWebHookInfo([options])~~](#TelegramBot+getWebHookInfo) ⇒ <code>Promise</code>
-        * [.getMe([options])](#TelegramBot+getMe) ⇒ <code>Promise</code>
-        * [.logOut([options])](#TelegramBot+logOut) ⇒ <code>Promise</code>
-        * [.close([options])](#TelegramBot+close) ⇒ <code>Promise</code>
-        * [.sendMessage(chatId, text, [options])](#TelegramBot+sendMessage) ⇒ <code>Promise</code>
-        * [.sendRichMessage(chatId, richMessage, [options])](#TelegramBot+sendRichMessage) ⇒ <code>Promise</code>
-        * [.forwardMessage(chatId, fromChatId, messageId, [options])](#TelegramBot+forwardMessage) ⇒ <code>Promise</code>
-        * [.forwardMessages(chatId, fromChatId, messageIds, [options])](#TelegramBot+forwardMessages) ⇒ <code>Promise</code>
-        * [.copyMessage(chatId, fromChatId, messageId, [options])](#TelegramBot+copyMessage) ⇒ <code>Promise</code>
-        * [.copyMessages(chatId, fromChatId, messageIds, [options])](#TelegramBot+copyMessages) ⇒ <code>Promise</code>
-        * [.sendPhoto(chatId, photo, [options], [fileOptions])](#TelegramBot+sendPhoto) ⇒ <code>Promise</code>
-        * [.sendLivePhoto(chatId, livePhoto, photo, [options], [fileOptions])](#TelegramBot+sendLivePhoto) ⇒ <code>Promise</code>
-        * [.sendAudio(chatId, audio, [options], [fileOptions])](#TelegramBot+sendAudio) ⇒ <code>Promise</code>
-        * [.sendDocument(chatId, doc, [options], [fileOptions])](#TelegramBot+sendDocument) ⇒ <code>Promise</code>
-        * [.sendVideo(chatId, video, [options], [fileOptions])](#TelegramBot+sendVideo) ⇒ <code>Promise</code>
-        * [.sendAnimation(chatId, animation, [options], [fileOptions])](#TelegramBot+sendAnimation) ⇒ <code>Promise</code>
-        * [.sendVoice(chatId, voice, [options], [fileOptions])](#TelegramBot+sendVoice) ⇒ <code>Promise</code>
-        * [.sendVideoNote(chatId, videoNote, [options], [fileOptions])](#TelegramBot+sendVideoNote) ⇒ <code>Promise</code>
-        * [.sendPaidMedia(chatId, starCount, media, [options])](#TelegramBot+sendPaidMedia) ⇒ <code>Promise</code>
-        * [.sendMediaGroup(chatId, media, [options])](#TelegramBot+sendMediaGroup) ⇒ <code>Promise</code>
-        * [.sendLocation(chatId, latitude, longitude, [options])](#TelegramBot+sendLocation) ⇒ <code>Promise</code>
-        * [.sendVenue(chatId, latitude, longitude, title, address, [options])](#TelegramBot+sendVenue) ⇒ <code>Promise</code>
-        * [.sendContact(chatId, phoneNumber, firstName, [options])](#TelegramBot+sendContact) ⇒ <code>Promise</code>
-        * [.sendPoll(chatId, question, pollOptions, [options])](#TelegramBot+sendPoll) ⇒ <code>Promise</code>
-        * [.sendChecklist(businessConnectionId, chatId, checklist, [options])](#TelegramBot+sendChecklist) ⇒ <code>Promise</code>
-        * [.sendDice(chatId, [options])](#TelegramBot+sendDice) ⇒ <code>Promise</code>
-        * [.sendMessageDraft(chatId, draftId, text, [options])](#TelegramBot+sendMessageDraft) ⇒ <code>Promise</code>
-        * [.sendRichMessageDraft(chatId, draftId, richMessage, [options])](#TelegramBot+sendRichMessageDraft) ⇒ <code>Promise</code>
-        * [.sendChatAction(chatId, action, [options])](#TelegramBot+sendChatAction) ⇒ <code>Promise</code>
-        * [.setMessageReaction(chatId, messageId, [options])](#TelegramBot+setMessageReaction) ⇒ <code>Promise</code>
-        * [.editMessageLiveLocation(latitude, longitude, [options])](#TelegramBot+editMessageLiveLocation) ⇒ <code>Promise</code>
-        * [.stopMessageLiveLocation([options])](#TelegramBot+stopMessageLiveLocation) ⇒ <code>Promise</code>
-        * [.getUserProfilePhotos(userId, [options])](#TelegramBot+getUserProfilePhotos) ⇒ <code>Promise</code>
-        * [.getUserProfileAudios(userId, [options])](#TelegramBot+getUserProfileAudios) ⇒ <code>Promise</code>
-        * [.setUserEmojiStatus(userId, [options])](#TelegramBot+setUserEmojiStatus) ⇒ <code>Promise</code>
-        * [.getFile(fileId, [options])](#TelegramBot+getFile) ⇒ <code>Promise</code>
-        * [.getUserPersonalChatMessages(userId, limit)](#TelegramBot+getUserPersonalChatMessages) ⇒ <code>Promise</code>
-        * [.banChatMember(chatId, userId, [options])](#TelegramBot+banChatMember) ⇒ <code>Promise</code>
-        * [.unbanChatMember(chatId, userId, [options])](#TelegramBot+unbanChatMember) ⇒ <code>Promise</code>
-        * [.restrictChatMember(chatId, userId, permissions, [options])](#TelegramBot+restrictChatMember) ⇒ <code>Promise</code>
-        * [.promoteChatMember(chatId, userId, [options])](#TelegramBot+promoteChatMember) ⇒ <code>Promise</code>
-        * [.setChatAdministratorCustomTitle(chatId, userId, customTitle, [options])](#TelegramBot+setChatAdministratorCustomTitle) ⇒ <code>Promise</code>
-        * [.setChatMemberTag(chatId, userId, [options])](#TelegramBot+setChatMemberTag) ⇒ <code>Promise</code>
-        * [.banChatSenderChat(chatId, senderChatId, [options])](#TelegramBot+banChatSenderChat) ⇒ <code>Promise</code>
-        * [.unbanChatSenderChat(chatId, senderChatId, [options])](#TelegramBot+unbanChatSenderChat) ⇒ <code>Promise</code>
-        * [.setChatPermissions(chatId, permissions, [options])](#TelegramBot+setChatPermissions) ⇒ <code>Promise</code>
-        * [.exportChatInviteLink(chatId, [options])](#TelegramBot+exportChatInviteLink) ⇒ <code>Promise</code>
-        * [.createChatInviteLink(chatId, [options])](#TelegramBot+createChatInviteLink) ⇒ <code>Promise</code>
-        * [.editChatInviteLink(chatId, inviteLink, [options])](#TelegramBot+editChatInviteLink) ⇒ <code>Promise</code>
-        * [.createChatSubscriptionInviteLink(chatId, subscriptionPeriod, subscriptionPrice, [options])](#TelegramBot+createChatSubscriptionInviteLink) ⇒ <code>Promise</code>
-        * [.editChatSubscriptionInviteLink(chatId, inviteLink, [options])](#TelegramBot+editChatSubscriptionInviteLink) ⇒ <code>Promise</code>
-        * [.revokeChatInviteLink(chatId, inviteLink, [options])](#TelegramBot+revokeChatInviteLink) ⇒ <code>Promise</code>
-        * [.approveChatJoinRequest(chatId, userId, [options])](#TelegramBot+approveChatJoinRequest) ⇒ <code>Promise</code>
-        * [.declineChatJoinRequest(chatId, userId, [options])](#TelegramBot+declineChatJoinRequest) ⇒ <code>Promise</code>
-        * [.answerChatJoinRequestQuery(chatJoinRequestQueryId, result, [options])](#TelegramBot+answerChatJoinRequestQuery) ⇒ <code>Promise</code>
-        * [.sendChatJoinRequestWebApp(chatJoinRequestQueryId, webAppUrl, [options])](#TelegramBot+sendChatJoinRequestWebApp) ⇒ <code>Promise</code>
-        * [.setChatPhoto(chatId, photo, [options], [fileOptions])](#TelegramBot+setChatPhoto) ⇒ <code>Promise</code>
-        * [.deleteChatPhoto(chatId, [options])](#TelegramBot+deleteChatPhoto) ⇒ <code>Promise</code>
-        * [.setChatTitle(chatId, title, [options])](#TelegramBot+setChatTitle) ⇒ <code>Promise</code>
-        * [.setChatDescription(chatId, description, [options])](#TelegramBot+setChatDescription) ⇒ <code>Promise</code>
-        * [.pinChatMessage(chatId, messageId, [options])](#TelegramBot+pinChatMessage) ⇒ <code>Promise</code>
-        * [.unpinChatMessage(chatId, [options])](#TelegramBot+unpinChatMessage) ⇒ <code>Promise</code>
-        * [.unpinAllChatMessages(chatId, [options])](#TelegramBot+unpinAllChatMessages) ⇒ <code>Promise</code>
-        * [.leaveChat(chatId, [options])](#TelegramBot+leaveChat) ⇒ <code>Promise</code>
-        * [.getChat(chatId, [options])](#TelegramBot+getChat) ⇒ <code>Promise</code>
-        * [.getChatAdministrators(chatId, [options])](#TelegramBot+getChatAdministrators) ⇒ <code>Promise</code>
-        * [.getChatMemberCount(chatId, [options])](#TelegramBot+getChatMemberCount) ⇒ <code>Promise</code>
-        * [.getChatMember(chatId, userId, [options])](#TelegramBot+getChatMember) ⇒ <code>Promise</code>
-        * [.setChatStickerSet(chatId, stickerSetName, [options])](#TelegramBot+setChatStickerSet) ⇒ <code>Promise</code>
-        * [.deleteChatStickerSet(chatId, [options])](#TelegramBot+deleteChatStickerSet) ⇒ <code>Promise</code>
-        * [.getForumTopicIconStickers([options])](#TelegramBot+getForumTopicIconStickers) ⇒ <code>Promise</code>
-        * [.createForumTopic(chatId, name, [options])](#TelegramBot+createForumTopic) ⇒ <code>Promise</code>
-        * [.editForumTopic(chatId, messageThreadId, [options])](#TelegramBot+editForumTopic) ⇒ <code>Promise</code>
-        * [.closeForumTopic(chatId, messageThreadId, [options])](#TelegramBot+closeForumTopic) ⇒ <code>Promise</code>
-        * [.reopenForumTopic(chatId, messageThreadId, [options])](#TelegramBot+reopenForumTopic) ⇒ <code>Promise</code>
-        * [.deleteForumTopic(chatId, messageThreadId, [options])](#TelegramBot+deleteForumTopic) ⇒ <code>Promise</code>
-        * [.unpinAllForumTopicMessages(chatId, messageThreadId, [options])](#TelegramBot+unpinAllForumTopicMessages) ⇒ <code>Promise</code>
-        * [.editGeneralForumTopic(chatId, name, [options])](#TelegramBot+editGeneralForumTopic) ⇒ <code>Promise</code>
-        * [.closeGeneralForumTopic(chatId, [options])](#TelegramBot+closeGeneralForumTopic) ⇒ <code>Promise</code>
-        * [.reopenGeneralForumTopic(chatId, [options])](#TelegramBot+reopenGeneralForumTopic) ⇒ <code>Promise</code>
-        * [.hideGeneralForumTopic(chatId, [options])](#TelegramBot+hideGeneralForumTopic) ⇒ <code>Promise</code>
-        * [.unhideGeneralForumTopic(chatId, [options])](#TelegramBot+unhideGeneralForumTopic) ⇒ <code>Promise</code>
-        * [.unpinAllGeneralForumTopicMessages(chatId, [options])](#TelegramBot+unpinAllGeneralForumTopicMessages) ⇒ <code>Promise</code>
-        * [.answerCallbackQuery(callbackQueryId, [options])](#TelegramBot+answerCallbackQuery) ⇒ <code>Promise</code>
-        * [.answerGuestQuery(guestQueryId, result)](#TelegramBot+answerGuestQuery) ⇒ <code>Promise</code>
-        * [.savePreparedInlineMessage(userId, result, [options])](#TelegramBot+savePreparedInlineMessage) ⇒ <code>Promise</code>
-        * [.savePreparedKeyboardButton(userId, button, [options])](#TelegramBot+savePreparedKeyboardButton) ⇒ <code>Promise</code>
-        * [.getUserChatBoosts(chatId, userId, [options])](#TelegramBot+getUserChatBoosts) ⇒ <code>Promise</code>
-        * [.getBusinessConnection(businessConnectionId, [options])](#TelegramBot+getBusinessConnection) ⇒ <code>Promise</code>
-        * [.getManagedBotToken(userId, [options])](#TelegramBot+getManagedBotToken) ⇒ <code>Promise</code>
-        * [.replaceManagedBotToken(userId, [options])](#TelegramBot+replaceManagedBotToken) ⇒ <code>Promise</code>
-        * [.getManagedBotAccessSettings(userId, [options])](#TelegramBot+getManagedBotAccessSettings) ⇒ <code>Promise</code>
-        * [.setManagedBotAccessSettings(userId, isAccessRestricted, [options])](#TelegramBot+setManagedBotAccessSettings) ⇒ <code>Promise</code>
-        * [.setMyCommands(commands, [options])](#TelegramBot+setMyCommands) ⇒ <code>Promise</code>
-        * [.deleteMyCommands([options])](#TelegramBot+deleteMyCommands) ⇒ <code>Promise</code>
-        * [.getMyCommands([options])](#TelegramBot+getMyCommands) ⇒ <code>Promise</code>
-        * [.setMyName([options])](#TelegramBot+setMyName) ⇒ <code>Promise</code>
-        * [.getMyName([options])](#TelegramBot+getMyName) ⇒ <code>Promise</code>
-        * [.setMyDescription([options])](#TelegramBot+setMyDescription) ⇒ <code>Promise</code>
-        * [.getMyDescription([options])](#TelegramBot+getMyDescription) ⇒ <code>Promise</code>
-        * [.setMyShortDescription([options])](#TelegramBot+setMyShortDescription) ⇒ <code>Promise</code>
-        * [.getMyShortDescription([options])](#TelegramBot+getMyShortDescription) ⇒ <code>Promise</code>
-        * [.setMyProfilePhoto(photo, [options])](#TelegramBot+setMyProfilePhoto) ⇒ <code>Promise</code>
-        * [.removeMyProfilePhoto([options])](#TelegramBot+removeMyProfilePhoto) ⇒ <code>Promise</code>
-        * [.setChatMenuButton([options])](#TelegramBot+setChatMenuButton) ⇒ <code>Promise</code>
-        * [.getChatMenuButton([options])](#TelegramBot+getChatMenuButton) ⇒ <code>Promise</code>
-        * [.setMyDefaultAdministratorRights([options])](#TelegramBot+setMyDefaultAdministratorRights) ⇒ <code>Promise</code>
-        * [.getMyDefaultAdministratorRights([options])](#TelegramBot+getMyDefaultAdministratorRights) ⇒ <code>Promise</code>
-        * [.editMessageText([textOrForm], [options])](#TelegramBot+editMessageText) ⇒ <code>Promise</code>
-        * [.editMessageCaption(caption, [options])](#TelegramBot+editMessageCaption) ⇒ <code>Promise</code>
-        * [.editMessageMedia(media, [options])](#TelegramBot+editMessageMedia) ⇒ <code>Promise</code>
-        * [.editMessageChecklist(businessConnectionId, chatId, messageId, checklist, [options])](#TelegramBot+editMessageChecklist) ⇒ <code>Promise</code>
-        * [.editMessageReplyMarkup(replyMarkup, [options])](#TelegramBot+editMessageReplyMarkup) ⇒ <code>Promise</code>
-        * [.stopPoll(chatId, pollId, [options])](#TelegramBot+stopPoll) ⇒ <code>Promise</code>
-        * [.approveSuggestedPost(chatId, messageId, [options])](#TelegramBot+approveSuggestedPost) ⇒ <code>Promise</code>
-        * [.declineSuggestedPost(chatId, messageId, [options])](#TelegramBot+declineSuggestedPost) ⇒ <code>Promise</code>
-        * [.sendSticker(chatId, sticker, [options], [fileOptions])](#TelegramBot+sendSticker) ⇒ <code>Promise</code>
-        * [.getStickerSet(name, [options])](#TelegramBot+getStickerSet) ⇒ <code>Promise</code>
-        * [.getCustomEmojiStickers(customEmojiIds, [options])](#TelegramBot+getCustomEmojiStickers) ⇒ <code>Promise</code>
-        * [.uploadStickerFile(userId, sticker, [stickerFormat], [options], [fileOptions])](#TelegramBot+uploadStickerFile) ⇒ <code>Promise</code>
-        * [.createNewStickerSet([params])](#TelegramBot+createNewStickerSet) ⇒ <code>Promise</code>
-        * [.addStickerToSet([params])](#TelegramBot+addStickerToSet) ⇒ <code>Promise</code>
-        * [.setStickerPositionInSet(sticker, position, [options])](#TelegramBot+setStickerPositionInSet) ⇒ <code>Promise</code>
-        * [.deleteStickerFromSet(sticker, [options])](#TelegramBot+deleteStickerFromSet) ⇒ <code>Promise</code>
-        * [.replaceStickerInSet(userId, name, oldSticker, [options])](#TelegramBot+replaceStickerInSet) ⇒ <code>Promise</code>
-        * [.setStickerEmojiList(sticker, emojiList, [options])](#TelegramBot+setStickerEmojiList) ⇒ <code>Promise</code>
-        * [.setStickerKeywords(sticker, [options])](#TelegramBot+setStickerKeywords) ⇒ <code>Promise</code>
-        * [.setStickerMaskPosition(sticker, [options])](#TelegramBot+setStickerMaskPosition) ⇒ <code>Promise</code>
-        * [.setStickerSetTitle(name, title, [options])](#TelegramBot+setStickerSetTitle) ⇒ <code>Promise</code>
-        * [.setStickerSetThumbnail(userId, name, thumbnail, [options], [fileOptions])](#TelegramBot+setStickerSetThumbnail) ⇒ <code>Promise</code>
-        * [.setCustomEmojiStickerSetThumbnail(name, [options])](#TelegramBot+setCustomEmojiStickerSetThumbnail) ⇒ <code>Promise</code>
-        * [.deleteStickerSet(name, [options])](#TelegramBot+deleteStickerSet) ⇒ <code>Promise</code>
-        * [.answerInlineQuery(inlineQueryId, results, [options])](#TelegramBot+answerInlineQuery) ⇒ <code>Promise</code>
-        * [.answerWebAppQuery(webAppQueryId, result, [options])](#TelegramBot+answerWebAppQuery) ⇒ <code>Promise</code>
-        * [.sendInvoice(chatId, title, description, payload, providerToken, currency, prices, [options])](#TelegramBot+sendInvoice) ⇒ <code>Promise</code>
-        * [.createInvoiceLink(title, description, payload, providerToken, currency, prices, [options])](#TelegramBot+createInvoiceLink) ⇒ <code>Promise</code>
-        * [.answerShippingQuery(shippingQueryId, ok, [options])](#TelegramBot+answerShippingQuery) ⇒ <code>Promise</code>
-        * [.answerPreCheckoutQuery(preCheckoutQueryId, ok, [options])](#TelegramBot+answerPreCheckoutQuery) ⇒ <code>Promise</code>
-        * [.setPassportDataErrors(userId, errors, [options])](#TelegramBot+setPassportDataErrors) ⇒ <code>Promise</code>
-        * [.getMyStarBalance([options])](#TelegramBot+getMyStarBalance) ⇒ <code>Promise</code>
-        * [.getStarTransactions([options])](#TelegramBot+getStarTransactions) ⇒ <code>Promise</code>
-        * [.refundStarPayment(userId, telegramPaymentChargeId, [options])](#TelegramBot+refundStarPayment) ⇒ <code>Promise</code>
-        * [.editUserStarSubscription(userId, telegramPaymentChargeId, isCanceled, [options])](#TelegramBot+editUserStarSubscription) ⇒ <code>Promise</code>
-        * [.sendGame(chatId, gameShortName, [options])](#TelegramBot+sendGame) ⇒ <code>Promise</code>
-        * [.setGameScore(userId, score, [options])](#TelegramBot+setGameScore) ⇒ <code>Promise</code>
-        * [.getGameHighScores(userId, [form])](#TelegramBot+getGameHighScores) ⇒ <code>Promise</code>
-        * [.deleteMessage(chatId, messageId, [options])](#TelegramBot+deleteMessage) ⇒ <code>Promise</code>
-        * [.deleteMessages(chatId, messageIds, [options])](#TelegramBot+deleteMessages) ⇒ <code>Promise</code>
-        * [.deleteMessageReaction(chatId, messageId, [form])](#TelegramBot+deleteMessageReaction) ⇒ <code>Promise</code>
-        * [.deleteAllMessageReactions(chatId, [form])](#TelegramBot+deleteAllMessageReactions) ⇒ <code>Promise</code>
-        * [.getAvailableGifts([options])](#TelegramBot+getAvailableGifts) ⇒ <code>Promise</code>
-        * [.sendGift(giftId, [options])](#TelegramBot+sendGift) ⇒ <code>Promise</code>
-        * [.giftPremiumSubscription(userId, monthCount, starCount, [options])](#TelegramBot+giftPremiumSubscription) ⇒ <code>Promise</code>
-        * [.verifyUser(userId, [options])](#TelegramBot+verifyUser) ⇒ <code>Promise</code>
-        * [.verifyChat(chatId, [options])](#TelegramBot+verifyChat) ⇒ <code>Promise</code>
-        * [.removeUserVerification(userId, [options])](#TelegramBot+removeUserVerification) ⇒ <code>Promise</code>
-        * [.removeChatVerification(chatId, [options])](#TelegramBot+removeChatVerification) ⇒ <code>Promise</code>
-        * [.readBusinessMessage(businessConnectionId, chatId, messageId, [options])](#TelegramBot+readBusinessMessage) ⇒ <code>Promise</code>
-        * [.deleteBusinessMessages(businessConnectionId, messageIds, [options])](#TelegramBot+deleteBusinessMessages) ⇒ <code>Promise</code>
-        * [.setBusinessAccountName(businessConnectionId, firstName, [options])](#TelegramBot+setBusinessAccountName) ⇒ <code>Promise</code>
-        * [.setBusinessAccountUsername(businessConnectionId, [options])](#TelegramBot+setBusinessAccountUsername) ⇒ <code>Promise</code>
-        * [.setBusinessAccountBio(businessConnectionId, [options])](#TelegramBot+setBusinessAccountBio) ⇒ <code>Promise</code>
-        * [.setBusinessAccountProfilePhoto(businessConnectionId, photo, [options])](#TelegramBot+setBusinessAccountProfilePhoto) ⇒ <code>Promise</code>
-        * [.removeBusinessAccountProfilePhoto(businessConnectionId, [options])](#TelegramBot+removeBusinessAccountProfilePhoto) ⇒ <code>Promise</code>
-        * [.setBusinessAccountGiftSettings(businessConnectionId, showGiftButton, acceptedGiftTypes, [options])](#TelegramBot+setBusinessAccountGiftSettings) ⇒ <code>Promise</code>
-        * [.getBusinessAccountStarBalance(businessConnectionId, [options])](#TelegramBot+getBusinessAccountStarBalance) ⇒ <code>Promise</code>
-        * [.transferBusinessAccountStars(businessConnectionId, starCount, [options])](#TelegramBot+transferBusinessAccountStars) ⇒ <code>Promise</code>
-        * [.getBusinessAccountGifts(businessConnectionId, [options])](#TelegramBot+getBusinessAccountGifts) ⇒ <code>Promise</code>
-        * [.getUserGifts(userId, [options])](#TelegramBot+getUserGifts) ⇒ <code>Promise</code>
-        * [.getChatGifts(chatId, [options])](#TelegramBot+getChatGifts) ⇒ <code>Promise</code>
-        * [.convertGiftToStars(businessConnectionId, ownedGiftId, [options])](#TelegramBot+convertGiftToStars) ⇒ <code>Promise</code>
-        * [.upgradeGift(businessConnectionId, ownedGiftId, [options])](#TelegramBot+upgradeGift) ⇒ <code>Promise</code>
-        * [.transferGift(businessConnectionId, ownedGiftId, newOwnerChatId, [options])](#TelegramBot+transferGift) ⇒ <code>Promise</code>
-        * [.postStory(businessConnectionId, content, activePeriod, [options])](#TelegramBot+postStory) ⇒ <code>Promise</code>
-        * [.repostStory(businessConnectionId, fromChatId, fromStoryId, activePeriod, [options])](#TelegramBot+repostStory) ⇒ <code>Promise</code>
-        * [.editStory(businessConnectionId, storyId, content, [options])](#TelegramBot+editStory) ⇒ <code>Promise</code>
-        * [.deleteStory(businessConnectionId, storyId, [options])](#TelegramBot+deleteStory) ⇒ <code>Promise</code>
-    * _static_
-        * [.errors](#TelegramBot.errors) : <code>Object</code>
-        * [.messageTypes](#TelegramBot.messageTypes) : <code>Array</code>
-
-<a name="new_TelegramBot_new"></a>
-
-### new TelegramBot(token, [options])
-
-| Param | Type | Description |
-| --- | --- | --- |
-| token | <code>String</code> | Telegram Bot API token |
-| [options] | <code>Object</code> | Constructor options (polling, webHook, baseApiUrl, ...) |
-
-<a name="TelegramBot+on"></a>
-
-### telegramBot.on(event, listener) ⇒ <code>Object</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Object</code>
-
-| Param | Type | Description |
-| --- | --- | --- |
-| event | <code>String \| Object</code> |  |
-| listener | <code>function</code> |  |
-
-<a name="TelegramBot+startPolling"></a>
-
-### telegramBot.startPolling([options]) ⇒ <code>Promise</code>
-Start polling.
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-| Param | Type | Description |
-| --- | --- | --- |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+stopPolling"></a>
-
-### telegramBot.stopPolling([options]) ⇒ <code>Promise</code>
-Stop polling.
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-| Param | Type | Description |
-| --- | --- | --- |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+isPolling"></a>
-
-### telegramBot.isPolling() ⇒ <code>Boolean</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Boolean</code>
-
-<a name="TelegramBot+openWebHook"></a>
-
-### telegramBot.openWebHook() ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-<a name="TelegramBot+closeWebHook"></a>
-
-### telegramBot.closeWebHook() ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-<a name="TelegramBot+hasOpenWebHook"></a>
-
-### telegramBot.hasOpenWebHook() ⇒ <code>Boolean</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Boolean</code>
-
-<a name="TelegramBot+onText"></a>
-
-### telegramBot.onText(regexp, callback)
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-| Param | Type | Description |
-| --- | --- | --- |
-| regexp | <code>RegExp \| String</code> |  |
-| callback | <code>Object</code> |  |
-
-<a name="TelegramBot+removeTextListener"></a>
-
-### telegramBot.removeTextListener(regexp) ⇒ <code>Object</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Object</code>
-
-| Param | Type | Description |
-| --- | --- | --- |
-| regexp | <code>RegExp \| String</code> |  |
-
-<a name="TelegramBot+clearTextListeners"></a>
-
-### telegramBot.clearTextListeners()
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-<a name="TelegramBot+onReplyToMessage"></a>
-
-### telegramBot.onReplyToMessage(chatId, messageId, callback) ⇒ <code>Number</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Number</code>
-
-| Param | Type | Description |
-| --- | --- | --- |
-| chatId | <code>Number \| String</code> |  |
-| messageId | <code>Number</code> |  |
-| callback | <code>Object</code> |  |
-
-<a name="TelegramBot+removeReplyListener"></a>
-
-### telegramBot.removeReplyListener(replyListenerId) ⇒ <code>Object</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Object</code>
-
-| Param | Type | Description |
-| --- | --- | --- |
-| replyListenerId | <code>Number</code> |  |
-
-<a name="TelegramBot+clearReplyListeners"></a>
-
-### telegramBot.clearReplyListeners() ⇒ <code>Array</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Array</code>
-
-<a name="TelegramBot+processUpdate"></a>
-
-### telegramBot.processUpdate(update)
-Dispatch a single Update. Use this if you obtain updates from a source other
-than this library's polling/webhook (e.g. AWS Lambda, custom proxy, tests).
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-| Param | Type | Description |
-| --- | --- | --- |
-| update | <code>Object</code> |  |
-
-<a name="TelegramBot+getFileLink"></a>
-
-### telegramBot.getFileLink(fileId, [options]) ⇒ <code>Promise</code>
-Resolve a file id to the public download URL on Telegram's servers.
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-| Param | Type | Description |
-| --- | --- | --- |
-| fileId | <code>String</code> |  |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+getFileStream"></a>
-
-### telegramBot.getFileStream(fileId, [options]) ⇒ <code>stream.Readable</code>
-Stream the contents of a Telegram file. The returned stream emits an `info`
-event with the resolved URI before the bytes start flowing.
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>stream.Readable</code>
-
-| Param | Type | Description |
-| --- | --- | --- |
-| fileId | <code>String</code> |  |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+downloadFile"></a>
-
-### telegramBot.downloadFile(fileId, downloadDir, [options]) ⇒ <code>Promise</code>
-Download a Telegram file to a local directory and resolve to the resulting path.
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-| Param | Type | Description |
-| --- | --- | --- |
-| fileId | <code>String</code> |  |
-| downloadDir | <code>String</code> |  |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+getUpdates"></a>
-
-### telegramBot.getUpdates([options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#getupdates
-
-| Param | Type | Description |
-| --- | --- | --- |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+setWebhook"></a>
-
-### telegramBot.setWebhook(url, [options], [fileOptions]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#setwebhook
-
-| Param | Type | Description |
-| --- | --- | --- |
-| url | <code>String</code> |  |
-| [options] | <code>Object</code> | Additional Telegram query options |
-| [fileOptions] | <code>Object</code> | Additional file options |
-
-<a name="TelegramBot+deleteWebhook"></a>
-
-### telegramBot.deleteWebhook([options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#deletewebhook
-
-| Param | Type | Description |
-| --- | --- | --- |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+getWebhookInfo"></a>
-
-### telegramBot.getWebhookInfo([options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#getwebhookinfo
-
-| Param | Type | Description |
-| --- | --- | --- |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+setWebHook"></a>
-
-### telegramBot.setWebHook(url, [options], [fileOptions]) ⇒ <code>Promise</code>
-
-***Deprecated***
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-| Param | Type | Description |
-| --- | --- | --- |
-| url | <code>String</code> |  |
-| [options] | <code>Object</code> | Additional Telegram query options |
-| [fileOptions] | <code>Object</code> | Additional file options |
-
-<a name="TelegramBot+deleteWebHook"></a>
-
-### telegramBot.deleteWebHook([options]) ⇒ <code>Promise</code>
-
-***Deprecated***
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-| Param | Type | Description |
-| --- | --- | --- |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+getWebHookInfo"></a>
-
-### telegramBot.getWebHookInfo([options]) ⇒ <code>Promise</code>
-
-***Deprecated***
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-| Param | Type | Description |
-| --- | --- | --- |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+getMe"></a>
-
-### telegramBot.getMe([options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#getme
-
-| Param | Type | Description |
-| --- | --- | --- |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+logOut"></a>
-
-### telegramBot.logOut([options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#logout
-
-| Param | Type | Description |
-| --- | --- | --- |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+close"></a>
-
-### telegramBot.close([options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#close
-
-| Param | Type | Description |
-| --- | --- | --- |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+sendMessage"></a>
-
-### telegramBot.sendMessage(chatId, text, [options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#sendmessage
-
-| Param | Type | Description |
-| --- | --- | --- |
-| chatId | <code>Number \| String</code> |  |
-| text | <code>String</code> |  |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+sendRichMessage"></a>
-
-### telegramBot.sendRichMessage(chatId, richMessage, [options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#sendrichmessage
-
-| Param | Type | Description |
-| --- | --- | --- |
-| chatId | <code>Number \| String</code> |  |
-| richMessage | <code>Object</code> |  |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+forwardMessage"></a>
-
-### telegramBot.forwardMessage(chatId, fromChatId, messageId, [options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#forwardmessage
-
-| Param | Type | Description |
-| --- | --- | --- |
-| chatId | <code>Number \| String</code> |  |
-| fromChatId | <code>Number \| String</code> |  |
-| messageId | <code>Number</code> |  |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+forwardMessages"></a>
-
-### telegramBot.forwardMessages(chatId, fromChatId, messageIds, [options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#forwardmessages
-
-| Param | Type | Description |
-| --- | --- | --- |
-| chatId | <code>Number \| String</code> |  |
-| fromChatId | <code>Number \| String</code> |  |
-| messageIds | <code>Array</code> |  |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+copyMessage"></a>
-
-### telegramBot.copyMessage(chatId, fromChatId, messageId, [options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#copymessage
-
-| Param | Type | Description |
-| --- | --- | --- |
-| chatId | <code>Number \| String</code> |  |
-| fromChatId | <code>Number \| String</code> |  |
-| messageId | <code>Number</code> |  |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+copyMessages"></a>
-
-### telegramBot.copyMessages(chatId, fromChatId, messageIds, [options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#copymessages
-
-| Param | Type | Description |
-| --- | --- | --- |
-| chatId | <code>Number \| String</code> |  |
-| fromChatId | <code>Number \| String</code> |  |
-| messageIds | <code>Array</code> |  |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+sendPhoto"></a>
-
-### telegramBot.sendPhoto(chatId, photo, [options], [fileOptions]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#sendphoto
-
-| Param | Type | Description |
-| --- | --- | --- |
-| chatId | <code>Number \| String</code> |  |
-| photo | <code>String \| Stream \| Buffer</code> |  |
-| [options] | <code>Object</code> | Additional Telegram query options |
-| [fileOptions] | <code>Object</code> | Additional file options |
-
-<a name="TelegramBot+sendLivePhoto"></a>
-
-### telegramBot.sendLivePhoto(chatId, livePhoto, photo, [options], [fileOptions]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-| Param | Type | Description |
-| --- | --- | --- |
-| chatId | <code>Number \| String</code> |  |
-| livePhoto | <code>String \| Stream \| Buffer</code> |  |
-| photo | <code>String \| Stream \| Buffer</code> |  |
-| [options] | <code>Object</code> | Additional Telegram query options |
-| [fileOptions] | <code>Object</code> | Additional file options |
-
-<a name="TelegramBot+sendAudio"></a>
-
-### telegramBot.sendAudio(chatId, audio, [options], [fileOptions]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#sendaudio
-
-| Param | Type | Description |
-| --- | --- | --- |
-| chatId | <code>Number \| String</code> |  |
-| audio | <code>String \| Stream \| Buffer</code> |  |
-| [options] | <code>Object</code> | Additional Telegram query options |
-| [fileOptions] | <code>Object</code> | Additional file options |
-
-<a name="TelegramBot+sendDocument"></a>
-
-### telegramBot.sendDocument(chatId, doc, [options], [fileOptions]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#senddocument
-
-| Param | Type | Description |
-| --- | --- | --- |
-| chatId | <code>Number \| String</code> |  |
-| doc | <code>String \| Stream \| Buffer</code> |  |
-| [options] | <code>Object</code> | Additional Telegram query options |
-| [fileOptions] | <code>Object</code> | Additional file options |
-
-<a name="TelegramBot+sendVideo"></a>
-
-### telegramBot.sendVideo(chatId, video, [options], [fileOptions]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#sendvideo
-
-| Param | Type | Description |
-| --- | --- | --- |
-| chatId | <code>Number \| String</code> |  |
-| video | <code>String \| Stream \| Buffer</code> |  |
-| [options] | <code>Object</code> | Additional Telegram query options |
-| [fileOptions] | <code>Object</code> | Additional file options |
-
-<a name="TelegramBot+sendAnimation"></a>
-
-### telegramBot.sendAnimation(chatId, animation, [options], [fileOptions]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#sendanimation
-
-| Param | Type | Description |
-| --- | --- | --- |
-| chatId | <code>Number \| String</code> |  |
-| animation | <code>String \| Stream \| Buffer</code> |  |
-| [options] | <code>Object</code> | Additional Telegram query options |
-| [fileOptions] | <code>Object</code> | Additional file options |
-
-<a name="TelegramBot+sendVoice"></a>
-
-### telegramBot.sendVoice(chatId, voice, [options], [fileOptions]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#sendvoice
-
-| Param | Type | Description |
-| --- | --- | --- |
-| chatId | <code>Number \| String</code> |  |
-| voice | <code>String \| Stream \| Buffer</code> |  |
-| [options] | <code>Object</code> | Additional Telegram query options |
-| [fileOptions] | <code>Object</code> | Additional file options |
-
-<a name="TelegramBot+sendVideoNote"></a>
-
-### telegramBot.sendVideoNote(chatId, videoNote, [options], [fileOptions]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#sendvideonote
-
-| Param | Type | Description |
-| --- | --- | --- |
-| chatId | <code>Number \| String</code> |  |
-| videoNote | <code>String \| Stream \| Buffer</code> |  |
-| [options] | <code>Object</code> | Additional Telegram query options |
-| [fileOptions] | <code>Object</code> | Additional file options |
-
-<a name="TelegramBot+sendPaidMedia"></a>
-
-### telegramBot.sendPaidMedia(chatId, starCount, media, [options]) ⇒ <code>Promise</code>
-Send paid media. Each item's file fields are widened to accept uploads: the
-primary `media` plus any `thumbnail` / `cover` (video) or `photo` (live photo)
-may be a Buffer / stream / local path (uploaded as a multipart part) or a
-file_id / URL string (passed through). {@link _buildMediaItems} resolves them.
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#sendpaidmedia
-
-| Param | Type | Description |
-| --- | --- | --- |
-| chatId | <code>Number \| String</code> |  |
-| starCount | <code>Number</code> |  |
-| media | <code>Array</code> |  |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+sendMediaGroup"></a>
-
-### telegramBot.sendMediaGroup(chatId, media, [options]) ⇒ <code>Promise</code>
-Send a group of photos / videos / etc as an album. Each item's file fields are
-widened to accept uploads: the primary `media` plus any `thumbnail` / `cover`
-(video) or `photo` (live photo) may be a Buffer / stream / local path (uploaded
-as a multipart part) or a file_id / URL string (passed through).
-{@link _buildMediaItems} resolves every file field of every item, shared with
-{@link sendPaidMedia} and {@link editMessageMedia}.
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#sendmediagroup
-
-| Param | Type | Description |
-| --- | --- | --- |
-| chatId | <code>Number \| String</code> |  |
-| media | <code>Array</code> |  |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+sendLocation"></a>
-
-### telegramBot.sendLocation(chatId, latitude, longitude, [options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#sendlocation
-
-| Param | Type | Description |
-| --- | --- | --- |
-| chatId | <code>Number \| String</code> |  |
-| latitude | <code>Number</code> |  |
-| longitude | <code>Number</code> |  |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+sendVenue"></a>
-
-### telegramBot.sendVenue(chatId, latitude, longitude, title, address, [options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#sendvenue
-
-| Param | Type | Description |
-| --- | --- | --- |
-| chatId | <code>Number \| String</code> |  |
-| latitude | <code>Number</code> |  |
-| longitude | <code>Number</code> |  |
-| title | <code>String</code> |  |
-| address | <code>String</code> |  |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+sendContact"></a>
-
-### telegramBot.sendContact(chatId, phoneNumber, firstName, [options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#sendcontact
-
-| Param | Type | Description |
-| --- | --- | --- |
-| chatId | <code>Number \| String</code> |  |
-| phoneNumber | <code>String</code> |  |
-| firstName | <code>String</code> |  |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+sendPoll"></a>
-
-### telegramBot.sendPoll(chatId, question, pollOptions, [options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#sendpoll
-
-| Param | Type | Description |
-| --- | --- | --- |
-| chatId | <code>Number \| String</code> |  |
-| question | <code>String</code> |  |
-| pollOptions | <code>Array</code> |  |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+sendChecklist"></a>
-
-### telegramBot.sendChecklist(businessConnectionId, chatId, checklist, [options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#sendchecklist
-
-| Param | Type | Description |
-| --- | --- | --- |
-| businessConnectionId | <code>String</code> |  |
-| chatId | <code>Number \| String</code> |  |
-| checklist | <code>Object</code> |  |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+sendDice"></a>
-
-### telegramBot.sendDice(chatId, [options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#senddice
-
-| Param | Type | Description |
-| --- | --- | --- |
-| chatId | <code>Number \| String</code> |  |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+sendMessageDraft"></a>
-
-### telegramBot.sendMessageDraft(chatId, draftId, text, [options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#sendmessagedraft
-
-| Param | Type | Description |
-| --- | --- | --- |
-| chatId | <code>Number \| String</code> |  |
-| draftId | <code>Number</code> |  |
-| text | <code>String</code> |  |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+sendRichMessageDraft"></a>
-
-### telegramBot.sendRichMessageDraft(chatId, draftId, richMessage, [options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#sendrichmessagedraft
-
-| Param | Type | Description |
-| --- | --- | --- |
-| chatId | <code>Number \| String</code> |  |
-| draftId | <code>Number</code> |  |
-| richMessage | <code>Object</code> |  |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+sendChatAction"></a>
-
-### telegramBot.sendChatAction(chatId, action, [options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#sendchataction
-
-| Param | Type | Description |
-| --- | --- | --- |
-| chatId | <code>Number \| String</code> |  |
-| action | <code>String</code> |  |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+setMessageReaction"></a>
-
-### telegramBot.setMessageReaction(chatId, messageId, [options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#setmessagereaction
-
-| Param | Type | Description |
-| --- | --- | --- |
-| chatId | <code>Number \| String</code> |  |
-| messageId | <code>Number</code> |  |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+editMessageLiveLocation"></a>
-
-### telegramBot.editMessageLiveLocation(latitude, longitude, [options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#editmessagelivelocation
-
-| Param | Type | Description |
-| --- | --- | --- |
-| latitude | <code>Number</code> |  |
-| longitude | <code>Number</code> |  |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+stopMessageLiveLocation"></a>
-
-### telegramBot.stopMessageLiveLocation([options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#stopmessagelivelocation
-
-| Param | Type | Description |
-| --- | --- | --- |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+getUserProfilePhotos"></a>
-
-### telegramBot.getUserProfilePhotos(userId, [options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#getuserprofilephotos
-
-| Param | Type | Description |
-| --- | --- | --- |
-| userId | <code>Number</code> |  |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+getUserProfileAudios"></a>
-
-### telegramBot.getUserProfileAudios(userId, [options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#getuserprofileaudios
-
-| Param | Type | Description |
-| --- | --- | --- |
-| userId | <code>Number</code> |  |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+setUserEmojiStatus"></a>
-
-### telegramBot.setUserEmojiStatus(userId, [options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#setuseremojistatus
-
-| Param | Type | Description |
-| --- | --- | --- |
-| userId | <code>Number</code> |  |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+getFile"></a>
-
-### telegramBot.getFile(fileId, [options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#getfile
-
-| Param | Type | Description |
-| --- | --- | --- |
-| fileId | <code>String</code> |  |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+getUserPersonalChatMessages"></a>
-
-### telegramBot.getUserPersonalChatMessages(userId, limit) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#getuserpersonalchatmessages
-
-| Param | Type | Description |
-| --- | --- | --- |
-| userId | <code>Number</code> |  |
-| limit | <code>Number</code> |  |
-
-<a name="TelegramBot+banChatMember"></a>
-
-### telegramBot.banChatMember(chatId, userId, [options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#banchatmember
-
-| Param | Type | Description |
-| --- | --- | --- |
-| chatId | <code>Number \| String</code> |  |
-| userId | <code>Number</code> |  |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+unbanChatMember"></a>
-
-### telegramBot.unbanChatMember(chatId, userId, [options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#unbanchatmember
-
-| Param | Type | Description |
-| --- | --- | --- |
-| chatId | <code>Number \| String</code> |  |
-| userId | <code>Number</code> |  |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+restrictChatMember"></a>
-
-### telegramBot.restrictChatMember(chatId, userId, permissions, [options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#restrictchatmember
-
-| Param | Type | Description |
-| --- | --- | --- |
-| chatId | <code>Number \| String</code> |  |
-| userId | <code>Number</code> |  |
-| permissions | <code>Object</code> |  |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+promoteChatMember"></a>
-
-### telegramBot.promoteChatMember(chatId, userId, [options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#promotechatmember
-
-| Param | Type | Description |
-| --- | --- | --- |
-| chatId | <code>Number \| String</code> |  |
-| userId | <code>Number</code> |  |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+setChatAdministratorCustomTitle"></a>
-
-### telegramBot.setChatAdministratorCustomTitle(chatId, userId, customTitle, [options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#setchatadministratorcustomtitle
-
-| Param | Type | Description |
-| --- | --- | --- |
-| chatId | <code>Number \| String</code> |  |
-| userId | <code>Number</code> |  |
-| customTitle | <code>String</code> |  |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+setChatMemberTag"></a>
-
-### telegramBot.setChatMemberTag(chatId, userId, [options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#setchatmembertag
-
-| Param | Type | Description |
-| --- | --- | --- |
-| chatId | <code>Number \| String</code> |  |
-| userId | <code>Number</code> |  |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+banChatSenderChat"></a>
-
-### telegramBot.banChatSenderChat(chatId, senderChatId, [options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#banchatsenderchat
-
-| Param | Type | Description |
-| --- | --- | --- |
-| chatId | <code>Number \| String</code> |  |
-| senderChatId | <code>Number</code> |  |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+unbanChatSenderChat"></a>
-
-### telegramBot.unbanChatSenderChat(chatId, senderChatId, [options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#unbanchatsenderchat
-
-| Param | Type | Description |
-| --- | --- | --- |
-| chatId | <code>Number \| String</code> |  |
-| senderChatId | <code>Number</code> |  |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+setChatPermissions"></a>
-
-### telegramBot.setChatPermissions(chatId, permissions, [options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#setchatpermissions
-
-| Param | Type | Description |
-| --- | --- | --- |
-| chatId | <code>Number \| String</code> |  |
-| permissions | <code>Object</code> |  |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+exportChatInviteLink"></a>
-
-### telegramBot.exportChatInviteLink(chatId, [options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#exportchatinvitelink
-
-| Param | Type | Description |
-| --- | --- | --- |
-| chatId | <code>Number \| String</code> |  |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+createChatInviteLink"></a>
-
-### telegramBot.createChatInviteLink(chatId, [options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#createchatinvitelink
-
-| Param | Type | Description |
-| --- | --- | --- |
-| chatId | <code>Number \| String</code> |  |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+editChatInviteLink"></a>
-
-### telegramBot.editChatInviteLink(chatId, inviteLink, [options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#editchatinvitelink
-
-| Param | Type | Description |
-| --- | --- | --- |
-| chatId | <code>Number \| String</code> |  |
-| inviteLink | <code>String</code> |  |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+createChatSubscriptionInviteLink"></a>
-
-### telegramBot.createChatSubscriptionInviteLink(chatId, subscriptionPeriod, subscriptionPrice, [options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#createchatsubscriptioninvitelink
-
-| Param | Type | Description |
-| --- | --- | --- |
-| chatId | <code>Number \| String</code> |  |
-| subscriptionPeriod | <code>Number</code> |  |
-| subscriptionPrice | <code>Number</code> |  |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+editChatSubscriptionInviteLink"></a>
-
-### telegramBot.editChatSubscriptionInviteLink(chatId, inviteLink, [options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#editchatsubscriptioninvitelink
-
-| Param | Type | Description |
-| --- | --- | --- |
-| chatId | <code>Number \| String</code> |  |
-| inviteLink | <code>String</code> |  |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+revokeChatInviteLink"></a>
-
-### telegramBot.revokeChatInviteLink(chatId, inviteLink, [options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#revokechatinvitelink
-
-| Param | Type | Description |
-| --- | --- | --- |
-| chatId | <code>Number \| String</code> |  |
-| inviteLink | <code>String</code> |  |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+approveChatJoinRequest"></a>
-
-### telegramBot.approveChatJoinRequest(chatId, userId, [options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#approvechatjoinrequest
-
-| Param | Type | Description |
-| --- | --- | --- |
-| chatId | <code>Number \| String</code> |  |
-| userId | <code>Number</code> |  |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+declineChatJoinRequest"></a>
-
-### telegramBot.declineChatJoinRequest(chatId, userId, [options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#declinechatjoinrequest
-
-| Param | Type | Description |
-| --- | --- | --- |
-| chatId | <code>Number \| String</code> |  |
-| userId | <code>Number</code> |  |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+answerChatJoinRequestQuery"></a>
-
-### telegramBot.answerChatJoinRequestQuery(chatJoinRequestQueryId, result, [options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#answerchatjoinrequestquery
-
-| Param | Type | Description |
-| --- | --- | --- |
-| chatJoinRequestQueryId | <code>String</code> |  |
-| result | <code>Object</code> |  |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+sendChatJoinRequestWebApp"></a>
-
-### telegramBot.sendChatJoinRequestWebApp(chatJoinRequestQueryId, webAppUrl, [options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#sendchatjoinrequestwebapp
-
-| Param | Type | Description |
-| --- | --- | --- |
-| chatJoinRequestQueryId | <code>String</code> |  |
-| webAppUrl | <code>String</code> |  |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+setChatPhoto"></a>
-
-### telegramBot.setChatPhoto(chatId, photo, [options], [fileOptions]) ⇒ <code>Promise</code>
-Set the chat photo. The photo must be a JPEG: Telegram's chat-photo backend
-silently stalls on a non-JPEG (e.g. a PNG) until the request times out
-(EFATAL); no layer here validates or converts, so the caller must pass a JPEG.
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#setchatphoto
-
-| Param | Type | Description |
-| --- | --- | --- |
-| chatId | <code>Number \| String</code> |  |
-| photo | <code>String \| Stream \| Buffer</code> |  |
-| [options] | <code>Object</code> | Additional Telegram query options |
-| [fileOptions] | <code>Object</code> | Additional file options |
-
-<a name="TelegramBot+deleteChatPhoto"></a>
-
-### telegramBot.deleteChatPhoto(chatId, [options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#deletechatphoto
-
-| Param | Type | Description |
-| --- | --- | --- |
-| chatId | <code>Number \| String</code> |  |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+setChatTitle"></a>
-
-### telegramBot.setChatTitle(chatId, title, [options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#setchattitle
-
-| Param | Type | Description |
-| --- | --- | --- |
-| chatId | <code>Number \| String</code> |  |
-| title | <code>String</code> |  |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+setChatDescription"></a>
-
-### telegramBot.setChatDescription(chatId, description, [options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#setchatdescription
-
-| Param | Type | Description |
-| --- | --- | --- |
-| chatId | <code>Number \| String</code> |  |
-| description | <code>String</code> |  |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+pinChatMessage"></a>
-
-### telegramBot.pinChatMessage(chatId, messageId, [options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#pinchatmessage
-
-| Param | Type | Description |
-| --- | --- | --- |
-| chatId | <code>Number \| String</code> |  |
-| messageId | <code>Number</code> |  |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+unpinChatMessage"></a>
-
-### telegramBot.unpinChatMessage(chatId, [options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#unpinchatmessage
-
-| Param | Type | Description |
-| --- | --- | --- |
-| chatId | <code>Number \| String</code> |  |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+unpinAllChatMessages"></a>
-
-### telegramBot.unpinAllChatMessages(chatId, [options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#unpinallchatmessages
-
-| Param | Type | Description |
-| --- | --- | --- |
-| chatId | <code>Number \| String</code> |  |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+leaveChat"></a>
-
-### telegramBot.leaveChat(chatId, [options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#leavechat
-
-| Param | Type | Description |
-| --- | --- | --- |
-| chatId | <code>Number \| String</code> |  |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+getChat"></a>
-
-### telegramBot.getChat(chatId, [options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#getchat
-
-| Param | Type | Description |
-| --- | --- | --- |
-| chatId | <code>Number \| String</code> |  |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+getChatAdministrators"></a>
-
-### telegramBot.getChatAdministrators(chatId, [options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#getchatadministrators
-
-| Param | Type | Description |
-| --- | --- | --- |
-| chatId | <code>Number \| String</code> |  |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+getChatMemberCount"></a>
-
-### telegramBot.getChatMemberCount(chatId, [options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#getchatmembercount
-
-| Param | Type | Description |
-| --- | --- | --- |
-| chatId | <code>Number \| String</code> |  |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+getChatMember"></a>
-
-### telegramBot.getChatMember(chatId, userId, [options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#getchatmember
-
-| Param | Type | Description |
-| --- | --- | --- |
-| chatId | <code>Number \| String</code> |  |
-| userId | <code>Number</code> |  |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+setChatStickerSet"></a>
-
-### telegramBot.setChatStickerSet(chatId, stickerSetName, [options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#setchatstickerset
-
-| Param | Type | Description |
-| --- | --- | --- |
-| chatId | <code>Number \| String</code> |  |
-| stickerSetName | <code>String</code> |  |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+deleteChatStickerSet"></a>
-
-### telegramBot.deleteChatStickerSet(chatId, [options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#deletechatstickerset
-
-| Param | Type | Description |
-| --- | --- | --- |
-| chatId | <code>Number \| String</code> |  |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+getForumTopicIconStickers"></a>
-
-### telegramBot.getForumTopicIconStickers([options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#getforumtopiciconstickers
-
-| Param | Type | Description |
-| --- | --- | --- |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+createForumTopic"></a>
-
-### telegramBot.createForumTopic(chatId, name, [options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#createforumtopic
-
-| Param | Type | Description |
-| --- | --- | --- |
-| chatId | <code>Number \| String</code> |  |
-| name | <code>String</code> |  |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+editForumTopic"></a>
-
-### telegramBot.editForumTopic(chatId, messageThreadId, [options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#editforumtopic
-
-| Param | Type | Description |
-| --- | --- | --- |
-| chatId | <code>Number \| String</code> |  |
-| messageThreadId | <code>Number</code> |  |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+closeForumTopic"></a>
-
-### telegramBot.closeForumTopic(chatId, messageThreadId, [options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#closeforumtopic
-
-| Param | Type | Description |
-| --- | --- | --- |
-| chatId | <code>Number \| String</code> |  |
-| messageThreadId | <code>Number</code> |  |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+reopenForumTopic"></a>
-
-### telegramBot.reopenForumTopic(chatId, messageThreadId, [options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#reopenforumtopic
-
-| Param | Type | Description |
-| --- | --- | --- |
-| chatId | <code>Number \| String</code> |  |
-| messageThreadId | <code>Number</code> |  |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+deleteForumTopic"></a>
-
-### telegramBot.deleteForumTopic(chatId, messageThreadId, [options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#deleteforumtopic
-
-| Param | Type | Description |
-| --- | --- | --- |
-| chatId | <code>Number \| String</code> |  |
-| messageThreadId | <code>Number</code> |  |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+unpinAllForumTopicMessages"></a>
-
-### telegramBot.unpinAllForumTopicMessages(chatId, messageThreadId, [options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#unpinallforumtopicmessages
-
-| Param | Type | Description |
-| --- | --- | --- |
-| chatId | <code>Number \| String</code> |  |
-| messageThreadId | <code>Number</code> |  |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+editGeneralForumTopic"></a>
-
-### telegramBot.editGeneralForumTopic(chatId, name, [options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#editgeneralforumtopic
-
-| Param | Type | Description |
-| --- | --- | --- |
-| chatId | <code>Number \| String</code> |  |
-| name | <code>String</code> |  |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+closeGeneralForumTopic"></a>
-
-### telegramBot.closeGeneralForumTopic(chatId, [options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#closegeneralforumtopic
-
-| Param | Type | Description |
-| --- | --- | --- |
-| chatId | <code>Number \| String</code> |  |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+reopenGeneralForumTopic"></a>
-
-### telegramBot.reopenGeneralForumTopic(chatId, [options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#reopengeneralforumtopic
-
-| Param | Type | Description |
-| --- | --- | --- |
-| chatId | <code>Number \| String</code> |  |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+hideGeneralForumTopic"></a>
-
-### telegramBot.hideGeneralForumTopic(chatId, [options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#hidegeneralforumtopic
-
-| Param | Type | Description |
-| --- | --- | --- |
-| chatId | <code>Number \| String</code> |  |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+unhideGeneralForumTopic"></a>
-
-### telegramBot.unhideGeneralForumTopic(chatId, [options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#unhidegeneralforumtopic
-
-| Param | Type | Description |
-| --- | --- | --- |
-| chatId | <code>Number \| String</code> |  |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+unpinAllGeneralForumTopicMessages"></a>
-
-### telegramBot.unpinAllGeneralForumTopicMessages(chatId, [options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#unpinallgeneralforumtopicmessages
-
-| Param | Type | Description |
-| --- | --- | --- |
-| chatId | <code>Number \| String</code> |  |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+answerCallbackQuery"></a>
-
-### telegramBot.answerCallbackQuery(callbackQueryId, [options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#answercallbackquery
-
-| Param | Type | Description |
-| --- | --- | --- |
-| callbackQueryId | <code>String</code> |  |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+answerGuestQuery"></a>
-
-### telegramBot.answerGuestQuery(guestQueryId, result) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#answerguestquery
-
-| Param | Type | Description |
-| --- | --- | --- |
-| guestQueryId | <code>String</code> |  |
-| result | <code>Object</code> |  |
-
-<a name="TelegramBot+savePreparedInlineMessage"></a>
-
-### telegramBot.savePreparedInlineMessage(userId, result, [options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#savepreparedinlinemessage
-
-| Param | Type | Description |
-| --- | --- | --- |
-| userId | <code>Number</code> |  |
-| result | <code>Object</code> |  |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+savePreparedKeyboardButton"></a>
-
-### telegramBot.savePreparedKeyboardButton(userId, button, [options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#savepreparedkeyboardbutton
-
-| Param | Type | Description |
-| --- | --- | --- |
-| userId | <code>Number</code> |  |
-| button | <code>Object</code> |  |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+getUserChatBoosts"></a>
-
-### telegramBot.getUserChatBoosts(chatId, userId, [options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#getuserchatboosts
-
-| Param | Type | Description |
-| --- | --- | --- |
-| chatId | <code>Number \| String</code> |  |
-| userId | <code>Number</code> |  |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+getBusinessConnection"></a>
-
-### telegramBot.getBusinessConnection(businessConnectionId, [options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#getbusinessconnection
-
-| Param | Type | Description |
-| --- | --- | --- |
-| businessConnectionId | <code>String</code> |  |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+getManagedBotToken"></a>
-
-### telegramBot.getManagedBotToken(userId, [options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#getmanagedbottoken
-
-| Param | Type | Description |
-| --- | --- | --- |
-| userId | <code>Number</code> |  |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+replaceManagedBotToken"></a>
-
-### telegramBot.replaceManagedBotToken(userId, [options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#replacemanagedbottoken
-
-| Param | Type | Description |
-| --- | --- | --- |
-| userId | <code>Number</code> |  |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+getManagedBotAccessSettings"></a>
-
-### telegramBot.getManagedBotAccessSettings(userId, [options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#getmanagedbotaccesssettings
-
-| Param | Type | Description |
-| --- | --- | --- |
-| userId | <code>Number</code> |  |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+setManagedBotAccessSettings"></a>
-
-### telegramBot.setManagedBotAccessSettings(userId, isAccessRestricted, [options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#setmanagedbotaccesssettings
-
-| Param | Type | Description |
-| --- | --- | --- |
-| userId | <code>Number</code> |  |
-| isAccessRestricted | <code>Boolean</code> |  |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+setMyCommands"></a>
-
-### telegramBot.setMyCommands(commands, [options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#setmycommands
-
-| Param | Type | Description |
-| --- | --- | --- |
-| commands | <code>Array</code> |  |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+deleteMyCommands"></a>
-
-### telegramBot.deleteMyCommands([options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#deletemycommands
-
-| Param | Type | Description |
-| --- | --- | --- |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+getMyCommands"></a>
-
-### telegramBot.getMyCommands([options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#getmycommands
-
-| Param | Type | Description |
-| --- | --- | --- |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+setMyName"></a>
-
-### telegramBot.setMyName([options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#setmyname
-
-| Param | Type | Description |
-| --- | --- | --- |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+getMyName"></a>
-
-### telegramBot.getMyName([options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#getmyname
-
-| Param | Type | Description |
-| --- | --- | --- |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+setMyDescription"></a>
-
-### telegramBot.setMyDescription([options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#setmydescription
-
-| Param | Type | Description |
-| --- | --- | --- |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+getMyDescription"></a>
-
-### telegramBot.getMyDescription([options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#getmydescription
-
-| Param | Type | Description |
-| --- | --- | --- |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+setMyShortDescription"></a>
-
-### telegramBot.setMyShortDescription([options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#setmyshortdescription
-
-| Param | Type | Description |
-| --- | --- | --- |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+getMyShortDescription"></a>
-
-### telegramBot.getMyShortDescription([options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#getmyshortdescription
-
-| Param | Type | Description |
-| --- | --- | --- |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+setMyProfilePhoto"></a>
-
-### telegramBot.setMyProfilePhoto(photo, [options]) ⇒ <code>Promise</code>
-Set the bot's profile photo.
-
-⚠️ A `static` photo **must be a JPEG**. Telegram's backend
-(`photos.uploadProfilePhoto`) only accepts JPEG and no layer in the stack
-— this library, the Bot API server, or TDLib — validates or converts the
-format, so the raw bytes are forwarded as-is. A non-JPEG (e.g. PNG) is not
-rejected cleanly: the upstream call typically returns `504 Gateway Timeout`
-(an `ETELEGRAM` error) or stalls until the request times out. Convert to
-JPEG before calling.
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-| Param | Type | Description |
-| --- | --- | --- |
-| photo | <code>Object</code> |  |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+removeMyProfilePhoto"></a>
-
-### telegramBot.removeMyProfilePhoto([options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#removemyprofilephoto
-
-| Param | Type | Description |
-| --- | --- | --- |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+setChatMenuButton"></a>
-
-### telegramBot.setChatMenuButton([options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#setchatmenubutton
-
-| Param | Type | Description |
-| --- | --- | --- |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+getChatMenuButton"></a>
-
-### telegramBot.getChatMenuButton([options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#getchatmenubutton
-
-| Param | Type | Description |
-| --- | --- | --- |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+setMyDefaultAdministratorRights"></a>
-
-### telegramBot.setMyDefaultAdministratorRights([options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#setmydefaultadministratorrights
-
-| Param | Type | Description |
-| --- | --- | --- |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+getMyDefaultAdministratorRights"></a>
-
-### telegramBot.getMyDefaultAdministratorRights([options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#getmydefaultadministratorrights
-
-| Param | Type | Description |
-| --- | --- | --- |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+editMessageText"></a>
-
-### telegramBot.editMessageText([textOrForm], [options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#editmessagetext
-
-| Param | Type | Description |
-| --- | --- | --- |
-| [textOrForm] | <code>Object</code> | Additional Telegram query options |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+editMessageCaption"></a>
-
-### telegramBot.editMessageCaption(caption, [options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#editmessagecaption
-
-| Param | Type | Description |
-| --- | --- | --- |
-| caption | <code>String</code> |  |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+editMessageMedia"></a>
-
-### telegramBot.editMessageMedia(media, [options]) ⇒ <code>Promise</code>
-Edit a message's media. The `media` (and its `thumbnail` / `cover`) accept a
-file (Buffer / stream / local path, uploaded via an `attach://` part) or a
-file_id / URL string (passed through), resolved by {@link _buildMediaItems}
-like {@link sendMediaGroup}. The legacy `attach://<local-path>` form is still
-accepted for the primary `media`.
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#editmessagemedia
-
-| Param | Type | Description |
-| --- | --- | --- |
-| media | <code>Object</code> |  |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+editMessageChecklist"></a>
-
-### telegramBot.editMessageChecklist(businessConnectionId, chatId, messageId, checklist, [options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#editmessagechecklist
-
-| Param | Type | Description |
-| --- | --- | --- |
-| businessConnectionId | <code>String</code> |  |
-| chatId | <code>Number \| String</code> |  |
-| messageId | <code>Number</code> |  |
-| checklist | <code>Object</code> |  |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+editMessageReplyMarkup"></a>
-
-### telegramBot.editMessageReplyMarkup(replyMarkup, [options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#editmessagereplymarkup
-
-| Param | Type | Description |
-| --- | --- | --- |
-| replyMarkup | <code>Object</code> |  |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+stopPoll"></a>
-
-### telegramBot.stopPoll(chatId, pollId, [options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#stoppoll
-
-| Param | Type | Description |
-| --- | --- | --- |
-| chatId | <code>Number \| String</code> |  |
-| pollId | <code>Number</code> |  |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+approveSuggestedPost"></a>
-
-### telegramBot.approveSuggestedPost(chatId, messageId, [options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#approvesuggestedpost
-
-| Param | Type | Description |
-| --- | --- | --- |
-| chatId | <code>Number</code> |  |
-| messageId | <code>Number</code> |  |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+declineSuggestedPost"></a>
-
-### telegramBot.declineSuggestedPost(chatId, messageId, [options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#declinesuggestedpost
-
-| Param | Type | Description |
-| --- | --- | --- |
-| chatId | <code>Number</code> |  |
-| messageId | <code>Number</code> |  |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+sendSticker"></a>
-
-### telegramBot.sendSticker(chatId, sticker, [options], [fileOptions]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#sendsticker
-
-| Param | Type | Description |
-| --- | --- | --- |
-| chatId | <code>Number \| String</code> |  |
-| sticker | <code>String \| Stream \| Buffer</code> |  |
-| [options] | <code>Object</code> | Additional Telegram query options |
-| [fileOptions] | <code>Object</code> | Additional file options |
-
-<a name="TelegramBot+getStickerSet"></a>
-
-### telegramBot.getStickerSet(name, [options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#getstickerset
-
-| Param | Type | Description |
-| --- | --- | --- |
-| name | <code>String</code> |  |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+getCustomEmojiStickers"></a>
-
-### telegramBot.getCustomEmojiStickers(customEmojiIds, [options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#getcustomemojistickers
-
-| Param | Type | Description |
-| --- | --- | --- |
-| customEmojiIds | <code>Array</code> |  |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+uploadStickerFile"></a>
-
-### telegramBot.uploadStickerFile(userId, sticker, [stickerFormat], [options], [fileOptions]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#uploadstickerfile
-
-| Param | Type | Description |
-| --- | --- | --- |
-| userId | <code>Number</code> |  |
-| sticker | <code>String \| Stream \| Buffer</code> |  |
-| [stickerFormat] | <code>Object</code> |  |
-| [options] | <code>Object</code> | Additional Telegram query options |
-| [fileOptions] | <code>Object</code> | Additional file options |
-
-<a name="TelegramBot+createNewStickerSet"></a>
-
-### telegramBot.createNewStickerSet([params]) ⇒ <code>Promise</code>
-Create a new sticker set owned by a user. Each entry in `stickers` is an
-{@link InputStickerInput} whose `sticker` accepts a file (Buffer / stream /
-local path, uploaded as an `attach://` part) or a file_id / URL string, plus
-the sticker's `format`, `emoji_list`, and optional `mask_position`/`keywords`.
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#createnewstickerset
-
-| Param | Type | Description |
-| --- | --- | --- |
-| [params] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+addStickerToSet"></a>
-
-### telegramBot.addStickerToSet([params]) ⇒ <code>Promise</code>
-Add a sticker to an existing set. The `sticker` is an
-{@link InputStickerInput} whose `sticker` field accepts a file (Buffer /
-stream / local path, uploaded as an `attach://` part) or a file_id / URL string.
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#addstickertoset
-
-| Param | Type | Description |
-| --- | --- | --- |
-| [params] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+setStickerPositionInSet"></a>
-
-### telegramBot.setStickerPositionInSet(sticker, position, [options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#setstickerpositioninset
-
-| Param | Type | Description |
-| --- | --- | --- |
-| sticker | <code>String</code> |  |
-| position | <code>Number</code> |  |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+deleteStickerFromSet"></a>
-
-### telegramBot.deleteStickerFromSet(sticker, [options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#deletestickerfromset
-
-| Param | Type | Description |
-| --- | --- | --- |
-| sticker | <code>String</code> |  |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+replaceStickerInSet"></a>
-
-### telegramBot.replaceStickerInSet(userId, name, oldSticker, [options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#replacestickerinset
-
-| Param | Type | Description |
-| --- | --- | --- |
-| userId | <code>Number</code> |  |
-| name | <code>String</code> |  |
-| oldSticker | <code>String</code> |  |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+setStickerEmojiList"></a>
-
-### telegramBot.setStickerEmojiList(sticker, emojiList, [options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#setstickeremojilist
-
-| Param | Type | Description |
-| --- | --- | --- |
-| sticker | <code>String</code> |  |
-| emojiList | <code>Array</code> |  |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+setStickerKeywords"></a>
-
-### telegramBot.setStickerKeywords(sticker, [options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#setstickerkeywords
-
-| Param | Type | Description |
-| --- | --- | --- |
-| sticker | <code>String</code> |  |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+setStickerMaskPosition"></a>
-
-### telegramBot.setStickerMaskPosition(sticker, [options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#setstickermaskposition
-
-| Param | Type | Description |
-| --- | --- | --- |
-| sticker | <code>String</code> |  |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+setStickerSetTitle"></a>
-
-### telegramBot.setStickerSetTitle(name, title, [options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#setstickersettitle
-
-| Param | Type | Description |
-| --- | --- | --- |
-| name | <code>String</code> |  |
-| title | <code>String</code> |  |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+setStickerSetThumbnail"></a>
-
-### telegramBot.setStickerSetThumbnail(userId, name, thumbnail, [options], [fileOptions]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#setstickersetthumbnail
-
-| Param | Type | Description |
-| --- | --- | --- |
-| userId | <code>Number</code> |  |
-| name | <code>String</code> |  |
-| thumbnail | <code>String \| Stream \| Buffer</code> |  |
-| [options] | <code>Object</code> |  |
-| [fileOptions] | <code>Object</code> | Additional file options |
-
-<a name="TelegramBot+setCustomEmojiStickerSetThumbnail"></a>
-
-### telegramBot.setCustomEmojiStickerSetThumbnail(name, [options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#setcustomemojistickersetthumbnail
-
-| Param | Type | Description |
-| --- | --- | --- |
-| name | <code>String</code> |  |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+deleteStickerSet"></a>
-
-### telegramBot.deleteStickerSet(name, [options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#deletestickerset
-
-| Param | Type | Description |
-| --- | --- | --- |
-| name | <code>String</code> |  |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+answerInlineQuery"></a>
-
-### telegramBot.answerInlineQuery(inlineQueryId, results, [options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#answerinlinequery
-
-| Param | Type | Description |
-| --- | --- | --- |
-| inlineQueryId | <code>String</code> |  |
-| results | <code>Array</code> |  |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+answerWebAppQuery"></a>
-
-### telegramBot.answerWebAppQuery(webAppQueryId, result, [options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#answerwebappquery
-
-| Param | Type | Description |
-| --- | --- | --- |
-| webAppQueryId | <code>String</code> |  |
-| result | <code>Object</code> |  |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+sendInvoice"></a>
-
-### telegramBot.sendInvoice(chatId, title, description, payload, providerToken, currency, prices, [options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#sendinvoice
-
-| Param | Type | Description |
-| --- | --- | --- |
-| chatId | <code>Number \| String</code> |  |
-| title | <code>String</code> |  |
-| description | <code>String</code> |  |
-| payload | <code>String</code> |  |
-| providerToken | <code>String</code> |  |
-| currency | <code>String</code> |  |
-| prices | <code>Array</code> |  |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+createInvoiceLink"></a>
-
-### telegramBot.createInvoiceLink(title, description, payload, providerToken, currency, prices, [options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#createinvoicelink
-
-| Param | Type | Description |
-| --- | --- | --- |
-| title | <code>String</code> |  |
-| description | <code>String</code> |  |
-| payload | <code>String</code> |  |
-| providerToken | <code>String</code> |  |
-| currency | <code>String</code> |  |
-| prices | <code>Array</code> |  |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+answerShippingQuery"></a>
-
-### telegramBot.answerShippingQuery(shippingQueryId, ok, [options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#answershippingquery
-
-| Param | Type | Description |
-| --- | --- | --- |
-| shippingQueryId | <code>String</code> |  |
-| ok | <code>Boolean</code> |  |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+answerPreCheckoutQuery"></a>
-
-### telegramBot.answerPreCheckoutQuery(preCheckoutQueryId, ok, [options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#answerprecheckoutquery
-
-| Param | Type | Description |
-| --- | --- | --- |
-| preCheckoutQueryId | <code>String</code> |  |
-| ok | <code>Boolean</code> |  |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+setPassportDataErrors"></a>
-
-### telegramBot.setPassportDataErrors(userId, errors, [options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#setpassportdataerrors
-
-| Param | Type | Description |
-| --- | --- | --- |
-| userId | <code>Number</code> |  |
-| errors | <code>Array</code> |  |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+getMyStarBalance"></a>
-
-### telegramBot.getMyStarBalance([options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#getmystarbalance
-
-| Param | Type | Description |
-| --- | --- | --- |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+getStarTransactions"></a>
-
-### telegramBot.getStarTransactions([options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#getstartransactions
-
-| Param | Type | Description |
-| --- | --- | --- |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+refundStarPayment"></a>
-
-### telegramBot.refundStarPayment(userId, telegramPaymentChargeId, [options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#refundstarpayment
-
-| Param | Type | Description |
-| --- | --- | --- |
-| userId | <code>Number</code> |  |
-| telegramPaymentChargeId | <code>String</code> |  |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+editUserStarSubscription"></a>
-
-### telegramBot.editUserStarSubscription(userId, telegramPaymentChargeId, isCanceled, [options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#edituserstarsubscription
-
-| Param | Type | Description |
-| --- | --- | --- |
-| userId | <code>Number</code> |  |
-| telegramPaymentChargeId | <code>String</code> |  |
-| isCanceled | <code>Boolean</code> |  |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+sendGame"></a>
-
-### telegramBot.sendGame(chatId, gameShortName, [options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#sendgame
-
-| Param | Type | Description |
-| --- | --- | --- |
-| chatId | <code>Number \| String</code> |  |
-| gameShortName | <code>String</code> |  |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+setGameScore"></a>
-
-### telegramBot.setGameScore(userId, score, [options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#setgamescore
-
-| Param | Type | Description |
-| --- | --- | --- |
-| userId | <code>Number</code> |  |
-| score | <code>Number</code> |  |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+getGameHighScores"></a>
-
-### telegramBot.getGameHighScores(userId, [form]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#getgamehighscores
-
-| Param | Type | Description |
-| --- | --- | --- |
-| userId | <code>Number</code> |  |
-| [form] | <code>Object</code> |  |
-
-<a name="TelegramBot+deleteMessage"></a>
-
-### telegramBot.deleteMessage(chatId, messageId, [options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#deletemessage
-
-| Param | Type | Description |
-| --- | --- | --- |
-| chatId | <code>Number \| String</code> |  |
-| messageId | <code>Number</code> |  |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+deleteMessages"></a>
-
-### telegramBot.deleteMessages(chatId, messageIds, [options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#deletemessages
-
-| Param | Type | Description |
-| --- | --- | --- |
-| chatId | <code>Number \| String</code> |  |
-| messageIds | <code>Array</code> |  |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+deleteMessageReaction"></a>
-
-### telegramBot.deleteMessageReaction(chatId, messageId, [form]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#deletemessagereaction
-
-| Param | Type | Description |
-| --- | --- | --- |
-| chatId | <code>Number \| String</code> |  |
-| messageId | <code>Number</code> |  |
-| [form] | <code>Object</code> |  |
-
-<a name="TelegramBot+deleteAllMessageReactions"></a>
-
-### telegramBot.deleteAllMessageReactions(chatId, [form]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#deleteallmessagereactions
-
-| Param | Type | Description |
-| --- | --- | --- |
-| chatId | <code>Number \| String</code> |  |
-| [form] | <code>Object</code> |  |
-
-<a name="TelegramBot+getAvailableGifts"></a>
-
-### telegramBot.getAvailableGifts([options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#getavailablegifts
-
-| Param | Type | Description |
-| --- | --- | --- |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+sendGift"></a>
-
-### telegramBot.sendGift(giftId, [options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#sendgift
-
-| Param | Type | Description |
-| --- | --- | --- |
-| giftId | <code>String</code> |  |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+giftPremiumSubscription"></a>
-
-### telegramBot.giftPremiumSubscription(userId, monthCount, starCount, [options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#giftpremiumsubscription
-
-| Param | Type | Description |
-| --- | --- | --- |
-| userId | <code>Number</code> |  |
-| monthCount | <code>Number</code> |  |
-| starCount | <code>Number</code> |  |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+verifyUser"></a>
-
-### telegramBot.verifyUser(userId, [options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#verifyuser
-
-| Param | Type | Description |
-| --- | --- | --- |
-| userId | <code>Number</code> |  |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+verifyChat"></a>
-
-### telegramBot.verifyChat(chatId, [options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#verifychat
-
-| Param | Type | Description |
-| --- | --- | --- |
-| chatId | <code>Number \| String</code> |  |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+removeUserVerification"></a>
-
-### telegramBot.removeUserVerification(userId, [options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#removeuserverification
-
-| Param | Type | Description |
-| --- | --- | --- |
-| userId | <code>Number</code> |  |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+removeChatVerification"></a>
-
-### telegramBot.removeChatVerification(chatId, [options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#removechatverification
-
-| Param | Type | Description |
-| --- | --- | --- |
-| chatId | <code>Number \| String</code> |  |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+readBusinessMessage"></a>
-
-### telegramBot.readBusinessMessage(businessConnectionId, chatId, messageId, [options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#readbusinessmessage
-
-| Param | Type | Description |
-| --- | --- | --- |
-| businessConnectionId | <code>String</code> |  |
-| chatId | <code>Number</code> |  |
-| messageId | <code>Number</code> |  |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+deleteBusinessMessages"></a>
-
-### telegramBot.deleteBusinessMessages(businessConnectionId, messageIds, [options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#deletebusinessmessages
-
-| Param | Type | Description |
-| --- | --- | --- |
-| businessConnectionId | <code>String</code> |  |
-| messageIds | <code>Array</code> |  |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+setBusinessAccountName"></a>
-
-### telegramBot.setBusinessAccountName(businessConnectionId, firstName, [options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#setbusinessaccountname
-
-| Param | Type | Description |
-| --- | --- | --- |
-| businessConnectionId | <code>String</code> |  |
-| firstName | <code>String</code> |  |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+setBusinessAccountUsername"></a>
-
-### telegramBot.setBusinessAccountUsername(businessConnectionId, [options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#setbusinessaccountusername
-
-| Param | Type | Description |
-| --- | --- | --- |
-| businessConnectionId | <code>String</code> |  |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+setBusinessAccountBio"></a>
-
-### telegramBot.setBusinessAccountBio(businessConnectionId, [options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#setbusinessaccountbio
-
-| Param | Type | Description |
-| --- | --- | --- |
-| businessConnectionId | <code>String</code> |  |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+setBusinessAccountProfilePhoto"></a>
-
-### telegramBot.setBusinessAccountProfilePhoto(businessConnectionId, photo, [options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-| Param | Type | Description |
-| --- | --- | --- |
-| businessConnectionId | <code>String</code> |  |
-| photo | <code>Object</code> |  |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+removeBusinessAccountProfilePhoto"></a>
-
-### telegramBot.removeBusinessAccountProfilePhoto(businessConnectionId, [options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#removebusinessaccountprofilephoto
-
-| Param | Type | Description |
-| --- | --- | --- |
-| businessConnectionId | <code>String</code> |  |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+setBusinessAccountGiftSettings"></a>
-
-### telegramBot.setBusinessAccountGiftSettings(businessConnectionId, showGiftButton, acceptedGiftTypes, [options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#setbusinessaccountgiftsettings
-
-| Param | Type | Description |
-| --- | --- | --- |
-| businessConnectionId | <code>String</code> |  |
-| showGiftButton | <code>Boolean</code> |  |
-| acceptedGiftTypes | <code>Object</code> |  |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+getBusinessAccountStarBalance"></a>
-
-### telegramBot.getBusinessAccountStarBalance(businessConnectionId, [options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#getbusinessaccountstarbalance
-
-| Param | Type | Description |
-| --- | --- | --- |
-| businessConnectionId | <code>String</code> |  |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+transferBusinessAccountStars"></a>
-
-### telegramBot.transferBusinessAccountStars(businessConnectionId, starCount, [options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#transferbusinessaccountstars
-
-| Param | Type | Description |
-| --- | --- | --- |
-| businessConnectionId | <code>String</code> |  |
-| starCount | <code>Number</code> |  |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+getBusinessAccountGifts"></a>
-
-### telegramBot.getBusinessAccountGifts(businessConnectionId, [options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#getbusinessaccountgifts
-
-| Param | Type | Description |
-| --- | --- | --- |
-| businessConnectionId | <code>String</code> |  |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+getUserGifts"></a>
-
-### telegramBot.getUserGifts(userId, [options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#getusergifts
-
-| Param | Type | Description |
-| --- | --- | --- |
-| userId | <code>Number</code> |  |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+getChatGifts"></a>
-
-### telegramBot.getChatGifts(chatId, [options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#getchatgifts
-
-| Param | Type | Description |
-| --- | --- | --- |
-| chatId | <code>Number \| String</code> |  |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+convertGiftToStars"></a>
-
-### telegramBot.convertGiftToStars(businessConnectionId, ownedGiftId, [options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#convertgifttostars
-
-| Param | Type | Description |
-| --- | --- | --- |
-| businessConnectionId | <code>String</code> |  |
-| ownedGiftId | <code>String</code> |  |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+upgradeGift"></a>
-
-### telegramBot.upgradeGift(businessConnectionId, ownedGiftId, [options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#upgradegift
-
-| Param | Type | Description |
-| --- | --- | --- |
-| businessConnectionId | <code>String</code> |  |
-| ownedGiftId | <code>String</code> |  |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+transferGift"></a>
-
-### telegramBot.transferGift(businessConnectionId, ownedGiftId, newOwnerChatId, [options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#transfergift
-
-| Param | Type | Description |
-| --- | --- | --- |
-| businessConnectionId | <code>String</code> |  |
-| ownedGiftId | <code>String</code> |  |
-| newOwnerChatId | <code>Number</code> |  |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+postStory"></a>
-
-### telegramBot.postStory(businessConnectionId, content, activePeriod, [options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#poststory
-
-| Param | Type | Description |
-| --- | --- | --- |
-| businessConnectionId | <code>String</code> |  |
-| content | <code>Object</code> |  |
-| activePeriod | <code>Number</code> |  |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+repostStory"></a>
-
-### telegramBot.repostStory(businessConnectionId, fromChatId, fromStoryId, activePeriod, [options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#repoststory
-
-| Param | Type | Description |
-| --- | --- | --- |
-| businessConnectionId | <code>String</code> |  |
-| fromChatId | <code>Number</code> |  |
-| fromStoryId | <code>Number</code> |  |
-| activePeriod | <code>Number</code> |  |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+editStory"></a>
-
-### telegramBot.editStory(businessConnectionId, storyId, content, [options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#editstory
-
-| Param | Type | Description |
-| --- | --- | --- |
-| businessConnectionId | <code>String</code> |  |
-| storyId | <code>Number</code> |  |
-| content | <code>Object</code> |  |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-<a name="TelegramBot+deleteStory"></a>
-
-### telegramBot.deleteStory(businessConnectionId, storyId, [options]) ⇒ <code>Promise</code>
-
-**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
-
-**Returns**: <code>Promise</code>
-
-**See**: https://core.telegram.org/bots/api#deletestory
-
-| Param | Type | Description |
-| --- | --- | --- |
-| businessConnectionId | <code>String</code> |  |
-| storyId | <code>Number</code> |  |
-| [options] | <code>Object</code> | Additional Telegram query options |
-
-* * *
+# node-telegram-bot-api - API reference
+
+Auto-generated by `scripts/generate-docs.ts` from the TypeScript source via [TypeDoc](https://typedoc.org). Regenerate with `npm run generate:docs`. Every `Api` method links to its [Bot API](https://core.telegram.org/bots/api) page.
+
+## Contents
+
+- [Classes](#classes)
+- [Functions](#functions)
+- [Interfaces](#interfaces)
+- [Type aliases](#type-aliases)
+- [Variables](#variables)
+
+## Classes
+
+
+### `AnimatedProfilePhotoBuilder`
+
+An animated profile photo (a video); `main_frame_timestamp` picks the still frame.
+
+#### Methods
+
+| Method | Params | Returns | Description |
+| --- | --- | --- | --- |
+| `build` | - | [InputProfilePhoto](#inputprofilephoto) | - |
+
+### `Api`
+
+#### Methods
+
+| Method | Params | Returns | Description |
+| --- | --- | --- | --- |
+| `addStickerToSet` | `params`: [AddStickerToSetParams](#addstickertosetparams), `signal?`: AbortSignal | Promise<boolean> | [addStickerToSet](https://core.telegram.org/bots/api#addstickertoset) |
+| `answerCallbackQuery` | `params`: [AnswerCallbackQueryParams](#answercallbackqueryparams), `signal?`: AbortSignal | Promise<boolean> | [answerCallbackQuery](https://core.telegram.org/bots/api#answercallbackquery) |
+| `answerChatJoinRequestQuery` | `params`: [AnswerChatJoinRequestQueryParams](#answerchatjoinrequestqueryparams), `signal?`: AbortSignal | Promise<boolean> | [answerChatJoinRequestQuery](https://core.telegram.org/bots/api#answerchatjoinrequestquery) |
+| `answerGuestQuery` | `params`: [AnswerGuestQueryParams](#answerguestqueryparams), `signal?`: AbortSignal | Promise<[SentGuestMessage](#sentguestmessage)> | [answerGuestQuery](https://core.telegram.org/bots/api#answerguestquery) |
+| `answerInlineQuery` | `params`: [AnswerInlineQueryParams](#answerinlinequeryparams), `signal?`: AbortSignal | Promise<boolean> | [answerInlineQuery](https://core.telegram.org/bots/api#answerinlinequery) |
+| `answerPreCheckoutQuery` | `params`: [AnswerPreCheckoutQueryParams](#answerprecheckoutqueryparams), `signal?`: AbortSignal | Promise<boolean> | [answerPreCheckoutQuery](https://core.telegram.org/bots/api#answerprecheckoutquery) |
+| `answerShippingQuery` | `params`: [AnswerShippingQueryParams](#answershippingqueryparams), `signal?`: AbortSignal | Promise<boolean> | [answerShippingQuery](https://core.telegram.org/bots/api#answershippingquery) |
+| `answerWebAppQuery` | `params`: [AnswerWebAppQueryParams](#answerwebappqueryparams), `signal?`: AbortSignal | Promise<[SentWebAppMessage](#sentwebappmessage)> | [answerWebAppQuery](https://core.telegram.org/bots/api#answerwebappquery) |
+| `approveChatJoinRequest` | `params`: [ApproveChatJoinRequestParams](#approvechatjoinrequestparams), `signal?`: AbortSignal | Promise<boolean> | [approveChatJoinRequest](https://core.telegram.org/bots/api#approvechatjoinrequest) |
+| `approveSuggestedPost` | `params`: [ApproveSuggestedPostParams](#approvesuggestedpostparams), `signal?`: AbortSignal | Promise<boolean> | [approveSuggestedPost](https://core.telegram.org/bots/api#approvesuggestedpost) |
+| `banChatMember` | `params`: [BanChatMemberParams](#banchatmemberparams), `signal?`: AbortSignal | Promise<boolean> | [banChatMember](https://core.telegram.org/bots/api#banchatmember) |
+| `banChatSenderChat` | `params`: [BanChatSenderChatParams](#banchatsenderchatparams), `signal?`: AbortSignal | Promise<boolean> | [banChatSenderChat](https://core.telegram.org/bots/api#banchatsenderchat) |
+| `close` | `signal?`: AbortSignal | Promise<boolean> | [close](https://core.telegram.org/bots/api#close) |
+| `closeForumTopic` | `params`: [CloseForumTopicParams](#closeforumtopicparams), `signal?`: AbortSignal | Promise<boolean> | [closeForumTopic](https://core.telegram.org/bots/api#closeforumtopic) |
+| `closeGeneralForumTopic` | `params`: [CloseGeneralForumTopicParams](#closegeneralforumtopicparams), `signal?`: AbortSignal | Promise<boolean> | [closeGeneralForumTopic](https://core.telegram.org/bots/api#closegeneralforumtopic) |
+| `convertGiftToStars` | `params`: [ConvertGiftToStarsParams](#convertgifttostarsparams), `signal?`: AbortSignal | Promise<boolean> | [convertGiftToStars](https://core.telegram.org/bots/api#convertgifttostars) |
+| `copyMessage` | `params`: [CopyMessageParams](#copymessageparams), `signal?`: AbortSignal | Promise<[MessageId](#messageid)> | [copyMessage](https://core.telegram.org/bots/api#copymessage) |
+| `copyMessages` | `params`: [CopyMessagesParams](#copymessagesparams), `signal?`: AbortSignal | Promise<[CopyMessagesResult](#copymessagesresult)> | [copyMessages](https://core.telegram.org/bots/api#copymessages) |
+| `createChatInviteLink` | `params`: [CreateChatInviteLinkParams](#createchatinvitelinkparams), `signal?`: AbortSignal | Promise<[ChatInviteLink](#chatinvitelink)> | [createChatInviteLink](https://core.telegram.org/bots/api#createchatinvitelink) |
+| `createChatSubscriptionInviteLink` | `params`: [CreateChatSubscriptionInviteLinkParams](#createchatsubscriptioninvitelinkparams), `signal?`: AbortSignal | Promise<[ChatInviteLink](#chatinvitelink)> | [createChatSubscriptionInviteLink](https://core.telegram.org/bots/api#createchatsubscriptioninvitelink) |
+| `createForumTopic` | `params`: [CreateForumTopicParams](#createforumtopicparams), `signal?`: AbortSignal | Promise<[ForumTopic](#forumtopic)> | [createForumTopic](https://core.telegram.org/bots/api#createforumtopic) |
+| `createInvoiceLink` | `params`: [CreateInvoiceLinkParams](#createinvoicelinkparams), `signal?`: AbortSignal | Promise<string> | [createInvoiceLink](https://core.telegram.org/bots/api#createinvoicelink) |
+| `createNewStickerSet` | `params`: [CreateNewStickerSetParams](#createnewstickersetparams), `signal?`: AbortSignal | Promise<boolean> | [createNewStickerSet](https://core.telegram.org/bots/api#createnewstickerset) |
+| `declineChatJoinRequest` | `params`: [DeclineChatJoinRequestParams](#declinechatjoinrequestparams), `signal?`: AbortSignal | Promise<boolean> | [declineChatJoinRequest](https://core.telegram.org/bots/api#declinechatjoinrequest) |
+| `declineSuggestedPost` | `params`: [DeclineSuggestedPostParams](#declinesuggestedpostparams), `signal?`: AbortSignal | Promise<boolean> | [declineSuggestedPost](https://core.telegram.org/bots/api#declinesuggestedpost) |
+| `deleteAllMessageReactions` | `params`: [DeleteAllMessageReactionsParams](#deleteallmessagereactionsparams), `signal?`: AbortSignal | Promise<boolean> | [deleteAllMessageReactions](https://core.telegram.org/bots/api#deleteallmessagereactions) |
+| `deleteBusinessMessages` | `params`: [DeleteBusinessMessagesParams](#deletebusinessmessagesparams), `signal?`: AbortSignal | Promise<boolean> | [deleteBusinessMessages](https://core.telegram.org/bots/api#deletebusinessmessages) |
+| `deleteChatPhoto` | `params`: [DeleteChatPhotoParams](#deletechatphotoparams), `signal?`: AbortSignal | Promise<boolean> | [deleteChatPhoto](https://core.telegram.org/bots/api#deletechatphoto) |
+| `deleteChatStickerSet` | `params`: [DeleteChatStickerSetParams](#deletechatstickersetparams), `signal?`: AbortSignal | Promise<boolean> | [deleteChatStickerSet](https://core.telegram.org/bots/api#deletechatstickerset) |
+| `deleteForumTopic` | `params`: [DeleteForumTopicParams](#deleteforumtopicparams), `signal?`: AbortSignal | Promise<boolean> | [deleteForumTopic](https://core.telegram.org/bots/api#deleteforumtopic) |
+| `deleteMessage` | `params`: [DeleteMessageParams](#deletemessageparams), `signal?`: AbortSignal | Promise<boolean> | [deleteMessage](https://core.telegram.org/bots/api#deletemessage) |
+| `deleteMessageReaction` | `params`: [DeleteMessageReactionParams](#deletemessagereactionparams), `signal?`: AbortSignal | Promise<boolean> | [deleteMessageReaction](https://core.telegram.org/bots/api#deletemessagereaction) |
+| `deleteMessages` | `params`: [DeleteMessagesParams](#deletemessagesparams), `signal?`: AbortSignal | Promise<boolean> | [deleteMessages](https://core.telegram.org/bots/api#deletemessages) |
+| `deleteMyCommands` | `params?`: [DeleteMyCommandsParams](#deletemycommandsparams), `signal?`: AbortSignal | Promise<boolean> | [deleteMyCommands](https://core.telegram.org/bots/api#deletemycommands) |
+| `deleteStickerFromSet` | `params`: [DeleteStickerFromSetParams](#deletestickerfromsetparams), `signal?`: AbortSignal | Promise<boolean> | [deleteStickerFromSet](https://core.telegram.org/bots/api#deletestickerfromset) |
+| `deleteStickerSet` | `params`: [DeleteStickerSetParams](#deletestickersetparams), `signal?`: AbortSignal | Promise<boolean> | [deleteStickerSet](https://core.telegram.org/bots/api#deletestickerset) |
+| `deleteStory` | `params`: [DeleteStoryParams](#deletestoryparams), `signal?`: AbortSignal | Promise<boolean> | [deleteStory](https://core.telegram.org/bots/api#deletestory) |
+| `deleteWebhook` | `params?`: [DeleteWebhookParams](#deletewebhookparams), `signal?`: AbortSignal | Promise<boolean> | [deleteWebhook](https://core.telegram.org/bots/api#deletewebhook) |
+| `editChatInviteLink` | `params`: [EditChatInviteLinkParams](#editchatinvitelinkparams), `signal?`: AbortSignal | Promise<[ChatInviteLink](#chatinvitelink)> | [editChatInviteLink](https://core.telegram.org/bots/api#editchatinvitelink) |
+| `editChatSubscriptionInviteLink` | `params`: [EditChatSubscriptionInviteLinkParams](#editchatsubscriptioninvitelinkparams), `signal?`: AbortSignal | Promise<[ChatInviteLink](#chatinvitelink)> | [editChatSubscriptionInviteLink](https://core.telegram.org/bots/api#editchatsubscriptioninvitelink) |
+| `editForumTopic` | `params`: [EditForumTopicParams](#editforumtopicparams), `signal?`: AbortSignal | Promise<boolean> | [editForumTopic](https://core.telegram.org/bots/api#editforumtopic) |
+| `editGeneralForumTopic` | `params`: [EditGeneralForumTopicParams](#editgeneralforumtopicparams), `signal?`: AbortSignal | Promise<boolean> | [editGeneralForumTopic](https://core.telegram.org/bots/api#editgeneralforumtopic) |
+| `editMessageCaption` | `params?`: [EditMessageCaptionParams](#editmessagecaptionparams), `signal?`: AbortSignal | Promise<[EditMessageCaptionResult](#editmessagecaptionresult)> | [editMessageCaption](https://core.telegram.org/bots/api#editmessagecaption) |
+| `editMessageChecklist` | `params`: [EditMessageChecklistParams](#editmessagechecklistparams), `signal?`: AbortSignal | Promise<[Message](#message)> | [editMessageChecklist](https://core.telegram.org/bots/api#editmessagechecklist) |
+| `editMessageLiveLocation` | `params`: [EditMessageLiveLocationParams](#editmessagelivelocationparams), `signal?`: AbortSignal | Promise<[EditMessageLiveLocationResult](#editmessagelivelocationresult)> | [editMessageLiveLocation](https://core.telegram.org/bots/api#editmessagelivelocation) |
+| `editMessageMedia` | `params`: [EditMessageMediaParams](#editmessagemediaparams), `signal?`: AbortSignal | Promise<[EditMessageMediaResult](#editmessagemediaresult)> | [editMessageMedia](https://core.telegram.org/bots/api#editmessagemedia) |
+| `editMessageReplyMarkup` | `params?`: [EditMessageReplyMarkupParams](#editmessagereplymarkupparams), `signal?`: AbortSignal | Promise<[EditMessageReplyMarkupResult](#editmessagereplymarkupresult)> | [editMessageReplyMarkup](https://core.telegram.org/bots/api#editmessagereplymarkup) |
+| `editMessageText` | `params?`: [EditMessageTextParams](#editmessagetextparams), `signal?`: AbortSignal | Promise<[EditMessageTextResult](#editmessagetextresult)> | [editMessageText](https://core.telegram.org/bots/api#editmessagetext) |
+| `editStory` | `params`: [EditStoryParams](#editstoryparams), `signal?`: AbortSignal | Promise<[Story](#story)> | [editStory](https://core.telegram.org/bots/api#editstory) |
+| `editUserStarSubscription` | `params`: [EditUserStarSubscriptionParams](#edituserstarsubscriptionparams), `signal?`: AbortSignal | Promise<boolean> | [editUserStarSubscription](https://core.telegram.org/bots/api#edituserstarsubscription) |
+| `exportChatInviteLink` | `params`: [ExportChatInviteLinkParams](#exportchatinvitelinkparams), `signal?`: AbortSignal | Promise<string> | [exportChatInviteLink](https://core.telegram.org/bots/api#exportchatinvitelink) |
+| `forwardMessage` | `params`: [ForwardMessageParams](#forwardmessageparams), `signal?`: AbortSignal | Promise<[Message](#message)> | [forwardMessage](https://core.telegram.org/bots/api#forwardmessage) |
+| `forwardMessages` | `params`: [ForwardMessagesParams](#forwardmessagesparams), `signal?`: AbortSignal | Promise<[ForwardMessagesResult](#forwardmessagesresult)> | [forwardMessages](https://core.telegram.org/bots/api#forwardmessages) |
+| `getAvailableGifts` | `signal?`: AbortSignal | Promise<[Gifts](#gifts)> | [getAvailableGifts](https://core.telegram.org/bots/api#getavailablegifts) |
+| `getBusinessAccountGifts` | `params`: [GetBusinessAccountGiftsParams](#getbusinessaccountgiftsparams), `signal?`: AbortSignal | Promise<[OwnedGifts](#ownedgifts)> | [getBusinessAccountGifts](https://core.telegram.org/bots/api#getbusinessaccountgifts) |
+| `getBusinessAccountStarBalance` | `params`: [GetBusinessAccountStarBalanceParams](#getbusinessaccountstarbalanceparams), `signal?`: AbortSignal | Promise<[StarAmount](#staramount)> | [getBusinessAccountStarBalance](https://core.telegram.org/bots/api#getbusinessaccountstarbalance) |
+| `getBusinessConnection` | `params`: [GetBusinessConnectionParams](#getbusinessconnectionparams), `signal?`: AbortSignal | Promise<[BusinessConnection](#businessconnection)> | [getBusinessConnection](https://core.telegram.org/bots/api#getbusinessconnection) |
+| `getChat` | `params`: [GetChatParams](#getchatparams), `signal?`: AbortSignal | Promise<[ChatFullInfo](#chatfullinfo)> | [getChat](https://core.telegram.org/bots/api#getchat) |
+| `getChatAdministrators` | `params`: [GetChatAdministratorsParams](#getchatadministratorsparams), `signal?`: AbortSignal | Promise<[GetChatAdministratorsResult](#getchatadministratorsresult)> | [getChatAdministrators](https://core.telegram.org/bots/api#getchatadministrators) |
+| `getChatGifts` | `params`: [GetChatGiftsParams](#getchatgiftsparams), `signal?`: AbortSignal | Promise<[OwnedGifts](#ownedgifts)> | [getChatGifts](https://core.telegram.org/bots/api#getchatgifts) |
+| `getChatMember` | `params`: [GetChatMemberParams](#getchatmemberparams), `signal?`: AbortSignal | Promise<[ChatMember](#chatmember)> | [getChatMember](https://core.telegram.org/bots/api#getchatmember) |
+| `getChatMemberCount` | `params`: [GetChatMemberCountParams](#getchatmembercountparams), `signal?`: AbortSignal | Promise<number> | [getChatMemberCount](https://core.telegram.org/bots/api#getchatmembercount) |
+| `getChatMenuButton` | `params?`: [GetChatMenuButtonParams](#getchatmenubuttonparams), `signal?`: AbortSignal | Promise<[MenuButton](#menubutton)> | [getChatMenuButton](https://core.telegram.org/bots/api#getchatmenubutton) |
+| `getCustomEmojiStickers` | `params`: [GetCustomEmojiStickersParams](#getcustomemojistickersparams), `signal?`: AbortSignal | Promise<[GetCustomEmojiStickersResult](#getcustomemojistickersresult)> | [getCustomEmojiStickers](https://core.telegram.org/bots/api#getcustomemojistickers) |
+| `getFile` | `params`: [GetFileParams](#getfileparams), `signal?`: AbortSignal | Promise<[File](#file)> | [getFile](https://core.telegram.org/bots/api#getfile) |
+| `getForumTopicIconStickers` | `signal?`: AbortSignal | Promise<[GetForumTopicIconStickersResult](#getforumtopiciconstickersresult)> | [getForumTopicIconStickers](https://core.telegram.org/bots/api#getforumtopiciconstickers) |
+| `getGameHighScores` | `params`: [GetGameHighScoresParams](#getgamehighscoresparams), `signal?`: AbortSignal | Promise<[GetGameHighScoresResult](#getgamehighscoresresult)> | [getGameHighScores](https://core.telegram.org/bots/api#getgamehighscores) |
+| `getManagedBotAccessSettings` | `params`: [GetManagedBotAccessSettingsParams](#getmanagedbotaccesssettingsparams), `signal?`: AbortSignal | Promise<[BotAccessSettings](#botaccesssettings)> | [getManagedBotAccessSettings](https://core.telegram.org/bots/api#getmanagedbotaccesssettings) |
+| `getManagedBotToken` | `params`: [GetManagedBotTokenParams](#getmanagedbottokenparams), `signal?`: AbortSignal | Promise<[BusinessConnection](#businessconnection)> | [getManagedBotToken](https://core.telegram.org/bots/api#getmanagedbottoken) |
+| `getMe` | `signal?`: AbortSignal | Promise<[User](#user)> | [getMe](https://core.telegram.org/bots/api#getme) |
+| `getMyCommands` | `params?`: [GetMyCommandsParams](#getmycommandsparams), `signal?`: AbortSignal | Promise<[GetMyCommandsResult](#getmycommandsresult)> | [getMyCommands](https://core.telegram.org/bots/api#getmycommands) |
+| `getMyDefaultAdministratorRights` | `params?`: [GetMyDefaultAdministratorRightsParams](#getmydefaultadministratorrightsparams), `signal?`: AbortSignal | Promise<[ChatAdministratorRights](#chatadministratorrights)> | [getMyDefaultAdministratorRights](https://core.telegram.org/bots/api#getmydefaultadministratorrights) |
+| `getMyDescription` | `params?`: [GetMyDescriptionParams](#getmydescriptionparams), `signal?`: AbortSignal | Promise<[BotDescription](#botdescription)> | [getMyDescription](https://core.telegram.org/bots/api#getmydescription) |
+| `getMyName` | `params?`: [GetMyNameParams](#getmynameparams), `signal?`: AbortSignal | Promise<[BotName](#botname)> | [getMyName](https://core.telegram.org/bots/api#getmyname) |
+| `getMyShortDescription` | `params?`: [GetMyShortDescriptionParams](#getmyshortdescriptionparams), `signal?`: AbortSignal | Promise<[BotShortDescription](#botshortdescription)> | [getMyShortDescription](https://core.telegram.org/bots/api#getmyshortdescription) |
+| `getMyStarBalance` | `signal?`: AbortSignal | Promise<[StarAmount](#staramount)> | [getMyStarBalance](https://core.telegram.org/bots/api#getmystarbalance) |
+| `getStarTransactions` | `params?`: [GetStarTransactionsParams](#getstartransactionsparams), `signal?`: AbortSignal | Promise<[StarTransactions](#startransactions)> | [getStarTransactions](https://core.telegram.org/bots/api#getstartransactions) |
+| `getStickerSet` | `params`: [GetStickerSetParams](#getstickersetparams), `signal?`: AbortSignal | Promise<[StickerSet](#stickerset)> | [getStickerSet](https://core.telegram.org/bots/api#getstickerset) |
+| `getUpdates` | `params?`: [GetUpdatesParams](#getupdatesparams), `signal?`: AbortSignal | Promise<[GetUpdatesResult](#getupdatesresult)> | [getUpdates](https://core.telegram.org/bots/api#getupdates) |
+| `getUserChatBoosts` | `params`: [GetUserChatBoostsParams](#getuserchatboostsparams), `signal?`: AbortSignal | Promise<[UserChatBoosts](#userchatboosts)> | [getUserChatBoosts](https://core.telegram.org/bots/api#getuserchatboosts) |
+| `getUserGifts` | `params`: [GetUserGiftsParams](#getusergiftsparams), `signal?`: AbortSignal | Promise<[OwnedGifts](#ownedgifts)> | [getUserGifts](https://core.telegram.org/bots/api#getusergifts) |
+| `getUserPersonalChatMessages` | `params`: [GetUserPersonalChatMessagesParams](#getuserpersonalchatmessagesparams), `signal?`: AbortSignal | Promise<[GetUserPersonalChatMessagesResult](#getuserpersonalchatmessagesresult)> | [getUserPersonalChatMessages](https://core.telegram.org/bots/api#getuserpersonalchatmessages) |
+| `getUserProfileAudios` | `params`: [GetUserProfileAudiosParams](#getuserprofileaudiosparams), `signal?`: AbortSignal | Promise<[UserProfileAudios](#userprofileaudios)> | [getUserProfileAudios](https://core.telegram.org/bots/api#getuserprofileaudios) |
+| `getUserProfilePhotos` | `params`: [GetUserProfilePhotosParams](#getuserprofilephotosparams), `signal?`: AbortSignal | Promise<[UserProfilePhotos](#userprofilephotos)> | [getUserProfilePhotos](https://core.telegram.org/bots/api#getuserprofilephotos) |
+| `getWebhookInfo` | `signal?`: AbortSignal | Promise<[WebhookInfo](#webhookinfo)> | [getWebhookInfo](https://core.telegram.org/bots/api#getwebhookinfo) |
+| `giftPremiumSubscription` | `params`: [GiftPremiumSubscriptionParams](#giftpremiumsubscriptionparams), `signal?`: AbortSignal | Promise<boolean> | [giftPremiumSubscription](https://core.telegram.org/bots/api#giftpremiumsubscription) |
+| `hideGeneralForumTopic` | `params`: [HideGeneralForumTopicParams](#hidegeneralforumtopicparams), `signal?`: AbortSignal | Promise<boolean> | [hideGeneralForumTopic](https://core.telegram.org/bots/api#hidegeneralforumtopic) |
+| `leaveChat` | `params`: [LeaveChatParams](#leavechatparams), `signal?`: AbortSignal | Promise<boolean> | [leaveChat](https://core.telegram.org/bots/api#leavechat) |
+| `logOut` | `signal?`: AbortSignal | Promise<boolean> | [logOut](https://core.telegram.org/bots/api#logout) |
+| `pinChatMessage` | `params`: [PinChatMessageParams](#pinchatmessageparams), `signal?`: AbortSignal | Promise<boolean> | [pinChatMessage](https://core.telegram.org/bots/api#pinchatmessage) |
+| `postStory` | `params`: [PostStoryParams](#poststoryparams), `signal?`: AbortSignal | Promise<[Story](#story)> | [postStory](https://core.telegram.org/bots/api#poststory) |
+| `promoteChatMember` | `params`: [PromoteChatMemberParams](#promotechatmemberparams), `signal?`: AbortSignal | Promise<boolean> | [promoteChatMember](https://core.telegram.org/bots/api#promotechatmember) |
+| `readBusinessMessage` | `params`: [ReadBusinessMessageParams](#readbusinessmessageparams), `signal?`: AbortSignal | Promise<boolean> | [readBusinessMessage](https://core.telegram.org/bots/api#readbusinessmessage) |
+| `refundStarPayment` | `params`: [RefundStarPaymentParams](#refundstarpaymentparams), `signal?`: AbortSignal | Promise<boolean> | [refundStarPayment](https://core.telegram.org/bots/api#refundstarpayment) |
+| `removeBusinessAccountProfilePhoto` | `params`: [RemoveBusinessAccountProfilePhotoParams](#removebusinessaccountprofilephotoparams), `signal?`: AbortSignal | Promise<boolean> | [removeBusinessAccountProfilePhoto](https://core.telegram.org/bots/api#removebusinessaccountprofilephoto) |
+| `removeChatVerification` | `params`: [RemoveChatVerificationParams](#removechatverificationparams), `signal?`: AbortSignal | Promise<boolean> | [removeChatVerification](https://core.telegram.org/bots/api#removechatverification) |
+| `removeMyProfilePhoto` | `signal?`: AbortSignal | Promise<boolean> | [removeMyProfilePhoto](https://core.telegram.org/bots/api#removemyprofilephoto) |
+| `removeUserVerification` | `params`: [RemoveUserVerificationParams](#removeuserverificationparams), `signal?`: AbortSignal | Promise<boolean> | [removeUserVerification](https://core.telegram.org/bots/api#removeuserverification) |
+| `reopenForumTopic` | `params`: [ReopenForumTopicParams](#reopenforumtopicparams), `signal?`: AbortSignal | Promise<boolean> | [reopenForumTopic](https://core.telegram.org/bots/api#reopenforumtopic) |
+| `reopenGeneralForumTopic` | `params`: [ReopenGeneralForumTopicParams](#reopengeneralforumtopicparams), `signal?`: AbortSignal | Promise<boolean> | [reopenGeneralForumTopic](https://core.telegram.org/bots/api#reopengeneralforumtopic) |
+| `replaceManagedBotToken` | `params`: [ReplaceManagedBotTokenParams](#replacemanagedbottokenparams), `signal?`: AbortSignal | Promise<string> | [replaceManagedBotToken](https://core.telegram.org/bots/api#replacemanagedbottoken) |
+| `replaceStickerInSet` | `params`: [ReplaceStickerInSetParams](#replacestickerinsetparams), `signal?`: AbortSignal | Promise<boolean> | [replaceStickerInSet](https://core.telegram.org/bots/api#replacestickerinset) |
+| `repostStory` | `params`: [RepostStoryParams](#repoststoryparams), `signal?`: AbortSignal | Promise<[Story](#story)> | [repostStory](https://core.telegram.org/bots/api#repoststory) |
+| `restrictChatMember` | `params`: [RestrictChatMemberParams](#restrictchatmemberparams), `signal?`: AbortSignal | Promise<boolean> | [restrictChatMember](https://core.telegram.org/bots/api#restrictchatmember) |
+| `revokeChatInviteLink` | `params`: [RevokeChatInviteLinkParams](#revokechatinvitelinkparams), `signal?`: AbortSignal | Promise<[ChatInviteLink](#chatinvitelink)> | [revokeChatInviteLink](https://core.telegram.org/bots/api#revokechatinvitelink) |
+| `savePreparedInlineMessage` | `params`: [SavePreparedInlineMessageParams](#savepreparedinlinemessageparams), `signal?`: AbortSignal | Promise<[PreparedInlineMessage](#preparedinlinemessage)> | [savePreparedInlineMessage](https://core.telegram.org/bots/api#savepreparedinlinemessage) |
+| `savePreparedKeyboardButton` | `params`: [SavePreparedKeyboardButtonParams](#savepreparedkeyboardbuttonparams), `signal?`: AbortSignal | Promise<[PreparedInlineMessage](#preparedinlinemessage)> | [savePreparedKeyboardButton](https://core.telegram.org/bots/api#savepreparedkeyboardbutton) |
+| `sendAnimation` | `params`: [SendAnimationParams](#sendanimationparams), `signal?`: AbortSignal | Promise<[Message](#message)> | [sendAnimation](https://core.telegram.org/bots/api#sendanimation) |
+| `sendAudio` | `params`: [SendAudioParams](#sendaudioparams), `signal?`: AbortSignal | Promise<[Message](#message)> | [sendAudio](https://core.telegram.org/bots/api#sendaudio) |
+| `sendChatAction` | `params`: [SendChatActionParams](#sendchatactionparams), `signal?`: AbortSignal | Promise<boolean> | [sendChatAction](https://core.telegram.org/bots/api#sendchataction) |
+| `sendChatJoinRequestWebApp` | `params`: [SendChatJoinRequestWebAppParams](#sendchatjoinrequestwebappparams), `signal?`: AbortSignal | Promise<boolean> | [sendChatJoinRequestWebApp](https://core.telegram.org/bots/api#sendchatjoinrequestwebapp) |
+| `sendChecklist` | `params`: [SendChecklistParams](#sendchecklistparams), `signal?`: AbortSignal | Promise<[Message](#message)> | [sendChecklist](https://core.telegram.org/bots/api#sendchecklist) |
+| `sendContact` | `params`: [SendContactParams](#sendcontactparams), `signal?`: AbortSignal | Promise<[Message](#message)> | [sendContact](https://core.telegram.org/bots/api#sendcontact) |
+| `sendDice` | `params`: [SendDiceParams](#senddiceparams), `signal?`: AbortSignal | Promise<[Message](#message)> | [sendDice](https://core.telegram.org/bots/api#senddice) |
+| `sendDocument` | `params`: [SendDocumentParams](#senddocumentparams), `signal?`: AbortSignal | Promise<[Message](#message)> | [sendDocument](https://core.telegram.org/bots/api#senddocument) |
+| `sendGame` | `params`: [SendGameParams](#sendgameparams), `signal?`: AbortSignal | Promise<[Message](#message)> | [sendGame](https://core.telegram.org/bots/api#sendgame) |
+| `sendGift` | `params`: [SendGiftParams](#sendgiftparams), `signal?`: AbortSignal | Promise<boolean> | [sendGift](https://core.telegram.org/bots/api#sendgift) |
+| `sendInvoice` | `params`: [SendInvoiceParams](#sendinvoiceparams), `signal?`: AbortSignal | Promise<[Message](#message)> | [sendInvoice](https://core.telegram.org/bots/api#sendinvoice) |
+| `sendLivePhoto` | `params`: [SendLivePhotoParams](#sendlivephotoparams), `signal?`: AbortSignal | Promise<[Message](#message)> | [sendLivePhoto](https://core.telegram.org/bots/api#sendlivephoto) |
+| `sendLocation` | `params`: [SendLocationParams](#sendlocationparams), `signal?`: AbortSignal | Promise<[Message](#message)> | [sendLocation](https://core.telegram.org/bots/api#sendlocation) |
+| `sendMediaGroup` | `params`: [SendMediaGroupParams](#sendmediagroupparams), `signal?`: AbortSignal | Promise<[SendMediaGroupResult](#sendmediagroupresult)> | [sendMediaGroup](https://core.telegram.org/bots/api#sendmediagroup) |
+| `sendMessage` | `params`: [SendMessageParams](#sendmessageparams), `signal?`: AbortSignal | Promise<[Message](#message)> | [sendMessage](https://core.telegram.org/bots/api#sendmessage) |
+| `sendMessageDraft` | `params`: [SendMessageDraftParams](#sendmessagedraftparams), `signal?`: AbortSignal | Promise<boolean> | [sendMessageDraft](https://core.telegram.org/bots/api#sendmessagedraft) |
+| `sendPaidMedia` | `params`: [SendPaidMediaParams](#sendpaidmediaparams), `signal?`: AbortSignal | Promise<[Message](#message)> | [sendPaidMedia](https://core.telegram.org/bots/api#sendpaidmedia) |
+| `sendPhoto` | `params`: [SendPhotoParams](#sendphotoparams), `signal?`: AbortSignal | Promise<[Message](#message)> | [sendPhoto](https://core.telegram.org/bots/api#sendphoto) |
+| `sendPoll` | `params`: [SendPollParams](#sendpollparams), `signal?`: AbortSignal | Promise<[Message](#message)> | [sendPoll](https://core.telegram.org/bots/api#sendpoll) |
+| `sendRichMessage` | `params`: [SendRichMessageParams](#sendrichmessageparams), `signal?`: AbortSignal | Promise<[Message](#message)> | [sendRichMessage](https://core.telegram.org/bots/api#sendrichmessage) |
+| `sendRichMessageDraft` | `params`: [SendRichMessageDraftParams](#sendrichmessagedraftparams), `signal?`: AbortSignal | Promise<boolean> | [sendRichMessageDraft](https://core.telegram.org/bots/api#sendrichmessagedraft) |
+| `sendSticker` | `params`: [SendStickerParams](#sendstickerparams), `signal?`: AbortSignal | Promise<[Message](#message)> | [sendSticker](https://core.telegram.org/bots/api#sendsticker) |
+| `sendVenue` | `params`: [SendVenueParams](#sendvenueparams), `signal?`: AbortSignal | Promise<[Message](#message)> | [sendVenue](https://core.telegram.org/bots/api#sendvenue) |
+| `sendVideo` | `params`: [SendVideoParams](#sendvideoparams), `signal?`: AbortSignal | Promise<[Message](#message)> | [sendVideo](https://core.telegram.org/bots/api#sendvideo) |
+| `sendVideoNote` | `params`: [SendVideoNoteParams](#sendvideonoteparams), `signal?`: AbortSignal | Promise<[Message](#message)> | [sendVideoNote](https://core.telegram.org/bots/api#sendvideonote) |
+| `sendVoice` | `params`: [SendVoiceParams](#sendvoiceparams), `signal?`: AbortSignal | Promise<[Message](#message)> | [sendVoice](https://core.telegram.org/bots/api#sendvoice) |
+| `setBusinessAccountBio` | `params`: [SetBusinessAccountBioParams](#setbusinessaccountbioparams), `signal?`: AbortSignal | Promise<boolean> | [setBusinessAccountBio](https://core.telegram.org/bots/api#setbusinessaccountbio) |
+| `setBusinessAccountGiftSettings` | `params`: [SetBusinessAccountGiftSettingsParams](#setbusinessaccountgiftsettingsparams), `signal?`: AbortSignal | Promise<boolean> | [setBusinessAccountGiftSettings](https://core.telegram.org/bots/api#setbusinessaccountgiftsettings) |
+| `setBusinessAccountName` | `params`: [SetBusinessAccountNameParams](#setbusinessaccountnameparams), `signal?`: AbortSignal | Promise<boolean> | [setBusinessAccountName](https://core.telegram.org/bots/api#setbusinessaccountname) |
+| `setBusinessAccountProfilePhoto` | `params`: [SetBusinessAccountProfilePhotoParams](#setbusinessaccountprofilephotoparams), `signal?`: AbortSignal | Promise<boolean> | [setBusinessAccountProfilePhoto](https://core.telegram.org/bots/api#setbusinessaccountprofilephoto) |
+| `setBusinessAccountUsername` | `params`: [SetBusinessAccountUsernameParams](#setbusinessaccountusernameparams), `signal?`: AbortSignal | Promise<boolean> | [setBusinessAccountUsername](https://core.telegram.org/bots/api#setbusinessaccountusername) |
+| `setChatAdministratorCustomTitle` | `params`: [SetChatAdministratorCustomTitleParams](#setchatadministratorcustomtitleparams), `signal?`: AbortSignal | Promise<boolean> | [setChatAdministratorCustomTitle](https://core.telegram.org/bots/api#setchatadministratorcustomtitle) |
+| `setChatDescription` | `params`: [SetChatDescriptionParams](#setchatdescriptionparams), `signal?`: AbortSignal | Promise<boolean> | [setChatDescription](https://core.telegram.org/bots/api#setchatdescription) |
+| `setChatMemberTag` | `params`: [SetChatMemberTagParams](#setchatmembertagparams), `signal?`: AbortSignal | Promise<boolean> | [setChatMemberTag](https://core.telegram.org/bots/api#setchatmembertag) |
+| `setChatMenuButton` | `params?`: [SetChatMenuButtonParams](#setchatmenubuttonparams), `signal?`: AbortSignal | Promise<boolean> | [setChatMenuButton](https://core.telegram.org/bots/api#setchatmenubutton) |
+| `setChatPermissions` | `params`: [SetChatPermissionsParams](#setchatpermissionsparams), `signal?`: AbortSignal | Promise<boolean> | [setChatPermissions](https://core.telegram.org/bots/api#setchatpermissions) |
+| `setChatPhoto` | `params`: [SetChatPhotoParams](#setchatphotoparams), `signal?`: AbortSignal | Promise<boolean> | [setChatPhoto](https://core.telegram.org/bots/api#setchatphoto) |
+| `setChatStickerSet` | `params`: [SetChatStickerSetParams](#setchatstickersetparams), `signal?`: AbortSignal | Promise<boolean> | [setChatStickerSet](https://core.telegram.org/bots/api#setchatstickerset) |
+| `setChatTitle` | `params`: [SetChatTitleParams](#setchattitleparams), `signal?`: AbortSignal | Promise<boolean> | [setChatTitle](https://core.telegram.org/bots/api#setchattitle) |
+| `setCustomEmojiStickerSetThumbnail` | `params`: [SetCustomEmojiStickerSetThumbnailParams](#setcustomemojistickersetthumbnailparams), `signal?`: AbortSignal | Promise<boolean> | [setCustomEmojiStickerSetThumbnail](https://core.telegram.org/bots/api#setcustomemojistickersetthumbnail) |
+| `setGameScore` | `params`: [SetGameScoreParams](#setgamescoreparams), `signal?`: AbortSignal | Promise<[SetGameScoreResult](#setgamescoreresult)> | [setGameScore](https://core.telegram.org/bots/api#setgamescore) |
+| `setManagedBotAccessSettings` | `params`: [SetManagedBotAccessSettingsParams](#setmanagedbotaccesssettingsparams), `signal?`: AbortSignal | Promise<boolean> | [setManagedBotAccessSettings](https://core.telegram.org/bots/api#setmanagedbotaccesssettings) |
+| `setMessageReaction` | `params`: [SetMessageReactionParams](#setmessagereactionparams), `signal?`: AbortSignal | Promise<boolean> | [setMessageReaction](https://core.telegram.org/bots/api#setmessagereaction) |
+| `setMyCommands` | `params`: [SetMyCommandsParams](#setmycommandsparams), `signal?`: AbortSignal | Promise<boolean> | [setMyCommands](https://core.telegram.org/bots/api#setmycommands) |
+| `setMyDefaultAdministratorRights` | `params?`: [SetMyDefaultAdministratorRightsParams](#setmydefaultadministratorrightsparams), `signal?`: AbortSignal | Promise<boolean> | [setMyDefaultAdministratorRights](https://core.telegram.org/bots/api#setmydefaultadministratorrights) |
+| `setMyDescription` | `params?`: [SetMyDescriptionParams](#setmydescriptionparams), `signal?`: AbortSignal | Promise<boolean> | [setMyDescription](https://core.telegram.org/bots/api#setmydescription) |
+| `setMyName` | `params?`: [SetMyNameParams](#setmynameparams), `signal?`: AbortSignal | Promise<boolean> | [setMyName](https://core.telegram.org/bots/api#setmyname) |
+| `setMyProfilePhoto` | `params`: [SetMyProfilePhotoParams](#setmyprofilephotoparams), `signal?`: AbortSignal | Promise<boolean> | [setMyProfilePhoto](https://core.telegram.org/bots/api#setmyprofilephoto) |
+| `setMyShortDescription` | `params?`: [SetMyShortDescriptionParams](#setmyshortdescriptionparams), `signal?`: AbortSignal | Promise<boolean> | [setMyShortDescription](https://core.telegram.org/bots/api#setmyshortdescription) |
+| `setPassportDataErrors` | `params`: [SetPassportDataErrorsParams](#setpassportdataerrorsparams), `signal?`: AbortSignal | Promise<boolean> | [setPassportDataErrors](https://core.telegram.org/bots/api#setpassportdataerrors) |
+| `setStickerEmojiList` | `params`: [SetStickerEmojiListParams](#setstickeremojilistparams), `signal?`: AbortSignal | Promise<boolean> | [setStickerEmojiList](https://core.telegram.org/bots/api#setstickeremojilist) |
+| `setStickerKeywords` | `params`: [SetStickerKeywordsParams](#setstickerkeywordsparams), `signal?`: AbortSignal | Promise<boolean> | [setStickerKeywords](https://core.telegram.org/bots/api#setstickerkeywords) |
+| `setStickerMaskPosition` | `params`: [SetStickerMaskPositionParams](#setstickermaskpositionparams), `signal?`: AbortSignal | Promise<boolean> | [setStickerMaskPosition](https://core.telegram.org/bots/api#setstickermaskposition) |
+| `setStickerPositionInSet` | `params`: [SetStickerPositionInSetParams](#setstickerpositioninsetparams), `signal?`: AbortSignal | Promise<boolean> | [setStickerPositionInSet](https://core.telegram.org/bots/api#setstickerpositioninset) |
+| `setStickerSetThumbnail` | `params`: [SetStickerSetThumbnailParams](#setstickersetthumbnailparams), `signal?`: AbortSignal | Promise<boolean> | [setStickerSetThumbnail](https://core.telegram.org/bots/api#setstickersetthumbnail) |
+| `setStickerSetTitle` | `params`: [SetStickerSetTitleParams](#setstickersettitleparams), `signal?`: AbortSignal | Promise<boolean> | [setStickerSetTitle](https://core.telegram.org/bots/api#setstickersettitle) |
+| `setUserEmojiStatus` | `params`: [SetUserEmojiStatusParams](#setuseremojistatusparams), `signal?`: AbortSignal | Promise<boolean> | [setUserEmojiStatus](https://core.telegram.org/bots/api#setuseremojistatus) |
+| `setWebhook` | `params`: [SetWebhookParams](#setwebhookparams), `signal?`: AbortSignal | Promise<boolean> | [setWebhook](https://core.telegram.org/bots/api#setwebhook) |
+| `stopMessageLiveLocation` | `params?`: [StopMessageLiveLocationParams](#stopmessagelivelocationparams), `signal?`: AbortSignal | Promise<[StopMessageLiveLocationResult](#stopmessagelivelocationresult)> | [stopMessageLiveLocation](https://core.telegram.org/bots/api#stopmessagelivelocation) |
+| `stopPoll` | `params`: [StopPollParams](#stoppollparams), `signal?`: AbortSignal | Promise<[Poll](#poll)> | [stopPoll](https://core.telegram.org/bots/api#stoppoll) |
+| `transferBusinessAccountStars` | `params`: [TransferBusinessAccountStarsParams](#transferbusinessaccountstarsparams), `signal?`: AbortSignal | Promise<boolean> | [transferBusinessAccountStars](https://core.telegram.org/bots/api#transferbusinessaccountstars) |
+| `transferGift` | `params`: [TransferGiftParams](#transfergiftparams), `signal?`: AbortSignal | Promise<boolean> | [transferGift](https://core.telegram.org/bots/api#transfergift) |
+| `unbanChatMember` | `params`: [UnbanChatMemberParams](#unbanchatmemberparams), `signal?`: AbortSignal | Promise<boolean> | [unbanChatMember](https://core.telegram.org/bots/api#unbanchatmember) |
+| `unbanChatSenderChat` | `params`: [UnbanChatSenderChatParams](#unbanchatsenderchatparams), `signal?`: AbortSignal | Promise<boolean> | [unbanChatSenderChat](https://core.telegram.org/bots/api#unbanchatsenderchat) |
+| `unhideGeneralForumTopic` | `params`: [UnhideGeneralForumTopicParams](#unhidegeneralforumtopicparams), `signal?`: AbortSignal | Promise<boolean> | [unhideGeneralForumTopic](https://core.telegram.org/bots/api#unhidegeneralforumtopic) |
+| `unpinAllChatMessages` | `params`: [UnpinAllChatMessagesParams](#unpinallchatmessagesparams), `signal?`: AbortSignal | Promise<boolean> | [unpinAllChatMessages](https://core.telegram.org/bots/api#unpinallchatmessages) |
+| `unpinAllForumTopicMessages` | `params`: [UnpinAllForumTopicMessagesParams](#unpinallforumtopicmessagesparams), `signal?`: AbortSignal | Promise<boolean> | [unpinAllForumTopicMessages](https://core.telegram.org/bots/api#unpinallforumtopicmessages) |
+| `unpinAllGeneralForumTopicMessages` | `params`: [UnpinAllGeneralForumTopicMessagesParams](#unpinallgeneralforumtopicmessagesparams), `signal?`: AbortSignal | Promise<boolean> | [unpinAllGeneralForumTopicMessages](https://core.telegram.org/bots/api#unpinallgeneralforumtopicmessages) |
+| `unpinChatMessage` | `params`: [UnpinChatMessageParams](#unpinchatmessageparams), `signal?`: AbortSignal | Promise<boolean> | [unpinChatMessage](https://core.telegram.org/bots/api#unpinchatmessage) |
+| `upgradeGift` | `params`: [UpgradeGiftParams](#upgradegiftparams), `signal?`: AbortSignal | Promise<boolean> | [upgradeGift](https://core.telegram.org/bots/api#upgradegift) |
+| `uploadStickerFile` | `params`: [UploadStickerFileParams](#uploadstickerfileparams), `signal?`: AbortSignal | Promise<[File](#file)> | [uploadStickerFile](https://core.telegram.org/bots/api#uploadstickerfile) |
+| `verifyChat` | `params`: [VerifyChatParams](#verifychatparams), `signal?`: AbortSignal | Promise<boolean> | [verifyChat](https://core.telegram.org/bots/api#verifychat) |
+| `verifyUser` | `params`: [VerifyUserParams](#verifyuserparams), `signal?`: AbortSignal | Promise<boolean> | [verifyUser](https://core.telegram.org/bots/api#verifyuser) |
+
+### `Bot`
+
+#### Methods
+
+| Method | Params | Returns | Description |
+| --- | --- | --- | --- |
+| `catch` | `handler`: (err: unknown, ctx: [Context](#context)) => unknown | this | Install the error boundary. Errors thrown by the chain are routed here. |
+| `command` | `name`: string \| string[], `...handlers`: [Middleware](#middleware)<[Context](#context)>[] | this | Match a message/channel-post text starting with `/name` (also `/name@bot` and trailing args). Sets `ctx.match` to the trimmed args string ("" if none). |
+| `handleUpdate` | `update`: [Update](#update) | Promise<void> | Build a Context and run the composed chain; route errors to `catch`. |
+| `hears` | `trigger`: string \| RegExp \| (string \| RegExp)[], `...handlers`: [Middleware](#middleware)<[Context](#context)>[] | this | Match message text: a string matches exactly (sets `ctx.match` to the text); a RegExp matches when `text.match(re)` is non-null (sets `ctx.match` to the `RegExpMatchArray`). |
+| `isRunning` | - | boolean | - |
+| `on` | `kind`: "message" \| "edited_message" \| "channel_post" \| "edited_channel_post" \| "business_connection" \| "business_message" \| "edited_business_message" \| "deleted_business_messages" \| "guest_message" \| "message_reaction" \| "message_reaction_count" \| "inline_query" \| "chosen_inline_result" \| "callback_query" \| "shipping_query" \| "pre_checkout_query" \| "purchased_paid_media" \| "poll" \| "poll_answer" \| "my_chat_member" \| "chat_member" \| "chat_join_request" \| "chat_boost" \| "removed_chat_boost" \| "managed_bot" \| ("message" \| "edited_message" \| "channel_post" \| "edited_channel_post" \| "business_connection" \| "business_message" \| "edited_business_message" \| "deleted_business_messages" \| "guest_message" \| "message_reaction" \| "message_reaction_count" \| "inline_query" \| "chosen_inline_result" \| "callback_query" \| "shipping_query" \| "pre_checkout_query" \| "purchased_paid_media" \| "poll" \| "poll_answer" \| "my_chat_member" \| "chat_member" \| "chat_join_request" \| "chat_boost" \| "removed_chat_boost" \| "managed_bot")[], `...handlers`: [Middleware](#middleware)<[Context](#context)>[] | this | Run `handlers` only when the given payload key (e.g. `"message"`, `"callback_query"`) is present on the update. |
+| `startPolling` | `source?`: AsyncIterable<[Update](#update), any, any>, `options?`: [LongPollOptions](#longpolloptions) | Promise<void> | Pump an update source (default `longPoll`) through `handleUpdate` until `stop()` aborts. Resolves when the source is exhausted or aborted. This is long-poll mode; for webhooks use `webhookCallback`/`createWebhookServer`.  Not re-entrant: calling it while a previous pump is still active throws, so `isRunning()` stays truthful and the prior `AbortController` is never orphaned. Stop the running loop (`stop()`, then `await` its promise) first. |
+| `stop` | - | void | Abort the running pump loop. |
+| `use` | `...mw`: [Middleware](#middleware)<[Context](#context)>[] | this | Register one or more middleware to run on every update. |
+
+#### Properties
+
+| Property | Type |
+| --- | --- |
+| `api` | [Api](#api) |
+
+### `Context`
+
+#### Methods
+
+| Method | Params | Returns | Description |
+| --- | --- | --- | --- |
+| `answerCallbackQuery` | `other?`: Omit<[AnswerCallbackQueryParams](#answercallbackqueryparams), "callback_query_id"> | Promise<boolean> | Answer the callback query that triggered this update. Throws if the update is not a callback query. |
+| `reply` | `text`: string, `other?`: Omit<[SendMessageParams](#sendmessageparams), "chat_id" \| "text"> | Promise<[Message](#message)> | Send a message to the inferred chat. Throws if no chat id can be derived from the update (e.g. an inline query carries no chat). |
+
+#### Properties
+
+| Property | Type |
+| --- | --- |
+| `api` | [Api](#api) |
+| `match`? | string \| RegExpMatchArray |
+| `state` | Record<string, unknown> |
+| `update` | [Update](#update) |
+| `callbackQuery` | [CallbackQuery](#callbackquery) \| undefined |
+| `channelPost` | [Message](#message) \| undefined |
+| `chat` | [Chat](#chat) \| undefined |
+| `chatId` | number \| undefined |
+| `editedChannelPost` | [Message](#message) \| undefined |
+| `editedMessage` | [Message](#message) \| undefined |
+| `from` | [User](#user) \| undefined |
+| `inlineQuery` | [InlineQuery](#inlinequery) \| undefined |
+| `message` | [Message](#message) \| undefined |
+
+### `EntityBuilder`
+
+Accumulates styled text and the entities covering each styled segment, in
+UTF-16 code units (JS string `.length`).
+
+#### Methods
+
+| Method | Params | Returns | Description |
+| --- | --- | --- | --- |
+| `blockquote` | `s`: string | this | - |
+| `bold` | `s`: string | this | - |
+| `build` | - | [BuiltEntities](#builtentities) | The accumulated text plus the plain `MessageEntity[]` covering each segment. |
+| `code` | `s`: string | this | - |
+| `customEmoji` | `s`: string, `customEmojiId`: string | this | - |
+| `italic` | `s`: string | this | - |
+| `link` | `s`: string, `url`: string | this | A text_link entity pointing at `url`. |
+| `plain` | `s`: string | this | Append unstyled text. |
+| `pre` | `s`: string, `language?`: string | this | - |
+| `spoiler` | `s`: string | this | - |
+| `strikethrough` | `s`: string | this | - |
+| `textMention` | `s`: string, `user`: [User](#user) | this | A text_mention entity for a user without a username. |
+| `underline` | `s`: string | this | - |
+
+### `InlineKeyboardBuilder`
+
+Fluent inline-keyboard builder. Buttons append to the current row; `row()`
+starts a new one.
+
+#### Methods
+
+| Method | Params | Returns | Description |
+| --- | --- | --- | --- |
+| `build` | - | [InlineKeyboardMarkup](#inlinekeyboardmarkup) | The keyboard as a plain `InlineKeyboardMarkup`, dropping trailing empty rows. |
+| `copyText` | `label`: string, `text`: string | this | A button that copies text to the clipboard. |
+| `loginUrl` | `label`: string, `url`: string | this | A Login URL button. |
+| `pay` | `label`: string | this | A pay button. |
+| `row` | - | this | Start a new (empty) row. |
+| `switchInline` | `label`: string, `query`: string | this | Switch to inline mode in another chat. |
+| `switchInlineCurrent` | `label`: string, `query`: string | this | Switch to inline mode in the current chat. |
+| `text` | `label`: string, `callbackData`: string | this | A callback button. |
+| `url` | `label`: string, `url`: string | this | An HTTP/tg:// URL button. |
+| `webApp` | `label`: string, `url`: string | this | A Web App button. |
+
+### `InputFile`
+
+Explicit, web-standard wrapper for uploadable bytes.
+
+#### Methods
+
+| Method | Params | Returns | Description |
+| --- | --- | --- | --- |
+| `build` | `index`: number | string | This file's wire reference when it occupies attach slot `index`: `attach://media_<index>`. The matching multipart part is keyed `media_<index>` (the ref without the scheme). `InputFile` owns the naming convention; the slot index is allocated by `AttachedMedia` during its build pass (ADR-011). |
+
+#### Properties
+
+| Property | Type |
+| --- | --- |
+| `data` | [InputFileData](#inputfiledata) |
+| `meta`? | [InputFileMeta](#inputfilemeta) |
+
+### `MediaGroupBuilder`
+
+Collects items for `sendMediaGroup`'s `media`. Each method takes one
+`Omit<InputMedia*, "type">` and `.build()` returns the plain `InputMedia` array
+(with raw `InputFile`s embedded). The cast bridges the builder's item union (which
+offers `animation`) to the field's wire union; both are interchangeable at the wire
+level once `serializeParams` resolves the files.
+
+#### Methods
+
+| Method | Params | Returns | Description |
+| --- | --- | --- | --- |
+| `animation` | `item`: Omit<[InputMediaAnimation](#inputmediaanimation), "type"> | this | - |
+| `audio` | `item`: Omit<[InputMediaAudio](#inputmediaaudio), "type"> | this | - |
+| `build` | - | ([InputMediaLivePhoto](#inputmedialivephoto) \| [InputMediaPhoto](#inputmediaphoto) \| [InputMediaVideo](#inputmediavideo) \| [InputMediaAudio](#inputmediaaudio) \| [InputMediaDocument](#inputmediadocument))[] | - |
+| `document` | `item`: Omit<[InputMediaDocument](#inputmediadocument), "type"> | this | - |
+| `livePhoto` | `item`: Omit<[InputMediaLivePhoto](#inputmedialivephoto), "type"> | this | A live photo: `media` is the live photo, `photo` the still cover. Both upload. |
+| `photo` | `item`: Omit<[InputMediaPhoto](#inputmediaphoto), "type"> | this | - |
+| `video` | `item`: Omit<[InputMediaVideo](#inputmediavideo), "type"> | this | - |
+
+### `NetworkError`
+
+A transport-level failure: DNS, connection reset, fetch threw, etc.
+
+#### Methods
+
+| Method | Params | Returns | Description |
+| --- | --- | --- | --- |
+| `captureStackTrace` | `targetObject`: object, `constructorOpt?`: Function | void | Creates a `.stack` property on `targetObject`, which when accessed returns a string representing the location in the code at which `Error.captureStackTrace()` was called.  ```js const myObject = {}; Error.captureStackTrace(myObject); myObject.stack;  // Similar to `new Error().stack` ```  The first line of the trace will be prefixed with `${myObject.name}: ${myObject.message}`.  The optional `constructorOpt` argument accepts a function. If given, all frames above `constructorOpt`, including `constructorOpt`, will be omitted from the generated stack trace.  The `constructorOpt` argument is useful for hiding implementation details of error generation from the user. For instance:  ```js function a() {   b(); }  function b() {   c(); }  function c() {   // Create an error without stack trace to avoid calculating the stack trace twice.   const { stackTraceLimit } = Error;   Error.stackTraceLimit = 0;   const error = new Error();   Error.stackTraceLimit = stackTraceLimit;    // Capture the stack trace above function b   Error.captureStackTrace(error, b); // Neither function c, nor b is included in the stack trace   throw error; }  a(); ``` |
+| `prepareStackTrace` | `err`: Error, `stackTraces`: CallSite[] | any | - |
+
+#### Properties
+
+| Property | Type |
+| --- | --- |
+| `cause`? | unknown |
+| `code` | string |
+| `message` | string |
+| `name` | string |
+| `stack`? | string |
+| `stackTraceLimit` | number |
+
+### `PaidMediaGroupBuilder`
+
+Collects items for `sendPaidMedia`'s `media` (InputPaidMedia[]). The peer of
+`MediaGroupBuilder` (named ...Group because `PaidMedia` is already a Bot API
+response type). `.build()` returns the plain array with raw `InputFile`s embedded.
+
+#### Methods
+
+| Method | Params | Returns | Description |
+| --- | --- | --- | --- |
+| `build` | - | [InputPaidMedia](#inputpaidmedia)[] | - |
+| `livePhoto` | `item`: Omit<[InputPaidMediaLivePhoto](#inputpaidmedialivephoto), "type"> | this | A live photo: `media` is the live photo, `photo` the still cover. Both upload. |
+| `photo` | `item`: Omit<[InputPaidMediaPhoto](#inputpaidmediaphoto), "type"> | this | - |
+| `video` | `item`: Omit<[InputPaidMediaVideo](#inputpaidmediavideo), "type"> | this | - |
+
+### `ParseError`
+
+The response body could not be parsed as the expected JSON envelope.
+
+#### Methods
+
+| Method | Params | Returns | Description |
+| --- | --- | --- | --- |
+| `captureStackTrace` | `targetObject`: object, `constructorOpt?`: Function | void | Creates a `.stack` property on `targetObject`, which when accessed returns a string representing the location in the code at which `Error.captureStackTrace()` was called.  ```js const myObject = {}; Error.captureStackTrace(myObject); myObject.stack;  // Similar to `new Error().stack` ```  The first line of the trace will be prefixed with `${myObject.name}: ${myObject.message}`.  The optional `constructorOpt` argument accepts a function. If given, all frames above `constructorOpt`, including `constructorOpt`, will be omitted from the generated stack trace.  The `constructorOpt` argument is useful for hiding implementation details of error generation from the user. For instance:  ```js function a() {   b(); }  function b() {   c(); }  function c() {   // Create an error without stack trace to avoid calculating the stack trace twice.   const { stackTraceLimit } = Error;   Error.stackTraceLimit = 0;   const error = new Error();   Error.stackTraceLimit = stackTraceLimit;    // Capture the stack trace above function b   Error.captureStackTrace(error, b); // Neither function c, nor b is included in the stack trace   throw error; }  a(); ``` |
+| `prepareStackTrace` | `err`: Error, `stackTraces`: CallSite[] | any | - |
+
+#### Properties
+
+| Property | Type |
+| --- | --- |
+| `cause`? | unknown |
+| `code` | string |
+| `message` | string |
+| `name` | string |
+| `responseText`? | string |
+| `stack`? | string |
+| `stackTraceLimit` | number |
+
+### `PhotoStoryBuilder`
+
+A photo story for `postStory`/`editStory`. `.build()` returns the `InputStoryContent`.
+
+#### Methods
+
+| Method | Params | Returns | Description |
+| --- | --- | --- | --- |
+| `build` | - | [InputStoryContent](#inputstorycontent) | - |
+
+### `RateLimiter`
+
+Combines a global token bucket with per-chat buckets. `acquire()` awaits the
+global bucket (when configured) and, when a `chatId` is present and `perChat`
+is set, the bucket for that chat (created on first use, keyed by string id).
+Per-chat buckets are cached as a bounded LRU: a chat that is accessed is moved
+to most-recently-used, and once `maxChatBuckets` is reached the
+least-recently-used chat's bucket is evicted, so the map cannot grow without
+bound for long-lived bots that talk to many distinct chats.
+
+#### Methods
+
+| Method | Params | Returns | Description |
+| --- | --- | --- | --- |
+| `acquire` | `chatId`: string \| number \| undefined, `signal?`: AbortSignal | Promise<void> | - |
+
+### `ReplyKeyboardBuilder`
+
+Fluent reply-keyboard builder. Buttons append to the current row; `row()`
+starts a new one.
+
+#### Methods
+
+| Method | Params | Returns | Description |
+| --- | --- | --- | --- |
+| `build` | `options?`: [ReplyKeyboardBuildOptions](#replykeyboardbuildoptions) | [ReplyKeyboardMarkup](#replykeyboardmarkup) | The keyboard as a plain `ReplyKeyboardMarkup`, dropping trailing empty rows. |
+| `requestContact` | `label`: string | this | Request the user's phone number. |
+| `requestLocation` | `label`: string | this | Request the user's location. |
+| `row` | - | this | Start a new (empty) row. |
+| `text` | `label`: string | this | A plain text button. |
+| `webApp` | `label`: string, `url`: string | this | A Web App button. |
+
+### `StaticProfilePhotoBuilder`
+
+A static profile photo (a still image). `.build()` returns the `InputProfilePhoto`.
+
+#### Methods
+
+| Method | Params | Returns | Description |
+| --- | --- | --- | --- |
+| `build` | - | [InputProfilePhoto](#inputprofilephoto) | - |
+
+### `StickerSetBuilder`
+
+Collects the `stickers` array for `createNewStickerSet`. Mirrors `MediaGroupBuilder`;
+each `.add()` takes one `InputSticker` (`{ sticker, format, emoji_list, ... }`). Named
+`StickerSetBuilder` (not `StickerSet`) because `StickerSet` is a Bot API type. There is
+no single-sticker builder - an `InputSticker` has no discriminant for a builder to add,
+so `addStickerToSet`/`replaceStickerInSet` take that plain object directly.
+
+#### Methods
+
+| Method | Params | Returns | Description |
+| --- | --- | --- | --- |
+| `add` | `sticker`: [InputSticker](#inputsticker) | this | - |
+| `build` | - | [InputSticker](#inputsticker)[] | - |
+
+### `TelegramApiError`
+
+Telegram answered with `{ ok: false }`. Carries the structured error fields.
+
+#### Methods
+
+| Method | Params | Returns | Description |
+| --- | --- | --- | --- |
+| `captureStackTrace` | `targetObject`: object, `constructorOpt?`: Function | void | Creates a `.stack` property on `targetObject`, which when accessed returns a string representing the location in the code at which `Error.captureStackTrace()` was called.  ```js const myObject = {}; Error.captureStackTrace(myObject); myObject.stack;  // Similar to `new Error().stack` ```  The first line of the trace will be prefixed with `${myObject.name}: ${myObject.message}`.  The optional `constructorOpt` argument accepts a function. If given, all frames above `constructorOpt`, including `constructorOpt`, will be omitted from the generated stack trace.  The `constructorOpt` argument is useful for hiding implementation details of error generation from the user. For instance:  ```js function a() {   b(); }  function b() {   c(); }  function c() {   // Create an error without stack trace to avoid calculating the stack trace twice.   const { stackTraceLimit } = Error;   Error.stackTraceLimit = 0;   const error = new Error();   Error.stackTraceLimit = stackTraceLimit;    // Capture the stack trace above function b   Error.captureStackTrace(error, b); // Neither function c, nor b is included in the stack trace   throw error; }  a(); ``` |
+| `prepareStackTrace` | `err`: Error, `stackTraces`: CallSite[] | any | - |
+
+#### Properties
+
+| Property | Type |
+| --- | --- |
+| `cause`? | unknown |
+| `code` | string |
+| `description` | string |
+| `errorCode` | number |
+| `message` | string |
+| `name` | string |
+| `parameters`? | [ApiErrorParameters](#apierrorparameters) |
+| `stack`? | string |
+| `stackTraceLimit` | number |
+| `migrateToChatId` | number \| undefined |
+| `retryAfter` | number \| undefined |
+
+### `TelegramBotError`
+
+#### Methods
+
+| Method | Params | Returns | Description |
+| --- | --- | --- | --- |
+| `captureStackTrace` | `targetObject`: object, `constructorOpt?`: Function | void | Creates a `.stack` property on `targetObject`, which when accessed returns a string representing the location in the code at which `Error.captureStackTrace()` was called.  ```js const myObject = {}; Error.captureStackTrace(myObject); myObject.stack;  // Similar to `new Error().stack` ```  The first line of the trace will be prefixed with `${myObject.name}: ${myObject.message}`.  The optional `constructorOpt` argument accepts a function. If given, all frames above `constructorOpt`, including `constructorOpt`, will be omitted from the generated stack trace.  The `constructorOpt` argument is useful for hiding implementation details of error generation from the user. For instance:  ```js function a() {   b(); }  function b() {   c(); }  function c() {   // Create an error without stack trace to avoid calculating the stack trace twice.   const { stackTraceLimit } = Error;   Error.stackTraceLimit = 0;   const error = new Error();   Error.stackTraceLimit = stackTraceLimit;    // Capture the stack trace above function b   Error.captureStackTrace(error, b); // Neither function c, nor b is included in the stack trace   throw error; }  a(); ``` |
+| `prepareStackTrace` | `err`: Error, `stackTraces`: CallSite[] | any | - |
+
+#### Properties
+
+| Property | Type |
+| --- | --- |
+| `cause`? | unknown |
+| `code` | string |
+| `message` | string |
+| `name` | string |
+| `stack`? | string |
+| `stackTraceLimit` | number |
+
+### `TimeoutError`
+
+The request exceeded the configured client timeout.
+
+#### Methods
+
+| Method | Params | Returns | Description |
+| --- | --- | --- | --- |
+| `captureStackTrace` | `targetObject`: object, `constructorOpt?`: Function | void | Creates a `.stack` property on `targetObject`, which when accessed returns a string representing the location in the code at which `Error.captureStackTrace()` was called.  ```js const myObject = {}; Error.captureStackTrace(myObject); myObject.stack;  // Similar to `new Error().stack` ```  The first line of the trace will be prefixed with `${myObject.name}: ${myObject.message}`.  The optional `constructorOpt` argument accepts a function. If given, all frames above `constructorOpt`, including `constructorOpt`, will be omitted from the generated stack trace.  The `constructorOpt` argument is useful for hiding implementation details of error generation from the user. For instance:  ```js function a() {   b(); }  function b() {   c(); }  function c() {   // Create an error without stack trace to avoid calculating the stack trace twice.   const { stackTraceLimit } = Error;   Error.stackTraceLimit = 0;   const error = new Error();   Error.stackTraceLimit = stackTraceLimit;    // Capture the stack trace above function b   Error.captureStackTrace(error, b); // Neither function c, nor b is included in the stack trace   throw error; }  a(); ``` |
+| `prepareStackTrace` | `err`: Error, `stackTraces`: CallSite[] | any | - |
+
+#### Properties
+
+| Property | Type |
+| --- | --- |
+| `cause`? | unknown |
+| `code` | string |
+| `message` | string |
+| `name` | string |
+| `stack`? | string |
+| `stackTraceLimit` | number |
+
+### `TokenBucket`
+
+A continuous-refill token bucket. Tokens regenerate at `ratePerSec`, capped at
+`burst`. `take()` resolves immediately when a token is available, otherwise
+waits exactly long enough for one to refill (abortable).
+
+#### Methods
+
+| Method | Params | Returns | Description |
+| --- | --- | --- | --- |
+| `take` | `signal?`: AbortSignal | Promise<void> | Wait until a token is available, then consume one. The post-wait recheck closes the concurrent-oversell race: two `take()`s that both see an empty bucket compute the same wait, but on wake the first refills+decrements and the second's recheck sees the empty bucket again and waits another cycle - so the configured rate is never exceeded even under burst contention. The decrement happens only once the wait is in the past, so an aborted take consumes no token. |
+
+### `Transport`
+
+#### Methods
+
+| Method | Params | Returns | Description |
+| --- | --- | --- | --- |
+| `request` | `method`: string, `params?`: Record<string, WireValue>, `signal?`: AbortSignal | Promise<R> | - |
+
+#### Properties
+
+| Property | Type |
+| --- | --- |
+| `apiRoot` | string |
+
+### `VideoStoryBuilder`
+
+A video story for `postStory`/`editStory`. `.build()` returns the `InputStoryContent`.
+
+#### Methods
+
+| Method | Params | Returns | Description |
+| --- | --- | --- | --- |
+| `build` | - | [InputStoryContent](#inputstorycontent) | - |
+
+## Functions
+
+
+### `compileDebugFilter()`
+
+Compile a `DEBUG`-style filter string into an `enabled(namespace)` predicate.
+Comma/space-separated patterns; `*` is a wildcard; a leading `-` skips. A
+namespace is on when it matches a positive pattern and no skip. An empty
+string matches nothing.
+
+| Param | Type |
+| --- | --- |
+| `env` | string |
+
+**Returns:** (namespace: string) => boolean
+
+### `compose()`
+
+Compose `middleware` into one function with standard koa-compose semantics.
+The composed function resolves when the whole chain (including the optional
+trailing `next`) has settled.
+
+| Param | Type |
+| --- | --- |
+| `middleware` | readonly [Middleware](#middleware)<C>[] |
+
+**Returns:** (ctx: C, next?: [NextFn](#nextfn)) => Promise<void>
+
+### `createWebhookServer()`
+
+Create (but do not start) a `node:http` server that handles Telegram webhook
+requests. Requests whose path differs from `options.path` (default `/`) get a
+404; matching requests are delegated to the core `(req, res)` handler.
+
+```ts
+const server = createWebhookServer(bot, { path: "/telegram", secretToken });
+server.listen(8443);
+```
+
+| Param | Type |
+| --- | --- |
+| `bot` | [Bot](#bot) |
+| `options` | [WebhookServerOptions](#webhookserveroptions) |
+
+**Returns:** Server
+
+### `enableDebugFromEnv()`
+
+Read `DEBUG` (defaulting to `process.env.DEBUG`) and install a stderr-writing
+sink for the namespaces it enables. With nothing enabled, the sink is cleared
+so tracing stays a no-op.
+
+| Param | Type |
+| --- | --- |
+| `env` | string |
+
+**Returns:** void
+
+### `encodeForm()`
+
+| Param | Type |
+| --- | --- |
+| `fields` | Record<string, WireValue> |
+
+**Returns:** Promise<[EncodedRequest](#encodedrequest)>
+
+### `formPart()`
+
+Build a `FormPart` from a serialized JSON string and the files its refs point at.
+
+| Param | Type |
+| --- | --- |
+| `json` | string |
+| `files` | readonly readonly [string, [InputFile](#inputfile)][] |
+
+**Returns:** [FormPart](#formpart)
+
+### `fromPath()`
+
+Read `path` off disk and wrap it as an `InputFile`. The default filename is the
+path's basename; pass `meta.filename` / `meta.contentType` to override.
+
+`readFile` returns a `Buffer`, which is a `Uint8Array` - accepted by `InputFile`
+directly, no copy.
+
+| Param | Type |
+| --- | --- |
+| `path` | string |
+| `meta?` | { contentType?: string; filename?: string } |
+
+**Returns:** Promise<[InputFile](#inputfile)>
+
+### `inputFileToBlob()`
+
+Normalize any `InputFile.data` into a `Blob` for `FormData`.
+
+| Param | Type |
+| --- | --- |
+| `file` | [InputFile](#inputfile) |
+
+**Returns:** Promise<Blob>
+
+### `isAbortError()`
+
+True for an `AbortController`/timeout abort, across runtimes. Matches both the
+classic `AbortError` name and the `TimeoutError` DOMException that
+`AbortSignal.timeout()` aborts with (per the HTML spec; Node >=18, Deno,
+Cloudflare Workers), so the transport classifies our own client timeout as a
+`TimeoutError` rather than falling through to `NetworkError`.
+
+| Param | Type |
+| --- | --- |
+| `err` | unknown |
+
+**Returns:** boolean
+
+### `isFormPart()`
+
+| Param | Type |
+| --- | --- |
+| `value` | unknown |
+
+**Returns:** value is [FormPart](#formpart)
+
+### `isInputFile()`
+
+| Param | Type |
+| --- | --- |
+| `value` | unknown |
+
+**Returns:** value is [InputFile](#inputfile)
+
+### `isTransientError()`
+
+Classifies an error as transient (worth retrying) vs fatal.
+
+True for a `NetworkError`, a `TimeoutError`, or a `TelegramApiError` that is a
+429 (rate limit) or `errorCode >= 500` (server-side failure). When retrying,
+honor `err.retryAfter` if present (a 429 carries it), else fall back to a
+default delay.
+
+| Param | Type |
+| --- | --- |
+| `err` | unknown |
+
+**Returns:** boolean
+
+### `longPoll()`
+
+Async-generator update source (ADR-004): long-polls `getUpdates` and yields each update until the signal aborts.
+
+| Param | Type |
+| --- | --- |
+| `api` | [Api](#api) |
+| `options` | [LongPollOptions](#longpolloptions) |
+| `signal?` | AbortSignal |
+
+**Returns:** AsyncGenerator<[Update](#update)>
+
+### `nextAppWebhook()`
+
+Next.js App Router handler. The App Router speaks Web `Request`/`Response`
+natively, so this is the core `webhookCallback` verbatim:
+
+```ts
+export const POST = nextAppWebhook(bot);
+```
+
+| Param | Type |
+| --- | --- |
+| `bot` | [Bot](#bot) |
+| `options?` | [WebhookOptions](#webhookoptions) |
+
+**Returns:** (request: Request) => Promise<Response>
+
+### `nodeFrameworkWebhook()`
+
+An `(req, res) => Promise<void>` handler for Express / Connect / Next.js Pages
+API. Reads the request body, builds a Web `Request`, runs the core callback, and
+writes the Web `Response` back onto `res`.
+
+Body source: if a parser already populated `req.body` (e.g. `express.json()`,
+which also *consumes* the stream) it is used directly; otherwise the raw stream
+is drained. This works whether or not a body parser ran upstream - draining
+unconditionally would yield an empty body behind a global `express.json()`.
+
+| Param | Type |
+| --- | --- |
+| `bot` | [Bot](#bot) |
+| `options?` | [WebhookOptions](#webhookoptions) |
+
+**Returns:** (req: [NodeLikeRequest](#nodelikerequest), res: [NodeLikeResponse](#nodelikeresponse)) => Promise<void>
+
+### `registerExpressWebhook()`
+
+Register the webhook route on an already-instantiated Express app. `app` is
+typed structurally so Express is never a dependency:
+
+```ts
+registerExpressWebhook(bot, app, { path: "/telegram", secretToken });
+```
+
+| Param | Type |
+| --- | --- |
+| `bot` | [Bot](#bot) |
+| `app` | { post:  } |
+| `options` | [WebhookOptions](#webhookoptions) & { path: string } |
+
+**Returns:** void
+
+### `run()`
+
+Start the bot's long-poll loop and resolve when it stops. Installs
+`SIGINT`/`SIGTERM` handlers that trigger `bot.stop()` for a clean shutdown,
+cleaned up in a `finally` so repeated runs don't leak listeners.
+
+| Param | Type |
+| --- | --- |
+| `bot` | [Bot](#bot) |
+| `options?` | [LongPollOptions](#longpolloptions) |
+
+**Returns:** Promise<void>
+
+### `safeEqual()`
+
+Constant-time string comparison. Does not early-out on content: a length
+difference may be revealed (via the loop bound), but for a given length the
+comparison always inspects every position, so it leaks no information about
+*where* two equal-length strings differ. Pure JS - no `node:crypto` - to keep
+`src/core` edge-safe.
+
+| Param | Type |
+| --- | --- |
+| `a` | string |
+| `b` | string |
+
+**Returns:** boolean
+
+### `startWebhook()`
+
+Managed webhook runner: create a `node:http` webhook server, start listening,
+and resolve when it shuts down. Installs `SIGINT`/`SIGTERM` handlers that close
+the server for a graceful exit (cleaned up in a `finally`), mirroring `run()` for
+long polling. Rejects if the server fails (e.g. the port is in use).
+
+You still register the webhook with Telegram yourself, pointing at this server's
+public URL (terminate TLS at a proxy/tunnel in front of it):
+  api.setWebhook({ url, secret_token })
+
+```ts
+await startWebhook(bot, { port: 8443, path: "/telegram", secretToken });
+```
+
+| Param | Type |
+| --- | --- |
+| `bot` | [Bot](#bot) |
+| `options` | [StartWebhookOptions](#startwebhookoptions) |
+
+**Returns:** Promise<void>
+
+### `webhookCallback()`
+
+| Param | Type |
+| --- | --- |
+| `bot` | [Bot](#bot) |
+| `options` | [WebhookOptions](#webhookoptions) |
+
+**Returns:** (request: Request) => Promise<Response>
+
+## Interfaces
+
+
+### `ApiErrorParameters`
+
+Subset of Telegram's `ResponseParameters` carried on API errors.
+
+| Property | Type |
+| --- | --- |
+| `migrate_to_chat_id`? | number |
+| `retry_after`? | number |
+
+### `BotOptions`
+
+| Property | Type |
+| --- | --- |
+| `apiRoot`? | string |
+| `fetch`? | (input: string \| URL \| Request, init?: RequestInit) => Promise<Response> |
+| `maxRetries`? | number |
+| `maxRetryAfterMs`? | number |
+| `rateLimit`? | [RateLimitOptions](#ratelimitoptions) |
+| `retryBackoffMs`? | number |
+| `timeoutMs`? | number |
+
+### `BuiltEntities`
+
+| Property | Type |
+| --- | --- |
+| `entities` | [MessageEntity](#messageentity)[] |
+| `text` | string |
+
+### `EncodedRequest`
+
+| Property | Type |
+| --- | --- |
+| `body` | URLSearchParams \| FormData |
+| `headers` | Record<string, string> |
+
+### `FormPart`
+
+A file-carrying composite produced by `serializeParams` for a structured field
+that contained nested `InputFile`s: the already-serialized JSON (with `attach://`
+refs) plus the keyed parts those refs point at. The encoder sets `json` under the
+field name and attaches each part - it still stringifies nothing (ADR-011).
+
+| Property | Type |
+| --- | --- |
+| `__formPart` | true |
+| `files` | readonly readonly [string, [InputFile](#inputfile)][] |
+| `json` | string |
+
+### `InputFileMeta`
+
+| Property | Type |
+| --- | --- |
+| `contentType`? | string |
+| `filename`? | string |
+
+### `LongPollOptions`
+
+| Property | Type |
+| --- | --- |
+| `allowedUpdates`? | string[] |
+| `limit`? | number |
+| `offset`? | number |
+| `onError`? | (err: unknown) => void |
+| `retry`? | boolean |
+| `retryDelayMs`? | number |
+| `timeout`? | number |
+
+### `NodeLikeRequest`
+
+Minimal structural shape of a Node-style request (Express / Connect / Node http).
+Typed here so core never imports `node:http`.
+
+| Property | Type |
+| --- | --- |
+| `body`? | unknown |
+| `headers` | Record<string, string \| string[] \| undefined> |
+| `method`? | string |
+| `url`? | string |
+
+### `NodeLikeResponse`
+
+Minimal structural shape of a Node-style response.
+
+| Property | Type |
+| --- | --- |
+| `statusCode` | number |
+
+### `RateLimitOptions`
+
+Requests-per-second limits. Either field may be omitted to disable that tier.
+
+| Property | Type |
+| --- | --- |
+| `global`? | number |
+| `maxChatBuckets`? | number |
+| `perChat`? | number |
+
+### `ReplyKeyboardBuildOptions`
+
+| Property | Type |
+| --- | --- |
+| `input_field_placeholder`? | string |
+| `is_persistent`? | boolean |
+| `one_time_keyboard`? | boolean |
+| `resize_keyboard`? | boolean |
+| `selective`? | boolean |
+
+### `StartWebhookOptions`
+
+| Property | Type |
+| --- | --- |
+| `allowUnauthenticated`? | boolean |
+| `fastAck`? | boolean |
+| `hostname`? | string |
+| `path`? | string |
+| `port` | number |
+| `secretToken`? | string |
+| `waitUntil`? | (promise: Promise<unknown>) => void |
+
+### `TransportOptions`
+
+| Property | Type |
+| --- | --- |
+| `apiRoot`? | string |
+| `fetch`? | (input: string \| URL \| Request, init?: RequestInit) => Promise<Response> |
+| `maxRetries`? | number |
+| `maxRetryAfterMs`? | number |
+| `rateLimit`? | [RateLimitOptions](#ratelimitoptions) |
+| `retryBackoffMs`? | number |
+| `timeoutMs`? | number |
+
+### `WebhookOptions`
+
+| Property | Type |
+| --- | --- |
+| `allowUnauthenticated`? | boolean |
+| `fastAck`? | boolean |
+| `secretToken`? | string |
+| `waitUntil`? | (promise: Promise<unknown>) => void |
+
+### `WebhookServerOptions`
+
+| Property | Type |
+| --- | --- |
+| `allowUnauthenticated`? | boolean |
+| `fastAck`? | boolean |
+| `path`? | string |
+| `secretToken`? | string |
+| `waitUntil`? | (promise: Promise<unknown>) => void |
+
+## Type aliases
+
+### `AcceptedGiftTypes`
+
+```ts
+type AcceptedGiftTypes = {
+  gifts_from_channels: boolean;
+  limited_gifts: boolean;
+  premium_subscription: boolean;
+  unique_gifts: boolean;
+  unlimited_gifts: boolean;
+};
+```
+
+### `AddStickerToSetParams`
+
+```ts
+type AddStickerToSetParams = {
+  name: string;
+  sticker: [InputSticker](#inputsticker);
+  user_id: number;
+};
+```
+
+### `AddStickerToSetResult`
+
+```ts
+type AddStickerToSetResult = boolean;
+```
+
+### `AffiliateInfo`
+
+```ts
+type AffiliateInfo = {
+  affiliate_chat?: [Chat](#chat);
+  affiliate_user?: [User](#user);
+  amount: number;
+  commission_per_mille: number;
+  nanostar_amount?: number;
+};
+```
+
+### `Animation`
+
+```ts
+type Animation = {
+  duration: number;
+  file_id: string;
+  file_name?: string;
+  file_size?: number;
+  file_unique_id: string;
+  height: number;
+  mime_type?: string;
+  thumbnail?: [PhotoSize](#photosize);
+  width: number;
+};
+```
+
+### `AnswerCallbackQueryParams`
+
+```ts
+type AnswerCallbackQueryParams = {
+  cache_time?: number;
+  callback_query_id: string;
+  show_alert?: boolean;
+  text?: string;
+  url?: string;
+};
+```
+
+### `AnswerCallbackQueryResult`
+
+```ts
+type AnswerCallbackQueryResult = boolean;
+```
+
+### `AnswerChatJoinRequestQueryParams`
+
+```ts
+type AnswerChatJoinRequestQueryParams = {
+  chat_join_request_query_id: string;
+  result: string;
+};
+```
+
+### `AnswerChatJoinRequestQueryResult`
+
+```ts
+type AnswerChatJoinRequestQueryResult = boolean;
+```
+
+### `AnswerGuestQueryParams`
+
+```ts
+type AnswerGuestQueryParams = {
+  guest_query_id: string;
+  result: [InlineQueryResult](#inlinequeryresult);
+};
+```
+
+### `AnswerGuestQueryResult`
+
+```ts
+type AnswerGuestQueryResult = [SentGuestMessage](#sentguestmessage);
+```
+
+### `AnswerInlineQueryParams`
+
+```ts
+type AnswerInlineQueryParams = {
+  button?: [InlineQueryResultsButton](#inlinequeryresultsbutton);
+  cache_time?: number;
+  inline_query_id: string;
+  is_personal?: boolean;
+  next_offset?: string;
+  results: [InlineQueryResult](#inlinequeryresult)[];
+};
+```
+
+### `AnswerInlineQueryResult`
+
+```ts
+type AnswerInlineQueryResult = boolean;
+```
+
+### `AnswerPreCheckoutQueryParams`
+
+```ts
+type AnswerPreCheckoutQueryParams = {
+  error_message?: string;
+  ok: boolean;
+  pre_checkout_query_id: string;
+};
+```
+
+### `AnswerPreCheckoutQueryResult`
+
+```ts
+type AnswerPreCheckoutQueryResult = boolean;
+```
+
+### `AnswerShippingQueryParams`
+
+```ts
+type AnswerShippingQueryParams = {
+  error_message?: string;
+  ok: boolean;
+  shipping_options?: [ShippingOption](#shippingoption)[];
+  shipping_query_id: string;
+};
+```
+
+### `AnswerShippingQueryResult`
+
+```ts
+type AnswerShippingQueryResult = boolean;
+```
+
+### `AnswerWebAppQueryParams`
+
+```ts
+type AnswerWebAppQueryParams = {
+  result: [InlineQueryResult](#inlinequeryresult);
+  web_app_query_id: string;
+};
+```
+
+### `AnswerWebAppQueryResult`
+
+```ts
+type AnswerWebAppQueryResult = [SentWebAppMessage](#sentwebappmessage);
+```
+
+### `ApproveChatJoinRequestParams`
+
+```ts
+type ApproveChatJoinRequestParams = {
+  chat_id: number | string;
+  user_id: number;
+};
+```
+
+### `ApproveChatJoinRequestResult`
+
+```ts
+type ApproveChatJoinRequestResult = boolean;
+```
+
+### `ApproveSuggestedPostParams`
+
+```ts
+type ApproveSuggestedPostParams = {
+  chat_id: number;
+  message_id: number;
+  send_date?: number;
+};
+```
+
+### `ApproveSuggestedPostResult`
+
+```ts
+type ApproveSuggestedPostResult = boolean;
+```
+
+### `Audio`
+
+```ts
+type Audio = {
+  duration: number;
+  file_id: string;
+  file_name?: string;
+  file_size?: number;
+  file_unique_id: string;
+  mime_type?: string;
+  performer?: string;
+  thumbnail?: [PhotoSize](#photosize);
+  title?: string;
+};
+```
+
+### `BackgroundFill`
+
+```ts
+type BackgroundFill = [BackgroundFillSolid](#backgroundfillsolid) | [BackgroundFillGradient](#backgroundfillgradient) | [BackgroundFillFreeformGradient](#backgroundfillfreeformgradient);
+```
+
+### `BackgroundFillFreeformGradient`
+
+```ts
+type BackgroundFillFreeformGradient = {
+  colors: number[];
+  type: string;
+};
+```
+
+### `BackgroundFillGradient`
+
+```ts
+type BackgroundFillGradient = {
+  bottom_color: number;
+  rotation_angle: number;
+  top_color: number;
+  type: string;
+};
+```
+
+### `BackgroundFillSolid`
+
+```ts
+type BackgroundFillSolid = {
+  color: number;
+  type: string;
+};
+```
+
+### `BackgroundType`
+
+```ts
+type BackgroundType = [BackgroundTypeFill](#backgroundtypefill) | [BackgroundTypeWallpaper](#backgroundtypewallpaper) | [BackgroundTypePattern](#backgroundtypepattern) | [BackgroundTypeChatTheme](#backgroundtypechattheme);
+```
+
+### `BackgroundTypeChatTheme`
+
+```ts
+type BackgroundTypeChatTheme = {
+  theme_name: string;
+  type: string;
+};
+```
+
+### `BackgroundTypeFill`
+
+```ts
+type BackgroundTypeFill = {
+  dark_theme_dimming: number;
+  fill: [BackgroundFill](#backgroundfill);
+  type: string;
+};
+```
+
+### `BackgroundTypePattern`
+
+```ts
+type BackgroundTypePattern = {
+  document: [Document](#document);
+  fill: [BackgroundFill](#backgroundfill);
+  intensity: number;
+  is_inverted?: true;
+  is_moving?: true;
+  type: string;
+};
+```
+
+### `BackgroundTypeWallpaper`
+
+```ts
+type BackgroundTypeWallpaper = {
+  dark_theme_dimming: number;
+  document: [Document](#document);
+  is_blurred?: true;
+  is_moving?: true;
+  type: string;
+};
+```
+
+### `BanChatMemberParams`
+
+```ts
+type BanChatMemberParams = {
+  chat_id: number | string;
+  revoke_messages?: boolean;
+  until_date?: number;
+  user_id: number;
+};
+```
+
+### `BanChatMemberResult`
+
+```ts
+type BanChatMemberResult = boolean;
+```
+
+### `BanChatSenderChatParams`
+
+```ts
+type BanChatSenderChatParams = {
+  chat_id: number | string;
+  sender_chat_id: number;
+};
+```
+
+### `BanChatSenderChatResult`
+
+```ts
+type BanChatSenderChatResult = boolean;
+```
+
+### `Birthdate`
+
+```ts
+type Birthdate = {
+  day: number;
+  month: number;
+  year?: number;
+};
+```
+
+### `BotAccessSettings`
+
+```ts
+type BotAccessSettings = {
+  added_users?: [User](#user)[];
+  is_access_restricted: boolean;
+};
+```
+
+### `BotCommand`
+
+```ts
+type BotCommand = {
+  command: string;
+  description: string;
+};
+```
+
+### `BotCommandScope`
+
+```ts
+type BotCommandScope = [BotCommandScopeDefault](#botcommandscopedefault) | [BotCommandScopeAllPrivateChats](#botcommandscopeallprivatechats) | [BotCommandScopeAllGroupChats](#botcommandscopeallgroupchats) | [BotCommandScopeAllChatAdministrators](#botcommandscopeallchatadministrators) | [BotCommandScopeChat](#botcommandscopechat) | [BotCommandScopeChatAdministrators](#botcommandscopechatadministrators) | [BotCommandScopeChatMember](#botcommandscopechatmember);
+```
+
+### `BotCommandScopeAllChatAdministrators`
+
+```ts
+type BotCommandScopeAllChatAdministrators = {
+  type: string;
+};
+```
+
+### `BotCommandScopeAllGroupChats`
+
+```ts
+type BotCommandScopeAllGroupChats = {
+  type: string;
+};
+```
+
+### `BotCommandScopeAllPrivateChats`
+
+```ts
+type BotCommandScopeAllPrivateChats = {
+  type: string;
+};
+```
+
+### `BotCommandScopeChat`
+
+```ts
+type BotCommandScopeChat = {
+  chat_id: number | string;
+  type: string;
+};
+```
+
+### `BotCommandScopeChatAdministrators`
+
+```ts
+type BotCommandScopeChatAdministrators = {
+  chat_id: number | string;
+  type: string;
+};
+```
+
+### `BotCommandScopeChatMember`
+
+```ts
+type BotCommandScopeChatMember = {
+  chat_id: number | string;
+  type: string;
+  user_id: number;
+};
+```
+
+### `BotCommandScopeDefault`
+
+```ts
+type BotCommandScopeDefault = {
+  type: string;
+};
+```
+
+### `BotDescription`
+
+```ts
+type BotDescription = {
+  description: string;
+};
+```
+
+### `BotName`
+
+```ts
+type BotName = {
+  name: string;
+};
+```
+
+### `BotShortDescription`
+
+```ts
+type BotShortDescription = {
+  short_description: string;
+};
+```
+
+### `BusinessBotRights`
+
+```ts
+type BusinessBotRights = {
+  can_change_gift_settings?: true;
+  can_convert_gifts_to_stars?: true;
+  can_delete_all_messages?: true;
+  can_delete_sent_messages?: true;
+  can_edit_bio?: true;
+  can_edit_name?: true;
+  can_edit_profile_photo?: true;
+  can_edit_username?: true;
+  can_manage_stories?: true;
+  can_read_messages?: true;
+  can_reply?: true;
+  can_transfer_and_upgrade_gifts?: true;
+  can_transfer_stars?: true;
+  can_view_gifts_and_stars?: true;
+};
+```
+
+### `BusinessConnection`
+
+```ts
+type BusinessConnection = {
+  date: number;
+  id: string;
+  is_enabled: boolean;
+  rights?: [BusinessBotRights](#businessbotrights);
+  user: [User](#user);
+  user_chat_id: number;
+};
+```
+
+### `BusinessIntro`
+
+```ts
+type BusinessIntro = {
+  message?: string;
+  sticker?: [Sticker](#sticker);
+  title?: string;
+};
+```
+
+### `BusinessLocation`
+
+```ts
+type BusinessLocation = {
+  address: string;
+  location?: [Location](#location);
+};
+```
+
+### `BusinessMessagesDeleted`
+
+```ts
+type BusinessMessagesDeleted = {
+  business_connection_id: string;
+  chat: [Chat](#chat);
+  message_ids: number[];
+};
+```
+
+### `BusinessOpeningHours`
+
+```ts
+type BusinessOpeningHours = {
+  opening_hours: [BusinessOpeningHoursInterval](#businessopeninghoursinterval)[];
+  time_zone_name: string;
+};
+```
+
+### `BusinessOpeningHoursInterval`
+
+```ts
+type BusinessOpeningHoursInterval = {
+  closing_minute: number;
+  opening_minute: number;
+};
+```
+
+### `CallbackGame`
+
+```ts
+type CallbackGame = Record<string, never>;
+```
+
+### `CallbackQuery`
+
+```ts
+type CallbackQuery = {
+  chat_instance: string;
+  data?: string;
+  from: [User](#user);
+  game_short_name?: string;
+  id: string;
+  inline_message_id?: string;
+  message?: [MaybeInaccessibleMessage](#maybeinaccessiblemessage);
+};
+```
+
+### `Chat`
+
+```ts
+type Chat = {
+  first_name?: string;
+  id: number;
+  is_direct_messages?: true;
+  is_forum?: true;
+  last_name?: string;
+  title?: string;
+  type: string;
+  username?: string;
+};
+```
+
+### `ChatAdministratorRights`
+
+```ts
+type ChatAdministratorRights = {
+  can_change_info: boolean;
+  can_delete_messages: boolean;
+  can_delete_stories: boolean;
+  can_edit_messages?: boolean;
+  can_edit_stories: boolean;
+  can_invite_users: boolean;
+  can_manage_chat: boolean;
+  can_manage_direct_messages?: boolean;
+  can_manage_tags?: boolean;
+  can_manage_topics?: boolean;
+  can_manage_video_chats: boolean;
+  can_pin_messages?: boolean;
+  can_post_messages?: boolean;
+  can_post_stories: boolean;
+  can_promote_members: boolean;
+  can_restrict_members: boolean;
+  is_anonymous: boolean;
+};
+```
+
+### `ChatBackground`
+
+```ts
+type ChatBackground = {
+  type: [BackgroundType](#backgroundtype);
+};
+```
+
+### `ChatBoost`
+
+```ts
+type ChatBoost = {
+  add_date: number;
+  boost_id: string;
+  expiration_date: number;
+  source: [ChatBoostSource](#chatboostsource);
+};
+```
+
+### `ChatBoostAdded`
+
+```ts
+type ChatBoostAdded = {
+  boost_count: number;
+};
+```
+
+### `ChatBoostRemoved`
+
+```ts
+type ChatBoostRemoved = {
+  boost_id: string;
+  chat: [Chat](#chat);
+  remove_date: number;
+  source: [ChatBoostSource](#chatboostsource);
+};
+```
+
+### `ChatBoostSource`
+
+```ts
+type ChatBoostSource = [ChatBoostSourcePremium](#chatboostsourcepremium) | [ChatBoostSourceGiftCode](#chatboostsourcegiftcode) | [ChatBoostSourceGiveaway](#chatboostsourcegiveaway);
+```
+
+### `ChatBoostSourceGiftCode`
+
+```ts
+type ChatBoostSourceGiftCode = {
+  source: string;
+  user: [User](#user);
+};
+```
+
+### `ChatBoostSourceGiveaway`
+
+```ts
+type ChatBoostSourceGiveaway = {
+  giveaway_message_id: number;
+  is_unclaimed?: true;
+  prize_star_count?: number;
+  source: string;
+  user?: [User](#user);
+};
+```
+
+### `ChatBoostSourcePremium`
+
+```ts
+type ChatBoostSourcePremium = {
+  source: string;
+  user: [User](#user);
+};
+```
+
+### `ChatBoostUpdated`
+
+```ts
+type ChatBoostUpdated = {
+  boost: [ChatBoost](#chatboost);
+  chat: [Chat](#chat);
+};
+```
+
+### `ChatFullInfo`
+
+```ts
+type ChatFullInfo = {
+  accent_color_id: number;
+  accepted_gift_types: [AcceptedGiftTypes](#acceptedgifttypes);
+  active_usernames?: string[];
+  available_reactions?: [ReactionType](#reactiontype)[];
+  background_custom_emoji_id?: string;
+  bio?: string;
+  birthdate?: [Birthdate](#birthdate);
+  business_intro?: [BusinessIntro](#businessintro);
+  business_location?: [BusinessLocation](#businesslocation);
+  business_opening_hours?: [BusinessOpeningHours](#businessopeninghours);
+  can_send_paid_media?: true;
+  can_set_sticker_set?: true;
+  custom_emoji_sticker_set_name?: string;
+  description?: string;
+  emoji_status_custom_emoji_id?: string;
+  emoji_status_expiration_date?: number;
+  first_name?: string;
+  first_profile_audio?: [Audio](#audio);
+  guard_bot?: [User](#user);
+  has_aggressive_anti_spam_enabled?: true;
+  has_hidden_members?: true;
+  has_private_forwards?: true;
+  has_protected_content?: true;
+  has_restricted_voice_and_video_messages?: true;
+  has_visible_history?: true;
+  id: number;
+  invite_link?: string;
+  is_direct_messages?: true;
+  is_forum?: true;
+  join_by_request?: true;
+  join_to_send_messages?: true;
+  last_name?: string;
+  linked_chat_id?: number;
+  location?: [ChatLocation](#chatlocation);
+  max_reaction_count: number;
+  message_auto_delete_time?: number;
+  paid_message_star_count?: number;
+  parent_chat?: [Chat](#chat);
+  permissions?: [ChatPermissions](#chatpermissions);
+  personal_chat?: [Chat](#chat);
+  photo?: [ChatPhoto](#chatphoto);
+  pinned_message?: [Message](#message);
+  profile_accent_color_id?: number;
+  profile_background_custom_emoji_id?: string;
+  rating?: [UserRating](#userrating);
+  slow_mode_delay?: number;
+  sticker_set_name?: string;
+  title?: string;
+  type: string;
+  unique_gift_colors?: [UniqueGiftColors](#uniquegiftcolors);
+  unrestrict_boost_count?: number;
+  username?: string;
+};
+```
+
+### `ChatId`
+
+Chat identifier: numeric id or `@username`.
+
+```ts
+type ChatId = number | string;
+```
+
+### `ChatInviteLink`
+
+```ts
+type ChatInviteLink = {
+  creates_join_request: boolean;
+  creator: [User](#user);
+  expire_date?: number;
+  invite_link: string;
+  is_primary: boolean;
+  is_revoked: boolean;
+  member_limit?: number;
+  name?: string;
+  pending_join_request_count?: number;
+  subscription_period?: number;
+  subscription_price?: number;
+};
+```
+
+### `ChatJoinRequest`
+
+```ts
+type ChatJoinRequest = {
+  bio?: string;
+  chat: [Chat](#chat);
+  date: number;
+  from: [User](#user);
+  invite_link?: [ChatInviteLink](#chatinvitelink);
+  query_id?: string;
+  user_chat_id: number;
+};
+```
+
+### `ChatLocation`
+
+```ts
+type ChatLocation = {
+  address: string;
+  location: [Location](#location);
+};
+```
+
+### `ChatMember`
+
+```ts
+type ChatMember = [ChatMemberOwner](#chatmemberowner) | [ChatMemberAdministrator](#chatmemberadministrator) | [ChatMemberMember](#chatmembermember) | [ChatMemberRestricted](#chatmemberrestricted) | [ChatMemberLeft](#chatmemberleft) | [ChatMemberBanned](#chatmemberbanned);
+```
+
+### `ChatMemberAdministrator`
+
+```ts
+type ChatMemberAdministrator = {
+  can_be_edited: boolean;
+  can_change_info: boolean;
+  can_delete_messages: boolean;
+  can_delete_stories: boolean;
+  can_edit_messages?: boolean;
+  can_edit_stories: boolean;
+  can_invite_users: boolean;
+  can_manage_chat: boolean;
+  can_manage_direct_messages?: boolean;
+  can_manage_tags?: boolean;
+  can_manage_topics?: boolean;
+  can_manage_video_chats: boolean;
+  can_pin_messages?: boolean;
+  can_post_messages?: boolean;
+  can_post_stories: boolean;
+  can_promote_members: boolean;
+  can_restrict_members: boolean;
+  custom_title?: string;
+  is_anonymous: boolean;
+  status: string;
+  user: [User](#user);
+};
+```
+
+### `ChatMemberBanned`
+
+```ts
+type ChatMemberBanned = {
+  status: string;
+  until_date: number;
+  user: [User](#user);
+};
+```
+
+### `ChatMemberLeft`
+
+```ts
+type ChatMemberLeft = {
+  status: string;
+  user: [User](#user);
+};
+```
+
+### `ChatMemberMember`
+
+```ts
+type ChatMemberMember = {
+  status: string;
+  tag?: string;
+  until_date?: number;
+  user: [User](#user);
+};
+```
+
+### `ChatMemberOwner`
+
+```ts
+type ChatMemberOwner = {
+  custom_title?: string;
+  is_anonymous: boolean;
+  status: string;
+  user: [User](#user);
+};
+```
+
+### `ChatMemberRestricted`
+
+```ts
+type ChatMemberRestricted = {
+  can_add_web_page_previews: boolean;
+  can_change_info: boolean;
+  can_edit_tag: boolean;
+  can_invite_users: boolean;
+  can_manage_topics: boolean;
+  can_pin_messages: boolean;
+  can_react_to_messages: boolean;
+  can_send_audios: boolean;
+  can_send_documents: boolean;
+  can_send_messages: boolean;
+  can_send_other_messages: boolean;
+  can_send_photos: boolean;
+  can_send_polls: boolean;
+  can_send_video_notes: boolean;
+  can_send_videos: boolean;
+  can_send_voice_notes: boolean;
+  is_member: boolean;
+  status: string;
+  tag?: string;
+  until_date: number;
+  user: [User](#user);
+};
+```
+
+### `ChatMemberUpdated`
+
+```ts
+type ChatMemberUpdated = {
+  chat: [Chat](#chat);
+  date: number;
+  from: [User](#user);
+  invite_link?: [ChatInviteLink](#chatinvitelink);
+  new_chat_member: [ChatMember](#chatmember);
+  old_chat_member: [ChatMember](#chatmember);
+  via_chat_folder_invite_link?: boolean;
+  via_join_request?: boolean;
+};
+```
+
+### `ChatOwnerChanged`
+
+```ts
+type ChatOwnerChanged = {
+  new_owner: [User](#user);
+};
+```
+
+### `ChatOwnerLeft`
+
+```ts
+type ChatOwnerLeft = {
+  new_owner?: [User](#user);
+};
+```
+
+### `ChatPermissions`
+
+```ts
+type ChatPermissions = {
+  can_add_web_page_previews?: boolean;
+  can_change_info?: boolean;
+  can_edit_tag?: boolean;
+  can_invite_users?: boolean;
+  can_manage_topics?: boolean;
+  can_pin_messages?: boolean;
+  can_react_to_messages?: boolean;
+  can_send_audios?: boolean;
+  can_send_documents?: boolean;
+  can_send_messages?: boolean;
+  can_send_other_messages?: boolean;
+  can_send_photos?: boolean;
+  can_send_polls?: boolean;
+  can_send_video_notes?: boolean;
+  can_send_videos?: boolean;
+  can_send_voice_notes?: boolean;
+};
+```
+
+### `ChatPhoto`
+
+```ts
+type ChatPhoto = {
+  big_file_id: string;
+  big_file_unique_id: string;
+  small_file_id: string;
+  small_file_unique_id: string;
+};
+```
+
+### `ChatShared`
+
+```ts
+type ChatShared = {
+  chat_id: number;
+  photo?: [PhotoSize](#photosize)[];
+  request_id: number;
+  title?: string;
+  username?: string;
+};
+```
+
+### `Checklist`
+
+```ts
+type Checklist = {
+  others_can_add_tasks?: true;
+  others_can_mark_tasks_as_done?: true;
+  tasks: [ChecklistTask](#checklisttask)[];
+  title: string;
+  title_entities?: [MessageEntity](#messageentity)[];
+};
+```
+
+### `ChecklistTask`
+
+```ts
+type ChecklistTask = {
+  completed_by_chat?: [Chat](#chat);
+  completed_by_user?: [User](#user);
+  completion_date?: number;
+  id: number;
+  text: string;
+  text_entities?: [MessageEntity](#messageentity)[];
+};
+```
+
+### `ChecklistTasksAdded`
+
+```ts
+type ChecklistTasksAdded = {
+  checklist_message?: [Message](#message);
+  tasks: [ChecklistTask](#checklisttask)[];
+};
+```
+
+### `ChecklistTasksDone`
+
+```ts
+type ChecklistTasksDone = {
+  checklist_message?: [Message](#message);
+  marked_as_done_task_ids?: number[];
+  marked_as_not_done_task_ids?: number[];
+};
+```
+
+### `ChosenInlineResult`
+
+```ts
+type ChosenInlineResult = {
+  from: [User](#user);
+  inline_message_id?: string;
+  location?: [Location](#location);
+  query: string;
+  result_id: string;
+};
+```
+
+### `CloseForumTopicParams`
+
+```ts
+type CloseForumTopicParams = {
+  chat_id: number | string;
+  message_thread_id: number;
+};
+```
+
+### `CloseForumTopicResult`
+
+```ts
+type CloseForumTopicResult = boolean;
+```
+
+### `CloseGeneralForumTopicParams`
+
+```ts
+type CloseGeneralForumTopicParams = {
+  chat_id: number | string;
+};
+```
+
+### `CloseGeneralForumTopicResult`
+
+```ts
+type CloseGeneralForumTopicResult = boolean;
+```
+
+### `CloseParams`
+
+```ts
+type CloseParams = Record<string, never>;
+```
+
+### `CloseResult`
+
+```ts
+type CloseResult = boolean;
+```
+
+### `Contact`
+
+```ts
+type Contact = {
+  first_name: string;
+  last_name?: string;
+  phone_number: string;
+  user_id?: number;
+  vcard?: string;
+};
+```
+
+### `ConvertGiftToStarsParams`
+
+```ts
+type ConvertGiftToStarsParams = {
+  business_connection_id: string;
+  owned_gift_id: string;
+};
+```
+
+### `ConvertGiftToStarsResult`
+
+```ts
+type ConvertGiftToStarsResult = boolean;
+```
+
+### `CopyMessageParams`
+
+```ts
+type CopyMessageParams = {
+  allow_paid_broadcast?: boolean;
+  caption?: string;
+  caption_entities?: [MessageEntity](#messageentity)[];
+  chat_id: number | string;
+  direct_messages_topic_id?: number;
+  disable_notification?: boolean;
+  from_chat_id: number | string;
+  message_effect_id?: string;
+  message_id: number;
+  message_thread_id?: number;
+  parse_mode?: string;
+  protect_content?: boolean;
+  reply_markup?: [InlineKeyboardMarkup](#inlinekeyboardmarkup) | [ReplyKeyboardMarkup](#replykeyboardmarkup) | [ReplyKeyboardRemove](#replykeyboardremove) | [ForceReply](#forcereply);
+  reply_parameters?: [ReplyParameters](#replyparameters);
+  show_caption_above_media?: boolean;
+  suggested_post_parameters?: [SuggestedPostParameters](#suggestedpostparameters);
+  video_start_timestamp?: number;
+};
+```
+
+### `CopyMessageResult`
+
+```ts
+type CopyMessageResult = [MessageId](#messageid);
+```
+
+### `CopyMessagesParams`
+
+```ts
+type CopyMessagesParams = {
+  chat_id: number | string;
+  direct_messages_topic_id?: number;
+  disable_notification?: boolean;
+  from_chat_id: number | string;
+  message_ids: number[];
+  message_thread_id?: number;
+  protect_content?: boolean;
+  remove_caption?: boolean;
+};
+```
+
+### `CopyMessagesResult`
+
+```ts
+type CopyMessagesResult = [MessageId](#messageid)[];
+```
+
+### `CopyTextButton`
+
+```ts
+type CopyTextButton = {
+  text: string;
+};
+```
+
+### `CreateChatInviteLinkParams`
+
+```ts
+type CreateChatInviteLinkParams = {
+  chat_id: number | string;
+  creates_join_request?: boolean;
+  expire_date?: number;
+  member_limit?: number;
+  name?: string;
+};
+```
+
+### `CreateChatInviteLinkResult`
+
+```ts
+type CreateChatInviteLinkResult = [ChatInviteLink](#chatinvitelink);
+```
+
+### `CreateChatSubscriptionInviteLinkParams`
+
+```ts
+type CreateChatSubscriptionInviteLinkParams = {
+  chat_id: number | string;
+  name?: string;
+  subscription_period: number;
+  subscription_price: number;
+};
+```
+
+### `CreateChatSubscriptionInviteLinkResult`
+
+```ts
+type CreateChatSubscriptionInviteLinkResult = [ChatInviteLink](#chatinvitelink);
+```
+
+### `CreateForumTopicParams`
+
+```ts
+type CreateForumTopicParams = {
+  chat_id: number | string;
+  icon_color?: number;
+  icon_custom_emoji_id?: string;
+  name: string;
+};
+```
+
+### `CreateForumTopicResult`
+
+```ts
+type CreateForumTopicResult = [ForumTopic](#forumtopic);
+```
+
+### `CreateInvoiceLinkParams`
+
+```ts
+type CreateInvoiceLinkParams = {
+  business_connection_id?: string;
+  currency: string;
+  description: string;
+  is_flexible?: boolean;
+  max_tip_amount?: number;
+  need_email?: boolean;
+  need_name?: boolean;
+  need_phone_number?: boolean;
+  need_shipping_address?: boolean;
+  payload: string;
+  photo_height?: number;
+  photo_size?: number;
+  photo_url?: string;
+  photo_width?: number;
+  prices: [LabeledPrice](#labeledprice)[];
+  provider_data?: string;
+  provider_token?: string;
+  send_email_to_provider?: boolean;
+  send_phone_number_to_provider?: boolean;
+  subscription_period?: number;
+  suggested_tip_amounts?: number[];
+  title: string;
+};
+```
+
+### `CreateInvoiceLinkResult`
+
+```ts
+type CreateInvoiceLinkResult = string;
+```
+
+### `CreateNewStickerSetParams`
+
+```ts
+type CreateNewStickerSetParams = {
+  name: string;
+  needs_repainting?: boolean;
+  sticker_type?: string;
+  stickers: [InputSticker](#inputsticker)[];
+  title: string;
+  user_id: number;
+};
+```
+
+### `CreateNewStickerSetResult`
+
+```ts
+type CreateNewStickerSetResult = boolean;
+```
+
+### `DeclineChatJoinRequestParams`
+
+```ts
+type DeclineChatJoinRequestParams = {
+  chat_id: number | string;
+  user_id: number;
+};
+```
+
+### `DeclineChatJoinRequestResult`
+
+```ts
+type DeclineChatJoinRequestResult = boolean;
+```
+
+### `DeclineSuggestedPostParams`
+
+```ts
+type DeclineSuggestedPostParams = {
+  chat_id: number;
+  comment?: string;
+  message_id: number;
+};
+```
+
+### `DeclineSuggestedPostResult`
+
+```ts
+type DeclineSuggestedPostResult = boolean;
+```
+
+### `DeleteAllMessageReactionsParams`
+
+```ts
+type DeleteAllMessageReactionsParams = {
+  actor_chat_id?: number;
+  chat_id: number | string;
+  user_id?: number;
+};
+```
+
+### `DeleteAllMessageReactionsResult`
+
+```ts
+type DeleteAllMessageReactionsResult = boolean;
+```
+
+### `DeleteBusinessMessagesParams`
+
+```ts
+type DeleteBusinessMessagesParams = {
+  business_connection_id: string;
+  message_ids: number[];
+};
+```
+
+### `DeleteBusinessMessagesResult`
+
+```ts
+type DeleteBusinessMessagesResult = boolean;
+```
+
+### `DeleteChatPhotoParams`
+
+```ts
+type DeleteChatPhotoParams = {
+  chat_id: number | string;
+};
+```
+
+### `DeleteChatPhotoResult`
+
+```ts
+type DeleteChatPhotoResult = boolean;
+```
+
+### `DeleteChatStickerSetParams`
+
+```ts
+type DeleteChatStickerSetParams = {
+  chat_id: number | string;
+};
+```
+
+### `DeleteChatStickerSetResult`
+
+```ts
+type DeleteChatStickerSetResult = boolean;
+```
+
+### `DeleteForumTopicParams`
+
+```ts
+type DeleteForumTopicParams = {
+  chat_id: number | string;
+  message_thread_id: number;
+};
+```
+
+### `DeleteForumTopicResult`
+
+```ts
+type DeleteForumTopicResult = boolean;
+```
+
+### `DeleteMessageParams`
+
+```ts
+type DeleteMessageParams = {
+  chat_id: number | string;
+  message_id: number;
+};
+```
+
+### `DeleteMessageReactionParams`
+
+```ts
+type DeleteMessageReactionParams = {
+  actor_chat_id?: number;
+  chat_id: number | string;
+  message_id: number;
+  user_id?: number;
+};
+```
+
+### `DeleteMessageReactionResult`
+
+```ts
+type DeleteMessageReactionResult = boolean;
+```
+
+### `DeleteMessageResult`
+
+```ts
+type DeleteMessageResult = boolean;
+```
+
+### `DeleteMessagesParams`
+
+```ts
+type DeleteMessagesParams = {
+  chat_id: number | string;
+  message_ids: number[];
+};
+```
+
+### `DeleteMessagesResult`
+
+```ts
+type DeleteMessagesResult = boolean;
+```
+
+### `DeleteMyCommandsParams`
+
+```ts
+type DeleteMyCommandsParams = {
+  language_code?: string;
+  scope?: [BotCommandScope](#botcommandscope);
+};
+```
+
+### `DeleteMyCommandsResult`
+
+```ts
+type DeleteMyCommandsResult = boolean;
+```
+
+### `DeleteStickerFromSetParams`
+
+```ts
+type DeleteStickerFromSetParams = {
+  sticker: string;
+};
+```
+
+### `DeleteStickerFromSetResult`
+
+```ts
+type DeleteStickerFromSetResult = boolean;
+```
+
+### `DeleteStickerSetParams`
+
+```ts
+type DeleteStickerSetParams = {
+  name: string;
+};
+```
+
+### `DeleteStickerSetResult`
+
+```ts
+type DeleteStickerSetResult = boolean;
+```
+
+### `DeleteStoryParams`
+
+```ts
+type DeleteStoryParams = {
+  business_connection_id: string;
+  story_id: number;
+};
+```
+
+### `DeleteStoryResult`
+
+```ts
+type DeleteStoryResult = boolean;
+```
+
+### `DeleteWebhookParams`
+
+```ts
+type DeleteWebhookParams = {
+  drop_pending_updates?: boolean;
+};
+```
+
+### `DeleteWebhookResult`
+
+```ts
+type DeleteWebhookResult = boolean;
+```
+
+### `Dice`
+
+```ts
+type Dice = {
+  emoji: string;
+  value: number;
+};
+```
+
+### `DirectMessagePriceChanged`
+
+```ts
+type DirectMessagePriceChanged = {
+  are_direct_messages_enabled: boolean;
+  direct_message_star_count?: number;
+};
+```
+
+### `DirectMessagesTopic`
+
+```ts
+type DirectMessagesTopic = {
+  topic_id: number;
+  user?: [User](#user);
+};
+```
+
+### `Document`
+
+```ts
+type Document = {
+  file_id: string;
+  file_name?: string;
+  file_size?: number;
+  file_unique_id: string;
+  mime_type?: string;
+  thumbnail?: [PhotoSize](#photosize);
+};
+```
+
+### `EditChatInviteLinkParams`
+
+```ts
+type EditChatInviteLinkParams = {
+  chat_id: number | string;
+  creates_join_request?: boolean;
+  expire_date?: number;
+  invite_link: string;
+  member_limit?: number;
+  name?: string;
+};
+```
+
+### `EditChatInviteLinkResult`
+
+```ts
+type EditChatInviteLinkResult = [ChatInviteLink](#chatinvitelink);
+```
+
+### `EditChatSubscriptionInviteLinkParams`
+
+```ts
+type EditChatSubscriptionInviteLinkParams = {
+  chat_id: number | string;
+  invite_link: string;
+  name?: string;
+};
+```
+
+### `EditChatSubscriptionInviteLinkResult`
+
+```ts
+type EditChatSubscriptionInviteLinkResult = [ChatInviteLink](#chatinvitelink);
+```
+
+### `EditForumTopicParams`
+
+```ts
+type EditForumTopicParams = {
+  chat_id: number | string;
+  icon_custom_emoji_id?: string;
+  message_thread_id: number;
+  name?: string;
+};
+```
+
+### `EditForumTopicResult`
+
+```ts
+type EditForumTopicResult = boolean;
+```
+
+### `EditGeneralForumTopicParams`
+
+```ts
+type EditGeneralForumTopicParams = {
+  chat_id: number | string;
+  name: string;
+};
+```
+
+### `EditGeneralForumTopicResult`
+
+```ts
+type EditGeneralForumTopicResult = boolean;
+```
+
+### `EditMessageCaptionParams`
+
+```ts
+type EditMessageCaptionParams = {
+  business_connection_id?: string;
+  caption?: string;
+  caption_entities?: [MessageEntity](#messageentity)[];
+  chat_id?: number | string;
+  inline_message_id?: string;
+  message_id?: number;
+  parse_mode?: string;
+  reply_markup?: [InlineKeyboardMarkup](#inlinekeyboardmarkup);
+  show_caption_above_media?: boolean;
+};
+```
+
+### `EditMessageCaptionResult`
+
+```ts
+type EditMessageCaptionResult = [Message](#message) | boolean;
+```
+
+### `EditMessageChecklistParams`
+
+```ts
+type EditMessageChecklistParams = {
+  business_connection_id: string;
+  chat_id: number | string;
+  checklist: [InputChecklist](#inputchecklist);
+  message_id: number;
+  reply_markup?: [InlineKeyboardMarkup](#inlinekeyboardmarkup);
+};
+```
+
+### `EditMessageChecklistResult`
+
+```ts
+type EditMessageChecklistResult = [Message](#message);
+```
+
+### `EditMessageLiveLocationParams`
+
+```ts
+type EditMessageLiveLocationParams = {
+  business_connection_id?: string;
+  chat_id?: number | string;
+  heading?: number;
+  horizontal_accuracy?: number;
+  inline_message_id?: string;
+  latitude: number;
+  live_period?: number;
+  longitude: number;
+  message_id?: number;
+  proximity_alert_radius?: number;
+  reply_markup?: [InlineKeyboardMarkup](#inlinekeyboardmarkup);
+};
+```
+
+### `EditMessageLiveLocationResult`
+
+```ts
+type EditMessageLiveLocationResult = [Message](#message) | boolean;
+```
+
+### `EditMessageMediaParams`
+
+```ts
+type EditMessageMediaParams = {
+  business_connection_id?: string;
+  chat_id?: number | string;
+  inline_message_id?: string;
+  media: [InputMedia](#inputmedia);
+  message_id?: number;
+  reply_markup?: [InlineKeyboardMarkup](#inlinekeyboardmarkup);
+};
+```
+
+### `EditMessageMediaResult`
+
+```ts
+type EditMessageMediaResult = [Message](#message) | boolean;
+```
+
+### `EditMessageReplyMarkupParams`
+
+```ts
+type EditMessageReplyMarkupParams = {
+  business_connection_id?: string;
+  chat_id?: number | string;
+  inline_message_id?: string;
+  message_id?: number;
+  reply_markup?: [InlineKeyboardMarkup](#inlinekeyboardmarkup);
+};
+```
+
+### `EditMessageReplyMarkupResult`
+
+```ts
+type EditMessageReplyMarkupResult = [Message](#message) | boolean;
+```
+
+### `EditMessageTextParams`
+
+```ts
+type EditMessageTextParams = {
+  business_connection_id?: string;
+  chat_id?: number | string;
+  entities?: [MessageEntity](#messageentity)[];
+  inline_message_id?: string;
+  link_preview_options?: [LinkPreviewOptions](#linkpreviewoptions);
+  message_id?: number;
+  parse_mode?: string;
+  reply_markup?: [InlineKeyboardMarkup](#inlinekeyboardmarkup);
+  rich_message?: [InputRichMessage](#inputrichmessage);
+  text?: string;
+};
+```
+
+### `EditMessageTextResult`
+
+```ts
+type EditMessageTextResult = [Message](#message) | boolean;
+```
+
+### `EditStoryParams`
+
+```ts
+type EditStoryParams = {
+  areas?: [StoryArea](#storyarea)[];
+  business_connection_id: string;
+  caption?: string;
+  caption_entities?: [MessageEntity](#messageentity)[];
+  content: [InputStoryContent](#inputstorycontent);
+  parse_mode?: string;
+  story_id: number;
+};
+```
+
+### `EditStoryResult`
+
+```ts
+type EditStoryResult = [Story](#story);
+```
+
+### `EditUserStarSubscriptionParams`
+
+```ts
+type EditUserStarSubscriptionParams = {
+  is_canceled: boolean;
+  telegram_payment_charge_id: string;
+  user_id: number;
+};
+```
+
+### `EditUserStarSubscriptionResult`
+
+```ts
+type EditUserStarSubscriptionResult = boolean;
+```
+
+### `EncryptedCredentials`
+
+```ts
+type EncryptedCredentials = {
+  data: string;
+  hash: string;
+  secret: string;
+};
+```
+
+### `EncryptedPassportElement`
+
+```ts
+type EncryptedPassportElement = {
+  data?: string;
+  email?: string;
+  files?: [PassportFile](#passportfile)[];
+  front_side?: [PassportFile](#passportfile);
+  hash: string;
+  phone_number?: string;
+  reverse_side?: [PassportFile](#passportfile);
+  selfie?: [PassportFile](#passportfile);
+  translation?: [PassportFile](#passportfile)[];
+  type: string;
+};
+```
+
+### `ExportChatInviteLinkParams`
+
+```ts
+type ExportChatInviteLinkParams = {
+  chat_id: number | string;
+};
+```
+
+### `ExportChatInviteLinkResult`
+
+```ts
+type ExportChatInviteLinkResult = string;
+```
+
+### `ExternalReplyInfo`
+
+```ts
+type ExternalReplyInfo = {
+  animation?: [Animation](#animation);
+  audio?: [Audio](#audio);
+  chat?: [Chat](#chat);
+  checklist?: [Checklist](#checklist);
+  contact?: [Contact](#contact);
+  dice?: [Dice](#dice);
+  document?: [Document](#document);
+  game?: [Game](#game);
+  giveaway?: [Giveaway](#giveaway);
+  giveaway_winners?: [GiveawayWinners](#giveawaywinners);
+  has_media_spoiler?: true;
+  invoice?: [Invoice](#invoice);
+  link_preview_options?: [LinkPreviewOptions](#linkpreviewoptions);
+  live_photo?: [LivePhoto](#livephoto);
+  location?: [Location](#location);
+  message_id?: number;
+  origin: [MessageOrigin](#messageorigin);
+  paid_media?: [PaidMediaInfo](#paidmediainfo);
+  photo?: [PhotoSize](#photosize)[];
+  poll?: [Poll](#poll);
+  sticker?: [Sticker](#sticker);
+  story?: [Story](#story);
+  venue?: [Venue](#venue);
+  video?: [Video](#video);
+  video_note?: [VideoNote](#videonote);
+  voice?: [Voice](#voice);
+};
+```
+
+### `File`
+
+```ts
+type File = {
+  file_id: string;
+  file_path?: string;
+  file_size?: number;
+  file_unique_id: string;
+};
+```
+
+### `ForceReply`
+
+```ts
+type ForceReply = {
+  force_reply: true;
+  input_field_placeholder?: string;
+  selective?: boolean;
+};
+```
+
+### `ForumTopic`
+
+```ts
+type ForumTopic = {
+  icon_color: number;
+  icon_custom_emoji_id?: string;
+  is_name_implicit?: true;
+  message_thread_id: number;
+  name: string;
+};
+```
+
+### `ForumTopicClosed`
+
+```ts
+type ForumTopicClosed = Record<string, never>;
+```
+
+### `ForumTopicCreated`
+
+```ts
+type ForumTopicCreated = {
+  icon_color: number;
+  icon_custom_emoji_id?: string;
+  is_name_implicit?: true;
+  name: string;
+};
+```
+
+### `ForumTopicEdited`
+
+```ts
+type ForumTopicEdited = {
+  icon_custom_emoji_id?: string;
+  name?: string;
+};
+```
+
+### `ForumTopicReopened`
+
+```ts
+type ForumTopicReopened = Record<string, never>;
+```
+
+### `ForwardMessageParams`
+
+```ts
+type ForwardMessageParams = {
+  chat_id: number | string;
+  direct_messages_topic_id?: number;
+  disable_notification?: boolean;
+  from_chat_id: number | string;
+  message_effect_id?: string;
+  message_id: number;
+  message_thread_id?: number;
+  protect_content?: boolean;
+  suggested_post_parameters?: [SuggestedPostParameters](#suggestedpostparameters);
+  video_start_timestamp?: number;
+};
+```
+
+### `ForwardMessageResult`
+
+```ts
+type ForwardMessageResult = [Message](#message);
+```
+
+### `ForwardMessagesParams`
+
+```ts
+type ForwardMessagesParams = {
+  chat_id: number | string;
+  direct_messages_topic_id?: number;
+  disable_notification?: boolean;
+  from_chat_id: number | string;
+  message_ids: number[];
+  message_thread_id?: number;
+  protect_content?: boolean;
+};
+```
+
+### `ForwardMessagesResult`
+
+```ts
+type ForwardMessagesResult = [MessageId](#messageid)[];
+```
+
+### `Game`
+
+```ts
+type Game = {
+  animation?: [Animation](#animation);
+  description: string;
+  photo: [PhotoSize](#photosize)[];
+  text?: string;
+  text_entities?: [MessageEntity](#messageentity)[];
+  title: string;
+};
+```
+
+### `GameHighScore`
+
+```ts
+type GameHighScore = {
+  position: number;
+  score: number;
+  user: [User](#user);
+};
+```
+
+### `GeneralForumTopicHidden`
+
+```ts
+type GeneralForumTopicHidden = Record<string, never>;
+```
+
+### `GeneralForumTopicUnhidden`
+
+```ts
+type GeneralForumTopicUnhidden = Record<string, never>;
+```
+
+### `GetAvailableGiftsParams`
+
+```ts
+type GetAvailableGiftsParams = Record<string, never>;
+```
+
+### `GetAvailableGiftsResult`
+
+```ts
+type GetAvailableGiftsResult = [Gifts](#gifts);
+```
+
+### `GetBusinessAccountGiftsParams`
+
+```ts
+type GetBusinessAccountGiftsParams = {
+  business_connection_id: string;
+  exclude_from_blockchain?: boolean;
+  exclude_limited_non_upgradable?: boolean;
+  exclude_limited_upgradable?: boolean;
+  exclude_saved?: boolean;
+  exclude_unique?: boolean;
+  exclude_unlimited?: boolean;
+  exclude_unsaved?: boolean;
+  limit?: number;
+  offset?: string;
+  sort_by_price?: boolean;
+};
+```
+
+### `GetBusinessAccountGiftsResult`
+
+```ts
+type GetBusinessAccountGiftsResult = [OwnedGifts](#ownedgifts);
+```
+
+### `GetBusinessAccountStarBalanceParams`
+
+```ts
+type GetBusinessAccountStarBalanceParams = {
+  business_connection_id: string;
+};
+```
+
+### `GetBusinessAccountStarBalanceResult`
+
+```ts
+type GetBusinessAccountStarBalanceResult = [StarAmount](#staramount);
+```
+
+### `GetBusinessConnectionParams`
+
+```ts
+type GetBusinessConnectionParams = {
+  business_connection_id: string;
+};
+```
+
+### `GetBusinessConnectionResult`
+
+```ts
+type GetBusinessConnectionResult = [BusinessConnection](#businessconnection);
+```
+
+### `GetChatAdministratorsParams`
+
+```ts
+type GetChatAdministratorsParams = {
+  chat_id: number | string;
+  return_bots?: boolean;
+};
+```
+
+### `GetChatAdministratorsResult`
+
+```ts
+type GetChatAdministratorsResult = [ChatMember](#chatmember)[];
+```
+
+### `GetChatGiftsParams`
+
+```ts
+type GetChatGiftsParams = {
+  chat_id: number | string;
+  exclude_from_blockchain?: boolean;
+  exclude_limited_non_upgradable?: boolean;
+  exclude_limited_upgradable?: boolean;
+  exclude_saved?: boolean;
+  exclude_unique?: boolean;
+  exclude_unlimited?: boolean;
+  exclude_unsaved?: boolean;
+  limit?: number;
+  offset?: string;
+  sort_by_price?: boolean;
+};
+```
+
+### `GetChatGiftsResult`
+
+```ts
+type GetChatGiftsResult = [OwnedGifts](#ownedgifts);
+```
+
+### `GetChatMemberCountParams`
+
+```ts
+type GetChatMemberCountParams = {
+  chat_id: number | string;
+};
+```
+
+### `GetChatMemberCountResult`
+
+```ts
+type GetChatMemberCountResult = number;
+```
+
+### `GetChatMemberParams`
+
+```ts
+type GetChatMemberParams = {
+  chat_id: number | string;
+  user_id: number;
+};
+```
+
+### `GetChatMemberResult`
+
+```ts
+type GetChatMemberResult = [ChatMember](#chatmember);
+```
+
+### `GetChatMenuButtonParams`
+
+```ts
+type GetChatMenuButtonParams = {
+  chat_id?: number;
+};
+```
+
+### `GetChatMenuButtonResult`
+
+```ts
+type GetChatMenuButtonResult = [MenuButton](#menubutton);
+```
+
+### `GetChatParams`
+
+```ts
+type GetChatParams = {
+  chat_id: number | string;
+};
+```
+
+### `GetChatResult`
+
+```ts
+type GetChatResult = [ChatFullInfo](#chatfullinfo);
+```
+
+### `GetCustomEmojiStickersParams`
+
+```ts
+type GetCustomEmojiStickersParams = {
+  custom_emoji_ids: string[];
+};
+```
+
+### `GetCustomEmojiStickersResult`
+
+```ts
+type GetCustomEmojiStickersResult = [Sticker](#sticker)[];
+```
+
+### `GetFileParams`
+
+```ts
+type GetFileParams = {
+  file_id: string;
+};
+```
+
+### `GetFileResult`
+
+```ts
+type GetFileResult = [File](#file);
+```
+
+### `GetForumTopicIconStickersParams`
+
+```ts
+type GetForumTopicIconStickersParams = Record<string, never>;
+```
+
+### `GetForumTopicIconStickersResult`
+
+```ts
+type GetForumTopicIconStickersResult = [Sticker](#sticker)[];
+```
+
+### `GetGameHighScoresParams`
+
+```ts
+type GetGameHighScoresParams = {
+  chat_id?: number;
+  inline_message_id?: string;
+  message_id?: number;
+  user_id: number;
+};
+```
+
+### `GetGameHighScoresResult`
+
+```ts
+type GetGameHighScoresResult = [GameHighScore](#gamehighscore)[];
+```
+
+### `GetManagedBotAccessSettingsParams`
+
+```ts
+type GetManagedBotAccessSettingsParams = {
+  user_id: number;
+};
+```
+
+### `GetManagedBotAccessSettingsResult`
+
+```ts
+type GetManagedBotAccessSettingsResult = [BotAccessSettings](#botaccesssettings);
+```
+
+### `GetManagedBotTokenParams`
+
+```ts
+type GetManagedBotTokenParams = {
+  user_id: number;
+};
+```
+
+### `GetManagedBotTokenResult`
+
+```ts
+type GetManagedBotTokenResult = [BusinessConnection](#businessconnection);
+```
+
+### `GetMeParams`
+
+```ts
+type GetMeParams = Record<string, never>;
+```
+
+### `GetMeResult`
+
+```ts
+type GetMeResult = [User](#user);
+```
+
+### `GetMyCommandsParams`
+
+```ts
+type GetMyCommandsParams = {
+  language_code?: string;
+  scope?: [BotCommandScope](#botcommandscope);
+};
+```
+
+### `GetMyCommandsResult`
+
+```ts
+type GetMyCommandsResult = [BotCommand](#botcommand)[];
+```
+
+### `GetMyDefaultAdministratorRightsParams`
+
+```ts
+type GetMyDefaultAdministratorRightsParams = {
+  for_channels?: boolean;
+};
+```
+
+### `GetMyDefaultAdministratorRightsResult`
+
+```ts
+type GetMyDefaultAdministratorRightsResult = [ChatAdministratorRights](#chatadministratorrights);
+```
+
+### `GetMyDescriptionParams`
+
+```ts
+type GetMyDescriptionParams = {
+  language_code?: string;
+};
+```
+
+### `GetMyDescriptionResult`
+
+```ts
+type GetMyDescriptionResult = [BotDescription](#botdescription);
+```
+
+### `GetMyNameParams`
+
+```ts
+type GetMyNameParams = {
+  language_code?: string;
+};
+```
+
+### `GetMyNameResult`
+
+```ts
+type GetMyNameResult = [BotName](#botname);
+```
+
+### `GetMyShortDescriptionParams`
+
+```ts
+type GetMyShortDescriptionParams = {
+  language_code?: string;
+};
+```
+
+### `GetMyShortDescriptionResult`
+
+```ts
+type GetMyShortDescriptionResult = [BotShortDescription](#botshortdescription);
+```
+
+### `GetMyStarBalanceParams`
+
+```ts
+type GetMyStarBalanceParams = Record<string, never>;
+```
+
+### `GetMyStarBalanceResult`
+
+```ts
+type GetMyStarBalanceResult = [StarAmount](#staramount);
+```
+
+### `GetStarTransactionsParams`
+
+```ts
+type GetStarTransactionsParams = {
+  limit?: number;
+  offset?: number;
+};
+```
+
+### `GetStarTransactionsResult`
+
+```ts
+type GetStarTransactionsResult = [StarTransactions](#startransactions);
+```
+
+### `GetStickerSetParams`
+
+```ts
+type GetStickerSetParams = {
+  name: string;
+};
+```
+
+### `GetStickerSetResult`
+
+```ts
+type GetStickerSetResult = [StickerSet](#stickerset);
+```
+
+### `GetUpdatesParams`
+
+```ts
+type GetUpdatesParams = {
+  allowed_updates?: string[];
+  limit?: number;
+  offset?: number;
+  timeout?: number;
+};
+```
+
+### `GetUpdatesResult`
+
+```ts
+type GetUpdatesResult = [Update](#update)[];
+```
+
+### `GetUserChatBoostsParams`
+
+```ts
+type GetUserChatBoostsParams = {
+  chat_id: number | string;
+  user_id: number;
+};
+```
+
+### `GetUserChatBoostsResult`
+
+```ts
+type GetUserChatBoostsResult = [UserChatBoosts](#userchatboosts);
+```
+
+### `GetUserGiftsParams`
+
+```ts
+type GetUserGiftsParams = {
+  exclude_from_blockchain?: boolean;
+  exclude_limited_non_upgradable?: boolean;
+  exclude_limited_upgradable?: boolean;
+  exclude_unique?: boolean;
+  exclude_unlimited?: boolean;
+  limit?: number;
+  offset?: string;
+  sort_by_price?: boolean;
+  user_id: number;
+};
+```
+
+### `GetUserGiftsResult`
+
+```ts
+type GetUserGiftsResult = [OwnedGifts](#ownedgifts);
+```
+
+### `GetUserPersonalChatMessagesParams`
+
+```ts
+type GetUserPersonalChatMessagesParams = {
+  limit: number;
+  user_id: number;
+};
+```
+
+### `GetUserPersonalChatMessagesResult`
+
+```ts
+type GetUserPersonalChatMessagesResult = [Message](#message)[];
+```
+
+### `GetUserProfileAudiosParams`
+
+```ts
+type GetUserProfileAudiosParams = {
+  limit?: number;
+  offset?: number;
+  user_id: number;
+};
+```
+
+### `GetUserProfileAudiosResult`
+
+```ts
+type GetUserProfileAudiosResult = [UserProfileAudios](#userprofileaudios);
+```
+
+### `GetUserProfilePhotosParams`
+
+```ts
+type GetUserProfilePhotosParams = {
+  limit?: number;
+  offset?: number;
+  user_id: number;
+};
+```
+
+### `GetUserProfilePhotosResult`
+
+```ts
+type GetUserProfilePhotosResult = [UserProfilePhotos](#userprofilephotos);
+```
+
+### `GetWebhookInfoParams`
+
+```ts
+type GetWebhookInfoParams = Record<string, never>;
+```
+
+### `GetWebhookInfoResult`
+
+```ts
+type GetWebhookInfoResult = [WebhookInfo](#webhookinfo);
+```
+
+### `Gift`
+
+```ts
+type Gift = {
+  background?: [GiftBackground](#giftbackground);
+  has_colors?: true;
+  id: string;
+  is_premium?: true;
+  personal_remaining_count?: number;
+  personal_total_count?: number;
+  publisher_chat?: [Chat](#chat);
+  remaining_count?: number;
+  star_count: number;
+  sticker: [Sticker](#sticker);
+  total_count?: number;
+  unique_gift_variant_count?: number;
+  upgrade_star_count?: number;
+};
+```
+
+### `GiftBackground`
+
+```ts
+type GiftBackground = {
+  center_color: number;
+  edge_color: number;
+  text_color: number;
+};
+```
+
+### `GiftInfo`
+
+```ts
+type GiftInfo = {
+  can_be_upgraded?: true;
+  convert_star_count?: number;
+  entities?: [MessageEntity](#messageentity)[];
+  gift: [Gift](#gift);
+  is_private?: true;
+  is_upgrade_separate?: true;
+  owned_gift_id?: string;
+  prepaid_upgrade_star_count?: number;
+  text?: string;
+  unique_gift_number?: number;
+};
+```
+
+### `GiftPremiumSubscriptionParams`
+
+```ts
+type GiftPremiumSubscriptionParams = {
+  month_count: number;
+  star_count: number;
+  text?: string;
+  text_entities?: [MessageEntity](#messageentity)[];
+  text_parse_mode?: string;
+  user_id: number;
+};
+```
+
+### `GiftPremiumSubscriptionResult`
+
+```ts
+type GiftPremiumSubscriptionResult = boolean;
+```
+
+### `Gifts`
+
+```ts
+type Gifts = {
+  gifts: [Gift](#gift)[];
+};
+```
+
+### `Giveaway`
+
+```ts
+type Giveaway = {
+  chats: [Chat](#chat)[];
+  country_codes?: string[];
+  has_public_winners?: true;
+  only_new_members?: true;
+  premium_subscription_month_count?: number;
+  prize_description?: string;
+  prize_star_count?: number;
+  winner_count: number;
+  winners_selection_date: number;
+};
+```
+
+### `GiveawayCompleted`
+
+```ts
+type GiveawayCompleted = {
+  giveaway_message?: [Message](#message);
+  is_star_giveaway?: true;
+  unclaimed_prize_count?: number;
+  winner_count: number;
+};
+```
+
+### `GiveawayCreated`
+
+```ts
+type GiveawayCreated = {
+  prize_star_count?: number;
+};
+```
+
+### `GiveawayWinners`
+
+```ts
+type GiveawayWinners = {
+  additional_chat_count?: number;
+  chat: [Chat](#chat);
+  giveaway_message_id: number;
+  only_new_members?: true;
+  premium_subscription_month_count?: number;
+  prize_description?: string;
+  prize_star_count?: number;
+  unclaimed_prize_count?: number;
+  was_refunded?: true;
+  winner_count: number;
+  winners: [User](#user)[];
+  winners_selection_date: number;
+};
+```
+
+### `HideGeneralForumTopicParams`
+
+```ts
+type HideGeneralForumTopicParams = {
+  chat_id: number | string;
+};
+```
+
+### `HideGeneralForumTopicResult`
+
+```ts
+type HideGeneralForumTopicResult = boolean;
+```
+
+### `InaccessibleMessage`
+
+```ts
+type InaccessibleMessage = {
+  chat: [Chat](#chat);
+  date: number;
+  message_id: number;
+};
+```
+
+### `InlineKeyboardButton`
+
+```ts
+type InlineKeyboardButton = {
+  callback_data?: string;
+  callback_game?: [CallbackGame](#callbackgame);
+  copy_text?: [CopyTextButton](#copytextbutton);
+  icon_custom_emoji_id?: string;
+  login_url?: [LoginUrl](#loginurl);
+  pay?: boolean;
+  style?: string;
+  switch_inline_query?: string;
+  switch_inline_query_chosen_chat?: [SwitchInlineQueryChosenChat](#switchinlinequerychosenchat);
+  switch_inline_query_current_chat?: string;
+  text: string;
+  url?: string;
+  web_app?: [WebAppInfo](#webappinfo);
+};
+```
+
+### `InlineKeyboardMarkup`
+
+```ts
+type InlineKeyboardMarkup = {
+  inline_keyboard: [InlineKeyboardButton](#inlinekeyboardbutton)[][];
+};
+```
+
+### `InlineQuery`
+
+```ts
+type InlineQuery = {
+  chat_type?: string;
+  from: [User](#user);
+  id: string;
+  location?: [Location](#location);
+  offset: string;
+  query: string;
+};
+```
+
+### `InlineQueryResult`
+
+```ts
+type InlineQueryResult = [InlineQueryResultCachedAudio](#inlinequeryresultcachedaudio) | [InlineQueryResultCachedDocument](#inlinequeryresultcacheddocument) | [InlineQueryResultCachedGif](#inlinequeryresultcachedgif) | [InlineQueryResultCachedMpeg4Gif](#inlinequeryresultcachedmpeg4gif) | [InlineQueryResultCachedPhoto](#inlinequeryresultcachedphoto) | [InlineQueryResultCachedSticker](#inlinequeryresultcachedsticker) | [InlineQueryResultCachedVideo](#inlinequeryresultcachedvideo) | [InlineQueryResultCachedVoice](#inlinequeryresultcachedvoice) | [InlineQueryResultArticle](#inlinequeryresultarticle) | [InlineQueryResultAudio](#inlinequeryresultaudio) | [InlineQueryResultContact](#inlinequeryresultcontact) | [InlineQueryResultGame](#inlinequeryresultgame) | [InlineQueryResultDocument](#inlinequeryresultdocument) | [InlineQueryResultGif](#inlinequeryresultgif) | [InlineQueryResultLocation](#inlinequeryresultlocation) | [InlineQueryResultMpeg4Gif](#inlinequeryresultmpeg4gif) | [InlineQueryResultPhoto](#inlinequeryresultphoto) | [InlineQueryResultVenue](#inlinequeryresultvenue) | [InlineQueryResultVideo](#inlinequeryresultvideo) | [InlineQueryResultVoice](#inlinequeryresultvoice);
+```
+
+### `InlineQueryResultArticle`
+
+```ts
+type InlineQueryResultArticle = {
+  description?: string;
+  id: string;
+  input_message_content: [InputMessageContent](#inputmessagecontent);
+  reply_markup?: [InlineKeyboardMarkup](#inlinekeyboardmarkup);
+  thumbnail_height?: number;
+  thumbnail_url?: string;
+  thumbnail_width?: number;
+  title: string;
+  type: string;
+  url?: string;
+};
+```
+
+### `InlineQueryResultAudio`
+
+```ts
+type InlineQueryResultAudio = {
+  audio_duration?: number;
+  audio_url: string;
+  caption?: string;
+  caption_entities?: [MessageEntity](#messageentity)[];
+  id: string;
+  input_message_content?: [InputMessageContent](#inputmessagecontent);
+  parse_mode?: string;
+  performer?: string;
+  reply_markup?: [InlineKeyboardMarkup](#inlinekeyboardmarkup);
+  title: string;
+  type: string;
+};
+```
+
+### `InlineQueryResultCachedAudio`
+
+```ts
+type InlineQueryResultCachedAudio = {
+  audio_file_id: string;
+  caption?: string;
+  caption_entities?: [MessageEntity](#messageentity)[];
+  id: string;
+  input_message_content?: [InputMessageContent](#inputmessagecontent);
+  parse_mode?: string;
+  reply_markup?: [InlineKeyboardMarkup](#inlinekeyboardmarkup);
+  type: string;
+};
+```
+
+### `InlineQueryResultCachedDocument`
+
+```ts
+type InlineQueryResultCachedDocument = {
+  caption?: string;
+  caption_entities?: [MessageEntity](#messageentity)[];
+  description?: string;
+  document_file_id: string;
+  id: string;
+  input_message_content?: [InputMessageContent](#inputmessagecontent);
+  parse_mode?: string;
+  reply_markup?: [InlineKeyboardMarkup](#inlinekeyboardmarkup);
+  title: string;
+  type: string;
+};
+```
+
+### `InlineQueryResultCachedGif`
+
+```ts
+type InlineQueryResultCachedGif = {
+  caption?: string;
+  caption_entities?: [MessageEntity](#messageentity)[];
+  gif_file_id: string;
+  id: string;
+  input_message_content?: [InputMessageContent](#inputmessagecontent);
+  parse_mode?: string;
+  reply_markup?: [InlineKeyboardMarkup](#inlinekeyboardmarkup);
+  show_caption_above_media?: boolean;
+  title?: string;
+  type: string;
+};
+```
+
+### `InlineQueryResultCachedMpeg4Gif`
+
+```ts
+type InlineQueryResultCachedMpeg4Gif = {
+  caption?: string;
+  caption_entities?: [MessageEntity](#messageentity)[];
+  id: string;
+  input_message_content?: [InputMessageContent](#inputmessagecontent);
+  mpeg4_file_id: string;
+  parse_mode?: string;
+  reply_markup?: [InlineKeyboardMarkup](#inlinekeyboardmarkup);
+  show_caption_above_media?: boolean;
+  title?: string;
+  type: string;
+};
+```
+
+### `InlineQueryResultCachedPhoto`
+
+```ts
+type InlineQueryResultCachedPhoto = {
+  caption?: string;
+  caption_entities?: [MessageEntity](#messageentity)[];
+  description?: string;
+  id: string;
+  input_message_content?: [InputMessageContent](#inputmessagecontent);
+  parse_mode?: string;
+  photo_file_id: string;
+  reply_markup?: [InlineKeyboardMarkup](#inlinekeyboardmarkup);
+  show_caption_above_media?: boolean;
+  title?: string;
+  type: string;
+};
+```
+
+### `InlineQueryResultCachedSticker`
+
+```ts
+type InlineQueryResultCachedSticker = {
+  id: string;
+  input_message_content?: [InputMessageContent](#inputmessagecontent);
+  reply_markup?: [InlineKeyboardMarkup](#inlinekeyboardmarkup);
+  sticker_file_id: string;
+  type: string;
+};
+```
+
+### `InlineQueryResultCachedVideo`
+
+```ts
+type InlineQueryResultCachedVideo = {
+  caption?: string;
+  caption_entities?: [MessageEntity](#messageentity)[];
+  description?: string;
+  id: string;
+  input_message_content?: [InputMessageContent](#inputmessagecontent);
+  parse_mode?: string;
+  reply_markup?: [InlineKeyboardMarkup](#inlinekeyboardmarkup);
+  show_caption_above_media?: boolean;
+  title: string;
+  type: string;
+  video_file_id: string;
+};
+```
+
+### `InlineQueryResultCachedVoice`
+
+```ts
+type InlineQueryResultCachedVoice = {
+  caption?: string;
+  caption_entities?: [MessageEntity](#messageentity)[];
+  id: string;
+  input_message_content?: [InputMessageContent](#inputmessagecontent);
+  parse_mode?: string;
+  reply_markup?: [InlineKeyboardMarkup](#inlinekeyboardmarkup);
+  title: string;
+  type: string;
+  voice_file_id: string;
+};
+```
+
+### `InlineQueryResultContact`
+
+```ts
+type InlineQueryResultContact = {
+  first_name: string;
+  id: string;
+  input_message_content?: [InputMessageContent](#inputmessagecontent);
+  last_name?: string;
+  phone_number: string;
+  reply_markup?: [InlineKeyboardMarkup](#inlinekeyboardmarkup);
+  thumbnail_height?: number;
+  thumbnail_url?: string;
+  thumbnail_width?: number;
+  type: string;
+  vcard?: string;
+};
+```
+
+### `InlineQueryResultDocument`
+
+```ts
+type InlineQueryResultDocument = {
+  caption?: string;
+  caption_entities?: [MessageEntity](#messageentity)[];
+  description?: string;
+  document_url: string;
+  id: string;
+  input_message_content?: [InputMessageContent](#inputmessagecontent);
+  mime_type: string;
+  parse_mode?: string;
+  reply_markup?: [InlineKeyboardMarkup](#inlinekeyboardmarkup);
+  thumbnail_height?: number;
+  thumbnail_url?: string;
+  thumbnail_width?: number;
+  title: string;
+  type: string;
+};
+```
+
+### `InlineQueryResultGame`
+
+```ts
+type InlineQueryResultGame = {
+  game_short_name: string;
+  id: string;
+  reply_markup?: [InlineKeyboardMarkup](#inlinekeyboardmarkup);
+  type: string;
+};
+```
+
+### `InlineQueryResultGif`
+
+```ts
+type InlineQueryResultGif = {
+  caption?: string;
+  caption_entities?: [MessageEntity](#messageentity)[];
+  gif_duration?: number;
+  gif_height?: number;
+  gif_url: string;
+  gif_width?: number;
+  id: string;
+  input_message_content?: [InputMessageContent](#inputmessagecontent);
+  parse_mode?: string;
+  reply_markup?: [InlineKeyboardMarkup](#inlinekeyboardmarkup);
+  show_caption_above_media?: boolean;
+  thumbnail_mime_type?: string;
+  thumbnail_url: string;
+  title?: string;
+  type: string;
+};
+```
+
+### `InlineQueryResultLocation`
+
+```ts
+type InlineQueryResultLocation = {
+  heading?: number;
+  horizontal_accuracy?: number;
+  id: string;
+  input_message_content?: [InputMessageContent](#inputmessagecontent);
+  latitude: number;
+  live_period?: number;
+  longitude: number;
+  proximity_alert_radius?: number;
+  reply_markup?: [InlineKeyboardMarkup](#inlinekeyboardmarkup);
+  thumbnail_height?: number;
+  thumbnail_url?: string;
+  thumbnail_width?: number;
+  title: string;
+  type: string;
+};
+```
+
+### `InlineQueryResultMpeg4Gif`
+
+```ts
+type InlineQueryResultMpeg4Gif = {
+  caption?: string;
+  caption_entities?: [MessageEntity](#messageentity)[];
+  id: string;
+  input_message_content?: [InputMessageContent](#inputmessagecontent);
+  mpeg4_duration?: number;
+  mpeg4_height?: number;
+  mpeg4_url: string;
+  mpeg4_width?: number;
+  parse_mode?: string;
+  reply_markup?: [InlineKeyboardMarkup](#inlinekeyboardmarkup);
+  show_caption_above_media?: boolean;
+  thumbnail_mime_type?: string;
+  thumbnail_url: string;
+  title?: string;
+  type: string;
+};
+```
+
+### `InlineQueryResultPhoto`
+
+```ts
+type InlineQueryResultPhoto = {
+  caption?: string;
+  caption_entities?: [MessageEntity](#messageentity)[];
+  description?: string;
+  id: string;
+  input_message_content?: [InputMessageContent](#inputmessagecontent);
+  parse_mode?: string;
+  photo_height?: number;
+  photo_url: string;
+  photo_width?: number;
+  reply_markup?: [InlineKeyboardMarkup](#inlinekeyboardmarkup);
+  show_caption_above_media?: boolean;
+  thumbnail_url: string;
+  title?: string;
+  type: string;
+};
+```
+
+### `InlineQueryResultVenue`
+
+```ts
+type InlineQueryResultVenue = {
+  address: string;
+  foursquare_id?: string;
+  foursquare_type?: string;
+  google_place_id?: string;
+  google_place_type?: string;
+  id: string;
+  input_message_content?: [InputMessageContent](#inputmessagecontent);
+  latitude: number;
+  longitude: number;
+  reply_markup?: [InlineKeyboardMarkup](#inlinekeyboardmarkup);
+  thumbnail_height?: number;
+  thumbnail_url?: string;
+  thumbnail_width?: number;
+  title: string;
+  type: string;
+};
+```
+
+### `InlineQueryResultVideo`
+
+```ts
+type InlineQueryResultVideo = {
+  caption?: string;
+  caption_entities?: [MessageEntity](#messageentity)[];
+  description?: string;
+  id: string;
+  input_message_content?: [InputMessageContent](#inputmessagecontent);
+  mime_type: string;
+  parse_mode?: string;
+  reply_markup?: [InlineKeyboardMarkup](#inlinekeyboardmarkup);
+  show_caption_above_media?: boolean;
+  thumbnail_url: string;
+  title: string;
+  type: string;
+  video_duration?: number;
+  video_height?: number;
+  video_url: string;
+  video_width?: number;
+};
+```
+
+### `InlineQueryResultVoice`
+
+```ts
+type InlineQueryResultVoice = {
+  caption?: string;
+  caption_entities?: [MessageEntity](#messageentity)[];
+  id: string;
+  input_message_content?: [InputMessageContent](#inputmessagecontent);
+  parse_mode?: string;
+  reply_markup?: [InlineKeyboardMarkup](#inlinekeyboardmarkup);
+  title: string;
+  type: string;
+  voice_duration?: number;
+  voice_url: string;
+};
+```
+
+### `InlineQueryResultsButton`
+
+```ts
+type InlineQueryResultsButton = {
+  start_parameter?: string;
+  text: string;
+  web_app?: [WebAppInfo](#webappinfo);
+};
+```
+
+### `InputChecklist`
+
+```ts
+type InputChecklist = {
+  others_can_add_tasks?: boolean;
+  others_can_mark_tasks_as_done?: boolean;
+  parse_mode?: string;
+  tasks: [InputChecklistTask](#inputchecklisttask)[];
+  title: string;
+  title_entities?: [MessageEntity](#messageentity)[];
+};
+```
+
+### `InputChecklistTask`
+
+```ts
+type InputChecklistTask = {
+  id: number;
+  parse_mode?: string;
+  text: string;
+  text_entities?: [MessageEntity](#messageentity)[];
+};
+```
+
+### `InputContactMessageContent`
+
+```ts
+type InputContactMessageContent = {
+  first_name: string;
+  last_name?: string;
+  phone_number: string;
+  vcard?: string;
+};
+```
+
+### `InputFileData`
+
+Files & the form-part contract (ADR-006, ADR-011).
+
+`InputFile` is the one value that cannot be JSON-serialized (you can't encode a
+`Blob`), so it has its own path: a multipart part. It wraps
+web-standard data only - no `fs`, no path-guessing - so uploads work on Node,
+Bun, Deno and the edge. File-bearing params are typed `InputFile | string`,
+where a string is always a `file_id` or URL and goes on the wire as-is.
+
+`FormPart` is the escape hatch for composites that carry files referenced
+from inside a JSON structure (`sendMediaGroup`, sticker sets, profile photos,
+story content). `serializeParams` produces one - the already-serialized JSON
+string plus the keyed parts its `attach://` refs point at - and the encoder
+sets the string under the field name and attaches each part. The encoder still
+stringifies nothing.
+
+```ts
+type InputFileData = Blob | Uint8Array | ReadableStream<Uint8Array>;
+```
+
+### `InputInvoiceMessageContent`
+
+```ts
+type InputInvoiceMessageContent = {
+  currency: string;
+  description: string;
+  is_flexible?: boolean;
+  max_tip_amount?: number;
+  need_email?: boolean;
+  need_name?: boolean;
+  need_phone_number?: boolean;
+  need_shipping_address?: boolean;
+  payload: string;
+  photo_height?: number;
+  photo_size?: number;
+  photo_url?: string;
+  photo_width?: number;
+  prices: [LabeledPrice](#labeledprice)[];
+  provider_data?: string;
+  provider_token?: string;
+  send_email_to_provider?: boolean;
+  send_phone_number_to_provider?: boolean;
+  suggested_tip_amounts?: number[];
+  title: string;
+};
+```
+
+### `InputLocationMessageContent`
+
+```ts
+type InputLocationMessageContent = {
+  heading?: number;
+  horizontal_accuracy?: number;
+  latitude: number;
+  live_period?: number;
+  longitude: number;
+  proximity_alert_radius?: number;
+};
+```
+
+### `InputMedia`
+
+```ts
+type InputMedia = [InputMediaAnimation](#inputmediaanimation) | [InputMediaAudio](#inputmediaaudio) | [InputMediaDocument](#inputmediadocument) | [InputMediaLivePhoto](#inputmedialivephoto) | [InputMediaPhoto](#inputmediaphoto) | [InputMediaVideo](#inputmediavideo);
+```
+
+### `InputMediaAnimation`
+
+```ts
+type InputMediaAnimation = {
+  caption?: string;
+  caption_entities?: [MessageEntity](#messageentity)[];
+  duration?: number;
+  has_spoiler?: boolean;
+  height?: number;
+  media: [InputFile](#inputfile) | string;
+  parse_mode?: string;
+  show_caption_above_media?: boolean;
+  thumbnail?: [InputFile](#inputfile) | string;
+  type: string;
+  width?: number;
+};
+```
+
+### `InputMediaAudio`
+
+```ts
+type InputMediaAudio = {
+  caption?: string;
+  caption_entities?: [MessageEntity](#messageentity)[];
+  duration?: number;
+  media: [InputFile](#inputfile) | string;
+  parse_mode?: string;
+  performer?: string;
+  thumbnail?: [InputFile](#inputfile) | string;
+  title?: string;
+  type: string;
+};
+```
+
+### `InputMediaDocument`
+
+```ts
+type InputMediaDocument = {
+  caption?: string;
+  caption_entities?: [MessageEntity](#messageentity)[];
+  disable_content_type_detection?: boolean;
+  media: [InputFile](#inputfile) | string;
+  parse_mode?: string;
+  thumbnail?: [InputFile](#inputfile) | string;
+  type: string;
+};
+```
+
+### `InputMediaLink`
+
+```ts
+type InputMediaLink = {
+  type: string;
+  url: string;
+};
+```
+
+### `InputMediaLivePhoto`
+
+```ts
+type InputMediaLivePhoto = {
+  caption?: string;
+  caption_entities?: [MessageEntity](#messageentity)[];
+  has_spoiler?: boolean;
+  media: [InputFile](#inputfile) | string;
+  parse_mode?: string;
+  photo: [InputFile](#inputfile) | string;
+  show_caption_above_media?: boolean;
+  type: string;
+};
+```
+
+### `InputMediaLocation`
+
+```ts
+type InputMediaLocation = {
+  horizontal_accuracy?: number;
+  latitude: number;
+  longitude: number;
+  type: string;
+};
+```
+
+### `InputMediaPhoto`
+
+```ts
+type InputMediaPhoto = {
+  caption?: string;
+  caption_entities?: [MessageEntity](#messageentity)[];
+  has_spoiler?: boolean;
+  media: [InputFile](#inputfile) | string;
+  parse_mode?: string;
+  show_caption_above_media?: boolean;
+  type: string;
+};
+```
+
+### `InputMediaSticker`
+
+```ts
+type InputMediaSticker = {
+  emoji?: string;
+  media: [InputFile](#inputfile) | string;
+  type: string;
+};
+```
+
+### `InputMediaVenue`
+
+```ts
+type InputMediaVenue = {
+  address: string;
+  foursquare_id?: string;
+  foursquare_type?: string;
+  google_place_id?: string;
+  google_place_type?: string;
+  latitude: number;
+  longitude: number;
+  title: string;
+  type: string;
+};
+```
+
+### `InputMediaVideo`
+
+```ts
+type InputMediaVideo = {
+  caption?: string;
+  caption_entities?: [MessageEntity](#messageentity)[];
+  cover?: [InputFile](#inputfile) | string;
+  duration?: number;
+  has_spoiler?: boolean;
+  height?: number;
+  media: [InputFile](#inputfile) | string;
+  parse_mode?: string;
+  show_caption_above_media?: boolean;
+  start_timestamp?: number;
+  supports_streaming?: boolean;
+  thumbnail?: [InputFile](#inputfile) | string;
+  type: string;
+  width?: number;
+};
+```
+
+### `InputMessageContent`
+
+```ts
+type InputMessageContent = [InputTextMessageContent](#inputtextmessagecontent) | [InputRichMessageContent](#inputrichmessagecontent) | [InputLocationMessageContent](#inputlocationmessagecontent) | [InputVenueMessageContent](#inputvenuemessagecontent) | [InputContactMessageContent](#inputcontactmessagecontent) | [InputInvoiceMessageContent](#inputinvoicemessagecontent);
+```
+
+### `InputPaidMedia`
+
+```ts
+type InputPaidMedia = [InputPaidMediaLivePhoto](#inputpaidmedialivephoto) | [InputPaidMediaPhoto](#inputpaidmediaphoto) | [InputPaidMediaVideo](#inputpaidmediavideo);
+```
+
+### `InputPaidMediaLivePhoto`
+
+```ts
+type InputPaidMediaLivePhoto = {
+  media: [InputFile](#inputfile) | string;
+  photo: [InputFile](#inputfile) | string;
+  type: string;
+};
+```
+
+### `InputPaidMediaPhoto`
+
+```ts
+type InputPaidMediaPhoto = {
+  media: [InputFile](#inputfile) | string;
+  type: string;
+};
+```
+
+### `InputPaidMediaVideo`
+
+```ts
+type InputPaidMediaVideo = {
+  cover?: [InputFile](#inputfile) | string;
+  duration?: number;
+  height?: number;
+  media: [InputFile](#inputfile) | string;
+  start_timestamp?: number;
+  supports_streaming?: boolean;
+  thumbnail?: [InputFile](#inputfile) | string;
+  type: string;
+  width?: number;
+};
+```
+
+### `InputPollMedia`
+
+```ts
+type InputPollMedia = [InputMediaAnimation](#inputmediaanimation) | [InputMediaAudio](#inputmediaaudio) | [InputMediaDocument](#inputmediadocument) | [InputMediaLivePhoto](#inputmedialivephoto) | [InputMediaLocation](#inputmedialocation) | [InputMediaPhoto](#inputmediaphoto) | [InputMediaVenue](#inputmediavenue) | [InputMediaVideo](#inputmediavideo);
+```
+
+### `InputPollOption`
+
+```ts
+type InputPollOption = {
+  media?: [InputPollOptionMedia](#inputpolloptionmedia);
+  text: string;
+  text_entities?: [MessageEntity](#messageentity)[];
+  text_parse_mode?: string;
+};
+```
+
+### `InputPollOptionMedia`
+
+```ts
+type InputPollOptionMedia = [InputMediaAnimation](#inputmediaanimation) | [InputMediaLink](#inputmedialink) | [InputMediaLivePhoto](#inputmedialivephoto) | [InputMediaLocation](#inputmedialocation) | [InputMediaPhoto](#inputmediaphoto) | [InputMediaSticker](#inputmediasticker) | [InputMediaVenue](#inputmediavenue) | [InputMediaVideo](#inputmediavideo);
+```
+
+### `InputProfilePhoto`
+
+```ts
+type InputProfilePhoto = [InputProfilePhotoStatic](#inputprofilephotostatic) | [InputProfilePhotoAnimated](#inputprofilephotoanimated);
+```
+
+### `InputProfilePhotoAnimated`
+
+```ts
+type InputProfilePhotoAnimated = {
+  animation: [InputFile](#inputfile) | string;
+  main_frame_timestamp?: number;
+  type: string;
+};
+```
+
+### `InputProfilePhotoStatic`
+
+```ts
+type InputProfilePhotoStatic = {
+  photo: [InputFile](#inputfile) | string;
+  type: string;
+};
+```
+
+### `InputRichMessage`
+
+```ts
+type InputRichMessage = {
+  html?: string;
+  is_rtl?: boolean;
+  markdown?: string;
+  skip_entity_detection?: boolean;
+};
+```
+
+### `InputRichMessageContent`
+
+```ts
+type InputRichMessageContent = {
+  rich_message: [InputRichMessage](#inputrichmessage);
+};
+```
+
+### `InputSticker`
+
+```ts
+type InputSticker = {
+  emoji_list: string[];
+  format: string;
+  keywords?: string[];
+  mask_position?: [MaskPosition](#maskposition);
+  sticker: [InputFile](#inputfile) | string;
+};
+```
+
+### `InputStoryContent`
+
+```ts
+type InputStoryContent = [InputStoryContentPhoto](#inputstorycontentphoto) | [InputStoryContentVideo](#inputstorycontentvideo);
+```
+
+### `InputStoryContentPhoto`
+
+```ts
+type InputStoryContentPhoto = {
+  photo: [InputFile](#inputfile) | string;
+  type: string;
+};
+```
+
+### `InputStoryContentVideo`
+
+```ts
+type InputStoryContentVideo = {
+  cover_frame_timestamp?: number;
+  duration?: number;
+  is_animation?: boolean;
+  type: string;
+  video: [InputFile](#inputfile) | string;
+};
+```
+
+### `InputTextMessageContent`
+
+```ts
+type InputTextMessageContent = {
+  entities?: [MessageEntity](#messageentity)[];
+  link_preview_options?: [LinkPreviewOptions](#linkpreviewoptions);
+  message_text: string;
+  parse_mode?: string;
+};
+```
+
+### `InputVenueMessageContent`
+
+```ts
+type InputVenueMessageContent = {
+  address: string;
+  foursquare_id?: string;
+  foursquare_type?: string;
+  google_place_id?: string;
+  google_place_type?: string;
+  latitude: number;
+  longitude: number;
+  title: string;
+};
+```
+
+### `Invoice`
+
+```ts
+type Invoice = {
+  currency: string;
+  description: string;
+  start_parameter: string;
+  title: string;
+  total_amount: number;
+};
+```
+
+### `KeyboardButton`
+
+```ts
+type KeyboardButton = {
+  icon_custom_emoji_id?: string;
+  request_chat?: [KeyboardButtonRequestChat](#keyboardbuttonrequestchat);
+  request_contact?: boolean;
+  request_location?: boolean;
+  request_managed_bot?: [KeyboardButtonRequestManagedBot](#keyboardbuttonrequestmanagedbot);
+  request_poll?: [KeyboardButtonPollType](#keyboardbuttonpolltype);
+  request_users?: [KeyboardButtonRequestUsers](#keyboardbuttonrequestusers);
+  style?: string;
+  text: string;
+  web_app?: [WebAppInfo](#webappinfo);
+};
+```
+
+### `KeyboardButtonPollType`
+
+```ts
+type KeyboardButtonPollType = {
+  type?: string;
+};
+```
+
+### `KeyboardButtonRequestChat`
+
+```ts
+type KeyboardButtonRequestChat = {
+  bot_administrator_rights?: [ChatAdministratorRights](#chatadministratorrights);
+  bot_is_member?: boolean;
+  chat_has_username?: boolean;
+  chat_is_channel: boolean;
+  chat_is_created?: boolean;
+  chat_is_forum?: boolean;
+  request_id: number;
+  request_photo?: boolean;
+  request_title?: boolean;
+  request_username?: boolean;
+  user_administrator_rights?: [ChatAdministratorRights](#chatadministratorrights);
+};
+```
+
+### `KeyboardButtonRequestManagedBot`
+
+```ts
+type KeyboardButtonRequestManagedBot = {
+  request_id: number;
+  suggested_name?: string;
+  suggested_username?: string;
+};
+```
+
+### `KeyboardButtonRequestUsers`
+
+```ts
+type KeyboardButtonRequestUsers = {
+  max_quantity?: number;
+  request_id: number;
+  request_name?: boolean;
+  request_photo?: boolean;
+  request_username?: boolean;
+  user_is_bot?: boolean;
+  user_is_premium?: boolean;
+};
+```
+
+### `LabeledPrice`
+
+```ts
+type LabeledPrice = {
+  amount: number;
+  label: string;
+};
+```
+
+### `LeaveChatParams`
+
+```ts
+type LeaveChatParams = {
+  chat_id: number | string;
+};
+```
+
+### `LeaveChatResult`
+
+```ts
+type LeaveChatResult = boolean;
+```
+
+### `Link`
+
+```ts
+type Link = {
+  url: string;
+};
+```
+
+### `LinkPreviewOptions`
+
+```ts
+type LinkPreviewOptions = {
+  is_disabled?: boolean;
+  prefer_large_media?: boolean;
+  prefer_small_media?: boolean;
+  show_above_text?: boolean;
+  url?: string;
+};
+```
+
+### `LivePhoto`
+
+```ts
+type LivePhoto = {
+  duration: number;
+  file_id: string;
+  file_size?: number;
+  file_unique_id: string;
+  height: number;
+  mime_type?: string;
+  photo?: [PhotoSize](#photosize)[];
+  width: number;
+};
+```
+
+### `Location`
+
+```ts
+type Location = {
+  heading?: number;
+  horizontal_accuracy?: number;
+  latitude: number;
+  live_period?: number;
+  longitude: number;
+  proximity_alert_radius?: number;
+};
+```
+
+### `LocationAddress`
+
+```ts
+type LocationAddress = {
+  city?: string;
+  country_code: string;
+  state?: string;
+  street?: string;
+};
+```
+
+### `LogOutParams`
+
+```ts
+type LogOutParams = Record<string, never>;
+```
+
+### `LogOutResult`
+
+```ts
+type LogOutResult = boolean;
+```
+
+### `LoginUrl`
+
+```ts
+type LoginUrl = {
+  bot_username?: string;
+  forward_text?: string;
+  request_write_access?: boolean;
+  url: string;
+};
+```
+
+### `ManagedBotCreated`
+
+```ts
+type ManagedBotCreated = {
+  bot: [User](#user);
+};
+```
+
+### `ManagedBotUpdated`
+
+```ts
+type ManagedBotUpdated = {
+  bot: [User](#user);
+  user: [User](#user);
+};
+```
+
+### `MaskPosition`
+
+```ts
+type MaskPosition = {
+  point: string;
+  scale: number;
+  x_shift: number;
+  y_shift: number;
+};
+```
+
+### `MaybeInaccessibleMessage`
+
+```ts
+type MaybeInaccessibleMessage = [Message](#message) | [InaccessibleMessage](#inaccessiblemessage);
+```
+
+### `MenuButton`
+
+```ts
+type MenuButton = [MenuButtonCommands](#menubuttoncommands) | [MenuButtonWebApp](#menubuttonwebapp) | [MenuButtonDefault](#menubuttondefault);
+```
+
+### `MenuButtonCommands`
+
+```ts
+type MenuButtonCommands = {
+  type: string;
+};
+```
+
+### `MenuButtonDefault`
+
+```ts
+type MenuButtonDefault = {
+  type: string;
+};
+```
+
+### `MenuButtonWebApp`
+
+```ts
+type MenuButtonWebApp = {
+  text: string;
+  type: string;
+  web_app: [WebAppInfo](#webappinfo);
+};
+```
+
+### `Message`
+
+```ts
+type Message = {
+  animation?: [Animation](#animation);
+  audio?: [Audio](#audio);
+  author_signature?: string;
+  boost_added?: [ChatBoostAdded](#chatboostadded);
+  business_connection_id?: string;
+  caption?: string;
+  caption_entities?: [MessageEntity](#messageentity)[];
+  channel_chat_created?: true;
+  chat: [Chat](#chat);
+  chat_background_set?: [ChatBackground](#chatbackground);
+  chat_owner_changed?: [ChatOwnerChanged](#chatownerchanged);
+  chat_owner_left?: [ChatOwnerLeft](#chatownerleft);
+  chat_shared?: [ChatShared](#chatshared);
+  checklist?: [Checklist](#checklist);
+  checklist_tasks_added?: [ChecklistTasksAdded](#checklisttasksadded);
+  checklist_tasks_done?: [ChecklistTasksDone](#checklisttasksdone);
+  connected_website?: string;
+  contact?: [Contact](#contact);
+  date: number;
+  delete_chat_photo?: true;
+  dice?: [Dice](#dice);
+  direct_message_price_changed?: [DirectMessagePriceChanged](#directmessagepricechanged);
+  direct_messages_topic?: [DirectMessagesTopic](#directmessagestopic);
+  document?: [Document](#document);
+  edit_date?: number;
+  effect_id?: string;
+  entities?: [MessageEntity](#messageentity)[];
+  external_reply?: [ExternalReplyInfo](#externalreplyinfo);
+  forum_topic_closed?: [ForumTopicClosed](#forumtopicclosed);
+  forum_topic_created?: [ForumTopicCreated](#forumtopiccreated);
+  forum_topic_edited?: [ForumTopicEdited](#forumtopicedited);
+  forum_topic_reopened?: [ForumTopicReopened](#forumtopicreopened);
+  forward_origin?: [MessageOrigin](#messageorigin);
+  from?: [User](#user);
+  game?: [Game](#game);
+  general_forum_topic_hidden?: [GeneralForumTopicHidden](#generalforumtopichidden);
+  general_forum_topic_unhidden?: [GeneralForumTopicUnhidden](#generalforumtopicunhidden);
+  gift?: [GiftInfo](#giftinfo);
+  gift_upgrade_sent?: [GiftInfo](#giftinfo);
+  giveaway?: [Giveaway](#giveaway);
+  giveaway_completed?: [GiveawayCompleted](#giveawaycompleted);
+  giveaway_created?: [GiveawayCreated](#giveawaycreated);
+  giveaway_winners?: [GiveawayWinners](#giveawaywinners);
+  group_chat_created?: true;
+  guest_bot_caller_chat?: [Chat](#chat);
+  guest_bot_caller_user?: [User](#user);
+  guest_query_id?: string;
+  has_media_spoiler?: true;
+  has_protected_content?: true;
+  invoice?: [Invoice](#invoice);
+  is_automatic_forward?: true;
+  is_from_offline?: true;
+  is_paid_post?: true;
+  is_topic_message?: true;
+  left_chat_member?: [User](#user);
+  link_preview_options?: [LinkPreviewOptions](#linkpreviewoptions);
+  live_photo?: [LivePhoto](#livephoto);
+  location?: [Location](#location);
+  managed_bot_created?: [ManagedBotCreated](#managedbotcreated);
+  media_group_id?: string;
+  message_auto_delete_timer_changed?: [MessageAutoDeleteTimerChanged](#messageautodeletetimerchanged);
+  message_id: number;
+  message_thread_id?: number;
+  migrate_from_chat_id?: number;
+  migrate_to_chat_id?: number;
+  new_chat_members?: [User](#user)[];
+  new_chat_photo?: [PhotoSize](#photosize)[];
+  new_chat_title?: string;
+  paid_media?: [PaidMediaInfo](#paidmediainfo);
+  paid_message_price_changed?: [PaidMessagePriceChanged](#paidmessagepricechanged);
+  paid_star_count?: number;
+  passport_data?: [PassportData](#passportdata);
+  photo?: [PhotoSize](#photosize)[];
+  pinned_message?: [MaybeInaccessibleMessage](#maybeinaccessiblemessage);
+  poll?: [Poll](#poll);
+  poll_option_added?: [PollOptionAdded](#polloptionadded);
+  poll_option_deleted?: [PollOptionDeleted](#polloptiondeleted);
+  proximity_alert_triggered?: [ProximityAlertTriggered](#proximityalerttriggered);
+  quote?: [TextQuote](#textquote);
+  refunded_payment?: [RefundedPayment](#refundedpayment);
+  reply_markup?: [InlineKeyboardMarkup](#inlinekeyboardmarkup);
+  reply_to_checklist_task_id?: number;
+  reply_to_message?: [Message](#message);
+  reply_to_poll_option_id?: string;
+  reply_to_story?: [Story](#story);
+  rich_message?: [RichMessage](#richmessage);
+  sender_boost_count?: number;
+  sender_business_bot?: [User](#user);
+  sender_chat?: [Chat](#chat);
+  sender_tag?: string;
+  show_caption_above_media?: true;
+  sticker?: [Sticker](#sticker);
+  story?: [Story](#story);
+  successful_payment?: [SuccessfulPayment](#successfulpayment);
+  suggested_post_approval_failed?: [SuggestedPostApprovalFailed](#suggestedpostapprovalfailed);
+  suggested_post_approved?: [SuggestedPostApproved](#suggestedpostapproved);
+  suggested_post_declined?: [SuggestedPostDeclined](#suggestedpostdeclined);
+  suggested_post_info?: [SuggestedPostInfo](#suggestedpostinfo);
+  suggested_post_paid?: [SuggestedPostPaid](#suggestedpostpaid);
+  suggested_post_refunded?: [SuggestedPostRefunded](#suggestedpostrefunded);
+  supergroup_chat_created?: true;
+  text?: string;
+  unique_gift?: [UniqueGiftInfo](#uniquegiftinfo);
+  users_shared?: [UsersShared](#usersshared);
+  venue?: [Venue](#venue);
+  via_bot?: [User](#user);
+  video?: [Video](#video);
+  video_chat_ended?: [VideoChatEnded](#videochatended);
+  video_chat_participants_invited?: [VideoChatParticipantsInvited](#videochatparticipantsinvited);
+  video_chat_scheduled?: [VideoChatScheduled](#videochatscheduled);
+  video_chat_started?: [VideoChatStarted](#videochatstarted);
+  video_note?: [VideoNote](#videonote);
+  voice?: [Voice](#voice);
+  web_app_data?: [WebAppData](#webappdata);
+  write_access_allowed?: [WriteAccessAllowed](#writeaccessallowed);
+};
+```
+
+### `MessageAutoDeleteTimerChanged`
+
+```ts
+type MessageAutoDeleteTimerChanged = {
+  message_auto_delete_time: number;
+};
+```
+
+### `MessageEntity`
+
+```ts
+type MessageEntity = {
+  custom_emoji_id?: string;
+  date_time_format?: string;
+  language?: string;
+  length: number;
+  offset: number;
+  type: string;
+  unix_time?: number;
+  url?: string;
+  user?: [User](#user);
+};
+```
+
+### `MessageId`
+
+```ts
+type MessageId = {
+  message_id: number;
+};
+```
+
+### `MessageOrigin`
+
+```ts
+type MessageOrigin = [MessageOriginUser](#messageoriginuser) | [MessageOriginHiddenUser](#messageoriginhiddenuser) | [MessageOriginChat](#messageoriginchat) | [MessageOriginChannel](#messageoriginchannel);
+```
+
+### `MessageOriginChannel`
+
+```ts
+type MessageOriginChannel = {
+  author_signature?: string;
+  chat: [Chat](#chat);
+  date: number;
+  message_id: number;
+  type: string;
+};
+```
+
+### `MessageOriginChat`
+
+```ts
+type MessageOriginChat = {
+  author_signature?: string;
+  date: number;
+  sender_chat: [Chat](#chat);
+  type: string;
+};
+```
+
+### `MessageOriginHiddenUser`
+
+```ts
+type MessageOriginHiddenUser = {
+  date: number;
+  sender_user_name: string;
+  type: string;
+};
+```
+
+### `MessageOriginUser`
+
+```ts
+type MessageOriginUser = {
+  date: number;
+  sender_user: [User](#user);
+  type: string;
+};
+```
+
+### `MessageReactionCountUpdated`
+
+```ts
+type MessageReactionCountUpdated = {
+  chat: [Chat](#chat);
+  date: number;
+  message_id: number;
+  reactions: [ReactionCount](#reactioncount)[];
+};
+```
+
+### `MessageReactionUpdated`
+
+```ts
+type MessageReactionUpdated = {
+  actor_chat?: [Chat](#chat);
+  chat: [Chat](#chat);
+  date: number;
+  message_id: number;
+  new_reaction: [ReactionType](#reactiontype)[];
+  old_reaction: [ReactionType](#reactiontype)[];
+  user?: [User](#user);
+};
+```
+
+### `Middleware`
+
+A middleware over context `C`. Return value is ignored.
+
+```ts
+type Middleware = (ctx: C, next: [NextFn](#nextfn)) => unknown | Promise<unknown>;
+```
+
+### `NextFn`
+
+Continuation passed to a middleware; awaiting it runs the rest of the chain.
+
+```ts
+type NextFn = () => Promise<void>;
+```
+
+### `OrderInfo`
+
+```ts
+type OrderInfo = {
+  email?: string;
+  name?: string;
+  phone_number?: string;
+  shipping_address?: [ShippingAddress](#shippingaddress);
+};
+```
+
+### `OwnedGift`
+
+```ts
+type OwnedGift = [OwnedGiftRegular](#ownedgiftregular) | [OwnedGiftUnique](#ownedgiftunique);
+```
+
+### `OwnedGiftRegular`
+
+```ts
+type OwnedGiftRegular = {
+  can_be_upgraded?: true;
+  convert_star_count?: number;
+  entities?: [MessageEntity](#messageentity)[];
+  gift: [Gift](#gift);
+  is_private?: true;
+  is_saved?: true;
+  is_upgrade_separate?: true;
+  owned_gift_id?: string;
+  prepaid_upgrade_star_count?: number;
+  send_date: number;
+  sender_user?: [User](#user);
+  text?: string;
+  type: string;
+  unique_gift_number?: number;
+  was_refunded?: true;
+};
+```
+
+### `OwnedGiftUnique`
+
+```ts
+type OwnedGiftUnique = {
+  can_be_transferred?: true;
+  gift: [UniqueGift](#uniquegift);
+  is_saved?: true;
+  next_transfer_date?: number;
+  owned_gift_id?: string;
+  send_date: number;
+  sender_user?: [User](#user);
+  transfer_star_count?: number;
+  type: string;
+};
+```
+
+### `OwnedGifts`
+
+```ts
+type OwnedGifts = {
+  gifts: [OwnedGift](#ownedgift)[];
+  next_offset?: string;
+  total_count: number;
+};
+```
+
+### `PaidMedia`
+
+```ts
+type PaidMedia = [PaidMediaLivePhoto](#paidmedialivephoto) | [PaidMediaPhoto](#paidmediaphoto) | [PaidMediaPreview](#paidmediapreview) | [PaidMediaVideo](#paidmediavideo);
+```
+
+### `PaidMediaInfo`
+
+```ts
+type PaidMediaInfo = {
+  paid_media: [PaidMedia](#paidmedia)[];
+  star_count: number;
+};
+```
+
+### `PaidMediaLivePhoto`
+
+```ts
+type PaidMediaLivePhoto = {
+  live_photo: [LivePhoto](#livephoto);
+  type: string;
+};
+```
+
+### `PaidMediaPhoto`
+
+```ts
+type PaidMediaPhoto = {
+  photo: [PhotoSize](#photosize)[];
+  type: string;
+};
+```
+
+### `PaidMediaPreview`
+
+```ts
+type PaidMediaPreview = {
+  duration?: number;
+  height?: number;
+  type: string;
+  width?: number;
+};
+```
+
+### `PaidMediaPurchased`
+
+```ts
+type PaidMediaPurchased = {
+  from: [User](#user);
+  paid_media_payload: string;
+};
+```
+
+### `PaidMediaVideo`
+
+```ts
+type PaidMediaVideo = {
+  type: string;
+  video: [Video](#video);
+};
+```
+
+### `PaidMessagePriceChanged`
+
+```ts
+type PaidMessagePriceChanged = {
+  paid_message_star_count: number;
+};
+```
+
+### `ParseMode`
+
+Text formatting mode accepted by `parse_mode` fields.
+
+```ts
+type ParseMode = "Markdown" | "MarkdownV2" | "HTML";
+```
+
+### `PassportData`
+
+```ts
+type PassportData = {
+  credentials: [EncryptedCredentials](#encryptedcredentials);
+  data: [EncryptedPassportElement](#encryptedpassportelement)[];
+};
+```
+
+### `PassportElementError`
+
+```ts
+type PassportElementError = [PassportElementErrorDataField](#passportelementerrordatafield) | [PassportElementErrorFrontSide](#passportelementerrorfrontside) | [PassportElementErrorReverseSide](#passportelementerrorreverseside) | [PassportElementErrorSelfie](#passportelementerrorselfie) | [PassportElementErrorFile](#passportelementerrorfile) | [PassportElementErrorFiles](#passportelementerrorfiles) | [PassportElementErrorTranslationFile](#passportelementerrortranslationfile) | [PassportElementErrorTranslationFiles](#passportelementerrortranslationfiles) | [PassportElementErrorUnspecified](#passportelementerrorunspecified);
+```
+
+### `PassportElementErrorDataField`
+
+```ts
+type PassportElementErrorDataField = {
+  data_hash: string;
+  field_name: string;
+  message: string;
+  source: string;
+  type: string;
+};
+```
+
+### `PassportElementErrorFile`
+
+```ts
+type PassportElementErrorFile = {
+  file_hash: string;
+  message: string;
+  source: string;
+  type: string;
+};
+```
+
+### `PassportElementErrorFiles`
+
+```ts
+type PassportElementErrorFiles = {
+  file_hashes: string[];
+  message: string;
+  source: string;
+  type: string;
+};
+```
+
+### `PassportElementErrorFrontSide`
+
+```ts
+type PassportElementErrorFrontSide = {
+  file_hash: string;
+  message: string;
+  source: string;
+  type: string;
+};
+```
+
+### `PassportElementErrorReverseSide`
+
+```ts
+type PassportElementErrorReverseSide = {
+  file_hash: string;
+  message: string;
+  source: string;
+  type: string;
+};
+```
+
+### `PassportElementErrorSelfie`
+
+```ts
+type PassportElementErrorSelfie = {
+  file_hash: string;
+  message: string;
+  source: string;
+  type: string;
+};
+```
+
+### `PassportElementErrorTranslationFile`
+
+```ts
+type PassportElementErrorTranslationFile = {
+  file_hash: string;
+  message: string;
+  source: string;
+  type: string;
+};
+```
+
+### `PassportElementErrorTranslationFiles`
+
+```ts
+type PassportElementErrorTranslationFiles = {
+  file_hashes: string[];
+  message: string;
+  source: string;
+  type: string;
+};
+```
+
+### `PassportElementErrorUnspecified`
+
+```ts
+type PassportElementErrorUnspecified = {
+  element_hash: string;
+  message: string;
+  source: string;
+  type: string;
+};
+```
+
+### `PassportFile`
+
+```ts
+type PassportFile = {
+  file_date: number;
+  file_id: string;
+  file_size: number;
+  file_unique_id: string;
+};
+```
+
+### `PhotoSize`
+
+```ts
+type PhotoSize = {
+  file_id: string;
+  file_size?: number;
+  file_unique_id: string;
+  height: number;
+  width: number;
+};
+```
+
+### `PinChatMessageParams`
+
+```ts
+type PinChatMessageParams = {
+  business_connection_id?: string;
+  chat_id: number | string;
+  disable_notification?: boolean;
+  message_id: number;
+};
+```
+
+### `PinChatMessageResult`
+
+```ts
+type PinChatMessageResult = boolean;
+```
+
+### `Poll`
+
+```ts
+type Poll = {
+  allows_multiple_answers: boolean;
+  allows_revoting: boolean;
+  close_date?: number;
+  correct_option_ids?: number[];
+  country_codes?: string[];
+  description?: string;
+  description_entities?: [MessageEntity](#messageentity)[];
+  explanation?: string;
+  explanation_entities?: [MessageEntity](#messageentity)[];
+  explanation_media?: [PollMedia](#pollmedia);
+  id: string;
+  is_anonymous: boolean;
+  is_closed: boolean;
+  media?: [PollMedia](#pollmedia);
+  members_only: boolean;
+  open_period?: number;
+  options: [PollOption](#polloption)[];
+  question: string;
+  question_entities?: [MessageEntity](#messageentity)[];
+  total_voter_count: number;
+  type: string;
+};
+```
+
+### `PollAnswer`
+
+```ts
+type PollAnswer = {
+  option_ids: number[];
+  option_persistent_ids: string[];
+  poll_id: string;
+  user?: [User](#user);
+  voter_chat?: [Chat](#chat);
+};
+```
+
+### `PollMedia`
+
+```ts
+type PollMedia = {
+  animation?: [Animation](#animation);
+  audio?: [Audio](#audio);
+  document?: [Document](#document);
+  link?: [Link](#link);
+  live_photo?: [LivePhoto](#livephoto);
+  location?: [Location](#location);
+  photo?: [PhotoSize](#photosize)[];
+  sticker?: [Sticker](#sticker);
+  venue?: [Venue](#venue);
+  video?: [Video](#video);
+};
+```
+
+### `PollOption`
+
+```ts
+type PollOption = {
+  added_by_chat?: [Chat](#chat);
+  added_by_user?: [User](#user);
+  addition_date?: number;
+  media?: [PollMedia](#pollmedia);
+  persistent_id: string;
+  text: string;
+  text_entities?: [MessageEntity](#messageentity)[];
+  voter_count: number;
+};
+```
+
+### `PollOptionAdded`
+
+```ts
+type PollOptionAdded = {
+  option_persistent_id: string;
+  option_text: string;
+  option_text_entities?: [MessageEntity](#messageentity)[];
+  poll_message?: [MaybeInaccessibleMessage](#maybeinaccessiblemessage);
+};
+```
+
+### `PollOptionDeleted`
+
+```ts
+type PollOptionDeleted = {
+  option_persistent_id: string;
+  option_text: string;
+  option_text_entities?: [MessageEntity](#messageentity)[];
+  poll_message?: [MaybeInaccessibleMessage](#maybeinaccessiblemessage);
+};
+```
+
+### `PostStoryParams`
+
+```ts
+type PostStoryParams = {
+  active_period: number;
+  areas?: [StoryArea](#storyarea)[];
+  business_connection_id: string;
+  caption?: string;
+  caption_entities?: [MessageEntity](#messageentity)[];
+  content: [InputStoryContent](#inputstorycontent);
+  parse_mode?: string;
+  post_to_chat_page?: boolean;
+  protect_content?: boolean;
+};
+```
+
+### `PostStoryResult`
+
+```ts
+type PostStoryResult = [Story](#story);
+```
+
+### `PreCheckoutQuery`
+
+```ts
+type PreCheckoutQuery = {
+  currency: string;
+  from: [User](#user);
+  id: string;
+  invoice_payload: string;
+  order_info?: [OrderInfo](#orderinfo);
+  shipping_option_id?: string;
+  total_amount: number;
+};
+```
+
+### `PreparedInlineMessage`
+
+```ts
+type PreparedInlineMessage = {
+  expiration_date: number;
+  id: string;
+};
+```
+
+### `PreparedKeyboardButton`
+
+```ts
+type PreparedKeyboardButton = {
+  id: string;
+};
+```
+
+### `PromoteChatMemberParams`
+
+```ts
+type PromoteChatMemberParams = {
+  can_change_info?: boolean;
+  can_delete_messages?: boolean;
+  can_delete_stories?: boolean;
+  can_edit_messages?: boolean;
+  can_edit_stories?: boolean;
+  can_invite_users?: boolean;
+  can_manage_chat?: boolean;
+  can_manage_direct_messages?: boolean;
+  can_manage_tags?: boolean;
+  can_manage_topics?: boolean;
+  can_manage_video_chats?: boolean;
+  can_pin_messages?: boolean;
+  can_post_messages?: boolean;
+  can_post_stories?: boolean;
+  can_promote_members?: boolean;
+  can_restrict_members?: boolean;
+  chat_id: number | string;
+  is_anonymous?: boolean;
+  user_id: number;
+};
+```
+
+### `PromoteChatMemberResult`
+
+```ts
+type PromoteChatMemberResult = boolean;
+```
+
+### `ProximityAlertTriggered`
+
+```ts
+type ProximityAlertTriggered = {
+  distance: number;
+  traveler: [User](#user);
+  watcher: [User](#user);
+};
+```
+
+### `ReactionCount`
+
+```ts
+type ReactionCount = {
+  total_count: number;
+  type: [ReactionType](#reactiontype);
+};
+```
+
+### `ReactionType`
+
+```ts
+type ReactionType = [ReactionTypeEmoji](#reactiontypeemoji) | [ReactionTypeCustomEmoji](#reactiontypecustomemoji) | [ReactionTypePaid](#reactiontypepaid);
+```
+
+### `ReactionTypeCustomEmoji`
+
+```ts
+type ReactionTypeCustomEmoji = {
+  custom_emoji_id: string;
+  type: string;
+};
+```
+
+### `ReactionTypeEmoji`
+
+```ts
+type ReactionTypeEmoji = {
+  emoji: string;
+  type: string;
+};
+```
+
+### `ReactionTypePaid`
+
+```ts
+type ReactionTypePaid = {
+  type: string;
+};
+```
+
+### `ReadBusinessMessageParams`
+
+```ts
+type ReadBusinessMessageParams = {
+  business_connection_id: string;
+  chat_id: number;
+  message_id: number;
+};
+```
+
+### `ReadBusinessMessageResult`
+
+```ts
+type ReadBusinessMessageResult = boolean;
+```
+
+### `RefundStarPaymentParams`
+
+```ts
+type RefundStarPaymentParams = {
+  telegram_payment_charge_id: string;
+  user_id: number;
+};
+```
+
+### `RefundStarPaymentResult`
+
+```ts
+type RefundStarPaymentResult = boolean;
+```
+
+### `RefundedPayment`
+
+```ts
+type RefundedPayment = {
+  currency: string;
+  invoice_payload: string;
+  provider_payment_charge_id?: string;
+  telegram_payment_charge_id: string;
+  total_amount: number;
+};
+```
+
+### `RemoveBusinessAccountProfilePhotoParams`
+
+```ts
+type RemoveBusinessAccountProfilePhotoParams = {
+  business_connection_id: string;
+  is_public?: boolean;
+};
+```
+
+### `RemoveBusinessAccountProfilePhotoResult`
+
+```ts
+type RemoveBusinessAccountProfilePhotoResult = boolean;
+```
+
+### `RemoveChatVerificationParams`
+
+```ts
+type RemoveChatVerificationParams = {
+  chat_id: number | string;
+};
+```
+
+### `RemoveChatVerificationResult`
+
+```ts
+type RemoveChatVerificationResult = boolean;
+```
+
+### `RemoveMyProfilePhotoParams`
+
+```ts
+type RemoveMyProfilePhotoParams = Record<string, never>;
+```
+
+### `RemoveMyProfilePhotoResult`
+
+```ts
+type RemoveMyProfilePhotoResult = boolean;
+```
+
+### `RemoveUserVerificationParams`
+
+```ts
+type RemoveUserVerificationParams = {
+  user_id: number;
+};
+```
+
+### `RemoveUserVerificationResult`
+
+```ts
+type RemoveUserVerificationResult = boolean;
+```
+
+### `ReopenForumTopicParams`
+
+```ts
+type ReopenForumTopicParams = {
+  chat_id: number | string;
+  message_thread_id: number;
+};
+```
+
+### `ReopenForumTopicResult`
+
+```ts
+type ReopenForumTopicResult = boolean;
+```
+
+### `ReopenGeneralForumTopicParams`
+
+```ts
+type ReopenGeneralForumTopicParams = {
+  chat_id: number | string;
+};
+```
+
+### `ReopenGeneralForumTopicResult`
+
+```ts
+type ReopenGeneralForumTopicResult = boolean;
+```
+
+### `ReplaceManagedBotTokenParams`
+
+```ts
+type ReplaceManagedBotTokenParams = {
+  user_id: number;
+};
+```
+
+### `ReplaceManagedBotTokenResult`
+
+```ts
+type ReplaceManagedBotTokenResult = string;
+```
+
+### `ReplaceStickerInSetParams`
+
+```ts
+type ReplaceStickerInSetParams = {
+  name: string;
+  old_sticker: string;
+  sticker: [InputSticker](#inputsticker);
+  user_id: number;
+};
+```
+
+### `ReplaceStickerInSetResult`
+
+```ts
+type ReplaceStickerInSetResult = boolean;
+```
+
+### `ReplyKeyboardMarkup`
+
+```ts
+type ReplyKeyboardMarkup = {
+  input_field_placeholder?: string;
+  is_persistent?: boolean;
+  keyboard: [KeyboardButton](#keyboardbutton)[][];
+  one_time_keyboard?: boolean;
+  resize_keyboard?: boolean;
+  selective?: boolean;
+};
+```
+
+### `ReplyKeyboardRemove`
+
+```ts
+type ReplyKeyboardRemove = {
+  remove_keyboard: true;
+  selective?: boolean;
+};
+```
+
+### `ReplyMarkup`
+
+Union of the four reply-markup objects.
+
+```ts
+type ReplyMarkup = [InlineKeyboardMarkup](#inlinekeyboardmarkup) | [ReplyKeyboardMarkup](#replykeyboardmarkup) | [ReplyKeyboardRemove](#replykeyboardremove) | [ForceReply](#forcereply);
+```
+
+### `ReplyParameters`
+
+```ts
+type ReplyParameters = {
+  allow_sending_without_reply?: boolean;
+  chat_id?: number | string;
+  checklist_task_id?: number;
+  message_id: number;
+  poll_option_id?: string;
+  quote?: string;
+  quote_entities?: [MessageEntity](#messageentity)[];
+  quote_parse_mode?: string;
+  quote_position?: number;
+};
+```
+
+### `RepostStoryParams`
+
+```ts
+type RepostStoryParams = {
+  active_period: number;
+  business_connection_id: string;
+  from_chat_id: number;
+  from_story_id: number;
+  post_to_chat_page?: boolean;
+  protect_content?: boolean;
+};
+```
+
+### `RepostStoryResult`
+
+```ts
+type RepostStoryResult = [Story](#story);
+```
+
+### `ResponseParameters`
+
+```ts
+type ResponseParameters = {
+  migrate_to_chat_id?: number;
+  retry_after?: number;
+};
+```
+
+### `RestrictChatMemberParams`
+
+```ts
+type RestrictChatMemberParams = {
+  chat_id: number | string;
+  permissions: [ChatPermissions](#chatpermissions);
+  until_date?: number;
+  use_independent_chat_permissions?: boolean;
+  user_id: number;
+};
+```
+
+### `RestrictChatMemberResult`
+
+```ts
+type RestrictChatMemberResult = boolean;
+```
+
+### `RevenueWithdrawalState`
+
+```ts
+type RevenueWithdrawalState = [RevenueWithdrawalStatePending](#revenuewithdrawalstatepending) | [RevenueWithdrawalStateSucceeded](#revenuewithdrawalstatesucceeded) | [RevenueWithdrawalStateFailed](#revenuewithdrawalstatefailed);
+```
+
+### `RevenueWithdrawalStateFailed`
+
+```ts
+type RevenueWithdrawalStateFailed = {
+  type: string;
+};
+```
+
+### `RevenueWithdrawalStatePending`
+
+```ts
+type RevenueWithdrawalStatePending = {
+  type: string;
+};
+```
+
+### `RevenueWithdrawalStateSucceeded`
+
+```ts
+type RevenueWithdrawalStateSucceeded = {
+  date: number;
+  type: string;
+  url: string;
+};
+```
+
+### `RevokeChatInviteLinkParams`
+
+```ts
+type RevokeChatInviteLinkParams = {
+  chat_id: number | string;
+  invite_link: string;
+};
+```
+
+### `RevokeChatInviteLinkResult`
+
+```ts
+type RevokeChatInviteLinkResult = [ChatInviteLink](#chatinvitelink);
+```
+
+### `RichBlock`
+
+```ts
+type RichBlock = [RichBlockParagraph](#richblockparagraph) | [RichBlockSectionHeading](#richblocksectionheading) | [RichBlockPreformatted](#richblockpreformatted) | [RichBlockFooter](#richblockfooter) | [RichBlockDivider](#richblockdivider) | [RichBlockMathematicalExpression](#richblockmathematicalexpression) | [RichBlockAnchor](#richblockanchor) | [RichBlockList](#richblocklist) | [RichBlockBlockQuotation](#richblockblockquotation) | [RichBlockPullQuotation](#richblockpullquotation) | [RichBlockCollage](#richblockcollage) | [RichBlockSlideshow](#richblockslideshow) | [RichBlockTable](#richblocktable) | [RichBlockDetails](#richblockdetails) | [RichBlockMap](#richblockmap) | [RichBlockAnimation](#richblockanimation) | [RichBlockAudio](#richblockaudio) | [RichBlockPhoto](#richblockphoto) | [RichBlockVideo](#richblockvideo) | [RichBlockVoiceNote](#richblockvoicenote) | [RichBlockThinking](#richblockthinking);
+```
+
+### `RichBlockAnchor`
+
+```ts
+type RichBlockAnchor = {
+  name: string;
+  type: string;
+};
+```
+
+### `RichBlockAnimation`
+
+```ts
+type RichBlockAnimation = {
+  animation: [Animation](#animation);
+  caption?: [RichBlockCaption](#richblockcaption);
+  has_spoiler?: true;
+  type: string;
+};
+```
+
+### `RichBlockAudio`
+
+```ts
+type RichBlockAudio = {
+  audio: [Audio](#audio);
+  caption?: [RichBlockCaption](#richblockcaption);
+  type: string;
+};
+```
+
+### `RichBlockBlockQuotation`
+
+```ts
+type RichBlockBlockQuotation = {
+  blocks: [RichBlock](#richblock)[];
+  credit?: [RichText](#richtext);
+  type: string;
+};
+```
+
+### `RichBlockCaption`
+
+```ts
+type RichBlockCaption = {
+  credit?: [RichText](#richtext);
+  text: [RichText](#richtext);
+};
+```
+
+### `RichBlockCollage`
+
+```ts
+type RichBlockCollage = {
+  blocks: [RichBlock](#richblock)[];
+  caption?: [RichBlockCaption](#richblockcaption);
+  type: string;
+};
+```
+
+### `RichBlockDetails`
+
+```ts
+type RichBlockDetails = {
+  blocks: [RichBlock](#richblock)[];
+  is_open?: true;
+  summary: [RichText](#richtext);
+  type: string;
+};
+```
+
+### `RichBlockDivider`
+
+```ts
+type RichBlockDivider = {
+  type: string;
+};
+```
+
+### `RichBlockFooter`
+
+```ts
+type RichBlockFooter = {
+  text: [RichText](#richtext);
+  type: string;
+};
+```
+
+### `RichBlockList`
+
+```ts
+type RichBlockList = {
+  items: [RichBlockListItem](#richblocklistitem)[];
+  type: string;
+};
+```
+
+### `RichBlockListItem`
+
+```ts
+type RichBlockListItem = {
+  blocks: [RichBlock](#richblock)[];
+  has_checkbox?: true;
+  is_checked?: true;
+  label: string;
+  type?: string;
+  value?: number;
+};
+```
+
+### `RichBlockMap`
+
+```ts
+type RichBlockMap = {
+  caption?: [RichBlockCaption](#richblockcaption);
+  height: number;
+  location: [Location](#location);
+  type: string;
+  width: number;
+  zoom: number;
+};
+```
+
+### `RichBlockMathematicalExpression`
+
+```ts
+type RichBlockMathematicalExpression = {
+  expression: string;
+  type: string;
+};
+```
+
+### `RichBlockParagraph`
+
+```ts
+type RichBlockParagraph = {
+  text: [RichText](#richtext);
+  type: string;
+};
+```
+
+### `RichBlockPhoto`
+
+```ts
+type RichBlockPhoto = {
+  caption?: [RichBlockCaption](#richblockcaption);
+  has_spoiler?: true;
+  photo: [PhotoSize](#photosize)[];
+  type: string;
+};
+```
+
+### `RichBlockPreformatted`
+
+```ts
+type RichBlockPreformatted = {
+  language?: string;
+  text: [RichText](#richtext);
+  type: string;
+};
+```
+
+### `RichBlockPullQuotation`
+
+```ts
+type RichBlockPullQuotation = {
+  credit?: [RichText](#richtext);
+  text: [RichText](#richtext);
+  type: string;
+};
+```
+
+### `RichBlockSectionHeading`
+
+```ts
+type RichBlockSectionHeading = {
+  size: number;
+  text: [RichText](#richtext);
+  type: string;
+};
+```
+
+### `RichBlockSlideshow`
+
+```ts
+type RichBlockSlideshow = {
+  blocks: [RichBlock](#richblock)[];
+  caption?: [RichBlockCaption](#richblockcaption);
+  type: string;
+};
+```
+
+### `RichBlockTable`
+
+```ts
+type RichBlockTable = {
+  caption?: [RichText](#richtext);
+  cells: [RichBlockTableCell](#richblocktablecell)[][];
+  is_bordered?: true;
+  is_striped?: true;
+  type: string;
+};
+```
+
+### `RichBlockTableCell`
+
+```ts
+type RichBlockTableCell = {
+  align: string;
+  colspan?: number;
+  is_header?: true;
+  rowspan?: number;
+  text?: [RichText](#richtext);
+  valign: string;
+};
+```
+
+### `RichBlockThinking`
+
+```ts
+type RichBlockThinking = {
+  text: [RichText](#richtext);
+  type: string;
+};
+```
+
+### `RichBlockVideo`
+
+```ts
+type RichBlockVideo = {
+  caption?: [RichBlockCaption](#richblockcaption);
+  has_spoiler?: true;
+  type: string;
+  video: [Video](#video);
+};
+```
+
+### `RichBlockVoiceNote`
+
+```ts
+type RichBlockVoiceNote = {
+  caption?: [RichBlockCaption](#richblockcaption);
+  type: string;
+  voice_note: [Voice](#voice);
+};
+```
+
+### `RichMessage`
+
+```ts
+type RichMessage = {
+  blocks: [RichBlock](#richblock)[];
+  is_rtl?: boolean;
+};
+```
+
+### `RichText`
+
+```ts
+type RichText = [RichTextBold](#richtextbold) | [RichTextItalic](#richtextitalic) | [RichTextUnderline](#richtextunderline) | [RichTextStrikethrough](#richtextstrikethrough) | [RichTextSpoiler](#richtextspoiler) | [RichTextDateTime](#richtextdatetime) | [RichTextTextMention](#richtexttextmention) | [RichTextSubscript](#richtextsubscript) | [RichTextSuperscript](#richtextsuperscript) | [RichTextMarked](#richtextmarked) | [RichTextCode](#richtextcode) | [RichTextCustomEmoji](#richtextcustomemoji) | [RichTextMathematicalExpression](#richtextmathematicalexpression) | [RichTextUrl](#richtexturl) | [RichTextEmailAddress](#richtextemailaddress) | [RichTextPhoneNumber](#richtextphonenumber) | [RichTextBankCardNumber](#richtextbankcardnumber) | [RichTextMention](#richtextmention) | [RichTextHashtag](#richtexthashtag) | [RichTextCashtag](#richtextcashtag) | [RichTextBotCommand](#richtextbotcommand) | [RichTextAnchor](#richtextanchor) | [RichTextAnchorLink](#richtextanchorlink) | [RichTextReference](#richtextreference) | [RichTextReferenceLink](#richtextreferencelink);
+```
+
+### `RichTextAnchor`
+
+```ts
+type RichTextAnchor = {
+  name: string;
+  type: string;
+};
+```
+
+### `RichTextAnchorLink`
+
+```ts
+type RichTextAnchorLink = {
+  anchor_name: string;
+  text: [RichText](#richtext);
+  type: string;
+};
+```
+
+### `RichTextBankCardNumber`
+
+```ts
+type RichTextBankCardNumber = {
+  bank_card_number: string;
+  text: [RichText](#richtext);
+  type: string;
+};
+```
+
+### `RichTextBold`
+
+```ts
+type RichTextBold = {
+  text: [RichText](#richtext);
+  type: string;
+};
+```
+
+### `RichTextBotCommand`
+
+```ts
+type RichTextBotCommand = {
+  bot_command: string;
+  text: [RichText](#richtext);
+  type: string;
+};
+```
+
+### `RichTextCashtag`
+
+```ts
+type RichTextCashtag = {
+  cashtag: string;
+  text: [RichText](#richtext);
+  type: string;
+};
+```
+
+### `RichTextCode`
+
+```ts
+type RichTextCode = {
+  text: [RichText](#richtext);
+  type: string;
+};
+```
+
+### `RichTextCustomEmoji`
+
+```ts
+type RichTextCustomEmoji = {
+  alternative_text: string;
+  custom_emoji_id: string;
+  type: string;
+};
+```
+
+### `RichTextDateTime`
+
+```ts
+type RichTextDateTime = {
+  date_time_format: string;
+  text: [RichText](#richtext);
+  type: string;
+  unix_time: number;
+};
+```
+
+### `RichTextEmailAddress`
+
+```ts
+type RichTextEmailAddress = {
+  email_address: string;
+  text: [RichText](#richtext);
+  type: string;
+};
+```
+
+### `RichTextHashtag`
+
+```ts
+type RichTextHashtag = {
+  hashtag: string;
+  text: [RichText](#richtext);
+  type: string;
+};
+```
+
+### `RichTextItalic`
+
+```ts
+type RichTextItalic = {
+  text: [RichText](#richtext);
+  type: string;
+};
+```
+
+### `RichTextMarked`
+
+```ts
+type RichTextMarked = {
+  text: [RichText](#richtext);
+  type: string;
+};
+```
+
+### `RichTextMathematicalExpression`
+
+```ts
+type RichTextMathematicalExpression = {
+  expression: string;
+  type: string;
+};
+```
+
+### `RichTextMention`
+
+```ts
+type RichTextMention = {
+  text: [RichText](#richtext);
+  type: string;
+  username: string;
+};
+```
+
+### `RichTextPhoneNumber`
+
+```ts
+type RichTextPhoneNumber = {
+  phone_number: string;
+  text: [RichText](#richtext);
+  type: string;
+};
+```
+
+### `RichTextReference`
+
+```ts
+type RichTextReference = {
+  name: string;
+  text: [RichText](#richtext);
+  type: string;
+};
+```
+
+### `RichTextReferenceLink`
+
+```ts
+type RichTextReferenceLink = {
+  reference_name: string;
+  text: [RichText](#richtext);
+  type: string;
+};
+```
+
+### `RichTextSpoiler`
+
+```ts
+type RichTextSpoiler = {
+  text: [RichText](#richtext);
+  type: string;
+};
+```
+
+### `RichTextStrikethrough`
+
+```ts
+type RichTextStrikethrough = {
+  text: [RichText](#richtext);
+  type: string;
+};
+```
+
+### `RichTextSubscript`
+
+```ts
+type RichTextSubscript = {
+  text: [RichText](#richtext);
+  type: string;
+};
+```
+
+### `RichTextSuperscript`
+
+```ts
+type RichTextSuperscript = {
+  text: [RichText](#richtext);
+  type: string;
+};
+```
+
+### `RichTextTextMention`
+
+```ts
+type RichTextTextMention = {
+  text: [RichText](#richtext);
+  type: string;
+  user: [User](#user);
+};
+```
+
+### `RichTextUnderline`
+
+```ts
+type RichTextUnderline = {
+  text: [RichText](#richtext);
+  type: string;
+};
+```
+
+### `RichTextUrl`
+
+```ts
+type RichTextUrl = {
+  text: [RichText](#richtext);
+  type: string;
+  url: string;
+};
+```
+
+### `SavePreparedInlineMessageParams`
+
+```ts
+type SavePreparedInlineMessageParams = {
+  allow_bot_chats?: boolean;
+  allow_channel_chats?: boolean;
+  allow_group_chats?: boolean;
+  allow_user_chats?: boolean;
+  result: [InlineQueryResult](#inlinequeryresult);
+  user_id: number;
+};
+```
+
+### `SavePreparedInlineMessageResult`
+
+```ts
+type SavePreparedInlineMessageResult = [PreparedInlineMessage](#preparedinlinemessage);
+```
+
+### `SavePreparedKeyboardButtonParams`
+
+```ts
+type SavePreparedKeyboardButtonParams = {
+  button: [KeyboardButton](#keyboardbutton);
+  user_id: number;
+};
+```
+
+### `SavePreparedKeyboardButtonResult`
+
+```ts
+type SavePreparedKeyboardButtonResult = [PreparedInlineMessage](#preparedinlinemessage);
+```
+
+### `SendAnimationParams`
+
+```ts
+type SendAnimationParams = {
+  allow_paid_broadcast?: boolean;
+  animation: [InputFile](#inputfile) | string;
+  business_connection_id?: string;
+  caption?: string;
+  caption_entities?: [MessageEntity](#messageentity)[];
+  chat_id: number | string;
+  direct_messages_topic_id?: number;
+  disable_notification?: boolean;
+  duration?: number;
+  has_spoiler?: boolean;
+  height?: number;
+  message_effect_id?: string;
+  message_thread_id?: number;
+  parse_mode?: string;
+  protect_content?: boolean;
+  reply_markup?: [InlineKeyboardMarkup](#inlinekeyboardmarkup) | [ReplyKeyboardMarkup](#replykeyboardmarkup) | [ReplyKeyboardRemove](#replykeyboardremove) | [ForceReply](#forcereply);
+  reply_parameters?: [ReplyParameters](#replyparameters);
+  show_caption_above_media?: boolean;
+  suggested_post_parameters?: [SuggestedPostParameters](#suggestedpostparameters);
+  thumbnail?: [InputFile](#inputfile) | string;
+  width?: number;
+};
+```
+
+### `SendAnimationResult`
+
+```ts
+type SendAnimationResult = [Message](#message);
+```
+
+### `SendAudioParams`
+
+```ts
+type SendAudioParams = {
+  allow_paid_broadcast?: boolean;
+  audio: [InputFile](#inputfile) | string;
+  business_connection_id?: string;
+  caption?: string;
+  caption_entities?: [MessageEntity](#messageentity)[];
+  chat_id: number | string;
+  direct_messages_topic_id?: number;
+  disable_notification?: boolean;
+  duration?: number;
+  message_effect_id?: string;
+  message_thread_id?: number;
+  parse_mode?: string;
+  performer?: string;
+  protect_content?: boolean;
+  reply_markup?: [InlineKeyboardMarkup](#inlinekeyboardmarkup) | [ReplyKeyboardMarkup](#replykeyboardmarkup) | [ReplyKeyboardRemove](#replykeyboardremove) | [ForceReply](#forcereply);
+  reply_parameters?: [ReplyParameters](#replyparameters);
+  suggested_post_parameters?: [SuggestedPostParameters](#suggestedpostparameters);
+  thumbnail?: [InputFile](#inputfile) | string;
+  title?: string;
+};
+```
+
+### `SendAudioResult`
+
+```ts
+type SendAudioResult = [Message](#message);
+```
+
+### `SendChatActionParams`
+
+```ts
+type SendChatActionParams = {
+  action: string;
+  business_connection_id?: string;
+  chat_id: number | string;
+  message_thread_id?: number;
+};
+```
+
+### `SendChatActionResult`
+
+```ts
+type SendChatActionResult = boolean;
+```
+
+### `SendChatJoinRequestWebAppParams`
+
+```ts
+type SendChatJoinRequestWebAppParams = {
+  chat_join_request_query_id: string;
+  web_app_url: string;
+};
+```
+
+### `SendChatJoinRequestWebAppResult`
+
+```ts
+type SendChatJoinRequestWebAppResult = boolean;
+```
+
+### `SendChecklistParams`
+
+```ts
+type SendChecklistParams = {
+  business_connection_id: string;
+  chat_id: number | string;
+  checklist: [InputChecklist](#inputchecklist);
+  disable_notification?: boolean;
+  message_effect_id?: string;
+  protect_content?: boolean;
+  reply_markup?: [InlineKeyboardMarkup](#inlinekeyboardmarkup);
+  reply_parameters?: [ReplyParameters](#replyparameters);
+};
+```
+
+### `SendChecklistResult`
+
+```ts
+type SendChecklistResult = [Message](#message);
+```
+
+### `SendContactParams`
+
+```ts
+type SendContactParams = {
+  allow_paid_broadcast?: boolean;
+  business_connection_id?: string;
+  chat_id: number | string;
+  direct_messages_topic_id?: number;
+  disable_notification?: boolean;
+  first_name: string;
+  last_name?: string;
+  message_effect_id?: string;
+  message_thread_id?: number;
+  phone_number: string;
+  protect_content?: boolean;
+  reply_markup?: [InlineKeyboardMarkup](#inlinekeyboardmarkup) | [ReplyKeyboardMarkup](#replykeyboardmarkup) | [ReplyKeyboardRemove](#replykeyboardremove) | [ForceReply](#forcereply);
+  reply_parameters?: [ReplyParameters](#replyparameters);
+  suggested_post_parameters?: [SuggestedPostParameters](#suggestedpostparameters);
+  vcard?: string;
+};
+```
+
+### `SendContactResult`
+
+```ts
+type SendContactResult = [Message](#message);
+```
+
+### `SendDiceParams`
+
+```ts
+type SendDiceParams = {
+  allow_paid_broadcast?: boolean;
+  business_connection_id?: string;
+  chat_id: number | string;
+  direct_messages_topic_id?: number;
+  disable_notification?: boolean;
+  emoji?: string;
+  message_effect_id?: string;
+  message_thread_id?: number;
+  protect_content?: boolean;
+  reply_markup?: [InlineKeyboardMarkup](#inlinekeyboardmarkup) | [ReplyKeyboardMarkup](#replykeyboardmarkup) | [ReplyKeyboardRemove](#replykeyboardremove) | [ForceReply](#forcereply);
+  reply_parameters?: [ReplyParameters](#replyparameters);
+  suggested_post_parameters?: [SuggestedPostParameters](#suggestedpostparameters);
+};
+```
+
+### `SendDiceResult`
+
+```ts
+type SendDiceResult = [Message](#message);
+```
+
+### `SendDocumentParams`
+
+```ts
+type SendDocumentParams = {
+  allow_paid_broadcast?: boolean;
+  business_connection_id?: string;
+  caption?: string;
+  caption_entities?: [MessageEntity](#messageentity)[];
+  chat_id: number | string;
+  direct_messages_topic_id?: number;
+  disable_content_type_detection?: boolean;
+  disable_notification?: boolean;
+  document: [InputFile](#inputfile) | string;
+  message_effect_id?: string;
+  message_thread_id?: number;
+  parse_mode?: string;
+  protect_content?: boolean;
+  reply_markup?: [InlineKeyboardMarkup](#inlinekeyboardmarkup) | [ReplyKeyboardMarkup](#replykeyboardmarkup) | [ReplyKeyboardRemove](#replykeyboardremove) | [ForceReply](#forcereply);
+  reply_parameters?: [ReplyParameters](#replyparameters);
+  suggested_post_parameters?: [SuggestedPostParameters](#suggestedpostparameters);
+  thumbnail?: [InputFile](#inputfile) | string;
+};
+```
+
+### `SendDocumentResult`
+
+```ts
+type SendDocumentResult = [Message](#message);
+```
+
+### `SendGameParams`
+
+```ts
+type SendGameParams = {
+  allow_paid_broadcast?: boolean;
+  business_connection_id?: string;
+  chat_id: number | string;
+  disable_notification?: boolean;
+  game_short_name: string;
+  message_effect_id?: string;
+  message_thread_id?: number;
+  protect_content?: boolean;
+  reply_markup?: [InlineKeyboardMarkup](#inlinekeyboardmarkup);
+  reply_parameters?: [ReplyParameters](#replyparameters);
+};
+```
+
+### `SendGameResult`
+
+```ts
+type SendGameResult = [Message](#message);
+```
+
+### `SendGiftParams`
+
+```ts
+type SendGiftParams = {
+  chat_id?: number | string;
+  gift_id: string;
+  pay_for_upgrade?: boolean;
+  text?: string;
+  text_entities?: [MessageEntity](#messageentity)[];
+  text_parse_mode?: string;
+  user_id?: number;
+};
+```
+
+### `SendGiftResult`
+
+```ts
+type SendGiftResult = boolean;
+```
+
+### `SendInvoiceParams`
+
+```ts
+type SendInvoiceParams = {
+  allow_paid_broadcast?: boolean;
+  chat_id: number | string;
+  currency: string;
+  description: string;
+  direct_messages_topic_id?: number;
+  disable_notification?: boolean;
+  is_flexible?: boolean;
+  max_tip_amount?: number;
+  message_effect_id?: string;
+  message_thread_id?: number;
+  need_email?: boolean;
+  need_name?: boolean;
+  need_phone_number?: boolean;
+  need_shipping_address?: boolean;
+  payload: string;
+  photo_height?: number;
+  photo_size?: number;
+  photo_url?: string;
+  photo_width?: number;
+  prices: [LabeledPrice](#labeledprice)[];
+  protect_content?: boolean;
+  provider_data?: string;
+  provider_token?: string;
+  reply_markup?: [InlineKeyboardMarkup](#inlinekeyboardmarkup);
+  reply_parameters?: [ReplyParameters](#replyparameters);
+  send_email_to_provider?: boolean;
+  send_phone_number_to_provider?: boolean;
+  start_parameter?: string;
+  suggested_post_parameters?: [SuggestedPostParameters](#suggestedpostparameters);
+  suggested_tip_amounts?: number[];
+  title: string;
+};
+```
+
+### `SendInvoiceResult`
+
+```ts
+type SendInvoiceResult = [Message](#message);
+```
+
+### `SendLivePhotoParams`
+
+```ts
+type SendLivePhotoParams = {
+  allow_paid_broadcast?: boolean;
+  business_connection_id?: string;
+  caption?: string;
+  caption_entities?: [MessageEntity](#messageentity)[];
+  chat_id: number | string;
+  direct_messages_topic_id?: number;
+  disable_notification?: boolean;
+  has_spoiler?: boolean;
+  live_photo: [InputFile](#inputfile) | string;
+  message_effect_id?: string;
+  message_thread_id?: number;
+  parse_mode?: string;
+  photo: [InputFile](#inputfile) | string;
+  protect_content?: boolean;
+  reply_markup?: [InlineKeyboardMarkup](#inlinekeyboardmarkup) | [ReplyKeyboardMarkup](#replykeyboardmarkup) | [ReplyKeyboardRemove](#replykeyboardremove) | [ForceReply](#forcereply);
+  reply_parameters?: [ReplyParameters](#replyparameters);
+  show_caption_above_media?: boolean;
+  suggested_post_parameters?: [SuggestedPostParameters](#suggestedpostparameters);
+};
+```
+
+### `SendLivePhotoResult`
+
+```ts
+type SendLivePhotoResult = [Message](#message);
+```
+
+### `SendLocationParams`
+
+```ts
+type SendLocationParams = {
+  allow_paid_broadcast?: boolean;
+  business_connection_id?: string;
+  chat_id: number | string;
+  direct_messages_topic_id?: number;
+  disable_notification?: boolean;
+  heading?: number;
+  horizontal_accuracy?: number;
+  latitude: number;
+  live_period?: number;
+  longitude: number;
+  message_effect_id?: string;
+  message_thread_id?: number;
+  protect_content?: boolean;
+  proximity_alert_radius?: number;
+  reply_markup?: [InlineKeyboardMarkup](#inlinekeyboardmarkup) | [ReplyKeyboardMarkup](#replykeyboardmarkup) | [ReplyKeyboardRemove](#replykeyboardremove) | [ForceReply](#forcereply);
+  reply_parameters?: [ReplyParameters](#replyparameters);
+  suggested_post_parameters?: [SuggestedPostParameters](#suggestedpostparameters);
+};
+```
+
+### `SendLocationResult`
+
+```ts
+type SendLocationResult = [Message](#message);
+```
+
+### `SendMediaGroupParams`
+
+```ts
+type SendMediaGroupParams = {
+  allow_paid_broadcast?: boolean;
+  business_connection_id?: string;
+  chat_id: number | string;
+  direct_messages_topic_id?: number;
+  disable_notification?: boolean;
+  media: ([InputMediaAudio](#inputmediaaudio) | [InputMediaDocument](#inputmediadocument) | [InputMediaLivePhoto](#inputmedialivephoto) | [InputMediaPhoto](#inputmediaphoto) | [InputMediaVideo](#inputmediavideo))[];
+  message_effect_id?: string;
+  message_thread_id?: number;
+  protect_content?: boolean;
+  reply_parameters?: [ReplyParameters](#replyparameters);
+};
+```
+
+### `SendMediaGroupResult`
+
+```ts
+type SendMediaGroupResult = [Message](#message)[];
+```
+
+### `SendMessageDraftParams`
+
+```ts
+type SendMessageDraftParams = {
+  chat_id: number;
+  draft_id: number;
+  entities?: [MessageEntity](#messageentity)[];
+  message_thread_id?: number;
+  parse_mode?: string;
+  text?: string;
+};
+```
+
+### `SendMessageDraftResult`
+
+```ts
+type SendMessageDraftResult = boolean;
+```
+
+### `SendMessageParams`
+
+```ts
+type SendMessageParams = {
+  allow_paid_broadcast?: boolean;
+  business_connection_id?: string;
+  chat_id: number | string;
+  direct_messages_topic_id?: number;
+  disable_notification?: boolean;
+  entities?: [MessageEntity](#messageentity)[];
+  link_preview_options?: [LinkPreviewOptions](#linkpreviewoptions);
+  message_effect_id?: string;
+  message_thread_id?: number;
+  parse_mode?: string;
+  protect_content?: boolean;
+  reply_markup?: [InlineKeyboardMarkup](#inlinekeyboardmarkup) | [ReplyKeyboardMarkup](#replykeyboardmarkup) | [ReplyKeyboardRemove](#replykeyboardremove) | [ForceReply](#forcereply);
+  reply_parameters?: [ReplyParameters](#replyparameters);
+  suggested_post_parameters?: [SuggestedPostParameters](#suggestedpostparameters);
+  text: string;
+};
+```
+
+### `SendMessageResult`
+
+```ts
+type SendMessageResult = [Message](#message);
+```
+
+### `SendPaidMediaParams`
+
+```ts
+type SendPaidMediaParams = {
+  allow_paid_broadcast?: boolean;
+  business_connection_id?: string;
+  caption?: string;
+  caption_entities?: [MessageEntity](#messageentity)[];
+  chat_id: number | string;
+  direct_messages_topic_id?: number;
+  disable_notification?: boolean;
+  media: [InputPaidMedia](#inputpaidmedia)[];
+  message_thread_id?: number;
+  parse_mode?: string;
+  payload?: string;
+  protect_content?: boolean;
+  reply_markup?: [InlineKeyboardMarkup](#inlinekeyboardmarkup) | [ReplyKeyboardMarkup](#replykeyboardmarkup) | [ReplyKeyboardRemove](#replykeyboardremove) | [ForceReply](#forcereply);
+  reply_parameters?: [ReplyParameters](#replyparameters);
+  show_caption_above_media?: boolean;
+  star_count: number;
+  suggested_post_parameters?: [SuggestedPostParameters](#suggestedpostparameters);
+};
+```
+
+### `SendPaidMediaResult`
+
+```ts
+type SendPaidMediaResult = [Message](#message);
+```
+
+### `SendPhotoParams`
+
+```ts
+type SendPhotoParams = {
+  allow_paid_broadcast?: boolean;
+  business_connection_id?: string;
+  caption?: string;
+  caption_entities?: [MessageEntity](#messageentity)[];
+  chat_id: number | string;
+  direct_messages_topic_id?: number;
+  disable_notification?: boolean;
+  has_spoiler?: boolean;
+  message_effect_id?: string;
+  message_thread_id?: number;
+  parse_mode?: string;
+  photo: [InputFile](#inputfile) | string;
+  protect_content?: boolean;
+  reply_markup?: [InlineKeyboardMarkup](#inlinekeyboardmarkup) | [ReplyKeyboardMarkup](#replykeyboardmarkup) | [ReplyKeyboardRemove](#replykeyboardremove) | [ForceReply](#forcereply);
+  reply_parameters?: [ReplyParameters](#replyparameters);
+  show_caption_above_media?: boolean;
+  suggested_post_parameters?: [SuggestedPostParameters](#suggestedpostparameters);
+};
+```
+
+### `SendPhotoResult`
+
+```ts
+type SendPhotoResult = [Message](#message);
+```
+
+### `SendPollParams`
+
+```ts
+type SendPollParams = {
+  allow_adding_options?: boolean;
+  allow_paid_broadcast?: boolean;
+  allows_multiple_answers?: boolean;
+  allows_revoting?: boolean;
+  business_connection_id?: string;
+  chat_id: number | string;
+  close_date?: number;
+  correct_option_ids?: number[];
+  country_codes?: string[];
+  description?: string;
+  description_entities?: [MessageEntity](#messageentity)[];
+  description_parse_mode?: string;
+  disable_notification?: boolean;
+  explanation?: string;
+  explanation_entities?: [MessageEntity](#messageentity)[];
+  explanation_media?: [InputPollMedia](#inputpollmedia);
+  explanation_parse_mode?: string;
+  hide_results_until_closes?: boolean;
+  is_anonymous?: boolean;
+  is_closed?: boolean;
+  media?: [InputPollMedia](#inputpollmedia);
+  members_only?: boolean;
+  message_effect_id?: string;
+  message_thread_id?: number;
+  open_period?: number;
+  options: [InputPollOption](#inputpolloption)[];
+  protect_content?: boolean;
+  question: string;
+  question_entities?: [MessageEntity](#messageentity)[];
+  question_parse_mode?: string;
+  reply_markup?: [InlineKeyboardMarkup](#inlinekeyboardmarkup) | [ReplyKeyboardMarkup](#replykeyboardmarkup) | [ReplyKeyboardRemove](#replykeyboardremove) | [ForceReply](#forcereply);
+  reply_parameters?: [ReplyParameters](#replyparameters);
+  shuffle_options?: boolean;
+  type?: string;
+};
+```
+
+### `SendPollResult`
+
+```ts
+type SendPollResult = [Message](#message);
+```
+
+### `SendRichMessageDraftParams`
+
+```ts
+type SendRichMessageDraftParams = {
+  chat_id: number;
+  draft_id: number;
+  message_thread_id?: number;
+  rich_message: [InputRichMessage](#inputrichmessage);
+};
+```
+
+### `SendRichMessageDraftResult`
+
+```ts
+type SendRichMessageDraftResult = boolean;
+```
+
+### `SendRichMessageParams`
+
+```ts
+type SendRichMessageParams = {
+  allow_paid_broadcast?: boolean;
+  business_connection_id?: string;
+  chat_id: number | string;
+  direct_messages_topic_id?: number;
+  disable_notification?: boolean;
+  message_effect_id?: string;
+  message_thread_id?: number;
+  protect_content?: boolean;
+  reply_markup?: [InlineKeyboardMarkup](#inlinekeyboardmarkup) | [ReplyKeyboardMarkup](#replykeyboardmarkup) | [ReplyKeyboardRemove](#replykeyboardremove) | [ForceReply](#forcereply);
+  reply_parameters?: [ReplyParameters](#replyparameters);
+  rich_message: [InputRichMessage](#inputrichmessage);
+  suggested_post_parameters?: [SuggestedPostParameters](#suggestedpostparameters);
+};
+```
+
+### `SendRichMessageResult`
+
+```ts
+type SendRichMessageResult = [Message](#message);
+```
+
+### `SendStickerParams`
+
+```ts
+type SendStickerParams = {
+  allow_paid_broadcast?: boolean;
+  business_connection_id?: string;
+  chat_id: number | string;
+  direct_messages_topic_id?: number;
+  disable_notification?: boolean;
+  emoji?: string;
+  message_effect_id?: string;
+  message_thread_id?: number;
+  protect_content?: boolean;
+  reply_markup?: [InlineKeyboardMarkup](#inlinekeyboardmarkup) | [ReplyKeyboardMarkup](#replykeyboardmarkup) | [ReplyKeyboardRemove](#replykeyboardremove) | [ForceReply](#forcereply);
+  reply_parameters?: [ReplyParameters](#replyparameters);
+  sticker: [InputFile](#inputfile) | string;
+  suggested_post_parameters?: [SuggestedPostParameters](#suggestedpostparameters);
+};
+```
+
+### `SendStickerResult`
+
+```ts
+type SendStickerResult = [Message](#message);
+```
+
+### `SendVenueParams`
+
+```ts
+type SendVenueParams = {
+  address: string;
+  allow_paid_broadcast?: boolean;
+  business_connection_id?: string;
+  chat_id: number | string;
+  direct_messages_topic_id?: number;
+  disable_notification?: boolean;
+  foursquare_id?: string;
+  foursquare_type?: string;
+  google_place_id?: string;
+  google_place_type?: string;
+  latitude: number;
+  longitude: number;
+  message_effect_id?: string;
+  message_thread_id?: number;
+  protect_content?: boolean;
+  reply_markup?: [InlineKeyboardMarkup](#inlinekeyboardmarkup) | [ReplyKeyboardMarkup](#replykeyboardmarkup) | [ReplyKeyboardRemove](#replykeyboardremove) | [ForceReply](#forcereply);
+  reply_parameters?: [ReplyParameters](#replyparameters);
+  suggested_post_parameters?: [SuggestedPostParameters](#suggestedpostparameters);
+  title: string;
+};
+```
+
+### `SendVenueResult`
+
+```ts
+type SendVenueResult = [Message](#message);
+```
+
+### `SendVideoNoteParams`
+
+```ts
+type SendVideoNoteParams = {
+  allow_paid_broadcast?: boolean;
+  business_connection_id?: string;
+  chat_id: number | string;
+  direct_messages_topic_id?: number;
+  disable_notification?: boolean;
+  duration?: number;
+  length?: number;
+  message_effect_id?: string;
+  message_thread_id?: number;
+  protect_content?: boolean;
+  reply_markup?: [InlineKeyboardMarkup](#inlinekeyboardmarkup) | [ReplyKeyboardMarkup](#replykeyboardmarkup) | [ReplyKeyboardRemove](#replykeyboardremove) | [ForceReply](#forcereply);
+  reply_parameters?: [ReplyParameters](#replyparameters);
+  suggested_post_parameters?: [SuggestedPostParameters](#suggestedpostparameters);
+  thumbnail?: [InputFile](#inputfile) | string;
+  video_note: [InputFile](#inputfile) | string;
+};
+```
+
+### `SendVideoNoteResult`
+
+```ts
+type SendVideoNoteResult = [Message](#message);
+```
+
+### `SendVideoParams`
+
+```ts
+type SendVideoParams = {
+  allow_paid_broadcast?: boolean;
+  business_connection_id?: string;
+  caption?: string;
+  caption_entities?: [MessageEntity](#messageentity)[];
+  chat_id: number | string;
+  cover?: [InputFile](#inputfile) | string;
+  direct_messages_topic_id?: number;
+  disable_notification?: boolean;
+  duration?: number;
+  has_spoiler?: boolean;
+  height?: number;
+  message_effect_id?: string;
+  message_thread_id?: number;
+  parse_mode?: string;
+  protect_content?: boolean;
+  reply_markup?: [InlineKeyboardMarkup](#inlinekeyboardmarkup) | [ReplyKeyboardMarkup](#replykeyboardmarkup) | [ReplyKeyboardRemove](#replykeyboardremove) | [ForceReply](#forcereply);
+  reply_parameters?: [ReplyParameters](#replyparameters);
+  show_caption_above_media?: boolean;
+  start_timestamp?: number;
+  suggested_post_parameters?: [SuggestedPostParameters](#suggestedpostparameters);
+  supports_streaming?: boolean;
+  thumbnail?: [InputFile](#inputfile) | string;
+  video: [InputFile](#inputfile) | string;
+  width?: number;
+};
+```
+
+### `SendVideoResult`
+
+```ts
+type SendVideoResult = [Message](#message);
+```
+
+### `SendVoiceParams`
+
+```ts
+type SendVoiceParams = {
+  allow_paid_broadcast?: boolean;
+  business_connection_id?: string;
+  caption?: string;
+  caption_entities?: [MessageEntity](#messageentity)[];
+  chat_id: number | string;
+  direct_messages_topic_id?: number;
+  disable_notification?: boolean;
+  duration?: number;
+  message_effect_id?: string;
+  message_thread_id?: number;
+  parse_mode?: string;
+  protect_content?: boolean;
+  reply_markup?: [InlineKeyboardMarkup](#inlinekeyboardmarkup) | [ReplyKeyboardMarkup](#replykeyboardmarkup) | [ReplyKeyboardRemove](#replykeyboardremove) | [ForceReply](#forcereply);
+  reply_parameters?: [ReplyParameters](#replyparameters);
+  suggested_post_parameters?: [SuggestedPostParameters](#suggestedpostparameters);
+  voice: [InputFile](#inputfile) | string;
+};
+```
+
+### `SendVoiceResult`
+
+```ts
+type SendVoiceResult = [Message](#message);
+```
+
+### `SentGuestMessage`
+
+```ts
+type SentGuestMessage = {
+  inline_message_id: string;
+};
+```
+
+### `SentWebAppMessage`
+
+```ts
+type SentWebAppMessage = {
+  inline_message_id?: string;
+};
+```
+
+### `SetBusinessAccountBioParams`
+
+```ts
+type SetBusinessAccountBioParams = {
+  bio?: string;
+  business_connection_id: string;
+};
+```
+
+### `SetBusinessAccountBioResult`
+
+```ts
+type SetBusinessAccountBioResult = boolean;
+```
+
+### `SetBusinessAccountGiftSettingsParams`
+
+```ts
+type SetBusinessAccountGiftSettingsParams = {
+  accepted_gift_types: [AcceptedGiftTypes](#acceptedgifttypes);
+  business_connection_id: string;
+  show_gift_button: boolean;
+};
+```
+
+### `SetBusinessAccountGiftSettingsResult`
+
+```ts
+type SetBusinessAccountGiftSettingsResult = boolean;
+```
+
+### `SetBusinessAccountNameParams`
+
+```ts
+type SetBusinessAccountNameParams = {
+  business_connection_id: string;
+  first_name: string;
+  last_name?: string;
+};
+```
+
+### `SetBusinessAccountNameResult`
+
+```ts
+type SetBusinessAccountNameResult = boolean;
+```
+
+### `SetBusinessAccountProfilePhotoParams`
+
+```ts
+type SetBusinessAccountProfilePhotoParams = {
+  business_connection_id: string;
+  is_public?: boolean;
+  photo: [InputProfilePhoto](#inputprofilephoto);
+};
+```
+
+### `SetBusinessAccountProfilePhotoResult`
+
+```ts
+type SetBusinessAccountProfilePhotoResult = boolean;
+```
+
+### `SetBusinessAccountUsernameParams`
+
+```ts
+type SetBusinessAccountUsernameParams = {
+  business_connection_id: string;
+  username?: string;
+};
+```
+
+### `SetBusinessAccountUsernameResult`
+
+```ts
+type SetBusinessAccountUsernameResult = boolean;
+```
+
+### `SetChatAdministratorCustomTitleParams`
+
+```ts
+type SetChatAdministratorCustomTitleParams = {
+  chat_id: number | string;
+  custom_title: string;
+  user_id: number;
+};
+```
+
+### `SetChatAdministratorCustomTitleResult`
+
+```ts
+type SetChatAdministratorCustomTitleResult = boolean;
+```
+
+### `SetChatDescriptionParams`
+
+```ts
+type SetChatDescriptionParams = {
+  chat_id: number | string;
+  description?: string;
+};
+```
+
+### `SetChatDescriptionResult`
+
+```ts
+type SetChatDescriptionResult = boolean;
+```
+
+### `SetChatMemberTagParams`
+
+```ts
+type SetChatMemberTagParams = {
+  chat_id: number | string;
+  tag?: string;
+  user_id: number;
+};
+```
+
+### `SetChatMemberTagResult`
+
+```ts
+type SetChatMemberTagResult = boolean;
+```
+
+### `SetChatMenuButtonParams`
+
+```ts
+type SetChatMenuButtonParams = {
+  chat_id?: number;
+  menu_button?: [MenuButton](#menubutton);
+};
+```
+
+### `SetChatMenuButtonResult`
+
+```ts
+type SetChatMenuButtonResult = boolean;
+```
+
+### `SetChatPermissionsParams`
+
+```ts
+type SetChatPermissionsParams = {
+  chat_id: number | string;
+  permissions: [ChatPermissions](#chatpermissions);
+  use_independent_chat_permissions?: boolean;
+};
+```
+
+### `SetChatPermissionsResult`
+
+```ts
+type SetChatPermissionsResult = boolean;
+```
+
+### `SetChatPhotoParams`
+
+```ts
+type SetChatPhotoParams = {
+  chat_id: number | string;
+  photo: [InputFile](#inputfile) | string;
+};
+```
+
+### `SetChatPhotoResult`
+
+```ts
+type SetChatPhotoResult = boolean;
+```
+
+### `SetChatStickerSetParams`
+
+```ts
+type SetChatStickerSetParams = {
+  chat_id: number | string;
+  sticker_set_name: string;
+};
+```
+
+### `SetChatStickerSetResult`
+
+```ts
+type SetChatStickerSetResult = boolean;
+```
+
+### `SetChatTitleParams`
+
+```ts
+type SetChatTitleParams = {
+  chat_id: number | string;
+  title: string;
+};
+```
+
+### `SetChatTitleResult`
+
+```ts
+type SetChatTitleResult = boolean;
+```
+
+### `SetCustomEmojiStickerSetThumbnailParams`
+
+```ts
+type SetCustomEmojiStickerSetThumbnailParams = {
+  custom_emoji_id?: string;
+  name: string;
+};
+```
+
+### `SetCustomEmojiStickerSetThumbnailResult`
+
+```ts
+type SetCustomEmojiStickerSetThumbnailResult = boolean;
+```
+
+### `SetGameScoreParams`
+
+```ts
+type SetGameScoreParams = {
+  chat_id?: number;
+  disable_edit_message?: boolean;
+  force?: boolean;
+  inline_message_id?: string;
+  message_id?: number;
+  score: number;
+  user_id: number;
+};
+```
+
+### `SetGameScoreResult`
+
+```ts
+type SetGameScoreResult = [Message](#message) | boolean;
+```
+
+### `SetManagedBotAccessSettingsParams`
+
+```ts
+type SetManagedBotAccessSettingsParams = {
+  added_user_ids?: number[];
+  is_access_restricted: boolean;
+  user_id: number;
+};
+```
+
+### `SetManagedBotAccessSettingsResult`
+
+```ts
+type SetManagedBotAccessSettingsResult = boolean;
+```
+
+### `SetMessageReactionParams`
+
+```ts
+type SetMessageReactionParams = {
+  chat_id: number | string;
+  is_big?: boolean;
+  message_id: number;
+  reaction?: [ReactionType](#reactiontype)[];
+};
+```
+
+### `SetMessageReactionResult`
+
+```ts
+type SetMessageReactionResult = boolean;
+```
+
+### `SetMyCommandsParams`
+
+```ts
+type SetMyCommandsParams = {
+  commands: [BotCommand](#botcommand)[];
+  language_code?: string;
+  scope?: [BotCommandScope](#botcommandscope);
+};
+```
+
+### `SetMyCommandsResult`
+
+```ts
+type SetMyCommandsResult = boolean;
+```
+
+### `SetMyDefaultAdministratorRightsParams`
+
+```ts
+type SetMyDefaultAdministratorRightsParams = {
+  for_channels?: boolean;
+  rights?: [ChatAdministratorRights](#chatadministratorrights);
+};
+```
+
+### `SetMyDefaultAdministratorRightsResult`
+
+```ts
+type SetMyDefaultAdministratorRightsResult = boolean;
+```
+
+### `SetMyDescriptionParams`
+
+```ts
+type SetMyDescriptionParams = {
+  description?: string;
+  language_code?: string;
+};
+```
+
+### `SetMyDescriptionResult`
+
+```ts
+type SetMyDescriptionResult = boolean;
+```
+
+### `SetMyNameParams`
+
+```ts
+type SetMyNameParams = {
+  language_code?: string;
+  name?: string;
+};
+```
+
+### `SetMyNameResult`
+
+```ts
+type SetMyNameResult = boolean;
+```
+
+### `SetMyProfilePhotoParams`
+
+```ts
+type SetMyProfilePhotoParams = {
+  photo: [InputProfilePhoto](#inputprofilephoto);
+};
+```
+
+### `SetMyProfilePhotoResult`
+
+```ts
+type SetMyProfilePhotoResult = boolean;
+```
+
+### `SetMyShortDescriptionParams`
+
+```ts
+type SetMyShortDescriptionParams = {
+  language_code?: string;
+  short_description?: string;
+};
+```
+
+### `SetMyShortDescriptionResult`
+
+```ts
+type SetMyShortDescriptionResult = boolean;
+```
+
+### `SetPassportDataErrorsParams`
+
+```ts
+type SetPassportDataErrorsParams = {
+  errors: [PassportElementError](#passportelementerror)[];
+  user_id: number;
+};
+```
+
+### `SetPassportDataErrorsResult`
+
+```ts
+type SetPassportDataErrorsResult = boolean;
+```
+
+### `SetStickerEmojiListParams`
+
+```ts
+type SetStickerEmojiListParams = {
+  emoji_list: string[];
+  sticker: string;
+};
+```
+
+### `SetStickerEmojiListResult`
+
+```ts
+type SetStickerEmojiListResult = boolean;
+```
+
+### `SetStickerKeywordsParams`
+
+```ts
+type SetStickerKeywordsParams = {
+  keywords?: string[];
+  sticker: string;
+};
+```
+
+### `SetStickerKeywordsResult`
+
+```ts
+type SetStickerKeywordsResult = boolean;
+```
+
+### `SetStickerMaskPositionParams`
+
+```ts
+type SetStickerMaskPositionParams = {
+  mask_position?: [MaskPosition](#maskposition);
+  sticker: string;
+};
+```
+
+### `SetStickerMaskPositionResult`
+
+```ts
+type SetStickerMaskPositionResult = boolean;
+```
+
+### `SetStickerPositionInSetParams`
+
+```ts
+type SetStickerPositionInSetParams = {
+  position: number;
+  sticker: string;
+};
+```
+
+### `SetStickerPositionInSetResult`
+
+```ts
+type SetStickerPositionInSetResult = boolean;
+```
+
+### `SetStickerSetThumbnailParams`
+
+```ts
+type SetStickerSetThumbnailParams = {
+  format: string;
+  name: string;
+  thumbnail?: [InputFile](#inputfile) | string;
+  user_id: number;
+};
+```
+
+### `SetStickerSetThumbnailResult`
+
+```ts
+type SetStickerSetThumbnailResult = boolean;
+```
+
+### `SetStickerSetTitleParams`
+
+```ts
+type SetStickerSetTitleParams = {
+  name: string;
+  title: string;
+};
+```
+
+### `SetStickerSetTitleResult`
+
+```ts
+type SetStickerSetTitleResult = boolean;
+```
+
+### `SetUserEmojiStatusParams`
+
+```ts
+type SetUserEmojiStatusParams = {
+  emoji_status_custom_emoji_id?: string;
+  emoji_status_expiration_date?: number;
+  user_id: number;
+};
+```
+
+### `SetUserEmojiStatusResult`
+
+```ts
+type SetUserEmojiStatusResult = boolean;
+```
+
+### `SetWebhookParams`
+
+```ts
+type SetWebhookParams = {
+  allowed_updates?: string[];
+  certificate?: [InputFile](#inputfile) | string;
+  drop_pending_updates?: boolean;
+  ip_address?: string;
+  max_connections?: number;
+  secret_token?: string;
+  url: string;
+};
+```
+
+### `SetWebhookResult`
+
+```ts
+type SetWebhookResult = boolean;
+```
+
+### `SharedUser`
+
+```ts
+type SharedUser = {
+  first_name?: string;
+  last_name?: string;
+  photo?: [PhotoSize](#photosize)[];
+  user_id: number;
+  username?: string;
+};
+```
+
+### `ShippingAddress`
+
+```ts
+type ShippingAddress = {
+  city: string;
+  country_code: string;
+  post_code: string;
+  state: string;
+  street_line1: string;
+  street_line2: string;
+};
+```
+
+### `ShippingOption`
+
+```ts
+type ShippingOption = {
+  id: string;
+  prices: [LabeledPrice](#labeledprice)[];
+  title: string;
+};
+```
+
+### `ShippingQuery`
+
+```ts
+type ShippingQuery = {
+  from: [User](#user);
+  id: string;
+  invoice_payload: string;
+  shipping_address: [ShippingAddress](#shippingaddress);
+};
+```
+
+### `StarAmount`
+
+```ts
+type StarAmount = {
+  amount: number;
+  nanostar_amount?: number;
+};
+```
+
+### `StarTransaction`
+
+```ts
+type StarTransaction = {
+  amount: number;
+  date: number;
+  id: string;
+  nanostar_amount?: number;
+  receiver?: [TransactionPartner](#transactionpartner);
+  source?: [TransactionPartner](#transactionpartner);
+};
+```
+
+### `StarTransactions`
+
+```ts
+type StarTransactions = {
+  transactions: [StarTransaction](#startransaction)[];
+};
+```
+
+### `Sticker`
+
+```ts
+type Sticker = {
+  custom_emoji_id?: string;
+  emoji?: string;
+  file_id: string;
+  file_size?: number;
+  file_unique_id: string;
+  height: number;
+  is_animated: boolean;
+  is_video: boolean;
+  mask_position?: [MaskPosition](#maskposition);
+  needs_repainting?: true;
+  premium_animation?: [File](#file);
+  set_name?: string;
+  thumbnail?: [PhotoSize](#photosize);
+  type: string;
+  width: number;
+};
+```
+
+### `StickerSet`
+
+```ts
+type StickerSet = {
+  name: string;
+  sticker_type: string;
+  stickers: [Sticker](#sticker)[];
+  thumbnail?: [PhotoSize](#photosize);
+  title: string;
+};
+```
+
+### `StopMessageLiveLocationParams`
+
+```ts
+type StopMessageLiveLocationParams = {
+  business_connection_id?: string;
+  chat_id?: number | string;
+  inline_message_id?: string;
+  message_id?: number;
+  reply_markup?: [InlineKeyboardMarkup](#inlinekeyboardmarkup);
+};
+```
+
+### `StopMessageLiveLocationResult`
+
+```ts
+type StopMessageLiveLocationResult = [Message](#message) | boolean;
+```
+
+### `StopPollParams`
+
+```ts
+type StopPollParams = {
+  business_connection_id?: string;
+  chat_id: number | string;
+  message_id: number;
+  reply_markup?: [InlineKeyboardMarkup](#inlinekeyboardmarkup);
+};
+```
+
+### `StopPollResult`
+
+```ts
+type StopPollResult = [Poll](#poll);
+```
+
+### `Story`
+
+```ts
+type Story = {
+  chat: [Chat](#chat);
+  id: number;
+};
+```
+
+### `StoryArea`
+
+```ts
+type StoryArea = {
+  position: [StoryAreaPosition](#storyareaposition);
+  type: [StoryAreaType](#storyareatype);
+};
+```
+
+### `StoryAreaPosition`
+
+```ts
+type StoryAreaPosition = {
+  corner_radius_percentage: number;
+  height_percentage: number;
+  rotation_angle: number;
+  width_percentage: number;
+  x_percentage: number;
+  y_percentage: number;
+};
+```
+
+### `StoryAreaType`
+
+```ts
+type StoryAreaType = [StoryAreaTypeLocation](#storyareatypelocation) | [StoryAreaTypeSuggestedReaction](#storyareatypesuggestedreaction) | [StoryAreaTypeLink](#storyareatypelink) | [StoryAreaTypeWeather](#storyareatypeweather) | [StoryAreaTypeUniqueGift](#storyareatypeuniquegift);
+```
+
+### `StoryAreaTypeLink`
+
+```ts
+type StoryAreaTypeLink = {
+  type: string;
+  url: string;
+};
+```
+
+### `StoryAreaTypeLocation`
+
+```ts
+type StoryAreaTypeLocation = {
+  address?: [LocationAddress](#locationaddress);
+  latitude: number;
+  longitude: number;
+  type: string;
+};
+```
+
+### `StoryAreaTypeSuggestedReaction`
+
+```ts
+type StoryAreaTypeSuggestedReaction = {
+  is_dark?: boolean;
+  is_flipped?: boolean;
+  reaction_type: [ReactionType](#reactiontype);
+  type: string;
+};
+```
+
+### `StoryAreaTypeUniqueGift`
+
+```ts
+type StoryAreaTypeUniqueGift = {
+  name: string;
+  type: string;
+};
+```
+
+### `StoryAreaTypeWeather`
+
+```ts
+type StoryAreaTypeWeather = {
+  background_color: number;
+  emoji: string;
+  temperature: number;
+  type: string;
+};
+```
+
+### `SuccessfulPayment`
+
+```ts
+type SuccessfulPayment = {
+  currency: string;
+  invoice_payload: string;
+  is_first_recurring?: true;
+  is_recurring?: true;
+  order_info?: [OrderInfo](#orderinfo);
+  provider_payment_charge_id: string;
+  shipping_option_id?: string;
+  subscription_expiration_date?: number;
+  telegram_payment_charge_id: string;
+  total_amount: number;
+};
+```
+
+### `SuggestedPostApprovalFailed`
+
+```ts
+type SuggestedPostApprovalFailed = {
+  price: [SuggestedPostPrice](#suggestedpostprice);
+  suggested_post_message?: [Message](#message);
+};
+```
+
+### `SuggestedPostApproved`
+
+```ts
+type SuggestedPostApproved = {
+  price?: [SuggestedPostPrice](#suggestedpostprice);
+  send_date: number;
+  suggested_post_message?: [Message](#message);
+};
+```
+
+### `SuggestedPostDeclined`
+
+```ts
+type SuggestedPostDeclined = {
+  comment?: string;
+  suggested_post_message?: [Message](#message);
+};
+```
+
+### `SuggestedPostInfo`
+
+```ts
+type SuggestedPostInfo = {
+  price?: [SuggestedPostPrice](#suggestedpostprice);
+  send_date?: number;
+  state: string;
+};
+```
+
+### `SuggestedPostPaid`
+
+```ts
+type SuggestedPostPaid = {
+  amount?: number;
+  currency: string;
+  star_amount?: [StarAmount](#staramount);
+  suggested_post_message?: [Message](#message);
+};
+```
+
+### `SuggestedPostParameters`
+
+```ts
+type SuggestedPostParameters = {
+  price?: [SuggestedPostPrice](#suggestedpostprice);
+  send_date?: number;
+};
+```
+
+### `SuggestedPostPrice`
+
+```ts
+type SuggestedPostPrice = {
+  amount: number;
+  currency: string;
+};
+```
+
+### `SuggestedPostRefunded`
+
+```ts
+type SuggestedPostRefunded = {
+  reason: string;
+  suggested_post_message?: [Message](#message);
+};
+```
+
+### `SwitchInlineQueryChosenChat`
+
+```ts
+type SwitchInlineQueryChosenChat = {
+  allow_bot_chats?: boolean;
+  allow_channel_chats?: boolean;
+  allow_group_chats?: boolean;
+  allow_user_chats?: boolean;
+  query?: string;
+};
+```
+
+### `TextQuote`
+
+```ts
+type TextQuote = {
+  entities?: [MessageEntity](#messageentity)[];
+  is_manual?: true;
+  position: number;
+  text: string;
+};
+```
+
+### `TransactionPartner`
+
+```ts
+type TransactionPartner = [TransactionPartnerUser](#transactionpartneruser) | [TransactionPartnerChat](#transactionpartnerchat) | [TransactionPartnerAffiliateProgram](#transactionpartneraffiliateprogram) | [TransactionPartnerFragment](#transactionpartnerfragment) | [TransactionPartnerTelegramAds](#transactionpartnertelegramads) | [TransactionPartnerTelegramApi](#transactionpartnertelegramapi) | [TransactionPartnerOther](#transactionpartnerother);
+```
+
+### `TransactionPartnerAffiliateProgram`
+
+```ts
+type TransactionPartnerAffiliateProgram = {
+  commission_per_mille: number;
+  sponsor_user?: [User](#user);
+  type: string;
+};
+```
+
+### `TransactionPartnerChat`
+
+```ts
+type TransactionPartnerChat = {
+  chat: [Chat](#chat);
+  gift?: [Gift](#gift);
+  type: string;
+};
+```
+
+### `TransactionPartnerFragment`
+
+```ts
+type TransactionPartnerFragment = {
+  type: string;
+  withdrawal_state?: [RevenueWithdrawalState](#revenuewithdrawalstate);
+};
+```
+
+### `TransactionPartnerOther`
+
+```ts
+type TransactionPartnerOther = {
+  type: string;
+};
+```
+
+### `TransactionPartnerTelegramAds`
+
+```ts
+type TransactionPartnerTelegramAds = {
+  type: string;
+};
+```
+
+### `TransactionPartnerTelegramApi`
+
+```ts
+type TransactionPartnerTelegramApi = {
+  request_count: number;
+  type: string;
+};
+```
+
+### `TransactionPartnerUser`
+
+```ts
+type TransactionPartnerUser = {
+  affiliate?: [AffiliateInfo](#affiliateinfo);
+  gift?: [Gift](#gift);
+  invoice_payload?: string;
+  paid_media?: [PaidMedia](#paidmedia)[];
+  paid_media_payload?: string;
+  premium_subscription_duration?: number;
+  subscription_period?: number;
+  transaction_type: string;
+  type: string;
+  user: [User](#user);
+};
+```
+
+### `TransferBusinessAccountStarsParams`
+
+```ts
+type TransferBusinessAccountStarsParams = {
+  business_connection_id: string;
+  star_count: number;
+};
+```
+
+### `TransferBusinessAccountStarsResult`
+
+```ts
+type TransferBusinessAccountStarsResult = boolean;
+```
+
+### `TransferGiftParams`
+
+```ts
+type TransferGiftParams = {
+  business_connection_id: string;
+  new_owner_chat_id: number;
+  owned_gift_id: string;
+  star_count?: number;
+};
+```
+
+### `TransferGiftResult`
+
+```ts
+type TransferGiftResult = boolean;
+```
+
+### `UnbanChatMemberParams`
+
+```ts
+type UnbanChatMemberParams = {
+  chat_id: number | string;
+  only_if_banned?: boolean;
+  user_id: number;
+};
+```
+
+### `UnbanChatMemberResult`
+
+```ts
+type UnbanChatMemberResult = boolean;
+```
+
+### `UnbanChatSenderChatParams`
+
+```ts
+type UnbanChatSenderChatParams = {
+  chat_id: number | string;
+  sender_chat_id: number;
+};
+```
+
+### `UnbanChatSenderChatResult`
+
+```ts
+type UnbanChatSenderChatResult = boolean;
+```
+
+### `UnhideGeneralForumTopicParams`
+
+```ts
+type UnhideGeneralForumTopicParams = {
+  chat_id: number | string;
+};
+```
+
+### `UnhideGeneralForumTopicResult`
+
+```ts
+type UnhideGeneralForumTopicResult = boolean;
+```
+
+### `UniqueGift`
+
+```ts
+type UniqueGift = {
+  backdrop: [UniqueGiftBackdrop](#uniquegiftbackdrop);
+  base_name: string;
+  colors?: [UniqueGiftColors](#uniquegiftcolors);
+  gift_id: string;
+  is_burned?: true;
+  is_from_blockchain?: true;
+  is_premium?: true;
+  model: [UniqueGiftModel](#uniquegiftmodel);
+  name: string;
+  number: number;
+  publisher_chat?: [Chat](#chat);
+  symbol: [UniqueGiftSymbol](#uniquegiftsymbol);
+};
+```
+
+### `UniqueGiftBackdrop`
+
+```ts
+type UniqueGiftBackdrop = {
+  colors: [UniqueGiftBackdropColors](#uniquegiftbackdropcolors);
+  name: string;
+  rarity_per_mille: number;
+};
+```
+
+### `UniqueGiftBackdropColors`
+
+```ts
+type UniqueGiftBackdropColors = {
+  center_color: number;
+  edge_color: number;
+  symbol_color: number;
+  text_color: number;
+};
+```
+
+### `UniqueGiftColors`
+
+```ts
+type UniqueGiftColors = {
+  dark_theme_main_color: number;
+  dark_theme_other_colors: number[];
+  light_theme_main_color: number;
+  light_theme_other_colors: number[];
+  model_custom_emoji_id: string;
+  symbol_custom_emoji_id: string;
+};
+```
+
+### `UniqueGiftInfo`
+
+```ts
+type UniqueGiftInfo = {
+  gift: [UniqueGift](#uniquegift);
+  last_resale_amount?: number;
+  last_resale_currency?: string;
+  next_transfer_date?: number;
+  origin: string;
+  owned_gift_id?: string;
+  transfer_star_count?: number;
+};
+```
+
+### `UniqueGiftModel`
+
+```ts
+type UniqueGiftModel = {
+  name: string;
+  rarity?: string;
+  rarity_per_mille: number;
+  sticker: [Sticker](#sticker);
+};
+```
+
+### `UniqueGiftSymbol`
+
+```ts
+type UniqueGiftSymbol = {
+  name: string;
+  rarity_per_mille: number;
+  sticker: [Sticker](#sticker);
+};
+```
+
+### `UnpinAllChatMessagesParams`
+
+```ts
+type UnpinAllChatMessagesParams = {
+  chat_id: number | string;
+};
+```
+
+### `UnpinAllChatMessagesResult`
+
+```ts
+type UnpinAllChatMessagesResult = boolean;
+```
+
+### `UnpinAllForumTopicMessagesParams`
+
+```ts
+type UnpinAllForumTopicMessagesParams = {
+  chat_id: number | string;
+  message_thread_id: number;
+};
+```
+
+### `UnpinAllForumTopicMessagesResult`
+
+```ts
+type UnpinAllForumTopicMessagesResult = boolean;
+```
+
+### `UnpinAllGeneralForumTopicMessagesParams`
+
+```ts
+type UnpinAllGeneralForumTopicMessagesParams = {
+  chat_id: number | string;
+};
+```
+
+### `UnpinAllGeneralForumTopicMessagesResult`
+
+```ts
+type UnpinAllGeneralForumTopicMessagesResult = boolean;
+```
+
+### `UnpinChatMessageParams`
+
+```ts
+type UnpinChatMessageParams = {
+  business_connection_id?: string;
+  chat_id: number | string;
+  message_id?: number;
+};
+```
+
+### `UnpinChatMessageResult`
+
+```ts
+type UnpinChatMessageResult = boolean;
+```
+
+### `Update`
+
+```ts
+type Update = {
+  update_id: number;
+} & {
+  message: [Message](#message);
+} | {
+  update_id: number;
+} & {
+  edited_message: [Message](#message);
+} | {
+  update_id: number;
+} & {
+  channel_post: [Message](#message);
+} | {
+  update_id: number;
+} & {
+  edited_channel_post: [Message](#message);
+} | {
+  update_id: number;
+} & {
+  business_connection: [BusinessConnection](#businessconnection);
+} | {
+  update_id: number;
+} & {
+  business_message: [Message](#message);
+} | {
+  update_id: number;
+} & {
+  edited_business_message: [Message](#message);
+} | {
+  update_id: number;
+} & {
+  deleted_business_messages: [BusinessMessagesDeleted](#businessmessagesdeleted);
+} | {
+  update_id: number;
+} & {
+  guest_message: [Message](#message);
+} | {
+  update_id: number;
+} & {
+  message_reaction: [MessageReactionUpdated](#messagereactionupdated);
+} | {
+  update_id: number;
+} & {
+  message_reaction_count: [MessageReactionCountUpdated](#messagereactioncountupdated);
+} | {
+  update_id: number;
+} & {
+  inline_query: [InlineQuery](#inlinequery);
+} | {
+  update_id: number;
+} & {
+  chosen_inline_result: [ChosenInlineResult](#choseninlineresult);
+} | {
+  update_id: number;
+} & {
+  callback_query: [CallbackQuery](#callbackquery);
+} | {
+  update_id: number;
+} & {
+  shipping_query: [ShippingQuery](#shippingquery);
+} | {
+  update_id: number;
+} & {
+  pre_checkout_query: [PreCheckoutQuery](#precheckoutquery);
+} | {
+  update_id: number;
+} & {
+  purchased_paid_media: [PaidMediaPurchased](#paidmediapurchased);
+} | {
+  update_id: number;
+} & {
+  poll: [Poll](#poll);
+} | {
+  update_id: number;
+} & {
+  poll_answer: [PollAnswer](#pollanswer);
+} | {
+  update_id: number;
+} & {
+  my_chat_member: [ChatMemberUpdated](#chatmemberupdated);
+} | {
+  update_id: number;
+} & {
+  chat_member: [ChatMemberUpdated](#chatmemberupdated);
+} | {
+  update_id: number;
+} & {
+  chat_join_request: [ChatJoinRequest](#chatjoinrequest);
+} | {
+  update_id: number;
+} & {
+  chat_boost: [ChatBoostUpdated](#chatboostupdated);
+} | {
+  update_id: number;
+} & {
+  removed_chat_boost: [ChatBoostRemoved](#chatboostremoved);
+} | {
+  update_id: number;
+} & {
+  managed_bot: [ManagedBotUpdated](#managedbotupdated);
+};
+```
+
+### `UpdateType`
+
+```ts
+type UpdateType = typeof [UPDATE_TYPES](#update_types)[number];
+```
+
+### `UpgradeGiftParams`
+
+```ts
+type UpgradeGiftParams = {
+  business_connection_id: string;
+  keep_original_details?: boolean;
+  owned_gift_id: string;
+  star_count?: number;
+};
+```
+
+### `UpgradeGiftResult`
+
+```ts
+type UpgradeGiftResult = boolean;
+```
+
+### `UploadStickerFileParams`
+
+```ts
+type UploadStickerFileParams = {
+  sticker: [InputFile](#inputfile) | string;
+  sticker_format: string;
+  user_id: number;
+};
+```
+
+### `UploadStickerFileResult`
+
+```ts
+type UploadStickerFileResult = [File](#file);
+```
+
+### `User`
+
+```ts
+type User = {
+  added_to_attachment_menu?: true;
+  allows_users_to_create_topics?: boolean;
+  can_connect_to_business?: boolean;
+  can_join_groups?: boolean;
+  can_manage_bots?: boolean;
+  can_read_all_group_messages?: boolean;
+  first_name: string;
+  has_main_web_app?: boolean;
+  has_topics_enabled?: boolean;
+  id: number;
+  is_bot: boolean;
+  is_premium?: true;
+  language_code?: string;
+  last_name?: string;
+  supports_guest_queries?: boolean;
+  supports_inline_queries?: boolean;
+  supports_join_request_queries?: boolean;
+  username?: string;
+};
+```
+
+### `UserChatBoosts`
+
+```ts
+type UserChatBoosts = {
+  boosts: [ChatBoost](#chatboost)[];
+};
+```
+
+### `UserProfileAudios`
+
+```ts
+type UserProfileAudios = {
+  audios: [Audio](#audio)[];
+  total_count: number;
+};
+```
+
+### `UserProfilePhotos`
+
+```ts
+type UserProfilePhotos = {
+  photos: [PhotoSize](#photosize)[][];
+  total_count: number;
+};
+```
+
+### `UserRating`
+
+```ts
+type UserRating = {
+  current_level_rating: number;
+  level: number;
+  next_level_rating?: number;
+  rating: number;
+};
+```
+
+### `UsersShared`
+
+```ts
+type UsersShared = {
+  request_id: number;
+  users: [SharedUser](#shareduser)[];
+};
+```
+
+### `Venue`
+
+```ts
+type Venue = {
+  address: string;
+  foursquare_id?: string;
+  foursquare_type?: string;
+  google_place_id?: string;
+  google_place_type?: string;
+  location: [Location](#location);
+  title: string;
+};
+```
+
+### `VerifyChatParams`
+
+```ts
+type VerifyChatParams = {
+  chat_id: number | string;
+  custom_description?: string;
+};
+```
+
+### `VerifyChatResult`
+
+```ts
+type VerifyChatResult = boolean;
+```
+
+### `VerifyUserParams`
+
+```ts
+type VerifyUserParams = {
+  custom_description?: string;
+  user_id: number;
+};
+```
+
+### `VerifyUserResult`
+
+```ts
+type VerifyUserResult = boolean;
+```
+
+### `Video`
+
+```ts
+type Video = {
+  cover?: [PhotoSize](#photosize)[];
+  duration: number;
+  file_id: string;
+  file_name?: string;
+  file_size?: number;
+  file_unique_id: string;
+  height: number;
+  mime_type?: string;
+  qualities?: [VideoQuality](#videoquality)[];
+  start_timestamp?: number;
+  thumbnail?: [PhotoSize](#photosize);
+  width: number;
+};
+```
+
+### `VideoChatEnded`
+
+```ts
+type VideoChatEnded = {
+  duration: number;
+};
+```
+
+### `VideoChatParticipantsInvited`
+
+```ts
+type VideoChatParticipantsInvited = {
+  users: [User](#user)[];
+};
+```
+
+### `VideoChatScheduled`
+
+```ts
+type VideoChatScheduled = {
+  start_date: number;
+};
+```
+
+### `VideoChatStarted`
+
+```ts
+type VideoChatStarted = Record<string, never>;
+```
+
+### `VideoNote`
+
+```ts
+type VideoNote = {
+  duration: number;
+  file_id: string;
+  file_size?: number;
+  file_unique_id: string;
+  length: number;
+  thumbnail?: [PhotoSize](#photosize);
+};
+```
+
+### `VideoQuality`
+
+```ts
+type VideoQuality = {
+  codec: string;
+  file_id: string;
+  file_size?: number;
+  file_unique_id: string;
+  height: number;
+  width: number;
+};
+```
+
+### `Voice`
+
+```ts
+type Voice = {
+  duration: number;
+  file_id: string;
+  file_size?: number;
+  file_unique_id: string;
+  mime_type?: string;
+};
+```
+
+### `WebAppData`
+
+```ts
+type WebAppData = {
+  button_text: string;
+  data: string;
+};
+```
+
+### `WebAppInfo`
+
+```ts
+type WebAppInfo = {
+  url: string;
+};
+```
+
+### `WebhookInfo`
+
+```ts
+type WebhookInfo = {
+  allowed_updates?: string[];
+  has_custom_certificate: boolean;
+  ip_address?: string;
+  last_error_date?: number;
+  last_error_message?: string;
+  last_synchronization_error_date?: number;
+  max_connections?: number;
+  pending_update_count: number;
+  url: string;
+};
+```
+
+### `WriteAccessAllowed`
+
+```ts
+type WriteAccessAllowed = {
+  from_attachment_menu?: boolean;
+  from_request?: boolean;
+  web_app_name?: string;
+};
+```
+
+## Variables
+
+### `ATTACH_PREFIX`
+
+The `attach://` URI scheme the Bot API uses to reference a multipart part
+ from inside a JSON structure (ADR-011).
+
+```ts
+const ATTACH_PREFIX: "attach://";
+```
+
+### `EntityType`
+
+Every documented MessageEntity kind, typo-proof versus raw strings.
+
+```ts
+const EntityType: {
+  readonly Blockquote: "blockquote";
+  readonly Bold: "bold";
+  readonly BotCommand: "bot_command";
+  readonly Cashtag: "cashtag";
+  readonly Code: "code";
+  readonly CustomEmoji: "custom_emoji";
+  readonly Email: "email";
+  readonly ExpandableBlockquote: "expandable_blockquote";
+  readonly Hashtag: "hashtag";
+  readonly Italic: "italic";
+  readonly Mention: "mention";
+  readonly PhoneNumber: "phone_number";
+  readonly Pre: "pre";
+  readonly Spoiler: "spoiler";
+  readonly Strikethrough: "strikethrough";
+  readonly TextLink: "text_link";
+  readonly TextMention: "text_mention";
+  readonly Underline: "underline";
+  readonly Url: "url";
+};
+```
+
+### `HTTP_STATUS_TOO_MANY_REQUESTS`
+
+HTTP 429 "Too Many Requests". Mirrors `node:http2`'s
+`constants.HTTP_STATUS_TOO_MANY_REQUESTS`, redefined here because `src/core`
+stays Node-free (no `node:*` imports).
+
+```ts
+const HTTP_STATUS_TOO_MANY_REQUESTS: 429;
+```
+
+### `UPDATE_TYPES`
+
+`Update` field names dispatched as events (every `Update` payload key except `update_id`).
+
+```ts
+const UPDATE_TYPES: readonly ["message", "edited_message", "channel_post", "edited_channel_post", "business_connection", "business_message", "edited_business_message", "deleted_business_messages", "guest_message", "message_reaction", "message_reaction_count", "inline_query", "chosen_inline_result", "callback_query", "shipping_query", "pre_checkout_query", "purchased_paid_media", "poll", "poll_answer", "my_chat_member", "chat_member", "chat_join_request", "chat_boost", "removed_chat_boost", "managed_bot"];
+```
+
+### `nextPagesWebhook`
+
+Next.js Pages API uses the same `(req, res)` handler.
+
+```ts
+const nextPagesWebhook: (bot: [Bot](#bot), options?: [WebhookOptions](#webhookoptions)) => (req: [NodeLikeRequest](#nodelikerequest), res: [NodeLikeResponse](#nodelikeresponse)) => Promise<void>;
+```

@@ -2,12 +2,12 @@ name: CI
 
 on:
   push:
-    branches: [master, main, feat/typescript]
+    branches: [master, main, feat/v2, feat/v2-core]
   pull_request:
   workflow_dispatch:
     inputs:
       run_integration:
-        description: "Run integration tests against api.telegram.org (requires TEST_TELEGRAM_TOKEN secret)"
+        description: "Run e2e tests against api.telegram.org (requires TEST_TELEGRAM_TOKEN secret)"
         type: boolean
         default: false
 
@@ -25,32 +25,24 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
       - uses: actions/setup-node@v6
         with:
           node-version: 24
-          cache: npm
       - name: Install dependencies
-        run: npm ci || npm install --no-audit --no-fund
-      - name: tsc --noEmit
-        run: npx tsc --noEmit
-
-  unit-node:
-    name: Unit tests (Node ${{ matrix.node }})
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        node: ["20", "22", "24", "26"]
-    steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-node@v6
-        with:
-          node-version: ${{ matrix.node }}
-          cache: npm
-      - name: Install dependencies
-        run: npm ci || npm install --no-audit --no-fund
-      - name: Run unit tests
-        run: npm run test:node:unit
+        run: bun install --frozen-lockfile || bun install
+      - name: tsc --noEmit (src)
+        run: npm run typecheck
+      - name: tsc --noEmit (test/)
+        run: npm run typecheck:test
+      - name: tsc --noEmit (examples/)
+        run: npm run typecheck:examples
+      - name: Core stays Node-free (lint:core)
+        run: npm run lint:core
+      - name: Core bundles edge-safe (check:edge)
+        run: npm run check:edge
 
   unit-bun:
     name: Unit tests (Bun)
@@ -59,12 +51,28 @@ jobs:
       - uses: actions/checkout@v6
       - uses: oven-sh/setup-bun@v2
         with:
-          # Bun 1.2+ ships with node:test compatibility, which our suite uses.
           bun-version: latest
       - name: Install dependencies
         run: bun install --frozen-lockfile || bun install
       - name: Run unit tests with Bun
-        run: npm run test:bun:unit
+        run: npm run test
+
+  unit-node:
+    name: Unit tests (Node ${{ matrix.node }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node: ["22", "24", "26"]
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: ${{ matrix.node }}
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+      - name: Run unit tests with Node
+        run: npm run test:node:unit
 
   build:
     name: Build (dist)
@@ -72,35 +80,40 @@ jobs:
     needs: typecheck
     steps:
       - uses: actions/checkout@v6
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
       - uses: actions/setup-node@v6
         with:
           node-version: 24
-          cache: npm
       - name: Install dependencies
-        run: npm ci || npm install --no-audit --no-fund
+        run: bun install --frozen-lockfile || bun install
       - name: Build
         run: npm run build
       - name: Verify dist artefacts
         run: |
-          test -f dist/index.js
-          test -f dist/index.d.ts
-          test -f dist/telegram.js
-          test -f dist/telegram.d.ts
+          test -f dist/core/index.js
+          test -f dist/core/index.d.ts
+          test -f dist/node/index.js
+          test -f dist/node/index.d.ts
+          test -f dist/types/index.js
+          test -f dist/types/index.d.ts
 
   integration:
-    name: Integration tests (api.telegram.org)
+    name: E2E tests (api.telegram.org)
     runs-on: ubuntu-latest
     needs: typecheck
     if: github.event_name == 'workflow_dispatch' && inputs.run_integration
     steps:
       - uses: actions/checkout@v6
-      - uses: actions/setup-node@v6
+      - uses: oven-sh/setup-bun@v2
         with:
-          node-version: 24
-          cache: npm
+          bun-version: latest
       - name: Install dependencies
-        run: npm ci || npm install --no-audit --no-fund
-      - name: Run integration tests
+        run: bun install --frozen-lockfile || bun install
+      - name: Run e2e tests
         env:
           TEST_TELEGRAM_TOKEN: ${{ secrets.TEST_TELEGRAM_TOKEN }}
-        run: npm run test:node:integration
+          TEST_GROUP_ID: ${{ secrets.TEST_GROUP_ID }}
+          TEST_USER_ID: ${{ secrets.TEST_USER_ID }}
+        run: npm run test:e2e
