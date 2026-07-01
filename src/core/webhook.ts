@@ -146,14 +146,14 @@ export function webhookCallback(bot: Bot, options: WebhookOptions = {}): (reques
     log("update %d", update.update_id);
 
     if (earlyAck) {
-      // Validate, kick off the handler, and ACK now. The 200 is already sent, so
-      // a handler rejection can never reach the caller; `.catch` keeps it from
-      // surfacing as an unhandled rejection. With a `bot.catch()` boundary the
-      // rejection was already routed there and this catch never fires; without
-      // one, `handleUpdate` rethrows and we'd otherwise drop the error silently
-      // - log it (message + stack) so a handler bug stays debuggable. The error
-      // is rendered explicitly because `%o` would JSON-stringify an `Error` to
-      // `{}` (Errors carry their fields on non-enumerable properties).
+      // Validate, kick off the handler, and ACK now. `handleUpdate` rejects only
+      // when a user-installed `bot.catch()` boundary throws (the default boundary
+      // logs and consumes); the 200 is already sent, so that rejection can never
+      // reach the caller - `.catch` keeps it from surfacing as an unhandled
+      // rejection, and logs it (message + stack) so the fail-loud opt-in stays
+      // debuggable in fastAck mode. The error is rendered explicitly because
+      // `%o` would JSON-stringify an `Error` to `{}` (Errors carry their fields
+      // on non-enumerable properties).
       const work = Promise.resolve(bot.handleUpdate(update)).catch((err: unknown) => {
         const detail = err instanceof Error ? (err.stack ?? err.message) : String(err);
         log("background handleUpdate failed for update %d: %s", update.update_id, detail);
@@ -163,7 +163,18 @@ export function webhookCallback(bot: Bot, options: WebhookOptions = {}): (reques
       return new Response(null, { status: 200 });
     }
 
-    await bot.handleUpdate(update);
+    // `handleUpdate` rejects only when a user-installed `bot.catch()` boundary
+    // throws (the default boundary logs and consumes the update). Honor that
+    // fail-loud opt-in with an explicit 500 - deterministic across runtimes,
+    // where an escaping rejection is handled differently by each (Bun.serve,
+    // Workers, the node:http adapters) - so Telegram redelivers the update.
+    try {
+      await bot.handleUpdate(update);
+    } catch (err) {
+      const detail = err instanceof Error ? (err.stack ?? err.message) : String(err);
+      log("handleUpdate failed for update %d: %s", update.update_id, detail);
+      return new Response("Internal Server Error", { status: 500 });
+    }
     return new Response(null, { status: 200 });
   };
 }
