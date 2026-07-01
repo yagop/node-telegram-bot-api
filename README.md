@@ -287,6 +287,23 @@ try {
 }
 ```
 
+### 🧯 Handler errors: the boundary contract
+
+An error thrown by a handler never stops the bot. It is routed to the error boundary, which by
+default logs it via `console.error` and consumes the update - polling keeps pumping, and a
+webhook delivery is ACKed (Telegram does not redeliver it). Install your own boundary with
+`bot.catch()`:
+
+```ts
+bot.catch((err, ctx) => {
+  console.error("update", ctx.update.update_id, "failed:", err);
+});
+```
+
+Throwing from the boundary opts back into fail-loud: `startPolling()` rejects (the update was
+never confirmed, so Telegram redelivers it on restart) and `webhookCallback` responds 500
+(Telegram redelivers). `bot.catch((err) => { throw err; })` is the explicit fail-loud opt-in.
+
 ## 🛡️ Resilience & rate limiting
 
 Safe defaults out of the box - set only what you want to change.
