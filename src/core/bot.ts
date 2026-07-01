@@ -117,15 +117,11 @@ export class Bot {
   }
 
   /**
-   * Replace the error boundary. Errors thrown by the chain are routed here; the
-   * default logs via `console.error` and consumes the update, so an unhandled
-   * handler error never stops `startPolling()` or fails a webhook delivery.
-   *
-   * Throwing from the installed handler opts back into fail-loud: the error
-   * propagates out of `handleUpdate`, so `startPolling()` rejects (the pump
-   * stops, and the update - never confirmed to Telegram - is redelivered on
-   * restart) and `webhookCallback` responds 500 (Telegram redelivers).
-   * `bot.catch((err) => { throw err; })` is the explicit fail-loud opt-in.
+   * Replace the error boundary. The default logs via `console.error` and
+   * consumes the update, so a handler error never stops `startPolling()` or
+   * fails a webhook delivery. A throw from the installed handler opts back into
+   * fail-loud: `startPolling()` rejects and `webhookCallback` responds 500, so
+   * Telegram redelivers the update.
    */
   catch(handler: (err: unknown, ctx: Context) => unknown): this {
     this.errorHandler = handler;
