@@ -208,7 +208,7 @@ The **package name is intentionally retained** (`node-telegram-bot-api`) even th
 
 - **One client, single-argument methods.** `Api` mirrors the wire API: one method per Bot API method, each taking one params object. Positional ergonomics (`ctx.reply(text)`) live on `Context`.
 - **Structured fields are plain typed objects.** `reply_markup`, `entities`, `reply_parameters`, `media`, ... take a plain object/array (or a fluent builder, which returns the same plain shape); the pipeline serializes them once. No `json()` wrapper, no branded strings. A nested file is just an `InputFile` dropped into the file field - the pipeline hoists it to an `attach://` part.
-- **Composition over events.** `bot.use(mw)` and the filter helpers (`on`/`command`/`hears`) are koa-style middleware over a per-update `Context`, so sessions/auth/rate-limiting/error-boundaries wrap one another via `await next()`.
+- **Composition over events.** `bot.use(mw)` and the filter helpers (`on`/`command`/`hears`) are koa-style middleware over a per-update `Context`, so sessions/auth/rate-limiting/error-boundaries wrap one another via `await next()`. A handler error never stops the bot: it is routed to the error boundary (default: log via `console.error` and continue); install your own with `bot.catch()`, and rethrow from it to opt back into fail-loud.
 - **Two entry points, one dispatch path.** `bot.startPolling(source)` pumps an async generator for long-running processes; `bot.handleUpdate(update)` handles a single update and is what the edge/webhook callback calls.
 - **Node helpers are opt-in.** `import ... from 'node-telegram-bot-api'` is the runtime-agnostic core; `import ... from 'node-telegram-bot-api/node'` adds `fromPath`, `createWebhookServer`, and `run`.
 
