@@ -79,6 +79,27 @@ describe("webhookCallback", () => {
     assert.strictEqual(received.length, 0);
   });
 
+  test("rejecting handleUpdate (a bot.catch() rethrow) -> explicit 500", async () => {
+    // handleUpdate rejects only when the user's boundary rethrows (fail-loud
+    // opt-in); the callback must answer 500 itself - Telegram then redelivers -
+    // instead of leaking the rejection to per-runtime behavior.
+    const bot = {
+      handleUpdate: () => Promise.reject(new Error("boom")),
+    } as unknown as Bot;
+    const handle = webhookCallback(bot, { secretToken: "s" });
+    const res = await handle(
+      new Request("https://h/hook", {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          "x-telegram-bot-api-secret-token": "s",
+        },
+        body: JSON.stringify(UPDATE),
+      }),
+    );
+    assert.strictEqual(res.status, 500);
+  });
+
   test("fastAck returns 200 before the handler finishes, but still invokes it", async () => {
     // handleUpdate stays pending until we trigger it; the handler must ACK first.
     let resolveHandler!: () => void;

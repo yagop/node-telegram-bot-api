@@ -1,11 +1,12 @@
 /**
  * Bot - the composition root (ADR-003, ADR-004, ADR-005).
  *
- * Holds the single `Api`, an ordered middleware list, and an optional error
- * boundary. `use`/`on`/`command`/`hears` all register filter middleware so they
- * interleave with one another and obey registration order. `handleUpdate` is the
- * one dispatch path - shared by `startPolling()` (which pumps any
- * `AsyncIterable<Update>`, defaulting to `longPoll`) and by `webhookCallback`.
+ * Holds the single `Api`, an ordered middleware list, and an error boundary
+ * (default: log and continue; see `catch`). `use`/`on`/`command`/`hears` all
+ * register filter middleware so they interleave with one another and obey
+ * registration order. `handleUpdate` is the one dispatch path - shared by
+ * `startPolling()` (which pumps any `AsyncIterable<Update>`, defaulting to
+ * `longPoll`) and by `webhookCallback`.
  *
  * `startPolling` is the long-poll pump. Webhook mode has no `start` here: it is a
  * request handler (`webhookCallback` / `createWebhookServer`), since polling and
@@ -24,11 +25,24 @@ export interface BotOptions extends TransportOptions {}
 /** A composed sub-chain used by the routing helpers. */
 type Composed = (ctx: Context, next: () => Promise<void>) => Promise<void>;
 
+/**
+ * The default error boundary: log the failure and consume the update, so one
+ * bad update can never stop the polling pump, crash the process, or - because
+ * the update is consumed and its offset confirmed - be redelivered by Telegram
+ * in a crash loop. The Express model: an unhandled per-request error is logged
+ * and that request fails; the server keeps serving. `console.error` (not the
+ * opt-in `debug` sink) so the failure is visible by default, and web-standard
+ * so core stays edge-safe. Replaced by `bot.catch()`.
+ */
+function defaultErrorHandler(err: unknown, ctx: Context): void {
+  console.error(`Unhandled error while processing update ${ctx.update.update_id}`, err);
+}
+
 export class Bot {
   readonly api: Api;
 
   private readonly middleware: Middleware<Context>[] = [];
-  private errorHandler?: (err: unknown, ctx: Context) => unknown;
+  private errorHandler: (err: unknown, ctx: Context) => unknown = defaultErrorHandler;
   private controller?: AbortController;
   private running = false;
 
@@ -102,20 +116,29 @@ export class Bot {
     });
   }
 
-  /** Install the error boundary. Errors thrown by the chain are routed here. */
+  /**
+   * Replace the error boundary. The default logs via `console.error` and
+   * consumes the update, so a handler error never stops `startPolling()` or
+   * fails a webhook delivery. A throw from the installed handler opts back into
+   * fail-loud: `startPolling()` rejects and `webhookCallback` responds 500, so
+   * Telegram redelivers the update.
+   */
   catch(handler: (err: unknown, ctx: Context) => unknown): this {
     this.errorHandler = handler;
     return this;
   }
 
-  /** Build a Context and run the composed chain; route errors to `catch`. */
+  /**
+   * Build a Context and run the composed chain; route errors to the `catch`
+   * boundary (default: log and continue). Rejects only when that boundary
+   * itself throws.
+   */
   async handleUpdate(update: Update): Promise<void> {
     const ctx = new Context(update, this.api);
     try {
       await compose(this.middleware)(ctx, () => Promise.resolve());
     } catch (err) {
-      if (this.errorHandler) await this.errorHandler(err, ctx);
-      else throw err;
+      await this.errorHandler(err, ctx);
     }
   }
 
@@ -123,6 +146,10 @@ export class Bot {
    * Pump an update source (default `longPoll`) through `handleUpdate` until
    * `stop()` aborts. Resolves when the source is exhausted or aborted. This is
    * long-poll mode; for webhooks use `webhookCallback`/`createWebhookServer`.
+   *
+   * A handler error does not stop the pump: it is routed to the `catch`
+   * boundary (default: log and continue). The promise rejects only when that
+   * boundary itself throws - the fail-loud opt-in (see `catch`).
    *
    * Not re-entrant: calling it while a previous pump is still active throws, so
    * `isRunning()` stays truthful and the prior `AbortController` is never
