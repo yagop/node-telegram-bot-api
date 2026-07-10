@@ -15,7 +15,10 @@
  * stringifies nothing.
  */
 
-export type InputFileData = Blob | Uint8Array | ReadableStream<Uint8Array>;
+export type InputFileData = Blob | Uint8Array | ReadableStream<Uint8Array> | InputFileStreamFactory;
+
+/** A replayable upload source. Return a fresh, unread stream on every call. */
+export type InputFileStreamFactory = () => ReadableStream<Uint8Array> | Promise<ReadableStream<Uint8Array>>;
 
 export interface InputFileMeta {
   filename?: string;
@@ -83,7 +86,7 @@ export async function inputFileToBlob(file: InputFile): Promise<Blob> {
     // Cast away the `ArrayBufferLike` generic (Blob wants `Uint8Array<ArrayBuffer>`).
     return new Blob([data as Uint8Array<ArrayBuffer>], type ? { type } : undefined);
   }
-  // ReadableStream<Uint8Array>
-  const blob = await new Response(data).blob();
+  // ReadableStream<Uint8Array> or a replayable stream source.
+  const blob = await new Response(typeof data === "function" ? await data() : data).blob();
   return type ? new Blob([blob], { type }) : blob;
 }

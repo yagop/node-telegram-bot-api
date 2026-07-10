@@ -141,6 +141,11 @@ const bot = new Bot(process.env.BOT_TOKEN!);
 await bot.api.sendPhoto({ chat_id, photo: await fromPath("./cat.jpg") });
 // upload raw bytes (web-standard, runs anywhere)
 await bot.api.sendDocument({ chat_id, document: new InputFile(bytes, { filename: "report.pdf" }) });
+// stream a large file without buffering it; the factory makes transport retries possible
+await bot.api.sendVideo({
+  chat_id,
+  video: new InputFile(() => createVideoStream(), { filename: "video.mp4", contentType: "video/mp4" }),
+});
 
 // a raw InputFile nested in a structure is auto-hoisted to an attach:// part
 await bot.api.sendMediaGroup({
@@ -160,6 +165,10 @@ await bot.api.sendMediaGroup({
     .build(),
 });
 ```
+
+A bare `ReadableStream` is sent once because it cannot be replayed. Pass a factory
+that returns a fresh stream to retain automatic retries. The Node-only `fromPath`
+helper does this automatically and does not read the full file into memory.
 
 Builders cover the other `attach://` methods; each `.build()` returns the plain shape.
 

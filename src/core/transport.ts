@@ -133,24 +133,23 @@ export class Transport {
       await this.limiter.acquire(params?.chat_id as string | number | undefined, signal);
     }
 
-    // Encode ONCE: the body is reused across every retry. Re-encoding per attempt
-    // would re-consume a one-shot `ReadableStream` `InputFile`, so a retry of a
-    // streamed upload would fail on an already-drained stream. A `FormData` /
-    // `URLSearchParams` body is safe to send repeatedly.
-    const { body, headers } = await encodeForm(params ?? {});
-
     // Bounded: at most `maxRetries + 1` attempts (the first send plus one retry
     // per allowed retry). `attempt` doubles as the loop counter and the retry
     // count; every error path either retries via `continue` or throws, so the
     // bound is a hard ceiling rather than the termination condition.
     for (let attempt = 0; attempt <= this.maxRetries; attempt++) {
+      // Re-encode for each attempt. Stream factories return a fresh body; a bare
+      // ReadableStream is one-shot and therefore disables retries for this call.
+      const { body, headers, replayable } = await encodeForm(params ?? {});
       const timeoutSignal = timeoutMs > 0 ? AbortSignal.timeout(timeoutMs) : undefined;
       const { signal: composed, cleanup } = combineSignals([signal, timeoutSignal]);
+      const init: RequestInit & { duplex?: "half" } = { method: "POST", body, headers, signal: composed };
+      if (body instanceof ReadableStream) init.duplex = "half";
 
       let response: Response;
       let text: string;
       try {
-        response = await this.fetchImpl(url, { method: "POST", body, headers, signal: composed });
+        response = await this.fetchImpl(url, init);
         // Read the body inside the try so a mid-stream read failure (connection
         // dropped after the headers) is classified and retried like any other
         // transient transport error, not thrown raw past the error hierarchy.
@@ -158,7 +157,7 @@ export class Transport {
       } catch (err) {
         if (signal?.aborted) throw err; // caller cancelled - propagate verbatim
         // Transient throws (fetch reject / body-read failure / our timeout): retry.
-        if (attempt < this.maxRetries) {
+        if (replayable && attempt < this.maxRetries) {
           const wait = backoff(attempt + 1, this.retryBackoffMs, MAX_BACKOFF);
           log("%s transient error; retry %d/%d in %dms", method, attempt + 1, this.maxRetries, wait);
           await delay(wait, signal);
@@ -172,7 +171,7 @@ export class Transport {
 
       // Server-side 5xx is transient: retry without parsing the body.
       if (response.status >= 500) {
-        if (attempt < this.maxRetries) {
+        if (replayable && attempt < this.maxRetries) {
           const wait = backoff(attempt + 1, this.retryBackoffMs, MAX_BACKOFF);
           log("%s HTTP %d; retry %d/%d in %dms", method, response.status, attempt + 1, this.maxRetries, wait);
           await delay(wait, signal);
@@ -201,7 +200,7 @@ export class Transport {
         return json.result;
       }
 
-      if (json.error_code === HTTP_STATUS_TOO_MANY_REQUESTS && attempt < this.maxRetries) {
+      if (json.error_code === HTTP_STATUS_TOO_MANY_REQUESTS && replayable && attempt < this.maxRetries) {
         const retryAfter = json.parameters?.retry_after ?? 1;
         // Honor `retry_after` only up to the cap (0 = no cap). A longer flood-wait is
         // surfaced immediately (caller reads err.retryAfter) rather than hanging the

@@ -650,16 +650,16 @@ Build a `FormPart` from a serialized JSON string and the files its refs point at
 
 ### `fromPath()`
 
-Read `path` off disk and wrap it as an `InputFile`. The default filename is the
+Stream `path` off disk and wrap it as an `InputFile`. The default filename is the
 path's basename; pass `meta.filename` / `meta.contentType` to override.
 
-`readFile` returns a `Buffer`, which is a `Uint8Array` - accepted by `InputFile`
-directly, no copy.
+The stream factory reopens the file for each transport retry without buffering
+the full contents in memory.
 
 | Param | Type |
 | --- | --- |
 | `path` | string |
-| `meta?` | { contentType?: string; filename?: string } |
+| `meta?` | [InputFileMeta](#inputfilemeta) |
 
 **Returns:** Promise<[InputFile](#inputfile)>
 
@@ -875,8 +875,9 @@ Subset of Telegram's `ResponseParameters` carried on API errors.
 
 | Property | Type |
 | --- | --- |
-| `body` | URLSearchParams \| FormData |
+| `body` | ReadableStream<Uint8Array<ArrayBufferLike>> \| URLSearchParams \| FormData |
 | `headers` | Record<string, string> |
+| `replayable` | boolean |
 
 ### `FormPart`
 
@@ -4063,7 +4064,15 @@ sets the string under the field name and attaches each part. The encoder still
 stringifies nothing.
 
 ```ts
-type InputFileData = Blob | Uint8Array | ReadableStream<Uint8Array>;
+type InputFileData = Blob | Uint8Array | ReadableStream<Uint8Array> | [InputFileStreamFactory](#inputfilestreamfactory);
+```
+
+### `InputFileStreamFactory`
+
+A replayable upload source. Return a fresh, unread stream on every call.
+
+```ts
+type InputFileStreamFactory = () => ReadableStream<Uint8Array> | Promise<ReadableStream<Uint8Array>>;
 ```
 
 ### `InputInvoiceMessageContent`

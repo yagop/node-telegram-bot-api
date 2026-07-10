@@ -24,12 +24,13 @@ describe("encodeForm", () => {
   });
 
   test("with file -> FormData with string field + Blob/File part, empty headers", async () => {
-    const { body, headers } = await encodeForm({
+    const { body, headers, replayable } = await encodeForm({
       chat_id: 1,
       photo: new InputFile(new Uint8Array([1, 2, 3]), { filename: "p.png" }),
     });
     assert.ok(body instanceof FormData);
     assert.deepStrictEqual(headers, {});
+    assert.strictEqual(replayable, true);
     const form = body as FormData;
     assert.strictEqual(form.get("chat_id"), "1");
     const photo = form.get("photo");
@@ -45,5 +46,35 @@ describe("encodeForm", () => {
     assert.strictEqual(form.get("media"), '[{"type":"photo","media":"attach://media_0"}]');
     assert.ok(form.get("media_0") instanceof Blob);
     assert.strictEqual((form.get("media_0") as File).name, "m.bin");
+  });
+
+  test("ReadableStream file -> lazy streaming multipart body", async () => {
+    let pulls = 0;
+    const stream = new ReadableStream<Uint8Array>(
+      {
+        pull(controller) {
+          pulls += 1;
+          controller.enqueue(new TextEncoder().encode("streamed bytes"));
+          controller.close();
+        },
+      },
+      { highWaterMark: 0 },
+    );
+    const { body, headers, replayable } = await encodeForm({
+      chat_id: 1,
+      document: new InputFile(stream, { contentType: "text/plain", filename: "report.txt" }),
+    });
+
+    assert.ok(body instanceof ReadableStream);
+    assert.match(headers["content-type"] ?? "", /^multipart\/form-data; boundary=/);
+    assert.strictEqual(replayable, false);
+    assert.strictEqual(pulls, 0, "encoding must not read the upload into memory");
+
+    const multipart = await new Response(body).text();
+    assert.strictEqual(pulls, 1);
+    assert.match(multipart, /name="chat_id"\r\n\r\n1/);
+    assert.match(multipart, /name="document"; filename="report.txt"/);
+    assert.match(multipart, /Content-Type: text\/plain/);
+    assert.match(multipart, /\r\n\r\nstreamed bytes\r\n/);
   });
 });

@@ -175,16 +175,15 @@ describe("Transport", () => {
     assert.strictEqual(calls.length, 2);
   });
 
-  test("retried streamed upload re-sends the buffered body (no stream re-consumption)", async () => {
-    // The body is encoded once and reused; a ReadableStream-backed InputFile is
-    // drained to a Blob a single time, so the 502 retry must still carry the bytes.
-    let i = 0;
-    const sizes: number[] = [];
+  test("one-shot streamed upload is not buffered or retried", async () => {
+    let calls = 0;
+    let multipart = "";
     const flakyFetch = (async (_url: string | URL | Request, init?: RequestInit) => {
-      i += 1;
-      sizes.push(((init?.body as FormData).get("photo") as Blob).size);
-      if (i === 1) return new Response("upstream error", { status: 502 });
-      return new Response(JSON.stringify({ ok: true, result: true }));
+      calls += 1;
+      assert.strictEqual((init as RequestInit & { duplex?: string }).duplex, "half");
+      assert.ok(init?.body instanceof ReadableStream);
+      multipart = await new Response(init.body).text();
+      return new Response("upstream error", { status: 502 });
     }) as unknown as typeof fetch;
     const stream = new ReadableStream<Uint8Array>({
       start(c) {
@@ -193,9 +192,40 @@ describe("Transport", () => {
       },
     });
     const tr = new Transport(TOKEN, { fetch: flakyFetch, maxRetries: 2, retryBackoffMs: 0 });
-    const result = await tr.request<boolean>("sendPhoto", { chat_id: 1, photo: new InputFile(stream) });
+    await assert.rejects(
+      tr.request<boolean>("sendPhoto", { chat_id: 1, photo: new InputFile(stream) }),
+      NetworkError,
+    );
+    assert.strictEqual(calls, 1);
+    assert.ok(multipart.includes(String.fromCharCode(1, 2, 3, 4, 5)));
+  });
+
+  test("retried streamed upload opens a fresh stream from its factory", async () => {
+    let calls = 0;
+    let opens = 0;
+    const bodies: string[] = [];
+    const flakyFetch = (async (_url: string | URL | Request, init?: RequestInit) => {
+      calls += 1;
+      assert.ok(init?.body instanceof ReadableStream);
+      bodies.push(await new Response(init.body).text());
+      if (calls === 1) return new Response("upstream error", { status: 502 });
+      return new Response(JSON.stringify({ ok: true, result: true }));
+    }) as unknown as typeof fetch;
+    const source = () => {
+      opens += 1;
+      return new ReadableStream<Uint8Array>({
+        start(controller) {
+          controller.enqueue(new TextEncoder().encode("retryable bytes"));
+          controller.close();
+        },
+      });
+    };
+    const tr = new Transport(TOKEN, { fetch: flakyFetch, maxRetries: 2, retryBackoffMs: 0 });
+    const result = await tr.request<boolean>("sendPhoto", { chat_id: 1, photo: new InputFile(source) });
     assert.strictEqual(result, true);
-    assert.deepStrictEqual(sizes, [5, 5]); // both attempts saw the full 5-byte body
+    assert.strictEqual(opens, 2);
+    assert.strictEqual(calls, 2);
+    assert.ok(bodies.every((body) => body.includes("retryable bytes")));
   });
 
   test("a body-read failure is transient: retried, then wrapped as NetworkError", async () => {
