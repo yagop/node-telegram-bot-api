@@ -91,7 +91,7 @@ async function* multipartChunks(
 
   for (const [key, file] of files) {
     const filename = file.meta?.filename ?? key;
-    const contentType = safeContentType(file.meta?.contentType);
+    const contentType = safeContentType(file.meta?.contentType ?? (file.data instanceof Blob ? file.data.type : undefined));
     yield encoder.encode(
       `--${boundary}\r\nContent-Disposition: form-data; name="${escapeHeaderValue(key)}"; filename="${escapeHeaderValue(filename)}"\r\nContent-Type: ${contentType}\r\n\r\n`,
     );

@@ -63,6 +63,7 @@ describe("encodeForm", () => {
     const { body, headers, replayable } = await encodeForm({
       chat_id: 1,
       document: new InputFile(stream, { contentType: "text/plain", filename: "report.txt" }),
+      photo: new InputFile(new Blob(["image bytes"], { type: "image/png" }), { filename: "photo.png" }),
     });
 
     assert.ok(body instanceof ReadableStream);
@@ -76,5 +77,6 @@ describe("encodeForm", () => {
     assert.match(multipart, /name="document"; filename="report.txt"/);
     assert.match(multipart, /Content-Type: text\/plain/);
     assert.match(multipart, /\r\n\r\nstreamed bytes\r\n/);
+    assert.match(multipart, /filename="photo.png"\r\nContent-Type: image\/png\r\n\r\nimage bytes\r\n/);
   });
 });
