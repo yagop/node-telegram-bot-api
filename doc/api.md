@@ -151,6 +151,11 @@
         * [.editMessageMedia(media, [options])](#TelegramBot+editMessageMedia) ⇒ <code>Promise</code>
         * [.editMessageChecklist(businessConnectionId, chatId, messageId, checklist, [options])](#TelegramBot+editMessageChecklist) ⇒ <code>Promise</code>
         * [.editMessageReplyMarkup(replyMarkup, [options])](#TelegramBot+editMessageReplyMarkup) ⇒ <code>Promise</code>
+        * [.editEphemeralMessageText(chatId, receiverUserId, ephemeralMessageId, text, [options])](#TelegramBot+editEphemeralMessageText) ⇒ <code>Promise</code>
+        * [.editEphemeralMessageMedia(chatId, receiverUserId, ephemeralMessageId, media, [options])](#TelegramBot+editEphemeralMessageMedia) ⇒ <code>Promise</code>
+        * [.editEphemeralMessageCaption(chatId, receiverUserId, ephemeralMessageId, [options])](#TelegramBot+editEphemeralMessageCaption) ⇒ <code>Promise</code>
+        * [.editEphemeralMessageReplyMarkup(chatId, receiverUserId, ephemeralMessageId, [options])](#TelegramBot+editEphemeralMessageReplyMarkup) ⇒ <code>Promise</code>
+        * [.deleteEphemeralMessage(chatId, receiverUserId, ephemeralMessageId, [options])](#TelegramBot+deleteEphemeralMessage) ⇒ <code>Promise</code>
         * [.stopPoll(chatId, pollId, [options])](#TelegramBot+stopPoll) ⇒ <code>Promise</code>
         * [.approveSuggestedPost(chatId, messageId, [options])](#TelegramBot+approveSuggestedPost) ⇒ <code>Promise</code>
         * [.declineSuggestedPost(chatId, messageId, [options])](#TelegramBot+declineSuggestedPost) ⇒ <code>Promise</code>
@@ -2293,6 +2298,96 @@ accepted for the primary `media`.
 | Param | Type | Description |
 | --- | --- | --- |
 | replyMarkup | <code>Object</code> |  |
+| [options] | <code>Object</code> | Additional Telegram query options |
+
+<a name="TelegramBot+editEphemeralMessageText"></a>
+
+### telegramBot.editEphemeralMessageText(chatId, receiverUserId, ephemeralMessageId, text, [options]) ⇒ <code>Promise</code>
+
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
+
+**Returns**: <code>Promise</code>
+
+**See**: https://core.telegram.org/bots/api#editephemeralmessagetext
+
+| Param | Type | Description |
+| --- | --- | --- |
+| chatId | <code>Number \| String</code> |  |
+| receiverUserId | <code>Number</code> |  |
+| ephemeralMessageId | <code>Number</code> |  |
+| text | <code>String</code> |  |
+| [options] | <code>Object</code> | Additional Telegram query options |
+
+<a name="TelegramBot+editEphemeralMessageMedia"></a>
+
+### telegramBot.editEphemeralMessageMedia(chatId, receiverUserId, ephemeralMessageId, media, [options]) ⇒ <code>Promise</code>
+Edit an ephemeral message's media. The `media` (and its `thumbnail` /
+`cover`) accept a file (Buffer / stream / local path, uploaded via an
+`attach://` part) or a file_id / URL string, like {@link editMessageMedia}.
+
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
+
+**Returns**: <code>Promise</code>
+
+**See**: https://core.telegram.org/bots/api#editephemeralmessagemedia
+
+| Param | Type | Description |
+| --- | --- | --- |
+| chatId | <code>Number \| String</code> |  |
+| receiverUserId | <code>Number</code> |  |
+| ephemeralMessageId | <code>Number</code> |  |
+| media | <code>Object</code> |  |
+| [options] | <code>Object</code> | Additional Telegram query options |
+
+<a name="TelegramBot+editEphemeralMessageCaption"></a>
+
+### telegramBot.editEphemeralMessageCaption(chatId, receiverUserId, ephemeralMessageId, [options]) ⇒ <code>Promise</code>
+
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
+
+**Returns**: <code>Promise</code>
+
+**See**: https://core.telegram.org/bots/api#editephemeralmessagecaption
+
+| Param | Type | Description |
+| --- | --- | --- |
+| chatId | <code>Number \| String</code> |  |
+| receiverUserId | <code>Number</code> |  |
+| ephemeralMessageId | <code>Number</code> |  |
+| [options] | <code>Object</code> | Additional Telegram query options |
+
+<a name="TelegramBot+editEphemeralMessageReplyMarkup"></a>
+
+### telegramBot.editEphemeralMessageReplyMarkup(chatId, receiverUserId, ephemeralMessageId, [options]) ⇒ <code>Promise</code>
+
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
+
+**Returns**: <code>Promise</code>
+
+**See**: https://core.telegram.org/bots/api#editephemeralmessagereplymarkup
+
+| Param | Type | Description |
+| --- | --- | --- |
+| chatId | <code>Number \| String</code> |  |
+| receiverUserId | <code>Number</code> |  |
+| ephemeralMessageId | <code>Number</code> |  |
+| [options] | <code>Object</code> | Additional Telegram query options |
+
+<a name="TelegramBot+deleteEphemeralMessage"></a>
+
+### telegramBot.deleteEphemeralMessage(chatId, receiverUserId, ephemeralMessageId, [options]) ⇒ <code>Promise</code>
+
+**Kind**: instance method of [<code>TelegramBot</code>](#TelegramBot)
+
+**Returns**: <code>Promise</code>
+
+**See**: https://core.telegram.org/bots/api#deleteephemeralmessage
+
+| Param | Type | Description |
+| --- | --- | --- |
+| chatId | <code>Number \| String</code> |  |
+| receiverUserId | <code>Number</code> |  |
+| ephemeralMessageId | <code>Number</code> |  |
 | [options] | <code>Object</code> | Additional Telegram query options |
 
 <a name="TelegramBot+stopPoll"></a>
