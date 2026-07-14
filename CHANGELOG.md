@@ -5,6 +5,27 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased][Unreleased]
 
+### Added
+
+- Support for [Telegram Bot API 10.2](https://core.telegram.org/bots/api-changelog#july-14-2026):
+  - **Ephemeral Messages**: new methods `editEphemeralMessageText`,
+    `editEphemeralMessageMedia`, `editEphemeralMessageCaption`,
+    `editEphemeralMessageReplyMarkup` and `deleteEphemeralMessage`; new
+    `receiver_user_id` / `callback_query_id` options on `sendMessage`,
+    `sendAnimation`, `sendAudio`, `sendDocument`, `sendPhoto`, `sendSticker`,
+    `sendVideo`, `sendVideoNote`, `sendVoice`, `sendContact`, `sendLocation`
+    and `sendVenue`; `ephemeral_message_id` on `Message` and `ReplyParameters`
+    (whose `message_id` is now optional); `is_ephemeral` on `BotCommand`;
+    `receiver_user` on `Message`.
+  - **Rich Messages**: new `InputRichMessageMedia`, `InputMediaVoiceNote`,
+    `InputRichBlockListItem` and the `InputRichBlock*` block classes; new
+    `media` and `blocks` fields on `InputRichMessage`.
+  - **Communities**: new `Community`, `CommunityChatAdded` and
+    `CommunityChatRemoved` types; `community_chat_added` /
+    `community_chat_removed` on `Message`; `community` on `ChatFullInfo`.
+  - **General**: new `BotSubscriptionUpdated` type and the `subscription`
+    update field.
+
 ## [1.1.2][1.1.2] - 2026-06-25
 
 ### Added

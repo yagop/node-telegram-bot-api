@@ -129,6 +129,11 @@ import type {
   EditMessageMediaParams,
   EditMessageChecklistParams,
   EditMessageReplyMarkupParams,
+  EditEphemeralMessageTextParams,
+  EditEphemeralMessageMediaParams,
+  EditEphemeralMessageCaptionParams,
+  EditEphemeralMessageReplyMarkupParams,
+  DeleteEphemeralMessageParams,
   StopPollParams,
   ApproveSuggestedPostParams,
   DeclineSuggestedPostParams,
@@ -258,6 +263,7 @@ import type {
   DeleteBusinessMessagesResult,
   DeleteChatPhotoResult,
   DeleteChatStickerSetResult,
+  DeleteEphemeralMessageResult,
   DeleteForumTopicResult,
   DeleteMessageReactionResult,
   DeleteMessageResult,
@@ -269,6 +275,10 @@ import type {
   DeleteWebhookResult,
   EditChatInviteLinkResult,
   EditChatSubscriptionInviteLinkResult,
+  EditEphemeralMessageCaptionResult,
+  EditEphemeralMessageMediaResult,
+  EditEphemeralMessageReplyMarkupResult,
+  EditEphemeralMessageTextResult,
   EditForumTopicResult,
   EditGeneralForumTopicResult,
   EditMessageCaptionResult,
@@ -2226,6 +2236,89 @@ export class TelegramBot extends EventEmitter {
       ...form,
       reply_markup: replyMarkup,
     } satisfies EditMessageReplyMarkupParams);
+  }
+
+  // --- Ephemeral messages -----------------------------------------------
+
+  editEphemeralMessageText(
+    chatId: ChatId,
+    receiverUserId: number,
+    ephemeralMessageId: number,
+    text: string,
+    form: Omit<EditEphemeralMessageTextParams, "chat_id" | "receiver_user_id" | "ephemeral_message_id" | "text"> = {},
+  ): Promise<EditEphemeralMessageTextResult> {
+    return this._form("editEphemeralMessageText", {
+      ...form,
+      chat_id: chatId,
+      receiver_user_id: receiverUserId,
+      ephemeral_message_id: ephemeralMessageId,
+      text,
+    } satisfies EditEphemeralMessageTextParams);
+  }
+
+  /**
+   * Edit an ephemeral message's media. The `media` (and its `thumbnail` /
+   * `cover`) accept a file (Buffer / stream / local path, uploaded via an
+   * `attach://` part) or a file_id / URL string, like {@link editMessageMedia}.
+   */
+  async editEphemeralMessageMedia(
+    chatId: ChatId,
+    receiverUserId: number,
+    ephemeralMessageId: number,
+    media: Uploadable<InputMedia>,
+    form: Omit<EditEphemeralMessageMediaParams, "chat_id" | "receiver_user_id" | "ephemeral_message_id" | "media"> = {},
+  ): Promise<EditEphemeralMessageMediaResult> {
+    const { inputMedia, formData } = await this._buildMediaItems([{ ...media }]);
+    const out = {
+      ...form,
+      chat_id: chatId,
+      receiver_user_id: receiverUserId,
+      ephemeral_message_id: ephemeralMessageId,
+      media: stringify(inputMedia[0]!),
+    };
+    return this._request("editEphemeralMessageMedia", { form: out, formData });
+  }
+
+  editEphemeralMessageCaption(
+    chatId: ChatId,
+    receiverUserId: number,
+    ephemeralMessageId: number,
+    form: Omit<EditEphemeralMessageCaptionParams, "chat_id" | "receiver_user_id" | "ephemeral_message_id"> = {},
+  ): Promise<EditEphemeralMessageCaptionResult> {
+    return this._form("editEphemeralMessageCaption", {
+      ...form,
+      chat_id: chatId,
+      receiver_user_id: receiverUserId,
+      ephemeral_message_id: ephemeralMessageId,
+    } satisfies EditEphemeralMessageCaptionParams);
+  }
+
+  editEphemeralMessageReplyMarkup(
+    chatId: ChatId,
+    receiverUserId: number,
+    ephemeralMessageId: number,
+    form: Omit<EditEphemeralMessageReplyMarkupParams, "chat_id" | "receiver_user_id" | "ephemeral_message_id"> = {},
+  ): Promise<EditEphemeralMessageReplyMarkupResult> {
+    return this._form("editEphemeralMessageReplyMarkup", {
+      ...form,
+      chat_id: chatId,
+      receiver_user_id: receiverUserId,
+      ephemeral_message_id: ephemeralMessageId,
+    } satisfies EditEphemeralMessageReplyMarkupParams);
+  }
+
+  deleteEphemeralMessage(
+    chatId: ChatId,
+    receiverUserId: number,
+    ephemeralMessageId: number,
+    form: {} = {},
+  ): Promise<DeleteEphemeralMessageResult> {
+    return this._form("deleteEphemeralMessage", {
+      ...form,
+      chat_id: chatId,
+      receiver_user_id: receiverUserId,
+      ephemeral_message_id: ephemeralMessageId,
+    } satisfies DeleteEphemeralMessageParams);
   }
 
   stopPoll(

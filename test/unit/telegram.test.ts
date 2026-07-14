@@ -475,6 +475,106 @@ describe("TelegramBot (unit)", () => {
     });
   });
 
+  describe("editEphemeralMessageText()", () => {
+    it("sends the ids positionally and serializes structured fields", async () => {
+      stubFetch(() => ({ ok: true, result: true }));
+      const bot = new TelegramBot("TOKEN");
+      await bot.editEphemeralMessageText(1, 42, 7, "hi", {
+        entities: [{ type: "bold", offset: 0, length: 2 }],
+        reply_markup: { inline_keyboard: [[{ text: "b", callback_data: "d" }]] },
+        link_preview_options: { is_disabled: true },
+      });
+      const { url, init } = captured.at(-1)!;
+      assert.match(url, /\/editEphemeralMessageText$/);
+      const params = new URLSearchParams(String(init.body));
+      assert.equal(params.get("chat_id"), "1");
+      assert.equal(params.get("receiver_user_id"), "42");
+      assert.equal(params.get("ephemeral_message_id"), "7");
+      assert.equal(params.get("text"), "hi");
+      assert.deepEqual(JSON.parse(params.get("entities")!), [
+        { type: "bold", offset: 0, length: 2 },
+      ]);
+      assert.deepEqual(JSON.parse(params.get("reply_markup")!), {
+        inline_keyboard: [[{ text: "b", callback_data: "d" }]],
+      });
+      assert.deepEqual(JSON.parse(params.get("link_preview_options")!), { is_disabled: true });
+    });
+  });
+
+  describe("editEphemeralMessageMedia()", () => {
+    it("uploads a Buffer as an attach:// part", async () => {
+      stubFetch(() => ({ ok: true, result: true }));
+      const bot = new TelegramBot("TOKEN", { filepath: false });
+      const buf = Buffer.from("\xff\xd8\xff\xe0NEW", "binary");
+      await bot.editEphemeralMessageMedia(1, 42, 7, { type: "photo", media: buf, caption: "x" });
+      const fd = captured.at(-1)!.init.body as FormData;
+      assert.equal(fd.get("chat_id"), "1");
+      assert.equal(fd.get("receiver_user_id"), "42");
+      assert.equal(fd.get("ephemeral_message_id"), "7");
+      const inputMedia = JSON.parse(String(fd.get("media"))) as Record<string, unknown>;
+      assert.equal(inputMedia.media, "attach://0_media");
+      assert.equal(inputMedia.caption, "x");
+      assert.ok(fd.get("0_media") instanceof Blob);
+    });
+
+    it("passes a file_id through without uploading (urlencoded body)", async () => {
+      stubFetch(() => ({ ok: true, result: true }));
+      const bot = new TelegramBot("TOKEN", { filepath: false });
+      await bot.editEphemeralMessageMedia(1, 42, 7, { type: "photo", media: "photo-file-id" });
+      const params = new URLSearchParams(String(captured.at(-1)!.init.body));
+      const inputMedia = JSON.parse(String(params.get("media"))) as Record<string, unknown>;
+      assert.equal(inputMedia.media, "photo-file-id");
+    });
+  });
+
+  describe("editEphemeralMessageCaption()", () => {
+    it("sends the caption from the options bag and serializes caption_entities", async () => {
+      stubFetch(() => ({ ok: true, result: true }));
+      const bot = new TelegramBot("TOKEN");
+      await bot.editEphemeralMessageCaption(1, 42, 7, {
+        caption: "cap",
+        caption_entities: [{ type: "italic", offset: 0, length: 3 }],
+      });
+      const params = new URLSearchParams(String(captured.at(-1)!.init.body));
+      assert.equal(params.get("chat_id"), "1");
+      assert.equal(params.get("receiver_user_id"), "42");
+      assert.equal(params.get("ephemeral_message_id"), "7");
+      assert.equal(params.get("caption"), "cap");
+      assert.deepEqual(JSON.parse(params.get("caption_entities")!), [
+        { type: "italic", offset: 0, length: 3 },
+      ]);
+    });
+  });
+
+  describe("editEphemeralMessageReplyMarkup()", () => {
+    it("serializes the reply_markup from the options bag", async () => {
+      stubFetch(() => ({ ok: true, result: true }));
+      const bot = new TelegramBot("TOKEN");
+      await bot.editEphemeralMessageReplyMarkup(1, 42, 7, {
+        reply_markup: { inline_keyboard: [[{ text: "b", callback_data: "d" }]] },
+      });
+      const params = new URLSearchParams(String(captured.at(-1)!.init.body));
+      assert.equal(params.get("ephemeral_message_id"), "7");
+      assert.deepEqual(JSON.parse(params.get("reply_markup")!), {
+        inline_keyboard: [[{ text: "b", callback_data: "d" }]],
+      });
+    });
+  });
+
+  describe("deleteEphemeralMessage()", () => {
+    it("sends the three ids", async () => {
+      stubFetch(() => ({ ok: true, result: true }));
+      const bot = new TelegramBot("TOKEN");
+      await bot.deleteEphemeralMessage(1, 42, 7);
+      const { url, init } = captured.at(-1)!;
+      assert.match(url, /\/deleteEphemeralMessage$/);
+      const params = new URLSearchParams(String(init.body));
+      assert.equal(params.get("chat_id"), "1");
+      assert.equal(params.get("receiver_user_id"), "42");
+      assert.equal(params.get("ephemeral_message_id"), "7");
+    });
+  });
+
   describe("createNewStickerSet()", () => {
     it("uploads file-bearing stickers as attach:// parts and serializes the stickers array", async () => {
       stubFetch(() => ({ ok: true, result: true }));

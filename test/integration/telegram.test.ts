@@ -1483,6 +1483,69 @@ describe("Telegram Bot API (integration)", () => {
     });
   });
 
+  // --- Ephemeral messages ------------------------------------------------
+
+  // Seeding helper: an ephemeral message visible only to USER_ID. The reply
+  // carries ephemeral_message_id (and message_id: 0) instead of a real
+  // message_id.
+  async function sendEphemeral(text: string): Promise<number> {
+    const sent = await bot.sendMessage(GROUP_ID, text, { receiver_user_id: USER_ID });
+    assert.equal(typeof sent.ephemeral_message_id, "number");
+    return sent.ephemeral_message_id!;
+  }
+
+  describe("editEphemeralMessageText", () => {
+    it("edits an ephemeral message's text (returns true)", async () => {
+      const eid = await sendEphemeral(`ephemeral-edit-me ${TIMESTAMP}`);
+      const ok = await bot.editEphemeralMessageText(GROUP_ID, USER_ID, eid, "ephemeral edited", {
+        entities: [{ type: "bold", offset: 0, length: 9 }],
+        link_preview_options: { is_disabled: true },
+        reply_markup: { inline_keyboard: [[{ text: "e", callback_data: "e" }]] },
+      });
+      assert.equal(ok, true);
+    });
+  });
+
+  describe("editEphemeralMessageCaption", () => {
+    it("edits an ephemeral message's caption (returns true)", async () => {
+      const eid = await sendEphemeral(`ephemeral-caption ${TIMESTAMP}`);
+      const ok = await bot.editEphemeralMessageCaption(GROUP_ID, USER_ID, eid, {
+        caption: "ephemeral cap",
+        caption_entities: [{ type: "italic", offset: 0, length: 9 }],
+      });
+      assert.equal(ok, true);
+    });
+  });
+
+  describe("editEphemeralMessageMedia", () => {
+    it("replaces an ephemeral message's media by URL (returns true)", async () => {
+      const eid = await sendEphemeral(`ephemeral-media ${TIMESTAMP}`);
+      const ok = await bot.editEphemeralMessageMedia(GROUP_ID, USER_ID, eid, {
+        type: "photo",
+        media: photoFileId,
+      });
+      assert.equal(ok, true);
+    });
+  });
+
+  describe("editEphemeralMessageReplyMarkup", () => {
+    it("updates an ephemeral message's inline keyboard (returns true)", async () => {
+      const eid = await sendEphemeral(`ephemeral-markup ${TIMESTAMP}`);
+      const ok = await bot.editEphemeralMessageReplyMarkup(GROUP_ID, USER_ID, eid, {
+        reply_markup: { inline_keyboard: [[{ text: "b", callback_data: "b" }]] },
+      });
+      assert.equal(ok, true);
+    });
+  });
+
+  describe("deleteEphemeralMessage", () => {
+    it("removes an ephemeral message (returns true)", async () => {
+      const eid = await sendEphemeral(`ephemeral-delete ${TIMESTAMP}`);
+      const ok = await bot.deleteEphemeralMessage(GROUP_ID, USER_ID, eid);
+      assert.equal(ok, true);
+    });
+  });
+
   // --- Deleting & reactions --------------------------------------------
 
   describe("deleteMessage", () => {
