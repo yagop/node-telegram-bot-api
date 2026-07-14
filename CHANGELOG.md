@@ -5,6 +5,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased][Unreleased]
 
+## [1.2.0][1.2.0] - 2026-07-14
+
 ### Added
 
 - Support for [Telegram Bot API 10.2](https://core.telegram.org/bots/api-changelog#july-14-2026):
@@ -861,4 +863,5 @@ Fixed:
 [1.1.0]:https://github.com/yagop/node-telegram-bot-api/releases/tag/v1.1.0
 [1.1.1]:https://github.com/yagop/node-telegram-bot-api/releases/tag/v1.1.1
 [1.1.2]:https://github.com/yagop/node-telegram-bot-api/releases/tag/v1.1.2
-[Unreleased]:https://github.com/yagop/node-telegram-bot-api/compare/v1.1.2...master
+[1.2.0]:https://github.com/yagop/node-telegram-bot-api/releases/tag/v1.2.0
+[Unreleased]:https://github.com/yagop/node-telegram-bot-api/compare/v1.2.0...v1
