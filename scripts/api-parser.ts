@@ -157,7 +157,7 @@ function mapType(raw: string): string {
     return /[ |]/.test(inner) ? `(${inner})[]` : `${inner}[]`;
   }
   const parts = splitUnion(s);
-  if (parts.length > 1) return [...new Set(parts.map(mapType))].join(" | ");
+  if (parts.length > 1) return [...new Set(parts.flatMap((part) => mapType(part).split(" | ")))].join(" | ");
   return mapScalar(s);
 }
 

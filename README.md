@@ -2,7 +2,7 @@
 
 <div align=center>
 
-[![Bot API](https://img.shields.io/badge/Bot%20API-v.10.1-00aced.svg?style=flat-square&logo=telegram)](https://core.telegram.org/bots/api)
+[![Bot API](https://img.shields.io/badge/Bot%20API-v.10.2-00aced.svg?style=flat-square&logo=telegram)](https://core.telegram.org/bots/api)
 [![npm package](https://img.shields.io/npm/v/node-telegram-bot-api?logo=npm&style=flat-square)](https://www.npmjs.org/package/node-telegram-bot-api)
 
 [![https://telegram.me/node_telegram_bot_api](https://img.shields.io/badge/💬%20Telegram-Channel-blue.svg?style=flat-square)](https://telegram.me/node_telegram_bot_api)

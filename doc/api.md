@@ -58,6 +58,7 @@ An animated profile photo (a video); `main_frame_timestamp` picks the still fram
 | `deleteBusinessMessages` | `params`: [DeleteBusinessMessagesParams](#deletebusinessmessagesparams), `signal?`: AbortSignal | Promise<boolean> | [deleteBusinessMessages](https://core.telegram.org/bots/api#deletebusinessmessages) |
 | `deleteChatPhoto` | `params`: [DeleteChatPhotoParams](#deletechatphotoparams), `signal?`: AbortSignal | Promise<boolean> | [deleteChatPhoto](https://core.telegram.org/bots/api#deletechatphoto) |
 | `deleteChatStickerSet` | `params`: [DeleteChatStickerSetParams](#deletechatstickersetparams), `signal?`: AbortSignal | Promise<boolean> | [deleteChatStickerSet](https://core.telegram.org/bots/api#deletechatstickerset) |
+| `deleteEphemeralMessage` | `params`: [DeleteEphemeralMessageParams](#deleteephemeralmessageparams), `signal?`: AbortSignal | Promise<boolean> | [deleteEphemeralMessage](https://core.telegram.org/bots/api#deleteephemeralmessage) |
 | `deleteForumTopic` | `params`: [DeleteForumTopicParams](#deleteforumtopicparams), `signal?`: AbortSignal | Promise<boolean> | [deleteForumTopic](https://core.telegram.org/bots/api#deleteforumtopic) |
 | `deleteMessage` | `params`: [DeleteMessageParams](#deletemessageparams), `signal?`: AbortSignal | Promise<boolean> | [deleteMessage](https://core.telegram.org/bots/api#deletemessage) |
 | `deleteMessageReaction` | `params`: [DeleteMessageReactionParams](#deletemessagereactionparams), `signal?`: AbortSignal | Promise<boolean> | [deleteMessageReaction](https://core.telegram.org/bots/api#deletemessagereaction) |
@@ -69,6 +70,10 @@ An animated profile photo (a video); `main_frame_timestamp` picks the still fram
 | `deleteWebhook` | `params?`: [DeleteWebhookParams](#deletewebhookparams), `signal?`: AbortSignal | Promise<boolean> | [deleteWebhook](https://core.telegram.org/bots/api#deletewebhook) |
 | `editChatInviteLink` | `params`: [EditChatInviteLinkParams](#editchatinvitelinkparams), `signal?`: AbortSignal | Promise<[ChatInviteLink](#chatinvitelink)> | [editChatInviteLink](https://core.telegram.org/bots/api#editchatinvitelink) |
 | `editChatSubscriptionInviteLink` | `params`: [EditChatSubscriptionInviteLinkParams](#editchatsubscriptioninvitelinkparams), `signal?`: AbortSignal | Promise<[ChatInviteLink](#chatinvitelink)> | [editChatSubscriptionInviteLink](https://core.telegram.org/bots/api#editchatsubscriptioninvitelink) |
+| `editEphemeralMessageCaption` | `params`: [EditEphemeralMessageCaptionParams](#editephemeralmessagecaptionparams), `signal?`: AbortSignal | Promise<boolean> | [editEphemeralMessageCaption](https://core.telegram.org/bots/api#editephemeralmessagecaption) |
+| `editEphemeralMessageMedia` | `params`: [EditEphemeralMessageMediaParams](#editephemeralmessagemediaparams), `signal?`: AbortSignal | Promise<boolean> | [editEphemeralMessageMedia](https://core.telegram.org/bots/api#editephemeralmessagemedia) |
+| `editEphemeralMessageReplyMarkup` | `params`: [EditEphemeralMessageReplyMarkupParams](#editephemeralmessagereplymarkupparams), `signal?`: AbortSignal | Promise<boolean> | [editEphemeralMessageReplyMarkup](https://core.telegram.org/bots/api#editephemeralmessagereplymarkup) |
+| `editEphemeralMessageText` | `params`: [EditEphemeralMessageTextParams](#editephemeralmessagetextparams), `signal?`: AbortSignal | Promise<boolean> | [editEphemeralMessageText](https://core.telegram.org/bots/api#editephemeralmessagetext) |
 | `editForumTopic` | `params`: [EditForumTopicParams](#editforumtopicparams), `signal?`: AbortSignal | Promise<boolean> | [editForumTopic](https://core.telegram.org/bots/api#editforumtopic) |
 | `editGeneralForumTopic` | `params`: [EditGeneralForumTopicParams](#editgeneralforumtopicparams), `signal?`: AbortSignal | Promise<boolean> | [editGeneralForumTopic](https://core.telegram.org/bots/api#editgeneralforumtopic) |
 | `editMessageCaption` | `params?`: [EditMessageCaptionParams](#editmessagecaptionparams), `signal?`: AbortSignal | Promise<[EditMessageCaptionResult](#editmessagecaptionresult)> | [editMessageCaption](https://core.telegram.org/bots/api#editmessagecaption) |
@@ -221,7 +226,7 @@ An animated profile photo (a video); `main_frame_timestamp` picks the still fram
 | `handleUpdate` | `update`: [Update](#update) | Promise<void> | Build a Context and run the composed chain; route errors to the `catch` boundary (default: log and continue). Rejects only when that boundary itself throws. |
 | `hears` | `trigger`: string \| RegExp \| (string \| RegExp)[], `...handlers`: [Middleware](#middleware)<[Context](#context)>[] | this | Match message text: a string matches exactly (sets `ctx.match` to the text); a RegExp matches when `text.match(re)` is non-null (sets `ctx.match` to the `RegExpMatchArray`). |
 | `isRunning` | - | boolean | - |
-| `on` | `kind`: "message" \| "edited_message" \| "channel_post" \| "edited_channel_post" \| "business_connection" \| "business_message" \| "edited_business_message" \| "deleted_business_messages" \| "guest_message" \| "message_reaction" \| "message_reaction_count" \| "inline_query" \| "chosen_inline_result" \| "callback_query" \| "shipping_query" \| "pre_checkout_query" \| "purchased_paid_media" \| "poll" \| "poll_answer" \| "my_chat_member" \| "chat_member" \| "chat_join_request" \| "chat_boost" \| "removed_chat_boost" \| "managed_bot" \| ("message" \| "edited_message" \| "channel_post" \| "edited_channel_post" \| "business_connection" \| "business_message" \| "edited_business_message" \| "deleted_business_messages" \| "guest_message" \| "message_reaction" \| "message_reaction_count" \| "inline_query" \| "chosen_inline_result" \| "callback_query" \| "shipping_query" \| "pre_checkout_query" \| "purchased_paid_media" \| "poll" \| "poll_answer" \| "my_chat_member" \| "chat_member" \| "chat_join_request" \| "chat_boost" \| "removed_chat_boost" \| "managed_bot")[], `...handlers`: [Middleware](#middleware)<[Context](#context)>[] | this | Run `handlers` only when the given payload key (e.g. `"message"`, `"callback_query"`) is present on the update. |
+| `on` | `kind`: "message" \| "edited_message" \| "channel_post" \| "edited_channel_post" \| "business_connection" \| "business_message" \| "edited_business_message" \| "deleted_business_messages" \| "guest_message" \| "message_reaction" \| "message_reaction_count" \| "inline_query" \| "chosen_inline_result" \| "callback_query" \| "shipping_query" \| "pre_checkout_query" \| "purchased_paid_media" \| "poll" \| "poll_answer" \| "my_chat_member" \| "chat_member" \| "chat_join_request" \| "chat_boost" \| "removed_chat_boost" \| "managed_bot" \| "subscription" \| ("message" \| "edited_message" \| "channel_post" \| "edited_channel_post" \| "business_connection" \| "business_message" \| "edited_business_message" \| "deleted_business_messages" \| "guest_message" \| "message_reaction" \| "message_reaction_count" \| "inline_query" \| "chosen_inline_result" \| "callback_query" \| "shipping_query" \| "pre_checkout_query" \| "purchased_paid_media" \| "poll" \| "poll_answer" \| "my_chat_member" \| "chat_member" \| "chat_join_request" \| "chat_boost" \| "removed_chat_boost" \| "managed_bot" \| "subscription")[], `...handlers`: [Middleware](#middleware)<[Context](#context)>[] | this | Run `handlers` only when the given payload key (e.g. `"message"`, `"callback_query"`) is present on the update. |
 | `startPolling` | `source?`: AsyncIterable<[Update](#update), any, any>, `options?`: [LongPollOptions](#longpolloptions) | Promise<void> | Pump an update source (default `longPoll`) through `handleUpdate` until `stop()` aborts. Resolves when the source is exhausted or aborted. This is long-poll mode; for webhooks use `webhookCallback`/`createWebhookServer`.  A handler error does not stop the pump: it is routed to the `catch` boundary (default: log and continue). The promise rejects only when that boundary itself throws - the fail-loud opt-in (see `catch`).  Not re-entrant: calling it while a previous pump is still active throws, so `isRunning()` stays truthful and the prior `AbortController` is never orphaned. Stop the running loop (`stop()`, then `await` its promise) first. |
 | `stop` | - | void | Abort the running pump loop. |
 | `use` | `...mw`: [Middleware](#middleware)<[Context](#context)>[] | this | Register one or more middleware to run on every update. |
@@ -1345,6 +1350,7 @@ type BotAccessSettings = {
 type BotCommand = {
   command: string;
   description: string;
+  is_ephemeral?: boolean;
 };
 ```
 
@@ -1435,6 +1441,16 @@ type BotName = {
 ```ts
 type BotShortDescription = {
   short_description: string;
+};
+```
+
+### `BotSubscriptionUpdated`
+
+```ts
+type BotSubscriptionUpdated = {
+  invoice_payload: string;
+  state: string;
+  user: [User](#user);
 };
 ```
 
@@ -1677,6 +1693,7 @@ type ChatFullInfo = {
   business_opening_hours?: [BusinessOpeningHours](#businessopeninghours);
   can_send_paid_media?: true;
   can_set_sticker_set?: true;
+  community?: [Community](#community);
   custom_emoji_sticker_set_name?: string;
   description?: string;
   emoji_status_custom_emoji_id?: string;
@@ -2046,6 +2063,29 @@ type CloseParams = Record<string, never>;
 type CloseResult = boolean;
 ```
 
+### `Community`
+
+```ts
+type Community = {
+  id: number;
+  name: string;
+};
+```
+
+### `CommunityChatAdded`
+
+```ts
+type CommunityChatAdded = {
+  community: [Community](#community);
+};
+```
+
+### `CommunityChatRemoved`
+
+```ts
+type CommunityChatRemoved = Record<string, never>;
+```
+
 ### `Contact`
 
 ```ts
@@ -2328,6 +2368,22 @@ type DeleteChatStickerSetParams = {
 type DeleteChatStickerSetResult = boolean;
 ```
 
+### `DeleteEphemeralMessageParams`
+
+```ts
+type DeleteEphemeralMessageParams = {
+  chat_id: number | string;
+  ephemeral_message_id: number;
+  receiver_user_id: number;
+};
+```
+
+### `DeleteEphemeralMessageResult`
+
+```ts
+type DeleteEphemeralMessageResult = boolean;
+```
+
 ### `DeleteForumTopicParams`
 
 ```ts
@@ -2535,6 +2591,82 @@ type EditChatSubscriptionInviteLinkParams = {
 
 ```ts
 type EditChatSubscriptionInviteLinkResult = [ChatInviteLink](#chatinvitelink);
+```
+
+### `EditEphemeralMessageCaptionParams`
+
+```ts
+type EditEphemeralMessageCaptionParams = {
+  caption?: string;
+  caption_entities?: [MessageEntity](#messageentity)[];
+  chat_id: number | string;
+  ephemeral_message_id: number;
+  parse_mode?: string;
+  receiver_user_id: number;
+  reply_markup?: [InlineKeyboardMarkup](#inlinekeyboardmarkup);
+};
+```
+
+### `EditEphemeralMessageCaptionResult`
+
+```ts
+type EditEphemeralMessageCaptionResult = boolean;
+```
+
+### `EditEphemeralMessageMediaParams`
+
+```ts
+type EditEphemeralMessageMediaParams = {
+  chat_id: number | string;
+  ephemeral_message_id: number;
+  media: [InputMedia](#inputmedia);
+  receiver_user_id: number;
+  reply_markup?: [InlineKeyboardMarkup](#inlinekeyboardmarkup);
+};
+```
+
+### `EditEphemeralMessageMediaResult`
+
+```ts
+type EditEphemeralMessageMediaResult = boolean;
+```
+
+### `EditEphemeralMessageReplyMarkupParams`
+
+```ts
+type EditEphemeralMessageReplyMarkupParams = {
+  chat_id: number | string;
+  ephemeral_message_id: number;
+  receiver_user_id: number;
+  reply_markup?: [InlineKeyboardMarkup](#inlinekeyboardmarkup);
+};
+```
+
+### `EditEphemeralMessageReplyMarkupResult`
+
+```ts
+type EditEphemeralMessageReplyMarkupResult = boolean;
+```
+
+### `EditEphemeralMessageTextParams`
+
+```ts
+type EditEphemeralMessageTextParams = {
+  chat_id: number | string;
+  entities?: [MessageEntity](#messageentity)[];
+  ephemeral_message_id: number;
+  link_preview_options?: [LinkPreviewOptions](#linkpreviewoptions);
+  parse_mode?: string;
+  receiver_user_id: number;
+  reply_markup?: [InlineKeyboardMarkup](#inlinekeyboardmarkup);
+  text: string;
+};
+```
+
+### `EditEphemeralMessageTextResult`
+
+```ts
+type EditEphemeralMessageTextResult = boolean;
 ```
 
 ### `EditForumTopicParams`
@@ -4246,6 +4378,19 @@ type InputMediaVideo = {
 };
 ```
 
+### `InputMediaVoiceNote`
+
+```ts
+type InputMediaVoiceNote = {
+  caption?: string;
+  caption_entities?: [MessageEntity](#messageentity)[];
+  duration?: number;
+  media: [InputFile](#inputfile) | string;
+  parse_mode?: string;
+  type: string;
+};
+```
+
 ### `InputMessageContent`
 
 ```ts
@@ -4341,13 +4486,241 @@ type InputProfilePhotoStatic = {
 };
 ```
 
+### `InputRichBlock`
+
+```ts
+type InputRichBlock = [InputRichBlockParagraph](#inputrichblockparagraph) | [InputRichBlockSectionHeading](#inputrichblocksectionheading) | [InputRichBlockPreformatted](#inputrichblockpreformatted) | [InputRichBlockFooter](#inputrichblockfooter) | [InputRichBlockDivider](#inputrichblockdivider) | [InputRichBlockMathematicalExpression](#inputrichblockmathematicalexpression) | [InputRichBlockAnchor](#inputrichblockanchor) | [InputRichBlockList](#inputrichblocklist) | [InputRichBlockBlockQuotation](#inputrichblockblockquotation) | [InputRichBlockPullQuotation](#inputrichblockpullquotation) | [InputRichBlockCollage](#inputrichblockcollage) | [InputRichBlockSlideshow](#inputrichblockslideshow) | [InputRichBlockTable](#inputrichblocktable) | [InputRichBlockDetails](#inputrichblockdetails) | [InputRichBlockMap](#inputrichblockmap) | [InputRichBlockAnimation](#inputrichblockanimation) | [InputRichBlockAudio](#inputrichblockaudio) | [InputRichBlockPhoto](#inputrichblockphoto) | [InputRichBlockVideo](#inputrichblockvideo) | [InputRichBlockVoiceNote](#inputrichblockvoicenote) | [InputRichBlockThinking](#inputrichblockthinking);
+```
+
+### `InputRichBlockAnchor`
+
+```ts
+type InputRichBlockAnchor = {
+  name: string;
+  type: string;
+};
+```
+
+### `InputRichBlockAnimation`
+
+```ts
+type InputRichBlockAnimation = {
+  animation: [InputMediaAnimation](#inputmediaanimation);
+  caption?: [RichBlockCaption](#richblockcaption);
+  type: string;
+};
+```
+
+### `InputRichBlockAudio`
+
+```ts
+type InputRichBlockAudio = {
+  audio: [InputMediaAudio](#inputmediaaudio);
+  caption?: [RichBlockCaption](#richblockcaption);
+  type: string;
+};
+```
+
+### `InputRichBlockBlockQuotation`
+
+```ts
+type InputRichBlockBlockQuotation = {
+  blocks: [InputRichBlock](#inputrichblock)[];
+  credit?: [RichText](#richtext);
+  type: string;
+};
+```
+
+### `InputRichBlockCollage`
+
+```ts
+type InputRichBlockCollage = {
+  blocks: [InputRichBlock](#inputrichblock)[];
+  caption?: [RichBlockCaption](#richblockcaption);
+  type: string;
+};
+```
+
+### `InputRichBlockDetails`
+
+```ts
+type InputRichBlockDetails = {
+  blocks: [InputRichBlock](#inputrichblock)[];
+  is_open?: true;
+  summary: [RichText](#richtext);
+  type: string;
+};
+```
+
+### `InputRichBlockDivider`
+
+```ts
+type InputRichBlockDivider = {
+  type: string;
+};
+```
+
+### `InputRichBlockFooter`
+
+```ts
+type InputRichBlockFooter = {
+  text: [RichText](#richtext);
+  type: string;
+};
+```
+
+### `InputRichBlockList`
+
+```ts
+type InputRichBlockList = {
+  items: [InputRichBlockListItem](#inputrichblocklistitem)[];
+  type: string;
+};
+```
+
+### `InputRichBlockListItem`
+
+```ts
+type InputRichBlockListItem = {
+  blocks: [InputRichBlock](#inputrichblock)[];
+  has_checkbox?: true;
+  is_checked?: true;
+  type?: string;
+  value?: number;
+};
+```
+
+### `InputRichBlockMap`
+
+```ts
+type InputRichBlockMap = {
+  caption?: [RichBlockCaption](#richblockcaption);
+  height: number;
+  location: [Location](#location);
+  type: string;
+  width: number;
+  zoom: number;
+};
+```
+
+### `InputRichBlockMathematicalExpression`
+
+```ts
+type InputRichBlockMathematicalExpression = {
+  expression: string;
+  type: string;
+};
+```
+
+### `InputRichBlockParagraph`
+
+```ts
+type InputRichBlockParagraph = {
+  text: [RichText](#richtext);
+  type: string;
+};
+```
+
+### `InputRichBlockPhoto`
+
+```ts
+type InputRichBlockPhoto = {
+  caption?: [RichBlockCaption](#richblockcaption);
+  photo: [InputMediaPhoto](#inputmediaphoto);
+  type: string;
+};
+```
+
+### `InputRichBlockPreformatted`
+
+```ts
+type InputRichBlockPreformatted = {
+  language?: string;
+  text: [RichText](#richtext);
+  type: string;
+};
+```
+
+### `InputRichBlockPullQuotation`
+
+```ts
+type InputRichBlockPullQuotation = {
+  credit?: [RichText](#richtext);
+  text: [RichText](#richtext);
+  type: string;
+};
+```
+
+### `InputRichBlockSectionHeading`
+
+```ts
+type InputRichBlockSectionHeading = {
+  size: number;
+  text: [RichText](#richtext);
+  type: string;
+};
+```
+
+### `InputRichBlockSlideshow`
+
+```ts
+type InputRichBlockSlideshow = {
+  blocks: [InputRichBlock](#inputrichblock)[];
+  caption?: [RichBlockCaption](#richblockcaption);
+  type: string;
+};
+```
+
+### `InputRichBlockTable`
+
+```ts
+type InputRichBlockTable = {
+  caption?: [RichText](#richtext);
+  cells: [RichBlockTableCell](#richblocktablecell)[][];
+  is_bordered?: true;
+  is_striped?: true;
+  type: string;
+};
+```
+
+### `InputRichBlockThinking`
+
+```ts
+type InputRichBlockThinking = {
+  text: [RichText](#richtext);
+  type: string;
+};
+```
+
+### `InputRichBlockVideo`
+
+```ts
+type InputRichBlockVideo = {
+  caption?: [RichBlockCaption](#richblockcaption);
+  type: string;
+  video: [InputMediaVideo](#inputmediavideo);
+};
+```
+
+### `InputRichBlockVoiceNote`
+
+```ts
+type InputRichBlockVoiceNote = {
+  caption?: [RichBlockCaption](#richblockcaption);
+  type: string;
+  voice_note: [InputMediaVoiceNote](#inputmediavoicenote);
+};
+```
+
 ### `InputRichMessage`
 
 ```ts
 type InputRichMessage = {
+  blocks?: [InputRichBlock](#inputrichblock)[];
   html?: string;
   is_rtl?: boolean;
   markdown?: string;
+  media?: [InputRichMessageMedia](#inputrichmessagemedia)[];
   skip_entity_detection?: boolean;
 };
 ```
@@ -4357,6 +4730,15 @@ type InputRichMessage = {
 ```ts
 type InputRichMessageContent = {
   rich_message: [InputRichMessage](#inputrichmessage);
+};
+```
+
+### `InputRichMessageMedia`
+
+```ts
+type InputRichMessageMedia = {
+  id: string;
+  media: [InputMediaAnimation](#inputmediaanimation) | [InputMediaAudio](#inputmediaaudio) | [InputMediaPhoto](#inputmediaphoto) | [InputMediaVideo](#inputmediavideo) | [InputMediaVoiceNote](#inputmediavoicenote);
 };
 ```
 
@@ -4695,6 +5077,8 @@ type Message = {
   checklist?: [Checklist](#checklist);
   checklist_tasks_added?: [ChecklistTasksAdded](#checklisttasksadded);
   checklist_tasks_done?: [ChecklistTasksDone](#checklisttasksdone);
+  community_chat_added?: [CommunityChatAdded](#communitychatadded);
+  community_chat_removed?: [CommunityChatRemoved](#communitychatremoved);
   connected_website?: string;
   contact?: [Contact](#contact);
   date: number;
@@ -4706,6 +5090,7 @@ type Message = {
   edit_date?: number;
   effect_id?: string;
   entities?: [MessageEntity](#messageentity)[];
+  ephemeral_message_id?: number;
   external_reply?: [ExternalReplyInfo](#externalreplyinfo);
   forum_topic_closed?: [ForumTopicClosed](#forumtopicclosed);
   forum_topic_created?: [ForumTopicCreated](#forumtopiccreated);
@@ -4758,6 +5143,7 @@ type Message = {
   poll_option_deleted?: [PollOptionDeleted](#polloptiondeleted);
   proximity_alert_triggered?: [ProximityAlertTriggered](#proximityalerttriggered);
   quote?: [TextQuote](#textquote);
+  receiver_user?: [User](#user);
   refunded_payment?: [RefundedPayment](#refundedpayment);
   reply_markup?: [InlineKeyboardMarkup](#inlinekeyboardmarkup);
   reply_to_checklist_task_id?: number;
@@ -5642,7 +6028,8 @@ type ReplyParameters = {
   allow_sending_without_reply?: boolean;
   chat_id?: number | string;
   checklist_task_id?: number;
-  message_id: number;
+  ephemeral_message_id?: number;
+  message_id?: number;
   poll_option_id?: string;
   quote?: string;
   quote_entities?: [MessageEntity](#messageentity)[];
@@ -6292,6 +6679,7 @@ type SendAnimationParams = {
   allow_paid_broadcast?: boolean;
   animation: [InputFile](#inputfile) | string;
   business_connection_id?: string;
+  callback_query_id?: string;
   caption?: string;
   caption_entities?: [MessageEntity](#messageentity)[];
   chat_id: number | string;
@@ -6304,6 +6692,7 @@ type SendAnimationParams = {
   message_thread_id?: number;
   parse_mode?: string;
   protect_content?: boolean;
+  receiver_user_id?: number;
   reply_markup?: [InlineKeyboardMarkup](#inlinekeyboardmarkup) | [ReplyKeyboardMarkup](#replykeyboardmarkup) | [ReplyKeyboardRemove](#replykeyboardremove) | [ForceReply](#forcereply);
   reply_parameters?: [ReplyParameters](#replyparameters);
   show_caption_above_media?: boolean;
@@ -6326,6 +6715,7 @@ type SendAudioParams = {
   allow_paid_broadcast?: boolean;
   audio: [InputFile](#inputfile) | string;
   business_connection_id?: string;
+  callback_query_id?: string;
   caption?: string;
   caption_entities?: [MessageEntity](#messageentity)[];
   chat_id: number | string;
@@ -6337,6 +6727,7 @@ type SendAudioParams = {
   parse_mode?: string;
   performer?: string;
   protect_content?: boolean;
+  receiver_user_id?: number;
   reply_markup?: [InlineKeyboardMarkup](#inlinekeyboardmarkup) | [ReplyKeyboardMarkup](#replykeyboardmarkup) | [ReplyKeyboardRemove](#replykeyboardremove) | [ForceReply](#forcereply);
   reply_parameters?: [ReplyParameters](#replyparameters);
   suggested_post_parameters?: [SuggestedPostParameters](#suggestedpostparameters);
@@ -6410,6 +6801,7 @@ type SendChecklistResult = [Message](#message);
 type SendContactParams = {
   allow_paid_broadcast?: boolean;
   business_connection_id?: string;
+  callback_query_id?: string;
   chat_id: number | string;
   direct_messages_topic_id?: number;
   disable_notification?: boolean;
@@ -6419,6 +6811,7 @@ type SendContactParams = {
   message_thread_id?: number;
   phone_number: string;
   protect_content?: boolean;
+  receiver_user_id?: number;
   reply_markup?: [InlineKeyboardMarkup](#inlinekeyboardmarkup) | [ReplyKeyboardMarkup](#replykeyboardmarkup) | [ReplyKeyboardRemove](#replykeyboardremove) | [ForceReply](#forcereply);
   reply_parameters?: [ReplyParameters](#replyparameters);
   suggested_post_parameters?: [SuggestedPostParameters](#suggestedpostparameters);
@@ -6463,6 +6856,7 @@ type SendDiceResult = [Message](#message);
 type SendDocumentParams = {
   allow_paid_broadcast?: boolean;
   business_connection_id?: string;
+  callback_query_id?: string;
   caption?: string;
   caption_entities?: [MessageEntity](#messageentity)[];
   chat_id: number | string;
@@ -6474,6 +6868,7 @@ type SendDocumentParams = {
   message_thread_id?: number;
   parse_mode?: string;
   protect_content?: boolean;
+  receiver_user_id?: number;
   reply_markup?: [InlineKeyboardMarkup](#inlinekeyboardmarkup) | [ReplyKeyboardMarkup](#replykeyboardmarkup) | [ReplyKeyboardRemove](#replykeyboardremove) | [ForceReply](#forcereply);
   reply_parameters?: [ReplyParameters](#replyparameters);
   suggested_post_parameters?: [SuggestedPostParameters](#suggestedpostparameters);
@@ -6580,6 +6975,7 @@ type SendInvoiceResult = [Message](#message);
 type SendLivePhotoParams = {
   allow_paid_broadcast?: boolean;
   business_connection_id?: string;
+  callback_query_id?: string;
   caption?: string;
   caption_entities?: [MessageEntity](#messageentity)[];
   chat_id: number | string;
@@ -6592,6 +6988,7 @@ type SendLivePhotoParams = {
   parse_mode?: string;
   photo: [InputFile](#inputfile) | string;
   protect_content?: boolean;
+  receiver_user_id?: number;
   reply_markup?: [InlineKeyboardMarkup](#inlinekeyboardmarkup) | [ReplyKeyboardMarkup](#replykeyboardmarkup) | [ReplyKeyboardRemove](#replykeyboardremove) | [ForceReply](#forcereply);
   reply_parameters?: [ReplyParameters](#replyparameters);
   show_caption_above_media?: boolean;
@@ -6611,6 +7008,7 @@ type SendLivePhotoResult = [Message](#message);
 type SendLocationParams = {
   allow_paid_broadcast?: boolean;
   business_connection_id?: string;
+  callback_query_id?: string;
   chat_id: number | string;
   direct_messages_topic_id?: number;
   disable_notification?: boolean;
@@ -6623,6 +7021,7 @@ type SendLocationParams = {
   message_thread_id?: number;
   protect_content?: boolean;
   proximity_alert_radius?: number;
+  receiver_user_id?: number;
   reply_markup?: [InlineKeyboardMarkup](#inlinekeyboardmarkup) | [ReplyKeyboardMarkup](#replykeyboardmarkup) | [ReplyKeyboardRemove](#replykeyboardremove) | [ForceReply](#forcereply);
   reply_parameters?: [ReplyParameters](#replyparameters);
   suggested_post_parameters?: [SuggestedPostParameters](#suggestedpostparameters);
@@ -6683,6 +7082,7 @@ type SendMessageDraftResult = boolean;
 type SendMessageParams = {
   allow_paid_broadcast?: boolean;
   business_connection_id?: string;
+  callback_query_id?: string;
   chat_id: number | string;
   direct_messages_topic_id?: number;
   disable_notification?: boolean;
@@ -6692,6 +7092,7 @@ type SendMessageParams = {
   message_thread_id?: number;
   parse_mode?: string;
   protect_content?: boolean;
+  receiver_user_id?: number;
   reply_markup?: [InlineKeyboardMarkup](#inlinekeyboardmarkup) | [ReplyKeyboardMarkup](#replykeyboardmarkup) | [ReplyKeyboardRemove](#replykeyboardremove) | [ForceReply](#forcereply);
   reply_parameters?: [ReplyParameters](#replyparameters);
   suggested_post_parameters?: [SuggestedPostParameters](#suggestedpostparameters);
@@ -6741,6 +7142,7 @@ type SendPaidMediaResult = [Message](#message);
 type SendPhotoParams = {
   allow_paid_broadcast?: boolean;
   business_connection_id?: string;
+  callback_query_id?: string;
   caption?: string;
   caption_entities?: [MessageEntity](#messageentity)[];
   chat_id: number | string;
@@ -6752,6 +7154,7 @@ type SendPhotoParams = {
   parse_mode?: string;
   photo: [InputFile](#inputfile) | string;
   protect_content?: boolean;
+  receiver_user_id?: number;
   reply_markup?: [InlineKeyboardMarkup](#inlinekeyboardmarkup) | [ReplyKeyboardMarkup](#replykeyboardmarkup) | [ReplyKeyboardRemove](#replykeyboardremove) | [ForceReply](#forcereply);
   reply_parameters?: [ReplyParameters](#replyparameters);
   show_caption_above_media?: boolean;
@@ -6860,6 +7263,7 @@ type SendRichMessageResult = [Message](#message);
 type SendStickerParams = {
   allow_paid_broadcast?: boolean;
   business_connection_id?: string;
+  callback_query_id?: string;
   chat_id: number | string;
   direct_messages_topic_id?: number;
   disable_notification?: boolean;
@@ -6867,6 +7271,7 @@ type SendStickerParams = {
   message_effect_id?: string;
   message_thread_id?: number;
   protect_content?: boolean;
+  receiver_user_id?: number;
   reply_markup?: [InlineKeyboardMarkup](#inlinekeyboardmarkup) | [ReplyKeyboardMarkup](#replykeyboardmarkup) | [ReplyKeyboardRemove](#replykeyboardremove) | [ForceReply](#forcereply);
   reply_parameters?: [ReplyParameters](#replyparameters);
   sticker: [InputFile](#inputfile) | string;
@@ -6887,6 +7292,7 @@ type SendVenueParams = {
   address: string;
   allow_paid_broadcast?: boolean;
   business_connection_id?: string;
+  callback_query_id?: string;
   chat_id: number | string;
   direct_messages_topic_id?: number;
   disable_notification?: boolean;
@@ -6899,6 +7305,7 @@ type SendVenueParams = {
   message_effect_id?: string;
   message_thread_id?: number;
   protect_content?: boolean;
+  receiver_user_id?: number;
   reply_markup?: [InlineKeyboardMarkup](#inlinekeyboardmarkup) | [ReplyKeyboardMarkup](#replykeyboardmarkup) | [ReplyKeyboardRemove](#replykeyboardremove) | [ForceReply](#forcereply);
   reply_parameters?: [ReplyParameters](#replyparameters);
   suggested_post_parameters?: [SuggestedPostParameters](#suggestedpostparameters);
@@ -6918,6 +7325,7 @@ type SendVenueResult = [Message](#message);
 type SendVideoNoteParams = {
   allow_paid_broadcast?: boolean;
   business_connection_id?: string;
+  callback_query_id?: string;
   chat_id: number | string;
   direct_messages_topic_id?: number;
   disable_notification?: boolean;
@@ -6926,6 +7334,7 @@ type SendVideoNoteParams = {
   message_effect_id?: string;
   message_thread_id?: number;
   protect_content?: boolean;
+  receiver_user_id?: number;
   reply_markup?: [InlineKeyboardMarkup](#inlinekeyboardmarkup) | [ReplyKeyboardMarkup](#replykeyboardmarkup) | [ReplyKeyboardRemove](#replykeyboardremove) | [ForceReply](#forcereply);
   reply_parameters?: [ReplyParameters](#replyparameters);
   suggested_post_parameters?: [SuggestedPostParameters](#suggestedpostparameters);
@@ -6946,6 +7355,7 @@ type SendVideoNoteResult = [Message](#message);
 type SendVideoParams = {
   allow_paid_broadcast?: boolean;
   business_connection_id?: string;
+  callback_query_id?: string;
   caption?: string;
   caption_entities?: [MessageEntity](#messageentity)[];
   chat_id: number | string;
@@ -6959,6 +7369,7 @@ type SendVideoParams = {
   message_thread_id?: number;
   parse_mode?: string;
   protect_content?: boolean;
+  receiver_user_id?: number;
   reply_markup?: [InlineKeyboardMarkup](#inlinekeyboardmarkup) | [ReplyKeyboardMarkup](#replykeyboardmarkup) | [ReplyKeyboardRemove](#replykeyboardremove) | [ForceReply](#forcereply);
   reply_parameters?: [ReplyParameters](#replyparameters);
   show_caption_above_media?: boolean;
@@ -6983,6 +7394,7 @@ type SendVideoResult = [Message](#message);
 type SendVoiceParams = {
   allow_paid_broadcast?: boolean;
   business_connection_id?: string;
+  callback_query_id?: string;
   caption?: string;
   caption_entities?: [MessageEntity](#messageentity)[];
   chat_id: number | string;
@@ -6993,6 +7405,7 @@ type SendVoiceParams = {
   message_thread_id?: number;
   parse_mode?: string;
   protect_content?: boolean;
+  receiver_user_id?: number;
   reply_markup?: [InlineKeyboardMarkup](#inlinekeyboardmarkup) | [ReplyKeyboardMarkup](#replykeyboardmarkup) | [ReplyKeyboardRemove](#replykeyboardremove) | [ForceReply](#forcereply);
   reply_parameters?: [ReplyParameters](#replyparameters);
   suggested_post_parameters?: [SuggestedPostParameters](#suggestedpostparameters);
@@ -8277,6 +8690,10 @@ type Update = {
   update_id: number;
 } & {
   managed_bot: [ManagedBotUpdated](#managedbotupdated);
+} | {
+  update_id: number;
+} & {
+  subscription: [BotSubscriptionUpdated](#botsubscriptionupdated);
 };
 ```
 
@@ -8618,7 +9035,7 @@ const HTTP_STATUS_TOO_MANY_REQUESTS: 429;
 `Update` field names dispatched as events (every `Update` payload key except `update_id`).
 
 ```ts
-const UPDATE_TYPES: readonly ["message", "edited_message", "channel_post", "edited_channel_post", "business_connection", "business_message", "edited_business_message", "deleted_business_messages", "guest_message", "message_reaction", "message_reaction_count", "inline_query", "chosen_inline_result", "callback_query", "shipping_query", "pre_checkout_query", "purchased_paid_media", "poll", "poll_answer", "my_chat_member", "chat_member", "chat_join_request", "chat_boost", "removed_chat_boost", "managed_bot"];
+const UPDATE_TYPES: readonly ["message", "edited_message", "channel_post", "edited_channel_post", "business_connection", "business_message", "edited_business_message", "deleted_business_messages", "guest_message", "message_reaction", "message_reaction_count", "inline_query", "chosen_inline_result", "callback_query", "shipping_query", "pre_checkout_query", "purchased_paid_media", "poll", "poll_answer", "my_chat_member", "chat_member", "chat_join_request", "chat_boost", "removed_chat_boost", "managed_bot", "subscription"];
 ```
 
 ### `nextPagesWebhook`

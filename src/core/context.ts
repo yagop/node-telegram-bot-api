@@ -65,6 +65,7 @@ const chatOf: { [K in UpdateType]: (u: Variant<K>) => Chat | undefined } = {
   chat_boost: (u) => u.chat_boost.chat,
   removed_chat_boost: (u) => u.removed_chat_boost.chat,
   managed_bot: () => undefined,
+  subscription: () => undefined,
 };
 
 /**
@@ -102,6 +103,7 @@ const fromOf: { [K in UpdateType]: (u: Variant<K>) => User | undefined } = {
   chat_boost: () => undefined,
   removed_chat_boost: () => undefined,
   managed_bot: (u) => u.managed_bot.user,
+  subscription: (u) => u.subscription.user,
 };
 
 /**
