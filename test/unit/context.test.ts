@@ -128,6 +128,7 @@ describe("Context", () => {
       { kind: "business_message", payload: { message_id: 1, date: 0, chat: { id: 1, type: "private" }, from: user, text: "x" } },
       { kind: "guest_message", payload: { message_id: 1, date: 0, chat: { id: 1, type: "private" }, from: user, text: "x" } },
       { kind: "managed_bot", payload: { user, bot: { id: 2, is_bot: true, first_name: "B" } } },
+      { kind: "subscription", payload: { user, invoice_payload: "e2e", state: "active" } },
     ];
     for (const { kind, payload } of cases) {
       const ctx = new Context({ update_id: 1, [kind]: payload } as unknown as Update, api);

@@ -1506,6 +1506,88 @@ describe("methods", () => {
     });
   });
 
+  method("editEphemeralMessageText", () => {
+    test("edits an ephemeral text message", async () => {
+      const receiver_user_id = await targetUserId();
+      const sent = await api.sendMessage({ chat_id: chatId, receiver_user_id, text: "e2e ephemeral text" });
+      expect(sent.ephemeral_message_id).toBeDefined();
+      const ephemeral_message_id = sent.ephemeral_message_id as number;
+      await api.editEphemeralMessageText({
+        chat_id: chatId,
+        receiver_user_id,
+        ephemeral_message_id,
+        text: "e2e ephemeral text edited",
+      });
+      await api.deleteEphemeralMessage({ chat_id: chatId, receiver_user_id, ephemeral_message_id });
+    });
+  });
+
+  method("editEphemeralMessageMedia", () => {
+    test("edits ephemeral message media", async () => {
+      const receiver_user_id = await targetUserId();
+      const sent = await api.sendPhoto({
+        chat_id: chatId,
+        receiver_user_id,
+        photo: new InputFile(JPEG_160, { filename: "e2e.jpg", contentType: "image/jpeg" }),
+        caption: "e2e ephemeral media",
+      });
+      expect(sent.ephemeral_message_id).toBeDefined();
+      const ephemeral_message_id = sent.ephemeral_message_id as number;
+      const fileId = sent.photo?.at(-1)?.file_id;
+      expect(fileId).toBeTruthy();
+      const media = {
+        type: "photo",
+        media: fileId as string,
+        caption: "e2e ephemeral media edited",
+      } satisfies InputMedia;
+      await api.editEphemeralMessageMedia({ chat_id: chatId, receiver_user_id, ephemeral_message_id, media });
+      await api.deleteEphemeralMessage({ chat_id: chatId, receiver_user_id, ephemeral_message_id });
+    });
+  });
+
+  method("editEphemeralMessageCaption", () => {
+    test("edits an ephemeral message caption", async () => {
+      const receiver_user_id = await targetUserId();
+      const sent = await api.sendPhoto({
+        chat_id: chatId,
+        receiver_user_id,
+        photo: new InputFile(JPEG_160, { filename: "e2e.jpg", contentType: "image/jpeg" }),
+        caption: "e2e ephemeral caption",
+      });
+      expect(sent.ephemeral_message_id).toBeDefined();
+      const ephemeral_message_id = sent.ephemeral_message_id as number;
+      await api.editEphemeralMessageCaption({
+        chat_id: chatId,
+        receiver_user_id,
+        ephemeral_message_id,
+        caption: "e2e ephemeral caption edited",
+      });
+      await api.deleteEphemeralMessage({ chat_id: chatId, receiver_user_id, ephemeral_message_id });
+    });
+  });
+
+  method("editEphemeralMessageReplyMarkup", () => {
+    test("edits ephemeral message reply markup", async () => {
+      const receiver_user_id = await targetUserId();
+      const sent = await api.sendMessage({
+        chat_id: chatId,
+        receiver_user_id,
+        text: "e2e ephemeral reply markup",
+        reply_markup: sampleInlineKeyboard,
+      });
+      expect(sent.ephemeral_message_id).toBeDefined();
+      const ephemeral_message_id = sent.ephemeral_message_id as number;
+      const reply_markup = new InlineKeyboardBuilder().url("docs", "https://core.telegram.org").build();
+      await api.editEphemeralMessageReplyMarkup({
+        chat_id: chatId,
+        receiver_user_id,
+        ephemeral_message_id,
+        reply_markup,
+      });
+      await api.deleteEphemeralMessage({ chat_id: chatId, receiver_user_id, ephemeral_message_id });
+    });
+  });
+
   method("stopPoll", () => {
     test("stops a freshly-sent poll", async () => {
       const poll = await api.sendPoll({
@@ -1546,6 +1628,21 @@ describe("methods", () => {
         message_ids: [sent.message_id],
       });
       expect(ok).toBeDefined();
+    });
+  });
+
+  method("deleteEphemeralMessage", () => {
+    test("deletes an ephemeral message", async () => {
+      const receiver_user_id = await targetUserId();
+      const sent = await api.sendMessage({ chat_id: chatId, receiver_user_id, text: "e2e ephemeral delete" });
+      expect(sent.ephemeral_message_id).toBeDefined();
+      const ephemeral_message_id = sent.ephemeral_message_id as number;
+      const ok = await api.deleteEphemeralMessage({
+        chat_id: chatId,
+        receiver_user_id,
+        ephemeral_message_id,
+      });
+      expect(ok).toBe(true);
     });
   });
 

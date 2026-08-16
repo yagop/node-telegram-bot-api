@@ -595,6 +595,22 @@ export class Api {
   stopPoll(params: T.StopPollParams, signal?: AbortSignal): Promise<T.StopPollResult> {
     return this.request<T.StopPollResult>("stopPoll", params, signal);
   }
+  /** {@link https://core.telegram.org/bots/api#editephemeralmessagetext editEphemeralMessageText} */
+  editEphemeralMessageText(params: T.EditEphemeralMessageTextParams, signal?: AbortSignal): Promise<T.EditEphemeralMessageTextResult> {
+    return this.request<T.EditEphemeralMessageTextResult>("editEphemeralMessageText", params, signal);
+  }
+  /** {@link https://core.telegram.org/bots/api#editephemeralmessagemedia editEphemeralMessageMedia} */
+  editEphemeralMessageMedia(params: T.EditEphemeralMessageMediaParams, signal?: AbortSignal): Promise<T.EditEphemeralMessageMediaResult> {
+    return this.request<T.EditEphemeralMessageMediaResult>("editEphemeralMessageMedia", params, signal);
+  }
+  /** {@link https://core.telegram.org/bots/api#editephemeralmessagecaption editEphemeralMessageCaption} */
+  editEphemeralMessageCaption(params: T.EditEphemeralMessageCaptionParams, signal?: AbortSignal): Promise<T.EditEphemeralMessageCaptionResult> {
+    return this.request<T.EditEphemeralMessageCaptionResult>("editEphemeralMessageCaption", params, signal);
+  }
+  /** {@link https://core.telegram.org/bots/api#editephemeralmessagereplymarkup editEphemeralMessageReplyMarkup} */
+  editEphemeralMessageReplyMarkup(params: T.EditEphemeralMessageReplyMarkupParams, signal?: AbortSignal): Promise<T.EditEphemeralMessageReplyMarkupResult> {
+    return this.request<T.EditEphemeralMessageReplyMarkupResult>("editEphemeralMessageReplyMarkup", params, signal);
+  }
   /** {@link https://core.telegram.org/bots/api#approvesuggestedpost approveSuggestedPost} */
   approveSuggestedPost(params: T.ApproveSuggestedPostParams, signal?: AbortSignal): Promise<T.ApproveSuggestedPostResult> {
     return this.request<T.ApproveSuggestedPostResult>("approveSuggestedPost", params, signal);
@@ -610,6 +626,10 @@ export class Api {
   /** {@link https://core.telegram.org/bots/api#deletemessages deleteMessages} */
   deleteMessages(params: T.DeleteMessagesParams, signal?: AbortSignal): Promise<T.DeleteMessagesResult> {
     return this.request<T.DeleteMessagesResult>("deleteMessages", params, signal);
+  }
+  /** {@link https://core.telegram.org/bots/api#deleteephemeralmessage deleteEphemeralMessage} */
+  deleteEphemeralMessage(params: T.DeleteEphemeralMessageParams, signal?: AbortSignal): Promise<T.DeleteEphemeralMessageResult> {
+    return this.request<T.DeleteEphemeralMessageResult>("deleteEphemeralMessage", params, signal);
   }
   /** {@link https://core.telegram.org/bots/api#deletemessagereaction deleteMessageReaction} */
   deleteMessageReaction(params: T.DeleteMessageReactionParams, signal?: AbortSignal): Promise<T.DeleteMessageReactionResult> {

@@ -5,6 +5,31 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased][Unreleased]
 
+### Bot API 10.2 (July 14, 2026)
+
+#### Rich Messages
+
+- Added `InputRichMessageMedia`, `InputMediaVoiceNote`, `InputRichBlock`,
+  `InputRichBlockListItem`, and the 21 input rich-block variants.
+- Added `media` and `blocks` to `InputRichMessage`.
+
+#### Ephemeral Messages
+
+- Added `editEphemeralMessageText`, `editEphemeralMessageMedia`,
+  `editEphemeralMessageCaption`, `editEphemeralMessageReplyMarkup`, and
+  `deleteEphemeralMessage`.
+- Added ephemeral targeting parameters to the 13 supported send methods and
+  ephemeral-message fields to `BotCommand`, `Message`, and `ReplyParameters`.
+
+#### Communities
+
+- Added `Community`, `CommunityChatAdded`, `CommunityChatRemoved`, and their
+  related `Message` and `ChatFullInfo` fields.
+
+#### General
+
+- Added `BotSubscriptionUpdated` and the `subscription` update type.
+
 v2 is a from-scratch redesign with **no backward compatibility** with the v1
 `TelegramBot` surface. There is no shim - the table below is the migration path.
 The core is runtime-agnostic (Node 18+, Bun, Deno, Cloudflare Workers, Vercel/Deno
