@@ -5,6 +5,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased][Unreleased]
 
+## [2.0.0][2.0.0] - 2026-08-16
+
 ### Bot API 10.2 (July 14, 2026)
 
 #### Rich Messages
@@ -1073,4 +1075,5 @@ Fixed:
 [1.1.0]:https://github.com/yagop/node-telegram-bot-api/releases/tag/v1.1.0
 [1.1.1]:https://github.com/yagop/node-telegram-bot-api/releases/tag/v1.1.1
 [1.1.2]:https://github.com/yagop/node-telegram-bot-api/releases/tag/v1.1.2
-[Unreleased]:https://github.com/yagop/node-telegram-bot-api/compare/v1.1.2...master
+[2.0.0]:https://github.com/yagop/node-telegram-bot-api/releases/tag/v2.0.0
+[Unreleased]:https://github.com/yagop/node-telegram-bot-api/compare/v2.0.0...master
