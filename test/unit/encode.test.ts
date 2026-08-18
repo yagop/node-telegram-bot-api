@@ -38,6 +38,16 @@ describe("encodeForm", () => {
     assert.strictEqual(params.get("reply_markup"), '{"inline_keyboard":[]}');
   });
 
+  test("preserves a surrogate pair across a 2048-code-unit boundary", async () => {
+    const text = `<b>${"P".repeat(2044)}🔎</b>${"P".repeat(10)}`;
+    assert.strictEqual(text.codePointAt(2047), 0x1f50e);
+
+    const { body } = await encodeForm({ chat_id: 1, text, parse_mode: "HTML" });
+    const params = body();
+    assert.ok(params instanceof URLSearchParams);
+    assert.strictEqual(params.get("text"), text);
+  });
+
   test("with file -> streamed multipart body carrying string fields and the file part", async () => {
     // Streaming pinned on: the multipart layout is runtime-independent; the
     // default mode only picks stream-vs-Blob delivery (probed per runtime).
