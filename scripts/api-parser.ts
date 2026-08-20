@@ -38,11 +38,19 @@ interface Rec {
   headers: string[];
   rows: string[][];
   liItems: string[];
-  _pendingRow: boolean;
 }
 
 const records: Rec[] = [];
 let cur: Rec | null = null;
+
+// Records have no container element (an <h4> and its <p>/<table>/<ul> are flat
+// siblings), so a record is bracketed by the NEXT <h4> - finalize() commits the
+// one in progress. Table ROWS, by contrast, DO have a container (<tr>), so they
+// are bracketed explicitly via `onEndTag` (see the tr handler): `curRow` buffers
+// the cells of the row currently open, and the </tr> end-tag commits it - a
+// header row (any <th>) into `headers`, a data row into `rows`.
+let curRow: string[] | null = null;
+let curRowIsHeader = false;
 
 function finalize() {
   if (!cur) return;
@@ -50,10 +58,6 @@ function finalize() {
   cur.desc = cur.desc.trim();
   if (/^[A-Za-z][A-Za-z0-9]*$/.test(cur.name)) records.push(cur);
   cur = null;
-}
-
-function lastCell(rec: Rec): string[] | null {
-  return rec.rows.length ? rec.rows[rec.rows.length - 1] : null;
 }
 
 // ---------------------------------------------------------------------------
@@ -66,7 +70,7 @@ const rewriter = new HTMLRewriter()
   .on("#dev_page_content h4", {
     element() {
       finalize();
-      cur = { name: "", desc: "", headers: [], rows: [], liItems: [], _pendingRow: false };
+      cur = { name: "", desc: "", headers: [], rows: [], liItems: [] };
     },
     text(t) {
       if (cur) cur.name += t.text;
@@ -78,31 +82,37 @@ const rewriter = new HTMLRewriter()
     },
   })
   .on("#dev_page_content tr", {
-    element() {
-      if (cur) cur._pendingRow = true;
+    element(el) {
+      if (!cur) return;
+      // Open a row buffer; the </tr> end-tag brackets it explicitly - no need to
+      // defer materialization or disambiguate header-vs-data rows after the fact.
+      curRow = [];
+      curRowIsHeader = false;
+      const rec = cur;
+      const row = curRow;
+      el.onEndTag(() => {
+        if (curRowIsHeader) rec.headers.push(...row);
+        else rec.rows.push(row);
+        curRow = null;
+      });
     },
   })
   .on("#dev_page_content th", {
     element() {
-      if (cur) cur.headers.push("");
+      if (!curRow) return;
+      curRowIsHeader = true;
+      curRow.push("");
     },
     text(t) {
-      if (cur && cur.headers.length) cur.headers[cur.headers.length - 1] += t.text;
+      if (curRow && curRow.length) curRow[curRow.length - 1] += t.text;
     },
   })
   .on("#dev_page_content td", {
     element() {
-      if (!cur) return;
-      if (cur._pendingRow) {
-        cur.rows.push([]);
-        cur._pendingRow = false;
-      }
-      lastCell(cur)?.push("");
+      if (curRow) curRow.push("");
     },
     text(t) {
-      if (!cur) return;
-      const row = lastCell(cur);
-      if (row && row.length) row[row.length - 1] += t.text;
+      if (curRow && curRow.length) curRow[curRow.length - 1] += t.text;
     },
   })
   .on("#dev_page_content ul li", {
