@@ -66,6 +66,14 @@ function finalize() {
 
 const html = await fetch(API_URL).then((r) => r.text());
 
+// HTMLRewriter delivers text in chunks, so appending to the open slot of a live
+// string[] (table cells, list items) recurs. `get` is read lazily because the
+// buffer (curRow / cur.liItems) changes as elements open and close.
+const appendLast = (get: () => string[] | null) => (t: { text: string }) => {
+  const buf = get();
+  if (buf && buf.length) buf[buf.length - 1] += t.text;
+};
+
 // <th> and <td> share one handler: push a cell on open, append streamed text to
 // the open cell. The only difference - a <th> marks the row as a header row - is
 // read off `el.tagName`, so both selectors register the same object.
@@ -75,9 +83,7 @@ const cellHandler = {
     if (el.tagName === "th") curRowIsHeader = true;
     curRow.push("");
   },
-  text(t: { text: string }) {
-    if (curRow && curRow.length) curRow[curRow.length - 1] += t.text;
-  },
+  text: appendLast(() => curRow),
 };
 
 const rewriter = new HTMLRewriter()
@@ -117,9 +123,7 @@ const rewriter = new HTMLRewriter()
     element() {
       if (cur) cur.liItems.push("");
     },
-    text(t) {
-      if (cur && cur.liItems.length) cur.liItems[cur.liItems.length - 1] += t.text;
-    },
+    text: appendLast(() => cur?.liItems ?? null),
   });
 
 await rewriter.transform(new Response(html)).text();
