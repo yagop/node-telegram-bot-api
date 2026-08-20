@@ -66,6 +66,20 @@ function finalize() {
 
 const html = await fetch(API_URL).then((r) => r.text());
 
+// <th> and <td> share one handler: push a cell on open, append streamed text to
+// the open cell. The only difference - a <th> marks the row as a header row - is
+// read off `el.tagName`, so both selectors register the same object.
+const cellHandler = {
+  element(el: { tagName: string }) {
+    if (!curRow) return;
+    if (el.tagName === "th") curRowIsHeader = true;
+    curRow.push("");
+  },
+  text(t: { text: string }) {
+    if (curRow && curRow.length) curRow[curRow.length - 1] += t.text;
+  },
+};
+
 const rewriter = new HTMLRewriter()
   .on("#dev_page_content h4", {
     element() {
@@ -97,24 +111,8 @@ const rewriter = new HTMLRewriter()
       });
     },
   })
-  .on("#dev_page_content th", {
-    element() {
-      if (!curRow) return;
-      curRowIsHeader = true;
-      curRow.push("");
-    },
-    text(t) {
-      if (curRow && curRow.length) curRow[curRow.length - 1] += t.text;
-    },
-  })
-  .on("#dev_page_content td", {
-    element() {
-      if (curRow) curRow.push("");
-    },
-    text(t) {
-      if (curRow && curRow.length) curRow[curRow.length - 1] += t.text;
-    },
-  })
+  .on("#dev_page_content th", cellHandler)
+  .on("#dev_page_content td", cellHandler)
   .on("#dev_page_content ul li", {
     element() {
       if (cur) cur.liItems.push("");
