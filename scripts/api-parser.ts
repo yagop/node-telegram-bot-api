@@ -38,11 +38,19 @@ interface Rec {
   headers: string[];
   rows: string[][];
   liItems: string[];
-  _pendingRow: boolean;
 }
 
 const records: Rec[] = [];
 let cur: Rec | null = null;
+
+// Records have no container element (an <h4> and its <p>/<table>/<ul> are flat
+// siblings), so a record is bracketed by the NEXT <h4> - finalize() commits the
+// one in progress. Table ROWS, by contrast, DO have a container (<tr>), so they
+// are bracketed explicitly via `onEndTag` (see the tr handler): `curRow` buffers
+// the cells of the row currently open, and the </tr> end-tag commits it - a
+// header row (any <th>) into `headers`, a data row into `rows`.
+let curRow: string[] | null = null;
+let curRowIsHeader = false;
 
 function finalize() {
   if (!cur) return;
@@ -52,21 +60,37 @@ function finalize() {
   cur = null;
 }
 
-function lastCell(rec: Rec): string[] | null {
-  return rec.rows.length ? rec.rows[rec.rows.length - 1] : null;
-}
-
 // ---------------------------------------------------------------------------
 // Fetch + parse
 // ---------------------------------------------------------------------------
 
 const html = await fetch(API_URL).then((r) => r.text());
 
+// HTMLRewriter delivers text in chunks, so appending to the open slot of a live
+// string[] (table cells, list items) recurs. `get` is read lazily because the
+// buffer (curRow / cur.liItems) changes as elements open and close.
+const appendLast = (get: () => string[] | null) => (t: { text: string }) => {
+  const buf = get();
+  if (buf && buf.length) buf[buf.length - 1] += t.text;
+};
+
+// <th> and <td> share one handler: push a cell on open, append streamed text to
+// the open cell. The only difference - a <th> marks the row as a header row - is
+// read off `el.tagName`, so both selectors register the same object.
+const cellHandler = {
+  element(el: { tagName: string }) {
+    if (!curRow) return;
+    if (el.tagName === "th") curRowIsHeader = true;
+    curRow.push("");
+  },
+  text: appendLast(() => curRow),
+};
+
 const rewriter = new HTMLRewriter()
   .on("#dev_page_content h4", {
     element() {
       finalize();
-      cur = { name: "", desc: "", headers: [], rows: [], liItems: [], _pendingRow: false };
+      cur = { name: "", desc: "", headers: [], rows: [], liItems: [] };
     },
     text(t) {
       if (cur) cur.name += t.text;
@@ -78,40 +102,28 @@ const rewriter = new HTMLRewriter()
     },
   })
   .on("#dev_page_content tr", {
-    element() {
-      if (cur) cur._pendingRow = true;
-    },
-  })
-  .on("#dev_page_content th", {
-    element() {
-      if (cur) cur.headers.push("");
-    },
-    text(t) {
-      if (cur && cur.headers.length) cur.headers[cur.headers.length - 1] += t.text;
-    },
-  })
-  .on("#dev_page_content td", {
-    element() {
+    element(el) {
       if (!cur) return;
-      if (cur._pendingRow) {
-        cur.rows.push([]);
-        cur._pendingRow = false;
-      }
-      lastCell(cur)?.push("");
-    },
-    text(t) {
-      if (!cur) return;
-      const row = lastCell(cur);
-      if (row && row.length) row[row.length - 1] += t.text;
+      // Open a row buffer; the </tr> end-tag brackets it explicitly - no need to
+      // defer materialization or disambiguate header-vs-data rows after the fact.
+      curRow = [];
+      curRowIsHeader = false;
+      const rec = cur;
+      const row = curRow;
+      el.onEndTag(() => {
+        if (curRowIsHeader) rec.headers.push(...row);
+        else rec.rows.push(row);
+        curRow = null;
+      });
     },
   })
+  .on("#dev_page_content th", cellHandler)
+  .on("#dev_page_content td", cellHandler)
   .on("#dev_page_content ul li", {
     element() {
       if (cur) cur.liItems.push("");
     },
-    text(t) {
-      if (cur && cur.liItems.length) cur.liItems[cur.liItems.length - 1] += t.text;
-    },
+    text: appendLast(() => cur?.liItems ?? null),
   });
 
 await rewriter.transform(new Response(html)).text();
