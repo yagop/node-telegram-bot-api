@@ -110,4 +110,28 @@ describe("encodeForm", () => {
     assert.strictEqual(await norm(buffered), await norm(streamed));
     assert.strictEqual(await norm(buffered), await norm(buffered), "Blob body drains repeatedly");
   });
+
+  test("a surrogate pair straddling a 2048 UTF-16-code-unit boundary survives intact (#1335)", async () => {
+    // v1's qs-based transport split exactly this shape of string at 1024-unit
+    // chunk boundaries and corrupted the message Telegram received. The native
+    // encoders here must round-trip it unchanged if the transport ever changes.
+    const emoji = "\u{1F50E}"; // astral char = one surrogate pair
+    const text = `<b>${"P".repeat(2044)}${emoji}</b>${"P".repeat(10)}`;
+    // the pair occupies UTF-16 units [2047, 2048], straddling the 2048 boundary
+    assert.strictEqual(text.slice(2047, 2049), emoji);
+
+    // urlencoded: the decoded value is the exact original string
+    const urlencoded = await encodeForm({ chat_id: 1, text, parse_mode: "HTML" });
+    const params = urlencoded.body();
+    assert.ok(params instanceof URLSearchParams);
+    assert.strictEqual(params.get("text"), text);
+
+    // multipart: a string field is one TextEncoder piece, never chunked
+    const multipart = await encodeForm(
+      { chat_id: 1, text, parse_mode: "HTML", photo: new InputFile(new Uint8Array([65]), { filename: "p.png" }) },
+      true,
+    );
+    const wire = await bodyText(multipart.body());
+    assert.ok(wire.includes(`name="text"\r\n\r\n${text}\r\n`));
+  });
 });
