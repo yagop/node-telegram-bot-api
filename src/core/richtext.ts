@@ -265,8 +265,8 @@ export class RichMessageButtonBuilder {
     return this;
   }
 
-  /** The plain `RichMessageButton`. */
+  /** The plain `RichMessageButton` (a fresh copy per call). */
   build(): RichMessageButton {
-    return this.button;
+    return { ...this.button };
   }
 }

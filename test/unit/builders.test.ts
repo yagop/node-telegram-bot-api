@@ -84,6 +84,19 @@ describe("RichTextBuilder", () => {
       url: "https://x",
     });
   });
+
+  test("RichMessageButtonBuilder.build returns a fresh copy each call", () => {
+    const b = new RichMessageButtonBuilder("Hi").url("https://a");
+    const first = b.build();
+    b.callbackData("later");
+    assert.strictEqual(first.callback_data, undefined);
+    assert.notStrictEqual(first, b.build());
+  });
+
+  test("empty builders produce empty wire shapes", () => {
+    assert.deepStrictEqual(new RichTextBuilder().build(), []);
+    assert.deepStrictEqual(new RichMessageBuilder().build(), { blocks: [] });
+  });
 });
 
 describe("RichMessageBuilder", () => {

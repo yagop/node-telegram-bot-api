@@ -493,7 +493,7 @@ ready for `RichMessageBuilder.buttons` or a `RichTextBuilder.button`.
 
 | Method | Params | Returns | Description |
 | --- | --- | --- | --- |
-| `build` | - | [RichMessageButton](#richmessagebutton) | The plain `RichMessageButton`. |
+| `build` | - | [RichMessageButton](#richmessagebutton) | The plain `RichMessageButton` (a fresh copy per call). |
 | `callbackData` | `data`: string | this | A callback button. |
 | `copyText` | `text`: string | this | A button that copies `text` to the clipboard. |
 | `disabled` | - | this | Mark the button disabled (shown, but not pressable). |
