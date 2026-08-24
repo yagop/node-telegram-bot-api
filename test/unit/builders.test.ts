@@ -97,6 +97,15 @@ describe("RichTextBuilder", () => {
     assert.deepStrictEqual(new RichTextBuilder().build(), []);
     assert.deepStrictEqual(new RichMessageBuilder().build(), { blocks: [] });
   });
+
+  test("omitted optionals are absent (no undefined-valued keys)", () => {
+    const msg = new RichMessageBuilder().preformatted("x").buttons([richMessageButton("ok", { callback_data: "k" })]).build();
+    assert.ok(msg.blocks);
+    assert.deepStrictEqual(msg.blocks[0], { type: "pre", text: "x" });
+    assert.deepStrictEqual(msg.blocks[1], { type: "buttons", buttons: [{ text: "ok", callback_data: "k" }] });
+    assert.ok(!("language" in msg.blocks[0]));
+    assert.ok(!("align" in msg.blocks[1]));
+  });
 });
 
 describe("RichMessageBuilder", () => {

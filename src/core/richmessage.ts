@@ -103,7 +103,7 @@ export class RichMessageBuilder {
 
   /** A preformatted (code) block, optionally tagged with a `language`. */
   preformatted(text: RichTextContent, language?: string): this {
-    return this.push({ type: "pre", text: asRichText(text), language });
+    return this.push({ type: "pre", text: asRichText(text), ...(language !== undefined ? { language } : {}) });
   }
 
   /** A footer block. */
@@ -160,12 +160,12 @@ export class RichMessageBuilder {
 
   /** A collage of nested media blocks. */
   collage(blocks: BlockContent, caption?: RichBlockCaption): this {
-    return this.push({ type: "collage", blocks: resolveBlocks(blocks), caption });
+    return this.push({ type: "collage", blocks: resolveBlocks(blocks), ...(caption !== undefined ? { caption } : {}) });
   }
 
   /** A slideshow of nested media blocks. */
   slideshow(blocks: BlockContent, caption?: RichBlockCaption): this {
-    return this.push({ type: "slideshow", blocks: resolveBlocks(blocks), caption });
+    return this.push({ type: "slideshow", blocks: resolveBlocks(blocks), ...(caption !== undefined ? { caption } : {}) });
   }
 
   /** A table; `cells` is a rows-of-cells grid (see `richTableCell`). */
@@ -197,37 +197,37 @@ export class RichMessageBuilder {
 
   /** A row of 1-8 buttons; build them with `richMessageButton`. */
   buttons(buttons: RichMessageButton[], align?: string): this {
-    return this.push({ type: "buttons", buttons, align });
+    return this.push({ type: "buttons", buttons, ...(align !== undefined ? { align } : {}) });
   }
 
   /** An animation block. Its caption is ignored - use the `caption` argument. */
   animation(animation: InputMediaAnimation, caption?: RichBlockCaption): this {
-    return this.push({ type: "animation", animation, caption });
+    return this.push({ type: "animation", animation, ...(caption !== undefined ? { caption } : {}) });
   }
 
   /** An audio block. */
   audio(audio: InputMediaAudio, caption?: RichBlockCaption): this {
-    return this.push({ type: "audio", audio, caption });
+    return this.push({ type: "audio", audio, ...(caption !== undefined ? { caption } : {}) });
   }
 
   /** A document block. */
   document(document: InputMediaDocument, caption?: RichBlockCaption): this {
-    return this.push({ type: "document", document, caption });
+    return this.push({ type: "document", document, ...(caption !== undefined ? { caption } : {}) });
   }
 
   /** A photo block. */
   photo(photo: InputMediaPhoto, caption?: RichBlockCaption): this {
-    return this.push({ type: "photo", photo, caption });
+    return this.push({ type: "photo", photo, ...(caption !== undefined ? { caption } : {}) });
   }
 
   /** A video block. */
   video(video: InputMediaVideo, caption?: RichBlockCaption): this {
-    return this.push({ type: "video", video, caption });
+    return this.push({ type: "video", video, ...(caption !== undefined ? { caption } : {}) });
   }
 
   /** A voice-note block. */
   voiceNote(voiceNote: InputMediaVoiceNote, caption?: RichBlockCaption): this {
-    return this.push({ type: "voice_note", voice_note: voiceNote, caption });
+    return this.push({ type: "voice_note", voice_note: voiceNote, ...(caption !== undefined ? { caption } : {}) });
   }
 
   /** A "Thinking..." placeholder (only valid in `sendRichMessageDraft`). */
