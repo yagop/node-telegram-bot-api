@@ -1,51 +1,33 @@
 /**
  * RichText helpers (rich messages).
  *
- * A Bot API `RichText` value is a recursive TREE: on the wire it is a plain
- * String, an Array of RichText, or one of the node objects (bold, url, ...) whose
- * own `text` field is again a RichText. The generated `RichText` type models only
- * the node objects (the parser drops the String and Array alternatives), so
- * `RichTextValue` below reintroduces both - it is the accurate wire supertype and
- * drops into any field typed `RichText`.
+ * A Bot API `RichText` is a recursive TREE: on the wire it is a plain String, an
+ * Array of RichText, or one of the node objects (bold, url, ...) whose own `text`
+ * field is again a RichText. The generated `RichText` type models all three (see
+ * `scripts/api-parser.ts`'s prose-union handling), so builders wrap it directly.
  *
  * `RichTextBuilder` accumulates a flat sequence of nodes/strings; wrapping methods
  * (`bold`, `url`, ...) take rich `content` (a string, a built value, or a nested
  * `RichTextBuilder`) so trees nest without hand-writing `type`/`text`. `.build()`
- * returns the plain `RichTextValue`, ready for a `text`/caption/button field.
+ * returns the plain `RichText`, ready for a `text`/caption/button field.
  */
 import type { RichMessageButton, RichText, User } from "../types/index.js";
 
-/**
- * The accurate wire shape of a RichText value: a plain string, a single node, or
- * a sequence of them. Superset of the generated `RichText` (node-only); accepted
- * anywhere a `RichText` field is.
- */
-export type RichTextValue = string | RichText | RichTextValue[];
-
 /** Anything a rich-text `content` parameter accepts. */
-export type RichTextContent = RichTextValue | RichTextBuilder;
+export type RichTextContent = RichText | RichTextBuilder;
 
-/** Resolve `content` to its plain `RichTextValue` (unwrapping a nested builder). */
-function resolve(content: RichTextContent): RichTextValue {
-  return content instanceof RichTextBuilder ? content.build() : content;
-}
-
-/**
- * Bridge our accurate `RichTextValue` to the generated (node-only) `RichText`.
- * `RichText` is a constituent of `RichTextValue`, so this is a narrowing, not an
- * unsafe cast; every wire field typed `RichText` also accepts a string or array.
- */
+/** Resolve `content` to a plain `RichText` (unwrapping a nested builder). */
 export function asRichText(content: RichTextContent): RichText {
-  return resolve(content) as RichText;
+  return content instanceof RichTextBuilder ? content.build() : content;
 }
 
 /**
  * Fluent builder for a `RichText` tree. Wrapping methods take rich `content`;
  * leaf methods (`customEmoji`, `mathExpression`, `anchor`, `button`) take their
- * own data. `.build()` returns the plain `RichTextValue`.
+ * own data. `.build()` returns the plain `RichText` (its accumulated sequence).
  */
 export class RichTextBuilder {
-  private readonly items: RichTextValue[] = [];
+  private readonly items: RichText[] = [];
 
   private push(node: RichText): this {
     this.items.push(node);
@@ -180,8 +162,8 @@ export class RichTextBuilder {
     return this.push({ type: "button", button });
   }
 
-  /** The accumulated sequence as a plain `RichTextValue`. */
-  build(): RichTextValue {
+  /** The accumulated sequence as a plain `RichText`. */
+  build(): RichText {
     return this.items.slice();
   }
 }

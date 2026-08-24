@@ -486,7 +486,7 @@ Fluent builder for the `blocks` form of an `InputRichMessage`.
 
 Fluent builder for a `RichText` tree. Wrapping methods take rich `content`;
 leaf methods (`customEmoji`, `mathExpression`, `anchor`, `button`) take their
-own data. `.build()` returns the plain `RichTextValue`.
+own data. `.build()` returns the plain `RichText` (its accumulated sequence).
 
 #### Methods
 
@@ -497,7 +497,7 @@ own data. `.build()` returns the plain `RichTextValue`.
 | `bankCard` | `content`: [RichTextContent](#richtextcontent), `bankCardNumber`: string | this | - |
 | `bold` | `content`: [RichTextContent](#richtextcontent) | this | - |
 | `botCommand` | `content`: [RichTextContent](#richtextcontent), `botCommand`: string | this | - |
-| `build` | - | [RichTextValue](#richtextvalue) | The accumulated sequence as a plain `RichTextValue`. |
+| `build` | - | [RichText](#richtext) | The accumulated sequence as a plain `RichText`. |
 | `button` | `button`: [RichMessageButton](#richmessagebutton) | this | An inline button. |
 | `cashtag` | `content`: [RichTextContent](#richtextcontent), `cashtag`: string | this | - |
 | `code` | `content`: [RichTextContent](#richtextcontent) | this | Monowidth (inline code) text. |
@@ -656,9 +656,7 @@ A video story for `postStory`/`editStory`. `.build()` returns the `InputStoryCon
 
 ### `asRichText()`
 
-Bridge our accurate `RichTextValue` to the generated (node-only) `RichText`.
-`RichText` is a constituent of `RichTextValue`, so this is a narrowing, not an
-unsafe cast; every wire field typed `RichText` also accepts a string or array.
+Resolve `content` to a plain `RichText` (unwrapping a nested builder).
 
 | Param | Type |
 | --- | --- |
@@ -6678,7 +6676,7 @@ type RichMessageButton = {
 ### `RichText`
 
 ```ts
-type RichText = [RichTextBold](#richtextbold) | [RichTextItalic](#richtextitalic) | [RichTextUnderline](#richtextunderline) | [RichTextStrikethrough](#richtextstrikethrough) | [RichTextSpoiler](#richtextspoiler) | [RichTextDateTime](#richtextdatetime) | [RichTextTextMention](#richtexttextmention) | [RichTextSubscript](#richtextsubscript) | [RichTextSuperscript](#richtextsuperscript) | [RichTextMarked](#richtextmarked) | [RichTextCode](#richtextcode) | [RichTextCustomEmoji](#richtextcustomemoji) | [RichTextMathematicalExpression](#richtextmathematicalexpression) | [RichTextUrl](#richtexturl) | [RichTextEmailAddress](#richtextemailaddress) | [RichTextPhoneNumber](#richtextphonenumber) | [RichTextBankCardNumber](#richtextbankcardnumber) | [RichTextMention](#richtextmention) | [RichTextHashtag](#richtexthashtag) | [RichTextCashtag](#richtextcashtag) | [RichTextBotCommand](#richtextbotcommand) | [RichTextButton](#richtextbutton) | [RichTextAnchor](#richtextanchor) | [RichTextAnchorLink](#richtextanchorlink) | [RichTextReference](#richtextreference) | [RichTextReferenceLink](#richtextreferencelink);
+type RichText = string | [RichText](#richtext)[] | [RichTextBold](#richtextbold) | [RichTextItalic](#richtextitalic) | [RichTextUnderline](#richtextunderline) | [RichTextStrikethrough](#richtextstrikethrough) | [RichTextSpoiler](#richtextspoiler) | [RichTextDateTime](#richtextdatetime) | [RichTextTextMention](#richtexttextmention) | [RichTextSubscript](#richtextsubscript) | [RichTextSuperscript](#richtextsuperscript) | [RichTextMarked](#richtextmarked) | [RichTextCode](#richtextcode) | [RichTextCustomEmoji](#richtextcustomemoji) | [RichTextMathematicalExpression](#richtextmathematicalexpression) | [RichTextUrl](#richtexturl) | [RichTextEmailAddress](#richtextemailaddress) | [RichTextPhoneNumber](#richtextphonenumber) | [RichTextBankCardNumber](#richtextbankcardnumber) | [RichTextMention](#richtextmention) | [RichTextHashtag](#richtexthashtag) | [RichTextCashtag](#richtextcashtag) | [RichTextBotCommand](#richtextbotcommand) | [RichTextButton](#richtextbutton) | [RichTextAnchor](#richtextanchor) | [RichTextAnchorLink](#richtextanchorlink) | [RichTextReference](#richtextreference) | [RichTextReferenceLink](#richtextreferencelink);
 ```
 
 ### `RichTextAnchor`
@@ -6762,7 +6760,7 @@ type RichTextCode = {
 Anything a rich-text `content` parameter accepts.
 
 ```ts
-type RichTextContent = [RichTextValue](#richtextvalue) | [RichTextBuilder](#richtextbuilder);
+type RichTextContent = [RichText](#richtext) | [RichTextBuilder](#richtextbuilder);
 ```
 
 ### `RichTextCustomEmoji`
@@ -6936,16 +6934,6 @@ type RichTextUrl = {
   type: string;
   url: string;
 };
-```
-
-### `RichTextValue`
-
-The accurate wire shape of a RichText value: a plain string, a single node, or
-a sequence of them. Superset of the generated `RichText` (node-only); accepted
-anywhere a `RichText` field is.
-
-```ts
-type RichTextValue = string | [RichText](#richtext) | [RichTextValue](#richtextvalue)[];
 ```
 
 ### `SavePreparedInlineMessageParams`
