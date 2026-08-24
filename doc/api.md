@@ -446,6 +446,105 @@ starts a new one.
 | `text` | `label`: string | this | A plain text button. |
 | `webApp` | `label`: string, `url`: string | this | A Web App button. |
 
+### `RichMessageBuilder`
+
+Fluent builder for the `blocks` form of an `InputRichMessage`.
+
+#### Methods
+
+| Method | Params | Returns | Description |
+| --- | --- | --- | --- |
+| `anchor` | `name`: string | this | An anchor target the message can link back to. |
+| `animation` | `animation`: [InputMediaAnimation](#inputmediaanimation), `caption?`: [RichBlockCaption](#richblockcaption) | this | An animation block. Its caption is ignored - use the `caption` argument. |
+| `audio` | `audio`: [InputMediaAudio](#inputmediaaudio), `caption?`: [RichBlockCaption](#richblockcaption) | this | An audio block. |
+| `blockquote` | `blocks`: [BlockContent](#blockcontent), `credit?`: [RichTextContent](#richtextcontent) | this | A block quotation wrapping nested blocks, with an optional `credit`. |
+| `build` | `options?`: [RichMessageBuildOptions](#richmessagebuildoptions) | [InputRichMessage](#inputrichmessage) | The plain `InputRichMessage` (blocks form) ready for `rich_message`. |
+| `buildBlocks` | - | [InputRichBlock](#inputrichblock)[] | The accumulated blocks as a plain `InputRichBlock[]`. |
+| `buttons` | `buttons`: [RichMessageButton](#richmessagebutton)[], `align?`: string | this | A row of 1-8 buttons; build them with `richMessageButton`. |
+| `collage` | `blocks`: [BlockContent](#blockcontent), `caption?`: [RichBlockCaption](#richblockcaption) | this | A collage of nested media blocks. |
+| `details` | `summary`: [RichTextContent](#richtextcontent), `blocks`: [BlockContent](#blockcontent), `isOpen?`: true | this | A details/disclosure block with an always-shown `summary`. |
+| `divider` | - | this | A horizontal divider. |
+| `document` | `document`: [InputMediaDocument](#inputmediadocument), `caption?`: [RichBlockCaption](#richblockcaption) | this | A document block. |
+| `expandableBlockquote` | `text`: [RichTextContent](#richtextcontent), `credit?`: [RichTextContent](#richtextcontent) | this | An expandable (collapsed) block quotation. |
+| `footer` | `text`: [RichTextContent](#richtextcontent) | this | A footer block. |
+| `heading` | `text`: [RichTextContent](#richtextcontent), `size`: number | this | A section heading; `size` is 1 (largest) to 6 (smallest). |
+| `list` | `items`: [InputRichBlockListItem](#inputrichblocklistitem)[] | this | An ordered/unordered list; build items with `richListItem`. |
+| `map` | `location`: [Location](#location), `options`: { caption?: [RichBlockCaption](#richblockcaption); height?: number; width?: number; zoom?: number } | this | A map centered on `location`. |
+| `mathExpression` | `expression`: string | this | A block-level mathematical expression in LaTeX format. |
+| `media` | `id`: string, `media`: [InputMediaAnimation](#inputmediaanimation) \| [InputMediaPhoto](#inputmediaphoto) \| [InputMediaVideo](#inputmediavideo) \| [InputMediaAudio](#inputmediaaudio) \| [InputMediaDocument](#inputmediadocument) \| [InputMediaVoiceNote](#inputmediavoicenote) | this | Register a media element referenced from the blocks by `id` (a `tg://photo?id=` / `tg://video?id=` / ... link). `media` may embed a raw `InputFile`; the pipeline hoists it to an `attach://` part. |
+| `paragraph` | `text`: [RichTextContent](#richtextcontent) | this | A text paragraph. |
+| `photo` | `photo`: [InputMediaPhoto](#inputmediaphoto), `caption?`: [RichBlockCaption](#richblockcaption) | this | A photo block. |
+| `preformatted` | `text`: [RichTextContent](#richtextcontent), `language?`: string | this | A preformatted (code) block, optionally tagged with a `language`. |
+| `pullQuote` | `text`: [RichTextContent](#richtextcontent), `credit?`: [RichTextContent](#richtextcontent) | this | A pull quotation (centered text). |
+| `slideshow` | `blocks`: [BlockContent](#blockcontent), `caption?`: [RichBlockCaption](#richblockcaption) | this | A slideshow of nested media blocks. |
+| `table` | `cells`: [RichBlockTableCell](#richblocktablecell)[][], `options`: [RichTableOptions](#richtableoptions) | this | A table; `cells` is a rows-of-cells grid (see `richTableCell`). |
+| `thinking` | `text`: [RichTextContent](#richtextcontent) | this | A "Thinking..." placeholder (only valid in `sendRichMessageDraft`). |
+| `video` | `video`: [InputMediaVideo](#inputmediavideo), `caption?`: [RichBlockCaption](#richblockcaption) | this | A video block. |
+| `voiceNote` | `voiceNote`: [InputMediaVoiceNote](#inputmediavoicenote), `caption?`: [RichBlockCaption](#richblockcaption) | this | A voice-note block. |
+
+### `RichMessageButtonBuilder`
+
+Fluent builder for a single `RichMessageButton`. Set the rich label (in the
+constructor or via `text`), an optional `style`, then exactly one action
+(`url`, `callbackData`, `webApp`, ...). `.build()` returns the plain button,
+ready for `RichMessageBuilder.buttons` or a `RichTextBuilder.button`.
+
+#### Methods
+
+| Method | Params | Returns | Description |
+| --- | --- | --- | --- |
+| `build` | - | [RichMessageButton](#richmessagebutton) | The plain `RichMessageButton` (a fresh copy per call). |
+| `callbackData` | `data`: string | this | A callback button. |
+| `copyText` | `text`: string | this | A button that copies `text` to the clipboard. |
+| `disabled` | - | this | Mark the button disabled (shown, but not pressable). |
+| `loginUrl` | `loginUrl`: string \| [LoginUrl](#loginurl) | this | A Login URL button; pass a URL or a full `LoginUrl`. |
+| `style` | `style`: string | this | Visual style: `"danger"`, `"success"`, `"primary"`, or `"link"` (callback-only). |
+| `switchInline` | `query`: string | this | Switch to inline mode in another chat. |
+| `switchInlineChosen` | `chosen`: [SwitchInlineQueryChosenChat](#switchinlinequerychosenchat) | this | Switch to inline mode in a chat chosen by the user. |
+| `switchInlineCurrent` | `query`: string | this | Switch to inline mode in the current chat. |
+| `text` | `text`: [RichTextContent](#richtextcontent) | this | Replace the rich label. |
+| `url` | `url`: string | this | An HTTP/tg:// URL button. |
+| `webApp` | `url`: string | this | A Web App button. |
+
+### `RichTextBuilder`
+
+Fluent builder for a `RichText` tree. Wrapping methods take rich `content`;
+leaf methods (`customEmoji`, `mathExpression`, `anchor`, `button`) take their
+own data. `.build()` returns the plain `RichText` (its accumulated sequence).
+
+#### Methods
+
+| Method | Params | Returns | Description |
+| --- | --- | --- | --- |
+| `anchor` | `name`: string | this | An anchor target (an empty span the message can link back to). |
+| `anchorLink` | `content`: [RichTextContent](#richtextcontent), `anchorName`: string | this | A link to a named anchor in the same message. |
+| `bankCard` | `content`: [RichTextContent](#richtextcontent), `bankCardNumber`: string | this | - |
+| `bold` | `content`: [RichTextContent](#richtextcontent) | this | - |
+| `botCommand` | `content`: [RichTextContent](#richtextcontent), `botCommand`: string | this | - |
+| `build` | - | [RichText](#richtext) | The accumulated sequence as a plain `RichText`. |
+| `button` | `button`: [RichMessageButton](#richmessagebutton) | this | An inline button. |
+| `cashtag` | `content`: [RichTextContent](#richtextcontent), `cashtag`: string | this | - |
+| `code` | `content`: [RichTextContent](#richtextcontent) | this | Monowidth (inline code) text. |
+| `customEmoji` | `customEmojiId`: string, `alternativeText`: string | this | A custom emoji; `alternativeText` is the fallback emoji. |
+| `dateTime` | `content`: [RichTextContent](#richtextcontent), `unixTime`: number, `dateTimeFormat`: string | this | A date/time; `dateTimeFormat` follows Telegram's date-time entity formatting. |
+| `email` | `content`: [RichTextContent](#richtextcontent), `emailAddress`: string | this | - |
+| `hashtag` | `content`: [RichTextContent](#richtextcontent), `hashtag`: string | this | - |
+| `italic` | `content`: [RichTextContent](#richtextcontent) | this | - |
+| `marked` | `content`: [RichTextContent](#richtextcontent) | this | Highlighted (marked) text. |
+| `mathExpression` | `expression`: string | this | A mathematical expression in LaTeX format. |
+| `mention` | `content`: [RichTextContent](#richtextcontent), `username`: string | this | A mention by username (the `@handle` form). |
+| `phone` | `content`: [RichTextContent](#richtextcontent), `phoneNumber`: string | this | - |
+| `plain` | `text`: string | this | Append plain, unstyled text. |
+| `reference` | `content`: [RichTextContent](#richtextcontent), `name`: string | this | A named reference (footnote-style). |
+| `referenceLink` | `content`: [RichTextContent](#richtextcontent), `referenceName`: string | this | A link to a reference by name. |
+| `spoiler` | `content`: [RichTextContent](#richtextcontent) | this | - |
+| `strikethrough` | `content`: [RichTextContent](#richtextcontent) | this | - |
+| `subscript` | `content`: [RichTextContent](#richtextcontent) | this | - |
+| `superscript` | `content`: [RichTextContent](#richtextcontent) | this | - |
+| `textMention` | `content`: [RichTextContent](#richtextcontent), `user`: [User](#user) | this | A text_mention of a user (works without a username). |
+| `underline` | `content`: [RichTextContent](#richtextcontent) | this | - |
+| `url` | `content`: [RichTextContent](#richtextcontent), `url`: string | this | A hyperlink to `url`. |
+
 ### `StaticProfilePhotoBuilder`
 
 A static profile photo (a still image). `.build()` returns the `InputProfilePhoto`.
@@ -578,6 +677,16 @@ A video story for `postStory`/`editStory`. `.build()` returns the `InputStoryCon
 
 ## Functions
 
+
+### `asRichText()`
+
+Resolve `content` to a plain `RichText` (unwrapping a nested builder).
+
+| Param | Type |
+| --- | --- |
+| `content` | [RichTextContent](#richtextcontent) |
+
+**Returns:** [RichText](#richtext)
 
 ### `compileDebugFilter()`
 
@@ -775,6 +884,52 @@ registerExpressWebhook(bot, app, { path: "/telegram", secretToken });
 
 **Returns:** void
 
+### `richCaption()`
+
+A block caption (`text`, optional `credit`) with rich `text`.
+
+| Param | Type |
+| --- | --- |
+| `text` | [RichTextContent](#richtextcontent) |
+| `credit?` | [RichTextContent](#richtextcontent) |
+
+**Returns:** [RichBlockCaption](#richblockcaption)
+
+### `richListItem()`
+
+A list item; `blocks` accept a nested builder or callback.
+
+| Param | Type |
+| --- | --- |
+| `blocks` | [BlockContent](#blockcontent) |
+| `options` | Omit<[InputRichBlockListItem](#inputrichblocklistitem), "blocks"> |
+
+**Returns:** [InputRichBlockListItem](#inputrichblocklistitem)
+
+### `richMessageButton()`
+
+Build a `RichMessageButton` with a rich `text` label. `options` carries the
+button action (`url`, `callback_data`, `web_app`, ...) and optional `style`.
+For a fluent form, see `RichMessageButtonBuilder`.
+
+| Param | Type |
+| --- | --- |
+| `text` | [RichTextContent](#richtextcontent) |
+| `options` | Omit<[RichMessageButton](#richmessagebutton), "text"> |
+
+**Returns:** [RichMessageButton](#richmessagebutton)
+
+### `richTableCell()`
+
+A table cell; `align` defaults to `"left"`, `valign` to `"top"`.
+
+| Param | Type |
+| --- | --- |
+| `text?` | [RichTextContent](#richtextcontent) |
+| `options` | Omit<[RichBlockTableCell](#richblocktablecell), "text"> |
+
+**Returns:** [RichBlockTableCell](#richblocktablecell)
+
 ### `run()`
 
 Start the bot's long-poll loop and resolve when it stops. Installs
@@ -944,6 +1099,26 @@ Requests-per-second limits. Either field may be omitted to disable that tier.
 | `one_time_keyboard`? | boolean |
 | `resize_keyboard`? | boolean |
 | `selective`? | boolean |
+
+### `RichMessageBuildOptions`
+
+Options shared by `RichMessageBuilder.build()` beyond the blocks.
+
+| Property | Type |
+| --- | --- |
+| `is_rtl`? | boolean |
+| `skip_entity_detection`? | boolean |
+
+### `RichTableOptions`
+
+Options for a table block; `caption` is rich text.
+
+| Property | Type |
+| --- | --- |
+| `caption`? | [RichTextContent](#richtextcontent) |
+| `is_bordered`? | true |
+| `is_compact`? | true |
+| `is_striped`? | true |
 
 ### `StartWebhookOptions`
 
@@ -1333,6 +1508,14 @@ type Birthdate = {
   month: number;
   year?: number;
 };
+```
+
+### `BlockContent`
+
+A nested-blocks argument: a plain array, a nested builder, or a callback.
+
+```ts
+type BlockContent = [InputRichBlock](#inputrichblock)[] | [RichMessageBuilder](#richmessagebuilder) | (builder: [RichMessageBuilder](#richmessagebuilder)) => void;
 ```
 
 ### `BotAccessSettings`
@@ -6518,7 +6701,7 @@ type RichMessageButton = {
 ### `RichText`
 
 ```ts
-type RichText = [RichTextBold](#richtextbold) | [RichTextItalic](#richtextitalic) | [RichTextUnderline](#richtextunderline) | [RichTextStrikethrough](#richtextstrikethrough) | [RichTextSpoiler](#richtextspoiler) | [RichTextDateTime](#richtextdatetime) | [RichTextTextMention](#richtexttextmention) | [RichTextSubscript](#richtextsubscript) | [RichTextSuperscript](#richtextsuperscript) | [RichTextMarked](#richtextmarked) | [RichTextCode](#richtextcode) | [RichTextCustomEmoji](#richtextcustomemoji) | [RichTextMathematicalExpression](#richtextmathematicalexpression) | [RichTextUrl](#richtexturl) | [RichTextEmailAddress](#richtextemailaddress) | [RichTextPhoneNumber](#richtextphonenumber) | [RichTextBankCardNumber](#richtextbankcardnumber) | [RichTextMention](#richtextmention) | [RichTextHashtag](#richtexthashtag) | [RichTextCashtag](#richtextcashtag) | [RichTextBotCommand](#richtextbotcommand) | [RichTextButton](#richtextbutton) | [RichTextAnchor](#richtextanchor) | [RichTextAnchorLink](#richtextanchorlink) | [RichTextReference](#richtextreference) | [RichTextReferenceLink](#richtextreferencelink);
+type RichText = string | [RichText](#richtext)[] | [RichTextBold](#richtextbold) | [RichTextItalic](#richtextitalic) | [RichTextUnderline](#richtextunderline) | [RichTextStrikethrough](#richtextstrikethrough) | [RichTextSpoiler](#richtextspoiler) | [RichTextDateTime](#richtextdatetime) | [RichTextTextMention](#richtexttextmention) | [RichTextSubscript](#richtextsubscript) | [RichTextSuperscript](#richtextsuperscript) | [RichTextMarked](#richtextmarked) | [RichTextCode](#richtextcode) | [RichTextCustomEmoji](#richtextcustomemoji) | [RichTextMathematicalExpression](#richtextmathematicalexpression) | [RichTextUrl](#richtexturl) | [RichTextEmailAddress](#richtextemailaddress) | [RichTextPhoneNumber](#richtextphonenumber) | [RichTextBankCardNumber](#richtextbankcardnumber) | [RichTextMention](#richtextmention) | [RichTextHashtag](#richtexthashtag) | [RichTextCashtag](#richtextcashtag) | [RichTextBotCommand](#richtextbotcommand) | [RichTextButton](#richtextbutton) | [RichTextAnchor](#richtextanchor) | [RichTextAnchorLink](#richtextanchorlink) | [RichTextReference](#richtextreference) | [RichTextReferenceLink](#richtextreferencelink);
 ```
 
 ### `RichTextAnchor`
@@ -6595,6 +6778,14 @@ type RichTextCode = {
   text: [RichText](#richtext);
   type: string;
 };
+```
+
+### `RichTextContent`
+
+Anything a rich-text `content` parameter accepts.
+
+```ts
+type RichTextContent = [RichText](#richtext) | [RichTextBuilder](#richtextbuilder);
 ```
 
 ### `RichTextCustomEmoji`

@@ -31,6 +31,8 @@ export * from "./longpoll.js";
 export * from "./media.js";
 // Opt-in rate limiting (ADR-004 §10, M3)
 export * from "./ratelimiter.js";
+export * from "./richmessage.js";
+export * from "./richtext.js";
 // Transport (ADR-005, ADR-008)
 export * from "./transport.js";
 // Webhooks (ADR-005, §6.7)

@@ -173,6 +173,22 @@ function mapType(raw: string): string {
   return mapScalar(s);
 }
 
+// A few abstract "one of" types (RichText) also accept non-object forms - a bare
+// String and/or an `Array of <Self>` - stated in the prose rather than the bullet
+// list. Extract those so the union alias models the real wire value. Guarded to
+// the specific "can be (either) a String" / "Array of X" phrasings AND scoped to
+// the single clause that introduces the alternatives, so an unrelated later
+// sentence that happens to mention "Array of X" can't inject a bogus member and
+// ordinary "It can be one of:" unions (which mention neither) are untouched.
+function proseUnionMembers(descRaw: string): string[] {
+  const d = descRaw.replace(/\s+/g, " ");
+  const lead = d.match(/[^.]*\b(?:can be|(?:any |one )of the following)\b[^.]*/i)?.[0] ?? "";
+  const members: string[] = [];
+  if (/\bcan be (?:either )?(?:a |an )?String\b/i.test(lead)) members.push("string");
+  for (const m of lead.matchAll(/\bArray of ([A-Z][A-Za-z0-9]*)\b/g)) members.push(mapType(`Array of ${m[1]}`));
+  return [...new Set(members)];
+}
+
 // ---------------------------------------------------------------------------
 // File-target fields on `Input*` types (ADR-006)
 // ---------------------------------------------------------------------------
@@ -336,8 +352,13 @@ for (const rec of records) {
   } else if (rec.rows.length) {
     types.push({ name: rec.name, fields: fieldsFromRows(rec, false) });
   } else if (rec.liItems.length >= 2 && rec.liItems.every((x) => /^[A-Z][A-Za-z0-9]*$/.test(x.trim()))) {
-    // No field table, but a bullet list of type-name links → "one of" union.
-    unions.push({ name: rec.name, members: rec.liItems.map((x) => x.trim()).filter(Boolean) });
+    // No field table, but a bullet list of type-name links → "one of" union. Some
+    // abstract types (e.g. RichText) additionally accept non-object forms named in
+    // the prose - "either a String ..., an Array of RichText, or any of the
+    // following" - which are not in the bullet list; fold those in so the alias is
+    // the true wire type and every `text: RichText` field is correctly typed.
+    const objects = rec.liItems.map((x) => x.trim()).filter(Boolean);
+    unions.push({ name: rec.name, members: [...proseUnionMembers(rec.desc), ...objects] });
   } else {
     emptyTypeCandidates.push(rec.name);
   }
