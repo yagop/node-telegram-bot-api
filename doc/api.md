@@ -446,6 +446,81 @@ starts a new one.
 | `text` | `label`: string | this | A plain text button. |
 | `webApp` | `label`: string, `url`: string | this | A Web App button. |
 
+### `RichMessageBuilder`
+
+Fluent builder for the `blocks` form of an `InputRichMessage`.
+
+#### Methods
+
+| Method | Params | Returns | Description |
+| --- | --- | --- | --- |
+| `anchor` | `name`: string | this | An anchor target the message can link back to. |
+| `animation` | `animation`: [InputMediaAnimation](#inputmediaanimation), `caption?`: [RichBlockCaption](#richblockcaption) | this | An animation block. Its caption is ignored - use the `caption` argument. |
+| `audio` | `audio`: [InputMediaAudio](#inputmediaaudio), `caption?`: [RichBlockCaption](#richblockcaption) | this | An audio block. |
+| `blockquote` | `blocks`: [BlockContent](#blockcontent), `credit?`: [RichTextContent](#richtextcontent) | this | A block quotation wrapping nested blocks, with an optional `credit`. |
+| `build` | `options?`: [RichMessageBuildOptions](#richmessagebuildoptions) | [InputRichMessage](#inputrichmessage) | The plain `InputRichMessage` (blocks form) ready for `rich_message`. |
+| `buildBlocks` | - | [InputRichBlock](#inputrichblock)[] | The accumulated blocks as a plain `InputRichBlock[]`. |
+| `buttons` | `buttons`: [RichMessageButton](#richmessagebutton)[], `align?`: string | this | A row of 1-8 buttons; build them with `richMessageButton`. |
+| `collage` | `blocks`: [BlockContent](#blockcontent), `caption?`: [RichBlockCaption](#richblockcaption) | this | A collage of nested media blocks. |
+| `details` | `summary`: [RichTextContent](#richtextcontent), `blocks`: [BlockContent](#blockcontent), `isOpen?`: true | this | A details/disclosure block with an always-shown `summary`. |
+| `divider` | - | this | A horizontal divider. |
+| `document` | `document`: [InputMediaDocument](#inputmediadocument), `caption?`: [RichBlockCaption](#richblockcaption) | this | A document block. |
+| `expandableBlockquote` | `text`: [RichTextContent](#richtextcontent), `credit?`: [RichTextContent](#richtextcontent) | this | An expandable (collapsed) block quotation. |
+| `footer` | `text`: [RichTextContent](#richtextcontent) | this | A footer block. |
+| `heading` | `text`: [RichTextContent](#richtextcontent), `size`: number | this | A section heading; `size` is 1 (largest) to 6 (smallest). |
+| `list` | `items`: [InputRichBlockListItem](#inputrichblocklistitem)[] | this | An ordered/unordered list; build items with `richListItem`. |
+| `map` | `location`: [Location](#location), `options`: { caption?: [RichBlockCaption](#richblockcaption); height?: number; width?: number; zoom?: number } | this | A map centered on `location`. |
+| `mathExpression` | `expression`: string | this | A block-level mathematical expression in LaTeX format. |
+| `media` | `id`: string, `media`: [InputMediaAnimation](#inputmediaanimation) \| [InputMediaPhoto](#inputmediaphoto) \| [InputMediaVideo](#inputmediavideo) \| [InputMediaAudio](#inputmediaaudio) \| [InputMediaDocument](#inputmediadocument) \| [InputMediaVoiceNote](#inputmediavoicenote) | this | Register a media element referenced from the blocks by `id` (a `tg://photo?id=` / `tg://video?id=` / ... link). `media` may embed a raw `InputFile`; the pipeline hoists it to an `attach://` part. |
+| `paragraph` | `text`: [RichTextContent](#richtextcontent) | this | A text paragraph. |
+| `photo` | `photo`: [InputMediaPhoto](#inputmediaphoto), `caption?`: [RichBlockCaption](#richblockcaption) | this | A photo block. |
+| `preformatted` | `text`: [RichTextContent](#richtextcontent), `language?`: string | this | A preformatted (code) block, optionally tagged with a `language`. |
+| `pullQuote` | `text`: [RichTextContent](#richtextcontent), `credit?`: [RichTextContent](#richtextcontent) | this | A pull quotation (centered text). |
+| `slideshow` | `blocks`: [BlockContent](#blockcontent), `caption?`: [RichBlockCaption](#richblockcaption) | this | A slideshow of nested media blocks. |
+| `table` | `cells`: [RichBlockTableCell](#richblocktablecell)[][], `options`: [RichTableOptions](#richtableoptions) | this | A table; `cells` is a rows-of-cells grid (see `richTableCell`). |
+| `thinking` | `text`: [RichTextContent](#richtextcontent) | this | A "Thinking..." placeholder (only valid in `sendRichMessageDraft`). |
+| `video` | `video`: [InputMediaVideo](#inputmediavideo), `caption?`: [RichBlockCaption](#richblockcaption) | this | A video block. |
+| `voiceNote` | `voiceNote`: [InputMediaVoiceNote](#inputmediavoicenote), `caption?`: [RichBlockCaption](#richblockcaption) | this | A voice-note block. |
+
+### `RichTextBuilder`
+
+Fluent builder for a `RichText` tree. Wrapping methods take rich `content`;
+leaf methods (`customEmoji`, `mathExpression`, `anchor`, `button`) take their
+own data. `.build()` returns the plain `RichTextValue`.
+
+#### Methods
+
+| Method | Params | Returns | Description |
+| --- | --- | --- | --- |
+| `anchor` | `name`: string | this | An anchor target (an empty span the message can link back to). |
+| `anchorLink` | `content`: [RichTextContent](#richtextcontent), `anchorName`: string | this | A link to a named anchor in the same message. |
+| `bankCard` | `content`: [RichTextContent](#richtextcontent), `bankCardNumber`: string | this | - |
+| `bold` | `content`: [RichTextContent](#richtextcontent) | this | - |
+| `botCommand` | `content`: [RichTextContent](#richtextcontent), `botCommand`: string | this | - |
+| `build` | - | [RichTextValue](#richtextvalue) | The accumulated sequence as a plain `RichTextValue`. |
+| `button` | `button`: [RichMessageButton](#richmessagebutton) | this | An inline button. |
+| `cashtag` | `content`: [RichTextContent](#richtextcontent), `cashtag`: string | this | - |
+| `code` | `content`: [RichTextContent](#richtextcontent) | this | Monowidth (inline code) text. |
+| `customEmoji` | `customEmojiId`: string, `alternativeText`: string | this | A custom emoji; `alternativeText` is the fallback emoji. |
+| `dateTime` | `content`: [RichTextContent](#richtextcontent), `unixTime`: number, `dateTimeFormat`: string | this | A date/time; `dateTimeFormat` follows Telegram's date-time entity formatting. |
+| `email` | `content`: [RichTextContent](#richtextcontent), `emailAddress`: string | this | - |
+| `hashtag` | `content`: [RichTextContent](#richtextcontent), `hashtag`: string | this | - |
+| `italic` | `content`: [RichTextContent](#richtextcontent) | this | - |
+| `marked` | `content`: [RichTextContent](#richtextcontent) | this | Highlighted (marked) text. |
+| `mathExpression` | `expression`: string | this | A mathematical expression in LaTeX format. |
+| `mention` | `content`: [RichTextContent](#richtextcontent), `username`: string | this | A mention by username (the `@handle` form). |
+| `phone` | `content`: [RichTextContent](#richtextcontent), `phoneNumber`: string | this | - |
+| `plain` | `text`: string | this | Append plain, unstyled text. |
+| `reference` | `content`: [RichTextContent](#richtextcontent), `name`: string | this | A named reference (footnote-style). |
+| `referenceLink` | `content`: [RichTextContent](#richtextcontent), `referenceName`: string | this | A link to a reference by name. |
+| `spoiler` | `content`: [RichTextContent](#richtextcontent) | this | - |
+| `strikethrough` | `content`: [RichTextContent](#richtextcontent) | this | - |
+| `subscript` | `content`: [RichTextContent](#richtextcontent) | this | - |
+| `superscript` | `content`: [RichTextContent](#richtextcontent) | this | - |
+| `textMention` | `content`: [RichTextContent](#richtextcontent), `user`: [User](#user) | this | A text_mention of a user (works without a username). |
+| `underline` | `content`: [RichTextContent](#richtextcontent) | this | - |
+| `url` | `content`: [RichTextContent](#richtextcontent), `url`: string | this | A hyperlink to `url`. |
+
 ### `StaticProfilePhotoBuilder`
 
 A static profile photo (a still image). `.build()` returns the `InputProfilePhoto`.
@@ -578,6 +653,18 @@ A video story for `postStory`/`editStory`. `.build()` returns the `InputStoryCon
 
 ## Functions
 
+
+### `asRichText()`
+
+Bridge our accurate `RichTextValue` to the generated (node-only) `RichText`.
+`RichText` is a constituent of `RichTextValue`, so this is a narrowing, not an
+unsafe cast; every wire field typed `RichText` also accepts a string or array.
+
+| Param | Type |
+| --- | --- |
+| `content` | [RichTextContent](#richtextcontent) |
+
+**Returns:** [RichText](#richtext)
 
 ### `compileDebugFilter()`
 
@@ -775,6 +862,51 @@ registerExpressWebhook(bot, app, { path: "/telegram", secretToken });
 
 **Returns:** void
 
+### `richCaption()`
+
+A block caption (`text`, optional `credit`) with rich `text`.
+
+| Param | Type |
+| --- | --- |
+| `text` | [RichTextContent](#richtextcontent) |
+| `credit?` | [RichTextContent](#richtextcontent) |
+
+**Returns:** [RichBlockCaption](#richblockcaption)
+
+### `richListItem()`
+
+A list item; `blocks` accept a nested builder or callback.
+
+| Param | Type |
+| --- | --- |
+| `blocks` | [BlockContent](#blockcontent) |
+| `options` | Omit<[InputRichBlockListItem](#inputrichblocklistitem), "blocks"> |
+
+**Returns:** [InputRichBlockListItem](#inputrichblocklistitem)
+
+### `richMessageButton()`
+
+Build a `RichMessageButton` with a rich `text` label. `options` carries the
+button action (`url`, `callback_data`, `web_app`, ...) and optional `style`.
+
+| Param | Type |
+| --- | --- |
+| `text` | [RichTextContent](#richtextcontent) |
+| `options` | Omit<[RichMessageButton](#richmessagebutton), "text"> |
+
+**Returns:** [RichMessageButton](#richmessagebutton)
+
+### `richTableCell()`
+
+A table cell; `align` defaults to `"left"`, `valign` to `"top"`.
+
+| Param | Type |
+| --- | --- |
+| `text?` | [RichTextContent](#richtextcontent) |
+| `options` | Omit<[RichBlockTableCell](#richblocktablecell), "text"> |
+
+**Returns:** [RichBlockTableCell](#richblocktablecell)
+
 ### `run()`
 
 Start the bot's long-poll loop and resolve when it stops. Installs
@@ -944,6 +1076,26 @@ Requests-per-second limits. Either field may be omitted to disable that tier.
 | `one_time_keyboard`? | boolean |
 | `resize_keyboard`? | boolean |
 | `selective`? | boolean |
+
+### `RichMessageBuildOptions`
+
+Options shared by `RichMessageBuilder.build()` beyond the blocks.
+
+| Property | Type |
+| --- | --- |
+| `is_rtl`? | boolean |
+| `skip_entity_detection`? | boolean |
+
+### `RichTableOptions`
+
+Options for a table block; `caption` is rich text.
+
+| Property | Type |
+| --- | --- |
+| `caption`? | [RichTextContent](#richtextcontent) |
+| `is_bordered`? | true |
+| `is_compact`? | true |
+| `is_striped`? | true |
 
 ### `StartWebhookOptions`
 
@@ -1333,6 +1485,14 @@ type Birthdate = {
   month: number;
   year?: number;
 };
+```
+
+### `BlockContent`
+
+A nested-blocks argument: a plain array, a nested builder, or a callback.
+
+```ts
+type BlockContent = [InputRichBlock](#inputrichblock)[] | [RichMessageBuilder](#richmessagebuilder) | (builder: [RichMessageBuilder](#richmessagebuilder)) => void;
 ```
 
 ### `BotAccessSettings`
@@ -6597,6 +6757,14 @@ type RichTextCode = {
 };
 ```
 
+### `RichTextContent`
+
+Anything a rich-text `content` parameter accepts.
+
+```ts
+type RichTextContent = [RichTextValue](#richtextvalue) | [RichTextBuilder](#richtextbuilder);
+```
+
 ### `RichTextCustomEmoji`
 
 ```ts
@@ -6768,6 +6936,16 @@ type RichTextUrl = {
   type: string;
   url: string;
 };
+```
+
+### `RichTextValue`
+
+The accurate wire shape of a RichText value: a plain string, a single node, or
+a sequence of them. Superset of the generated `RichText` (node-only); accepted
+anywhere a `RichText` field is.
+
+```ts
+type RichTextValue = string | [RichText](#richtext) | [RichTextValue](#richtextvalue)[];
 ```
 
 ### `SavePreparedInlineMessageParams`

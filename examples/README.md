@@ -21,6 +21,7 @@ relative `../src` paths.
 | [`12-conversation.ts`](./12-conversation.ts) | A multi-step conversation (name → age) via `ctx.state` + a per-chat step `Map` | `BOT_TOKEN=... bun examples/12-conversation.ts` |
 | [`13-webhook-node-server.ts`](./13-webhook-node-server.ts) | `createWebhookServer` (`/node`): a raw `node:http` webhook server, no framework | `BOT_TOKEN=... WEBHOOK_SECRET=... PUBLIC_URL=https://... bun examples/13-webhook-node-server.ts` |
 | [`14-photo-video-livephoto.ts`](./14-photo-video-livephoto.ts) | `sendPhoto`/`sendVideo`/`sendLivePhoto` uploading bytes only (`InputFile` + `fromPath` - no URLs, no `file_id`) | `BOT_TOKEN=... CHAT_ID=... bun examples/14-photo-video-livephoto.ts` |
+| [`15-rich-message.ts`](./15-rich-message.ts) | `RichMessageBuilder`, `RichTextBuilder`, `richMessageButton`/`richListItem`, `sendRichMessage` (blocks + `html` mode) | `BOT_TOKEN=... CHAT_ID=... bun examples/15-rich-message.ts` |
 
 The framework webhook examples (03-05) target serverless/framework platforms and
 aren't standalone-runnable here, but they typecheck and show the exact wiring.
