@@ -5,6 +5,23 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased][Unreleased]
 
+### Builders
+
+- Added `RichTextBuilder` - a fluent builder for the recursive `RichText` tree,
+  covering every node kind (bold/italic/underline/code/url/mention/date_time/
+  custom_emoji/anchor/reference/...), with nesting via strings or nested builders.
+- Added `RichMessageBuilder` - a fluent builder for the `blocks` form of
+  `InputRichMessage` (`sendRichMessage`/`sendRichMessageDraft`), covering every
+  block type; nested blocks (list/blockquote/collage/slideshow/details) take a
+  nested builder or callback, and media blocks embed `InputFile`s (hoisted to
+  `attach://`).
+- Added `RichMessageButtonBuilder` for a single `RichMessageButton` (rich label,
+  `style`, and one action), plus the `richMessageButton`, `richCaption`,
+  `richTableCell`, and `richListItem` helpers.
+- Fixed the type generator so `RichText` models its true wire union
+  (`string | RichText[] | ...nodes`); every `text: RichText` field now accepts a
+  plain string or array, not only a node object.
+
 ### Bot API 10.3 (August 24, 2026)
 
 #### Rich Messages
