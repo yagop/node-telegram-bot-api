@@ -5,7 +5,7 @@ import { EntityBuilder } from "../../src/core/entities.js";
 import { InputFile, isFormPart } from "../../src/core/files.js";
 import { InlineKeyboardBuilder } from "../../src/core/keyboard.js";
 import { RichMessageBuilder, richCaption, richListItem, richTableCell } from "../../src/core/richmessage.js";
-import { RichTextBuilder, richMessageButton } from "../../src/core/richtext.js";
+import { RichMessageButtonBuilder, RichTextBuilder, richMessageButton } from "../../src/core/richtext.js";
 import { serializeParams } from "../../src/core/serialize.js";
 
 describe("InlineKeyboardBuilder", () => {
@@ -70,6 +70,18 @@ describe("RichTextBuilder", () => {
       text: "go",
       url: "https://x",
       style: "primary",
+    });
+  });
+
+  test("RichMessageButtonBuilder sets a rich label, style and one action", () => {
+    const button = new RichMessageButtonBuilder(new RichTextBuilder().bold("Open"))
+      .style("primary")
+      .url("https://x")
+      .build();
+    assert.deepStrictEqual(button, {
+      text: [{ type: "bold", text: "Open" }],
+      style: "primary",
+      url: "https://x",
     });
   });
 });

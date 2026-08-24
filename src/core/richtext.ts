@@ -11,7 +11,13 @@
  * `RichTextBuilder`) so trees nest without hand-writing `type`/`text`. `.build()`
  * returns the plain `RichText`, ready for a `text`/caption/button field.
  */
-import type { RichMessageButton, RichText, User } from "../types/index.js";
+import type {
+  LoginUrl,
+  RichMessageButton,
+  RichText,
+  SwitchInlineQueryChosenChat,
+  User,
+} from "../types/index.js";
 
 /** Anything a rich-text `content` parameter accepts. */
 export type RichTextContent = RichText | RichTextBuilder;
@@ -171,10 +177,96 @@ export class RichTextBuilder {
 /**
  * Build a `RichMessageButton` with a rich `text` label. `options` carries the
  * button action (`url`, `callback_data`, `web_app`, ...) and optional `style`.
+ * For a fluent form, see `RichMessageButtonBuilder`.
  */
 export function richMessageButton(
   text: RichTextContent,
   options: Omit<RichMessageButton, "text"> = {},
 ): RichMessageButton {
   return { text: asRichText(text), ...options };
+}
+
+/**
+ * Fluent builder for a single `RichMessageButton`. Set the rich label (in the
+ * constructor or via `text`), an optional `style`, then exactly one action
+ * (`url`, `callbackData`, `webApp`, ...). `.build()` returns the plain button,
+ * ready for `RichMessageBuilder.buttons` or a `RichTextBuilder.button`.
+ */
+export class RichMessageButtonBuilder {
+  private readonly button: RichMessageButton;
+
+  constructor(text: RichTextContent) {
+    this.button = { text: asRichText(text) };
+  }
+
+  /** Replace the rich label. */
+  text(text: RichTextContent): this {
+    this.button.text = asRichText(text);
+    return this;
+  }
+
+  /** Visual style: `"danger"`, `"success"`, `"primary"`, or `"link"` (callback-only). */
+  style(style: string): this {
+    this.button.style = style;
+    return this;
+  }
+
+  /** An HTTP/tg:// URL button. */
+  url(url: string): this {
+    this.button.url = url;
+    return this;
+  }
+
+  /** A callback button. */
+  callbackData(data: string): this {
+    this.button.callback_data = data;
+    return this;
+  }
+
+  /** A Web App button. */
+  webApp(url: string): this {
+    this.button.web_app = { url };
+    return this;
+  }
+
+  /** A Login URL button; pass a URL or a full `LoginUrl`. */
+  loginUrl(loginUrl: string | LoginUrl): this {
+    this.button.login_url = typeof loginUrl === "string" ? { url: loginUrl } : loginUrl;
+    return this;
+  }
+
+  /** Switch to inline mode in another chat. */
+  switchInline(query = ""): this {
+    this.button.switch_inline_query = query;
+    return this;
+  }
+
+  /** Switch to inline mode in the current chat. */
+  switchInlineCurrent(query = ""): this {
+    this.button.switch_inline_query_current_chat = query;
+    return this;
+  }
+
+  /** Switch to inline mode in a chat chosen by the user. */
+  switchInlineChosen(chosen: SwitchInlineQueryChosenChat): this {
+    this.button.switch_inline_query_chosen_chat = chosen;
+    return this;
+  }
+
+  /** A button that copies `text` to the clipboard. */
+  copyText(text: string): this {
+    this.button.copy_text = { text };
+    return this;
+  }
+
+  /** Mark the button disabled (shown, but not pressable). */
+  disabled(): this {
+    this.button.disabled = {};
+    return this;
+  }
+
+  /** The plain `RichMessageButton`. */
+  build(): RichMessageButton {
+    return this.button;
+  }
 }

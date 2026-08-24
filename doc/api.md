@@ -482,6 +482,30 @@ Fluent builder for the `blocks` form of an `InputRichMessage`.
 | `video` | `video`: [InputMediaVideo](#inputmediavideo), `caption?`: [RichBlockCaption](#richblockcaption) | this | A video block. |
 | `voiceNote` | `voiceNote`: [InputMediaVoiceNote](#inputmediavoicenote), `caption?`: [RichBlockCaption](#richblockcaption) | this | A voice-note block. |
 
+### `RichMessageButtonBuilder`
+
+Fluent builder for a single `RichMessageButton`. Set the rich label (in the
+constructor or via `text`), an optional `style`, then exactly one action
+(`url`, `callbackData`, `webApp`, ...). `.build()` returns the plain button,
+ready for `RichMessageBuilder.buttons` or a `RichTextBuilder.button`.
+
+#### Methods
+
+| Method | Params | Returns | Description |
+| --- | --- | --- | --- |
+| `build` | - | [RichMessageButton](#richmessagebutton) | The plain `RichMessageButton`. |
+| `callbackData` | `data`: string | this | A callback button. |
+| `copyText` | `text`: string | this | A button that copies `text` to the clipboard. |
+| `disabled` | - | this | Mark the button disabled (shown, but not pressable). |
+| `loginUrl` | `loginUrl`: string \| [LoginUrl](#loginurl) | this | A Login URL button; pass a URL or a full `LoginUrl`. |
+| `style` | `style`: string | this | Visual style: `"danger"`, `"success"`, `"primary"`, or `"link"` (callback-only). |
+| `switchInline` | `query`: string | this | Switch to inline mode in another chat. |
+| `switchInlineChosen` | `chosen`: [SwitchInlineQueryChosenChat](#switchinlinequerychosenchat) | this | Switch to inline mode in a chat chosen by the user. |
+| `switchInlineCurrent` | `query`: string | this | Switch to inline mode in the current chat. |
+| `text` | `text`: [RichTextContent](#richtextcontent) | this | Replace the rich label. |
+| `url` | `url`: string | this | An HTTP/tg:// URL button. |
+| `webApp` | `url`: string | this | A Web App button. |
+
 ### `RichTextBuilder`
 
 Fluent builder for a `RichText` tree. Wrapping methods take rich `content`;
@@ -886,6 +910,7 @@ A list item; `blocks` accept a nested builder or callback.
 
 Build a `RichMessageButton` with a rich `text` label. `options` carries the
 button action (`url`, `callback_data`, `web_app`, ...) and optional `style`.
+For a fluent form, see `RichMessageButtonBuilder`.
 
 | Param | Type |
 | --- | --- |

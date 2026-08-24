@@ -13,6 +13,7 @@
 import {
   Api,
   RichMessageBuilder,
+  RichMessageButtonBuilder,
   RichTextBuilder,
   richListItem,
   richMessageButton,
@@ -43,10 +44,12 @@ const richMessage = new RichMessageBuilder()
     richListItem((b) => b.paragraph("Buttons and media")),
   ])
   .buttons([
+    // The one-liner factory ...
     richMessageButton("Open docs", { url: "https://core.telegram.org/bots/api", style: "primary" }),
-    richMessageButton(new RichTextBuilder().bold("Star").plain(" on GitHub"), {
-      url: "https://github.com/yagop/node-telegram-bot-api",
-    }),
+    // ... or the fluent builder for a richer label + action.
+    new RichMessageButtonBuilder(new RichTextBuilder().bold("Star").plain(" on GitHub"))
+      .url("https://github.com/yagop/node-telegram-bot-api")
+      .build(),
   ])
   .build();
 
