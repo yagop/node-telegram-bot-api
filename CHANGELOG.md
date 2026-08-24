@@ -5,6 +5,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased][Unreleased]
 
+## [2.1.0][2.1.0] - 2026-08-24
+
 ### Builders
 
 - Added `RichTextBuilder` - a fluent builder for the recursive `RichText` tree,
@@ -1126,4 +1128,5 @@ Fixed:
 [1.1.1]:https://github.com/yagop/node-telegram-bot-api/releases/tag/v1.1.1
 [1.1.2]:https://github.com/yagop/node-telegram-bot-api/releases/tag/v1.1.2
 [2.0.0]:https://github.com/yagop/node-telegram-bot-api/releases/tag/v2.0.0
-[Unreleased]:https://github.com/yagop/node-telegram-bot-api/compare/v2.0.0...master
+[2.1.0]:https://github.com/yagop/node-telegram-bot-api/releases/tag/v2.1.0
+[Unreleased]:https://github.com/yagop/node-telegram-bot-api/compare/v2.1.0...master
