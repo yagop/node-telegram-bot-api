@@ -66,6 +66,7 @@ const chatOf: { [K in UpdateType]: (u: Variant<K>) => Chat | undefined } = {
   removed_chat_boost: (u) => u.removed_chat_boost.chat,
   managed_bot: () => undefined,
   subscription: () => undefined,
+  stopped_message_generation: (u) => u.stopped_message_generation.chat,
 };
 
 /**
@@ -104,6 +105,8 @@ const fromOf: { [K in UpdateType]: (u: Variant<K>) => User | undefined } = {
   removed_chat_boost: () => undefined,
   managed_bot: (u) => u.managed_bot.user,
   subscription: (u) => u.subscription.user,
+  // MessageGenerationStopped carries only a chat, no acting user.
+  stopped_message_generation: () => undefined,
 };
 
 /**
