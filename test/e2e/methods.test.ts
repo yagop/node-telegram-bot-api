@@ -1509,7 +1509,11 @@ describe("methods", () => {
   method("editEphemeralMessageText", () => {
     test("edits an ephemeral text message", async () => {
       const receiver_user_id = await targetUserId();
-      const sent = await api.sendMessage({ chat_id: chatId, receiver_user_id, text: "e2e ephemeral text" });
+      const sent = await api.sendMessage({
+        chat_id: chatId,
+        ephemeral_message_parameters: { receiver_user_id },
+        text: "e2e ephemeral text",
+      });
       expect(sent.ephemeral_message_id).toBeDefined();
       const ephemeral_message_id = sent.ephemeral_message_id as number;
       await api.editEphemeralMessageText({
@@ -1527,7 +1531,7 @@ describe("methods", () => {
       const receiver_user_id = await targetUserId();
       const sent = await api.sendPhoto({
         chat_id: chatId,
-        receiver_user_id,
+        ephemeral_message_parameters: { receiver_user_id },
         photo: new InputFile(JPEG_160, { filename: "e2e.jpg", contentType: "image/jpeg" }),
         caption: "e2e ephemeral media",
       });
@@ -1550,7 +1554,7 @@ describe("methods", () => {
       const receiver_user_id = await targetUserId();
       const sent = await api.sendPhoto({
         chat_id: chatId,
-        receiver_user_id,
+        ephemeral_message_parameters: { receiver_user_id },
         photo: new InputFile(JPEG_160, { filename: "e2e.jpg", contentType: "image/jpeg" }),
         caption: "e2e ephemeral caption",
       });
@@ -1571,7 +1575,7 @@ describe("methods", () => {
       const receiver_user_id = await targetUserId();
       const sent = await api.sendMessage({
         chat_id: chatId,
-        receiver_user_id,
+        ephemeral_message_parameters: { receiver_user_id },
         text: "e2e ephemeral reply markup",
         reply_markup: sampleInlineKeyboard,
       });
@@ -1634,7 +1638,11 @@ describe("methods", () => {
   method("deleteEphemeralMessage", () => {
     test("deletes an ephemeral message", async () => {
       const receiver_user_id = await targetUserId();
-      const sent = await api.sendMessage({ chat_id: chatId, receiver_user_id, text: "e2e ephemeral delete" });
+      const sent = await api.sendMessage({
+        chat_id: chatId,
+        ephemeral_message_parameters: { receiver_user_id },
+        text: "e2e ephemeral delete",
+      });
       expect(sent.ephemeral_message_id).toBeDefined();
       const ephemeral_message_id = sent.ephemeral_message_id as number;
       const ok = await api.deleteEphemeralMessage({

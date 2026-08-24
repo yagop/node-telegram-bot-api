@@ -57,7 +57,8 @@ export type Update =
   | ({ update_id: number } & { chat_boost: ChatBoostUpdated })
   | ({ update_id: number } & { removed_chat_boost: ChatBoostRemoved })
   | ({ update_id: number } & { managed_bot: ManagedBotUpdated })
-  | ({ update_id: number } & { subscription: BotSubscriptionUpdated });
+  | ({ update_id: number } & { subscription: BotSubscriptionUpdated })
+  | ({ update_id: number } & { stopped_message_generation: MessageGenerationStopped });
 
 
 /** `keyof` distributed over a union (each member's keys, unioned). */
@@ -94,6 +95,7 @@ export const UPDATE_TYPES = [
   "removed_chat_boost",
   "managed_bot",
   "subscription",
+  "stopped_message_generation",
 ] as const satisfies readonly Exclude<_UpdateKeys, "update_id">[];
 export type UpdateType = (typeof UPDATE_TYPES)[number];
 
@@ -301,6 +303,7 @@ export type Message = {
   checklist_tasks_done?: ChecklistTasksDone;
   checklist_tasks_added?: ChecklistTasksAdded;
   community_chat_added?: CommunityChatAdded;
+  community_chat_joined?: CommunityChatJoined;
   community_chat_removed?: CommunityChatRemoved;
   direct_message_price_changed?: DirectMessagePriceChanged;
   forum_topic_created?: ForumTopicCreated;
@@ -399,6 +402,12 @@ export type ReplyParameters = {
   quote_position?: number;
   checklist_task_id?: number;
   poll_option_id?: string;
+};
+
+export type EphemeralMessageParameters = {
+  receiver_user_id: number;
+  callback_query_id?: string;
+  replace_callback_query_message?: boolean;
 };
 
 export type MessageOriginUser = {
@@ -715,6 +724,12 @@ export type BotSubscriptionUpdated = {
   state: string;
 };
 
+export type MessageGenerationStopped = {
+  chat: Chat;
+  message_thread_id?: number;
+  draft_id: number;
+};
+
 export type PollOptionAdded = {
   poll_message?: MaybeInaccessibleMessage;
   option_persistent_id: string;
@@ -794,6 +809,10 @@ export type ChecklistTasksAdded = {
 };
 
 export type CommunityChatAdded = {
+  community: Community;
+};
+
+export type CommunityChatJoined = {
   community: Community;
 };
 
@@ -980,6 +999,7 @@ export type ReplyKeyboardMarkup = {
   one_time_keyboard?: boolean;
   input_field_placeholder?: string;
   selective?: boolean;
+  force_reply?: boolean;
 };
 
 export type KeyboardButton = {
@@ -1036,6 +1056,7 @@ export type ReplyKeyboardRemove = {
 
 export type InlineKeyboardMarkup = {
   inline_keyboard: InlineKeyboardButton[][];
+  force_reply?: boolean;
 };
 
 export type InlineKeyboardButton = {
@@ -1052,6 +1073,7 @@ export type InlineKeyboardButton = {
   copy_text?: CopyTextButton;
   callback_game?: CallbackGame;
   pay?: boolean;
+  disabled?: DisabledButton;
 };
 
 export type LoginUrl = {
@@ -1133,6 +1155,7 @@ export type ChatAdministratorRights = {
   can_manage_topics?: boolean;
   can_manage_direct_messages?: boolean;
   can_manage_tags?: boolean;
+  can_send_welcome_messages: boolean;
 };
 
 export type ChatMemberUpdated = {
@@ -1174,6 +1197,7 @@ export type ChatMemberAdministrator = {
   can_manage_topics?: boolean;
   can_manage_direct_messages?: boolean;
   can_manage_tags?: boolean;
+  can_send_welcome_messages: boolean;
   custom_title?: string;
 };
 
@@ -1475,6 +1499,9 @@ export type GiftInfo = {
 export type UniqueGiftInfo = {
   gift: UniqueGift;
   origin: string;
+  text?: string;
+  entities?: MessageEntity[];
+  is_private?: true;
   last_resale_currency?: string;
   last_resale_amount?: number;
   owned_gift_id?: string;
@@ -1920,7 +1947,21 @@ export type InputRichMessage = {
 
 export type InputRichMessageMedia = {
   id: string;
-  media: InputMediaAnimation | InputMediaAudio | InputMediaPhoto | InputMediaVideo | InputMediaVoiceNote;
+  media: InputMediaAnimation | InputMediaAudio | InputMediaDocument | InputMediaPhoto | InputMediaVideo | InputMediaVoiceNote;
+};
+
+export type RichMessageButton = {
+  text: RichText;
+  style?: string;
+  url?: string;
+  callback_data?: string;
+  web_app?: WebAppInfo;
+  login_url?: LoginUrl;
+  switch_inline_query?: string;
+  switch_inline_query_current_chat?: string;
+  switch_inline_query_chosen_chat?: SwitchInlineQueryChosenChat;
+  copy_text?: CopyTextButton;
+  disabled?: DisabledButton;
 };
 
 export type RichTextBold = {
@@ -2040,6 +2081,11 @@ export type RichTextBotCommand = {
   bot_command: string;
 };
 
+export type RichTextButton = {
+  type: string;
+  button: RichMessageButton;
+};
+
 export type RichTextAnchor = {
   type: string;
   name: string;
@@ -2133,6 +2179,12 @@ export type RichBlockBlockQuotation = {
   credit?: RichText;
 };
 
+export type RichBlockExpandableBlockQuotation = {
+  type: string;
+  text: RichText;
+  credit?: RichText;
+};
+
 export type RichBlockPullQuotation = {
   type: string;
   text: RichText;
@@ -2156,6 +2208,7 @@ export type RichBlockTable = {
   cells: RichBlockTableCell[][];
   is_bordered?: true;
   is_striped?: true;
+  is_compact?: true;
   caption?: RichText;
 };
 
@@ -2175,6 +2228,12 @@ export type RichBlockMap = {
   caption?: RichBlockCaption;
 };
 
+export type RichBlockButtons = {
+  type: string;
+  buttons: RichMessageButton[];
+  align?: string;
+};
+
 export type RichBlockAnimation = {
   type: string;
   animation: Animation;
@@ -2185,6 +2244,12 @@ export type RichBlockAnimation = {
 export type RichBlockAudio = {
   type: string;
   audio: Audio;
+  caption?: RichBlockCaption;
+};
+
+export type RichBlockDocument = {
+  type: string;
+  document: Document;
   caption?: RichBlockCaption;
 };
 
@@ -2268,6 +2333,12 @@ export type InputRichBlockBlockQuotation = {
   credit?: RichText;
 };
 
+export type InputRichBlockExpandableBlockQuotation = {
+  type: string;
+  text: RichText;
+  credit?: RichText;
+};
+
 export type InputRichBlockPullQuotation = {
   type: string;
   text: RichText;
@@ -2291,6 +2362,7 @@ export type InputRichBlockTable = {
   cells: RichBlockTableCell[][];
   is_bordered?: true;
   is_striped?: true;
+  is_compact?: true;
   caption?: RichText;
 };
 
@@ -2304,10 +2376,16 @@ export type InputRichBlockDetails = {
 export type InputRichBlockMap = {
   type: string;
   location: Location;
-  zoom: number;
-  width: number;
-  height: number;
+  zoom?: number;
+  width?: number;
+  height?: number;
   caption?: RichBlockCaption;
+};
+
+export type InputRichBlockButtons = {
+  type: string;
+  buttons: RichMessageButton[];
+  align?: string;
 };
 
 export type InputRichBlockAnimation = {
@@ -2319,6 +2397,12 @@ export type InputRichBlockAnimation = {
 export type InputRichBlockAudio = {
   type: string;
   audio: InputMediaAudio;
+  caption?: RichBlockCaption;
+};
+
+export type InputRichBlockDocument = {
+  type: string;
+  document: InputMediaDocument;
   caption?: RichBlockCaption;
 };
 
@@ -2985,6 +3069,8 @@ export type CallbackGame = Record<string, never>;
 
 export type CommunityChatRemoved = Record<string, never>;
 
+export type DisabledButton = Record<string, never>;
+
 export type ForumTopicClosed = Record<string, never>;
 
 export type ForumTopicReopened = Record<string, never>;
@@ -3036,11 +3122,11 @@ export type InputProfilePhoto = InputProfilePhotoStatic | InputProfilePhotoAnima
 
 export type InputStoryContent = InputStoryContentPhoto | InputStoryContentVideo;
 
-export type RichText = RichTextBold | RichTextItalic | RichTextUnderline | RichTextStrikethrough | RichTextSpoiler | RichTextDateTime | RichTextTextMention | RichTextSubscript | RichTextSuperscript | RichTextMarked | RichTextCode | RichTextCustomEmoji | RichTextMathematicalExpression | RichTextUrl | RichTextEmailAddress | RichTextPhoneNumber | RichTextBankCardNumber | RichTextMention | RichTextHashtag | RichTextCashtag | RichTextBotCommand | RichTextAnchor | RichTextAnchorLink | RichTextReference | RichTextReferenceLink;
+export type RichText = RichTextBold | RichTextItalic | RichTextUnderline | RichTextStrikethrough | RichTextSpoiler | RichTextDateTime | RichTextTextMention | RichTextSubscript | RichTextSuperscript | RichTextMarked | RichTextCode | RichTextCustomEmoji | RichTextMathematicalExpression | RichTextUrl | RichTextEmailAddress | RichTextPhoneNumber | RichTextBankCardNumber | RichTextMention | RichTextHashtag | RichTextCashtag | RichTextBotCommand | RichTextButton | RichTextAnchor | RichTextAnchorLink | RichTextReference | RichTextReferenceLink;
 
-export type RichBlock = RichBlockParagraph | RichBlockSectionHeading | RichBlockPreformatted | RichBlockFooter | RichBlockDivider | RichBlockMathematicalExpression | RichBlockAnchor | RichBlockList | RichBlockBlockQuotation | RichBlockPullQuotation | RichBlockCollage | RichBlockSlideshow | RichBlockTable | RichBlockDetails | RichBlockMap | RichBlockAnimation | RichBlockAudio | RichBlockPhoto | RichBlockVideo | RichBlockVoiceNote | RichBlockThinking;
+export type RichBlock = RichBlockParagraph | RichBlockSectionHeading | RichBlockPreformatted | RichBlockFooter | RichBlockDivider | RichBlockMathematicalExpression | RichBlockAnchor | RichBlockList | RichBlockBlockQuotation | RichBlockExpandableBlockQuotation | RichBlockPullQuotation | RichBlockCollage | RichBlockSlideshow | RichBlockTable | RichBlockDetails | RichBlockMap | RichBlockButtons | RichBlockAnimation | RichBlockAudio | RichBlockDocument | RichBlockPhoto | RichBlockVideo | RichBlockVoiceNote | RichBlockThinking;
 
-export type InputRichBlock = InputRichBlockParagraph | InputRichBlockSectionHeading | InputRichBlockPreformatted | InputRichBlockFooter | InputRichBlockDivider | InputRichBlockMathematicalExpression | InputRichBlockAnchor | InputRichBlockList | InputRichBlockBlockQuotation | InputRichBlockPullQuotation | InputRichBlockCollage | InputRichBlockSlideshow | InputRichBlockTable | InputRichBlockDetails | InputRichBlockMap | InputRichBlockAnimation | InputRichBlockAudio | InputRichBlockPhoto | InputRichBlockVideo | InputRichBlockVoiceNote | InputRichBlockThinking;
+export type InputRichBlock = InputRichBlockParagraph | InputRichBlockSectionHeading | InputRichBlockPreformatted | InputRichBlockFooter | InputRichBlockDivider | InputRichBlockMathematicalExpression | InputRichBlockAnchor | InputRichBlockList | InputRichBlockBlockQuotation | InputRichBlockExpandableBlockQuotation | InputRichBlockPullQuotation | InputRichBlockCollage | InputRichBlockSlideshow | InputRichBlockTable | InputRichBlockDetails | InputRichBlockMap | InputRichBlockButtons | InputRichBlockAnimation | InputRichBlockAudio | InputRichBlockDocument | InputRichBlockPhoto | InputRichBlockVideo | InputRichBlockVoiceNote | InputRichBlockThinking;
 
 export type InlineQueryResult = InlineQueryResultCachedAudio | InlineQueryResultCachedDocument | InlineQueryResultCachedGif | InlineQueryResultCachedMpeg4Gif | InlineQueryResultCachedPhoto | InlineQueryResultCachedSticker | InlineQueryResultCachedVideo | InlineQueryResultCachedVoice | InlineQueryResultArticle | InlineQueryResultAudio | InlineQueryResultContact | InlineQueryResultGame | InlineQueryResultDocument | InlineQueryResultGif | InlineQueryResultLocation | InlineQueryResultMpeg4Gif | InlineQueryResultPhoto | InlineQueryResultVenue | InlineQueryResultVideo | InlineQueryResultVoice;
 
@@ -3098,8 +3184,7 @@ export type SendMessageParams = {
   chat_id: number | string;
   message_thread_id?: number;
   direct_messages_topic_id?: number;
-  receiver_user_id?: number;
-  callback_query_id?: string;
+  ephemeral_message_parameters?: EphemeralMessageParameters;
   text: string;
   parse_mode?: string;
   entities?: MessageEntity[];
@@ -3177,8 +3262,7 @@ export type SendPhotoParams = {
   chat_id: number | string;
   message_thread_id?: number;
   direct_messages_topic_id?: number;
-  receiver_user_id?: number;
-  callback_query_id?: string;
+  ephemeral_message_parameters?: EphemeralMessageParameters;
   photo: InputFile | string;
   caption?: string;
   parse_mode?: string;
@@ -3200,8 +3284,7 @@ export type SendLivePhotoParams = {
   chat_id: number | string;
   message_thread_id?: number;
   direct_messages_topic_id?: number;
-  receiver_user_id?: number;
-  callback_query_id?: string;
+  ephemeral_message_parameters?: EphemeralMessageParameters;
   live_photo: InputFile | string;
   photo: InputFile | string;
   caption?: string;
@@ -3224,8 +3307,7 @@ export type SendAudioParams = {
   chat_id: number | string;
   message_thread_id?: number;
   direct_messages_topic_id?: number;
-  receiver_user_id?: number;
-  callback_query_id?: string;
+  ephemeral_message_parameters?: EphemeralMessageParameters;
   audio: InputFile | string;
   caption?: string;
   parse_mode?: string;
@@ -3249,8 +3331,7 @@ export type SendDocumentParams = {
   chat_id: number | string;
   message_thread_id?: number;
   direct_messages_topic_id?: number;
-  receiver_user_id?: number;
-  callback_query_id?: string;
+  ephemeral_message_parameters?: EphemeralMessageParameters;
   document: InputFile | string;
   thumbnail?: InputFile | string;
   caption?: string;
@@ -3272,8 +3353,7 @@ export type SendVideoParams = {
   chat_id: number | string;
   message_thread_id?: number;
   direct_messages_topic_id?: number;
-  receiver_user_id?: number;
-  callback_query_id?: string;
+  ephemeral_message_parameters?: EphemeralMessageParameters;
   video: InputFile | string;
   duration?: number;
   width?: number;
@@ -3302,8 +3382,7 @@ export type SendAnimationParams = {
   chat_id: number | string;
   message_thread_id?: number;
   direct_messages_topic_id?: number;
-  receiver_user_id?: number;
-  callback_query_id?: string;
+  ephemeral_message_parameters?: EphemeralMessageParameters;
   animation: InputFile | string;
   duration?: number;
   width?: number;
@@ -3329,8 +3408,7 @@ export type SendVoiceParams = {
   chat_id: number | string;
   message_thread_id?: number;
   direct_messages_topic_id?: number;
-  receiver_user_id?: number;
-  callback_query_id?: string;
+  ephemeral_message_parameters?: EphemeralMessageParameters;
   voice: InputFile | string;
   caption?: string;
   parse_mode?: string;
@@ -3351,8 +3429,7 @@ export type SendVideoNoteParams = {
   chat_id: number | string;
   message_thread_id?: number;
   direct_messages_topic_id?: number;
-  receiver_user_id?: number;
-  callback_query_id?: string;
+  ephemeral_message_parameters?: EphemeralMessageParameters;
   video_note: InputFile | string;
   duration?: number;
   length?: number;
@@ -3407,8 +3484,7 @@ export type SendLocationParams = {
   chat_id: number | string;
   message_thread_id?: number;
   direct_messages_topic_id?: number;
-  receiver_user_id?: number;
-  callback_query_id?: string;
+  ephemeral_message_parameters?: EphemeralMessageParameters;
   latitude: number;
   longitude: number;
   horizontal_accuracy?: number;
@@ -3430,8 +3506,7 @@ export type SendVenueParams = {
   chat_id: number | string;
   message_thread_id?: number;
   direct_messages_topic_id?: number;
-  receiver_user_id?: number;
-  callback_query_id?: string;
+  ephemeral_message_parameters?: EphemeralMessageParameters;
   latitude: number;
   longitude: number;
   title: string;
@@ -3455,8 +3530,7 @@ export type SendContactParams = {
   chat_id: number | string;
   message_thread_id?: number;
   direct_messages_topic_id?: number;
-  receiver_user_id?: number;
-  callback_query_id?: string;
+  ephemeral_message_parameters?: EphemeralMessageParameters;
   phone_number: string;
   first_name: string;
   last_name?: string;
@@ -3544,6 +3618,8 @@ export type SendMessageDraftParams = {
   text?: string;
   parse_mode?: string;
   entities?: MessageEntity[];
+  can_stop?: boolean;
+  keep_on_stop?: boolean;
 };
 export type SendMessageDraftResult = boolean;
 
@@ -3633,6 +3709,7 @@ export type PromoteChatMemberParams = {
   can_manage_topics?: boolean;
   can_manage_direct_messages?: boolean;
   can_manage_tags?: boolean;
+  can_send_welcome_messages?: boolean;
 };
 export type PromoteChatMemberResult = boolean;
 
@@ -4356,9 +4433,10 @@ export type EditEphemeralMessageTextParams = {
   chat_id: number | string;
   receiver_user_id: number;
   ephemeral_message_id: number;
-  text: string;
+  text?: string;
   parse_mode?: string;
   entities?: MessageEntity[];
+  rich_message?: InputRichMessage;
   link_preview_options?: LinkPreviewOptions;
   reply_markup?: InlineKeyboardMarkup;
 };
@@ -4380,6 +4458,7 @@ export type EditEphemeralMessageCaptionParams = {
   caption?: string;
   parse_mode?: string;
   caption_entities?: MessageEntity[];
+  show_caption_above_media?: boolean;
   reply_markup?: InlineKeyboardMarkup;
 };
 export type EditEphemeralMessageCaptionResult = boolean;
@@ -4445,8 +4524,7 @@ export type SendStickerParams = {
   chat_id: number | string;
   message_thread_id?: number;
   direct_messages_topic_id?: number;
-  receiver_user_id?: number;
-  callback_query_id?: string;
+  ephemeral_message_parameters?: EphemeralMessageParameters;
   sticker: InputFile | string;
   emoji?: string;
   disable_notification?: boolean;
@@ -4560,6 +4638,7 @@ export type SendRichMessageParams = {
   chat_id: number | string;
   message_thread_id?: number;
   direct_messages_topic_id?: number;
+  ephemeral_message_parameters?: EphemeralMessageParameters;
   rich_message: InputRichMessage;
   disable_notification?: boolean;
   protect_content?: boolean;
@@ -4576,6 +4655,8 @@ export type SendRichMessageDraftParams = {
   message_thread_id?: number;
   draft_id: number;
   rich_message: InputRichMessage;
+  can_stop?: boolean;
+  keep_on_stop?: boolean;
 };
 export type SendRichMessageDraftResult = boolean;
 

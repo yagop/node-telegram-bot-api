@@ -5,6 +5,39 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased][Unreleased]
 
+### Bot API 10.3 (August 24, 2026)
+
+#### Rich Messages
+
+- Added `RichMessageButton`, `RichTextButton`, `RichBlockButtons`/`InputRichBlockButtons`,
+  `RichBlockExpandableBlockQuotation`/`InputRichBlockExpandableBlockQuotation`, and
+  `RichBlockDocument`/`InputRichBlockDocument`.
+- Added `is_compact` to `RichBlockTable` and `InputRichBlockTable`, `InputMediaDocument`
+  to `InputRichMessageMedia.media`, and support for `tg://document?id=` upload links.
+
+#### Ephemeral Messages
+
+- Added `EphemeralMessageParameters` and replaced `receiver_user_id`/`callback_query_id`
+  with `ephemeral_message_parameters` in the 13 supported send methods; added
+  `ephemeral_message_parameters` to `sendRichMessage`.
+- Added `replace_callback_query_message` to `EphemeralMessageParameters`, file upload
+  in `editEphemeralMessageMedia`, `show_caption_above_media` to
+  `editEphemeralMessageCaption`, and `rich_message` to `editEphemeralMessageText`.
+- Added `can_send_welcome_messages` to `ChatAdministratorRights`,
+  `ChatMemberAdministrator`, and `promoteChatMember`.
+
+#### Reply markup
+
+- Added `DisabledButton` and `disabled` on `InlineKeyboardButton`, plus `force_reply`
+  on `InlineKeyboardMarkup` and `ReplyKeyboardMarkup`.
+
+#### General
+
+- Added `can_stop`/`keep_on_stop` to `sendMessageDraft` and `sendRichMessageDraft`.
+- Added `MessageGenerationStopped` and the `stopped_message_generation` update type.
+- Added `CommunityChatJoined` and `Message.community_chat_joined`.
+- Added `text`, `entities`, and `is_private` to `UniqueGiftInfo`.
+
 ## [2.0.0][2.0.0] - 2026-08-16
 
 ### Bot API 10.2 (July 14, 2026)

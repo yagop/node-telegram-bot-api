@@ -226,7 +226,7 @@ An animated profile photo (a video); `main_frame_timestamp` picks the still fram
 | `handleUpdate` | `update`: [Update](#update) | Promise<void> | Build a Context and run the composed chain; route errors to the `catch` boundary (default: log and continue). Rejects only when that boundary itself throws. |
 | `hears` | `trigger`: string \| RegExp \| (string \| RegExp)[], `...handlers`: [Middleware](#middleware)<[Context](#context)>[] | this | Match message text: a string matches exactly (sets `ctx.match` to the text); a RegExp matches when `text.match(re)` is non-null (sets `ctx.match` to the `RegExpMatchArray`). |
 | `isRunning` | - | boolean | - |
-| `on` | `kind`: "message" \| "edited_message" \| "channel_post" \| "edited_channel_post" \| "business_connection" \| "business_message" \| "edited_business_message" \| "deleted_business_messages" \| "guest_message" \| "message_reaction" \| "message_reaction_count" \| "inline_query" \| "chosen_inline_result" \| "callback_query" \| "shipping_query" \| "pre_checkout_query" \| "purchased_paid_media" \| "poll" \| "poll_answer" \| "my_chat_member" \| "chat_member" \| "chat_join_request" \| "chat_boost" \| "removed_chat_boost" \| "managed_bot" \| "subscription" \| ("message" \| "edited_message" \| "channel_post" \| "edited_channel_post" \| "business_connection" \| "business_message" \| "edited_business_message" \| "deleted_business_messages" \| "guest_message" \| "message_reaction" \| "message_reaction_count" \| "inline_query" \| "chosen_inline_result" \| "callback_query" \| "shipping_query" \| "pre_checkout_query" \| "purchased_paid_media" \| "poll" \| "poll_answer" \| "my_chat_member" \| "chat_member" \| "chat_join_request" \| "chat_boost" \| "removed_chat_boost" \| "managed_bot" \| "subscription")[], `...handlers`: [Middleware](#middleware)<[Context](#context)>[] | this | Run `handlers` only when the given payload key (e.g. `"message"`, `"callback_query"`) is present on the update. |
+| `on` | `kind`: "message" \| "edited_message" \| "channel_post" \| "edited_channel_post" \| "business_connection" \| "business_message" \| "edited_business_message" \| "deleted_business_messages" \| "guest_message" \| "message_reaction" \| "message_reaction_count" \| "inline_query" \| "chosen_inline_result" \| "callback_query" \| "shipping_query" \| "pre_checkout_query" \| "purchased_paid_media" \| "poll" \| "poll_answer" \| "my_chat_member" \| "chat_member" \| "chat_join_request" \| "chat_boost" \| "removed_chat_boost" \| "managed_bot" \| "subscription" \| "stopped_message_generation" \| ("message" \| "edited_message" \| "channel_post" \| "edited_channel_post" \| "business_connection" \| "business_message" \| "edited_business_message" \| "deleted_business_messages" \| "guest_message" \| "message_reaction" \| "message_reaction_count" \| "inline_query" \| "chosen_inline_result" \| "callback_query" \| "shipping_query" \| "pre_checkout_query" \| "purchased_paid_media" \| "poll" \| "poll_answer" \| "my_chat_member" \| "chat_member" \| "chat_join_request" \| "chat_boost" \| "removed_chat_boost" \| "managed_bot" \| "subscription" \| "stopped_message_generation")[], `...handlers`: [Middleware](#middleware)<[Context](#context)>[] | this | Run `handlers` only when the given payload key (e.g. `"message"`, `"callback_query"`) is present on the update. |
 | `startPolling` | `source?`: AsyncIterable<[Update](#update), any, any>, `options?`: [LongPollOptions](#longpolloptions) | Promise<void> | Pump an update source (default `longPoll`) through `handleUpdate` until `stop()` aborts. Resolves when the source is exhausted or aborted. This is long-poll mode; for webhooks use `webhookCallback`/`createWebhookServer`.  A handler error does not stop the pump: it is routed to the `catch` boundary (default: log and continue). The promise rejects only when that boundary itself throws - the fail-loud opt-in (see `catch`).  Not re-entrant: calling it while a previous pump is still active throws, so `isRunning()` stays truthful and the prior `AbortController` is never orphaned. Stop the running loop (`stop()`, then `await` its promise) first. |
 | `stop` | - | void | Abort the running pump loop. |
 | `use` | `...mw`: [Middleware](#middleware)<[Context](#context)>[] | this | Register one or more middleware to run on every update. |
@@ -1590,6 +1590,7 @@ type ChatAdministratorRights = {
   can_post_stories: boolean;
   can_promote_members: boolean;
   can_restrict_members: boolean;
+  can_send_welcome_messages: boolean;
   is_anonymous: boolean;
 };
 ```
@@ -1813,6 +1814,7 @@ type ChatMemberAdministrator = {
   can_post_stories: boolean;
   can_promote_members: boolean;
   can_restrict_members: boolean;
+  can_send_welcome_messages: boolean;
   custom_title?: string;
   is_anonymous: boolean;
   status: string;
@@ -2076,6 +2078,14 @@ type Community = {
 
 ```ts
 type CommunityChatAdded = {
+  community: [Community](#community);
+};
+```
+
+### `CommunityChatJoined`
+
+```ts
+type CommunityChatJoined = {
   community: [Community](#community);
 };
 ```
@@ -2545,6 +2555,12 @@ type DirectMessagesTopic = {
 };
 ```
 
+### `DisabledButton`
+
+```ts
+type DisabledButton = Record<string, never>;
+```
+
 ### `Document`
 
 ```ts
@@ -2604,6 +2620,7 @@ type EditEphemeralMessageCaptionParams = {
   parse_mode?: string;
   receiver_user_id: number;
   reply_markup?: [InlineKeyboardMarkup](#inlinekeyboardmarkup);
+  show_caption_above_media?: boolean;
 };
 ```
 
@@ -2659,7 +2676,8 @@ type EditEphemeralMessageTextParams = {
   parse_mode?: string;
   receiver_user_id: number;
   reply_markup?: [InlineKeyboardMarkup](#inlinekeyboardmarkup);
-  text: string;
+  rich_message?: [InputRichMessage](#inputrichmessage);
+  text?: string;
 };
 ```
 
@@ -2885,6 +2903,16 @@ type EncryptedPassportElement = {
   selfie?: [PassportFile](#passportfile);
   translation?: [PassportFile](#passportfile)[];
   type: string;
+};
+```
+
+### `EphemeralMessageParameters`
+
+```ts
+type EphemeralMessageParameters = {
+  callback_query_id?: string;
+  receiver_user_id: number;
+  replace_callback_query_message?: boolean;
 };
 ```
 
@@ -3719,6 +3747,7 @@ type InlineKeyboardButton = {
   callback_data?: string;
   callback_game?: [CallbackGame](#callbackgame);
   copy_text?: [CopyTextButton](#copytextbutton);
+  disabled?: [DisabledButton](#disabledbutton);
   icon_custom_emoji_id?: string;
   login_url?: [LoginUrl](#loginurl);
   pay?: boolean;
@@ -3736,6 +3765,7 @@ type InlineKeyboardButton = {
 
 ```ts
 type InlineKeyboardMarkup = {
+  force_reply?: boolean;
   inline_keyboard: [InlineKeyboardButton](#inlinekeyboardbutton)[][];
 };
 ```
@@ -4489,7 +4519,7 @@ type InputProfilePhotoStatic = {
 ### `InputRichBlock`
 
 ```ts
-type InputRichBlock = [InputRichBlockParagraph](#inputrichblockparagraph) | [InputRichBlockSectionHeading](#inputrichblocksectionheading) | [InputRichBlockPreformatted](#inputrichblockpreformatted) | [InputRichBlockFooter](#inputrichblockfooter) | [InputRichBlockDivider](#inputrichblockdivider) | [InputRichBlockMathematicalExpression](#inputrichblockmathematicalexpression) | [InputRichBlockAnchor](#inputrichblockanchor) | [InputRichBlockList](#inputrichblocklist) | [InputRichBlockBlockQuotation](#inputrichblockblockquotation) | [InputRichBlockPullQuotation](#inputrichblockpullquotation) | [InputRichBlockCollage](#inputrichblockcollage) | [InputRichBlockSlideshow](#inputrichblockslideshow) | [InputRichBlockTable](#inputrichblocktable) | [InputRichBlockDetails](#inputrichblockdetails) | [InputRichBlockMap](#inputrichblockmap) | [InputRichBlockAnimation](#inputrichblockanimation) | [InputRichBlockAudio](#inputrichblockaudio) | [InputRichBlockPhoto](#inputrichblockphoto) | [InputRichBlockVideo](#inputrichblockvideo) | [InputRichBlockVoiceNote](#inputrichblockvoicenote) | [InputRichBlockThinking](#inputrichblockthinking);
+type InputRichBlock = [InputRichBlockParagraph](#inputrichblockparagraph) | [InputRichBlockSectionHeading](#inputrichblocksectionheading) | [InputRichBlockPreformatted](#inputrichblockpreformatted) | [InputRichBlockFooter](#inputrichblockfooter) | [InputRichBlockDivider](#inputrichblockdivider) | [InputRichBlockMathematicalExpression](#inputrichblockmathematicalexpression) | [InputRichBlockAnchor](#inputrichblockanchor) | [InputRichBlockList](#inputrichblocklist) | [InputRichBlockBlockQuotation](#inputrichblockblockquotation) | [InputRichBlockExpandableBlockQuotation](#inputrichblockexpandableblockquotation) | [InputRichBlockPullQuotation](#inputrichblockpullquotation) | [InputRichBlockCollage](#inputrichblockcollage) | [InputRichBlockSlideshow](#inputrichblockslideshow) | [InputRichBlockTable](#inputrichblocktable) | [InputRichBlockDetails](#inputrichblockdetails) | [InputRichBlockMap](#inputrichblockmap) | [InputRichBlockButtons](#inputrichblockbuttons) | [InputRichBlockAnimation](#inputrichblockanimation) | [InputRichBlockAudio](#inputrichblockaudio) | [InputRichBlockDocument](#inputrichblockdocument) | [InputRichBlockPhoto](#inputrichblockphoto) | [InputRichBlockVideo](#inputrichblockvideo) | [InputRichBlockVoiceNote](#inputrichblockvoicenote) | [InputRichBlockThinking](#inputrichblockthinking);
 ```
 
 ### `InputRichBlockAnchor`
@@ -4531,6 +4561,16 @@ type InputRichBlockBlockQuotation = {
 };
 ```
 
+### `InputRichBlockButtons`
+
+```ts
+type InputRichBlockButtons = {
+  align?: string;
+  buttons: [RichMessageButton](#richmessagebutton)[];
+  type: string;
+};
+```
+
 ### `InputRichBlockCollage`
 
 ```ts
@@ -4556,6 +4596,26 @@ type InputRichBlockDetails = {
 
 ```ts
 type InputRichBlockDivider = {
+  type: string;
+};
+```
+
+### `InputRichBlockDocument`
+
+```ts
+type InputRichBlockDocument = {
+  caption?: [RichBlockCaption](#richblockcaption);
+  document: [InputMediaDocument](#inputmediadocument);
+  type: string;
+};
+```
+
+### `InputRichBlockExpandableBlockQuotation`
+
+```ts
+type InputRichBlockExpandableBlockQuotation = {
+  credit?: [RichText](#richtext);
+  text: [RichText](#richtext);
   type: string;
 };
 ```
@@ -4595,11 +4655,11 @@ type InputRichBlockListItem = {
 ```ts
 type InputRichBlockMap = {
   caption?: [RichBlockCaption](#richblockcaption);
-  height: number;
+  height?: number;
   location: [Location](#location);
   type: string;
-  width: number;
-  zoom: number;
+  width?: number;
+  zoom?: number;
 };
 ```
 
@@ -4678,6 +4738,7 @@ type InputRichBlockTable = {
   caption?: [RichText](#richtext);
   cells: [RichBlockTableCell](#richblocktablecell)[][];
   is_bordered?: true;
+  is_compact?: true;
   is_striped?: true;
   type: string;
 };
@@ -4738,7 +4799,7 @@ type InputRichMessageContent = {
 ```ts
 type InputRichMessageMedia = {
   id: string;
-  media: [InputMediaAnimation](#inputmediaanimation) | [InputMediaAudio](#inputmediaaudio) | [InputMediaPhoto](#inputmediaphoto) | [InputMediaVideo](#inputmediavideo) | [InputMediaVoiceNote](#inputmediavoicenote);
+  media: [InputMediaAnimation](#inputmediaanimation) | [InputMediaAudio](#inputmediaaudio) | [InputMediaDocument](#inputmediadocument) | [InputMediaPhoto](#inputmediaphoto) | [InputMediaVideo](#inputmediavideo) | [InputMediaVoiceNote](#inputmediavoicenote);
 };
 ```
 
@@ -5078,6 +5139,7 @@ type Message = {
   checklist_tasks_added?: [ChecklistTasksAdded](#checklisttasksadded);
   checklist_tasks_done?: [ChecklistTasksDone](#checklisttasksdone);
   community_chat_added?: [CommunityChatAdded](#communitychatadded);
+  community_chat_joined?: [CommunityChatJoined](#communitychatjoined);
   community_chat_removed?: [CommunityChatRemoved](#communitychatremoved);
   connected_website?: string;
   contact?: [Contact](#contact);
@@ -5204,6 +5266,16 @@ type MessageEntity = {
   unix_time?: number;
   url?: string;
   user?: [User](#user);
+};
+```
+
+### `MessageGenerationStopped`
+
+```ts
+type MessageGenerationStopped = {
+  chat: [Chat](#chat);
+  draft_id: number;
+  message_thread_id?: number;
 };
 ```
 
@@ -5770,6 +5842,7 @@ type PromoteChatMemberParams = {
   can_post_stories?: boolean;
   can_promote_members?: boolean;
   can_restrict_members?: boolean;
+  can_send_welcome_messages?: boolean;
   chat_id: number | string;
   is_anonymous?: boolean;
   user_id: number;
@@ -5995,6 +6068,7 @@ type ReplaceStickerInSetResult = boolean;
 
 ```ts
 type ReplyKeyboardMarkup = {
+  force_reply?: boolean;
   input_field_placeholder?: string;
   is_persistent?: boolean;
   keyboard: [KeyboardButton](#keyboardbutton)[][];
@@ -6134,7 +6208,7 @@ type RevokeChatInviteLinkResult = [ChatInviteLink](#chatinvitelink);
 ### `RichBlock`
 
 ```ts
-type RichBlock = [RichBlockParagraph](#richblockparagraph) | [RichBlockSectionHeading](#richblocksectionheading) | [RichBlockPreformatted](#richblockpreformatted) | [RichBlockFooter](#richblockfooter) | [RichBlockDivider](#richblockdivider) | [RichBlockMathematicalExpression](#richblockmathematicalexpression) | [RichBlockAnchor](#richblockanchor) | [RichBlockList](#richblocklist) | [RichBlockBlockQuotation](#richblockblockquotation) | [RichBlockPullQuotation](#richblockpullquotation) | [RichBlockCollage](#richblockcollage) | [RichBlockSlideshow](#richblockslideshow) | [RichBlockTable](#richblocktable) | [RichBlockDetails](#richblockdetails) | [RichBlockMap](#richblockmap) | [RichBlockAnimation](#richblockanimation) | [RichBlockAudio](#richblockaudio) | [RichBlockPhoto](#richblockphoto) | [RichBlockVideo](#richblockvideo) | [RichBlockVoiceNote](#richblockvoicenote) | [RichBlockThinking](#richblockthinking);
+type RichBlock = [RichBlockParagraph](#richblockparagraph) | [RichBlockSectionHeading](#richblocksectionheading) | [RichBlockPreformatted](#richblockpreformatted) | [RichBlockFooter](#richblockfooter) | [RichBlockDivider](#richblockdivider) | [RichBlockMathematicalExpression](#richblockmathematicalexpression) | [RichBlockAnchor](#richblockanchor) | [RichBlockList](#richblocklist) | [RichBlockBlockQuotation](#richblockblockquotation) | [RichBlockExpandableBlockQuotation](#richblockexpandableblockquotation) | [RichBlockPullQuotation](#richblockpullquotation) | [RichBlockCollage](#richblockcollage) | [RichBlockSlideshow](#richblockslideshow) | [RichBlockTable](#richblocktable) | [RichBlockDetails](#richblockdetails) | [RichBlockMap](#richblockmap) | [RichBlockButtons](#richblockbuttons) | [RichBlockAnimation](#richblockanimation) | [RichBlockAudio](#richblockaudio) | [RichBlockDocument](#richblockdocument) | [RichBlockPhoto](#richblockphoto) | [RichBlockVideo](#richblockvideo) | [RichBlockVoiceNote](#richblockvoicenote) | [RichBlockThinking](#richblockthinking);
 ```
 
 ### `RichBlockAnchor`
@@ -6177,6 +6251,16 @@ type RichBlockBlockQuotation = {
 };
 ```
 
+### `RichBlockButtons`
+
+```ts
+type RichBlockButtons = {
+  align?: string;
+  buttons: [RichMessageButton](#richmessagebutton)[];
+  type: string;
+};
+```
+
 ### `RichBlockCaption`
 
 ```ts
@@ -6211,6 +6295,26 @@ type RichBlockDetails = {
 
 ```ts
 type RichBlockDivider = {
+  type: string;
+};
+```
+
+### `RichBlockDocument`
+
+```ts
+type RichBlockDocument = {
+  caption?: [RichBlockCaption](#richblockcaption);
+  document: [Document](#document);
+  type: string;
+};
+```
+
+### `RichBlockExpandableBlockQuotation`
+
+```ts
+type RichBlockExpandableBlockQuotation = {
+  credit?: [RichText](#richtext);
+  text: [RichText](#richtext);
   type: string;
 };
 ```
@@ -6335,6 +6439,7 @@ type RichBlockTable = {
   caption?: [RichText](#richtext);
   cells: [RichBlockTableCell](#richblocktablecell)[][];
   is_bordered?: true;
+  is_compact?: true;
   is_striped?: true;
   type: string;
 };
@@ -6392,10 +6497,28 @@ type RichMessage = {
 };
 ```
 
+### `RichMessageButton`
+
+```ts
+type RichMessageButton = {
+  callback_data?: string;
+  copy_text?: [CopyTextButton](#copytextbutton);
+  disabled?: [DisabledButton](#disabledbutton);
+  login_url?: [LoginUrl](#loginurl);
+  style?: string;
+  switch_inline_query?: string;
+  switch_inline_query_chosen_chat?: [SwitchInlineQueryChosenChat](#switchinlinequerychosenchat);
+  switch_inline_query_current_chat?: string;
+  text: [RichText](#richtext);
+  url?: string;
+  web_app?: [WebAppInfo](#webappinfo);
+};
+```
+
 ### `RichText`
 
 ```ts
-type RichText = [RichTextBold](#richtextbold) | [RichTextItalic](#richtextitalic) | [RichTextUnderline](#richtextunderline) | [RichTextStrikethrough](#richtextstrikethrough) | [RichTextSpoiler](#richtextspoiler) | [RichTextDateTime](#richtextdatetime) | [RichTextTextMention](#richtexttextmention) | [RichTextSubscript](#richtextsubscript) | [RichTextSuperscript](#richtextsuperscript) | [RichTextMarked](#richtextmarked) | [RichTextCode](#richtextcode) | [RichTextCustomEmoji](#richtextcustomemoji) | [RichTextMathematicalExpression](#richtextmathematicalexpression) | [RichTextUrl](#richtexturl) | [RichTextEmailAddress](#richtextemailaddress) | [RichTextPhoneNumber](#richtextphonenumber) | [RichTextBankCardNumber](#richtextbankcardnumber) | [RichTextMention](#richtextmention) | [RichTextHashtag](#richtexthashtag) | [RichTextCashtag](#richtextcashtag) | [RichTextBotCommand](#richtextbotcommand) | [RichTextAnchor](#richtextanchor) | [RichTextAnchorLink](#richtextanchorlink) | [RichTextReference](#richtextreference) | [RichTextReferenceLink](#richtextreferencelink);
+type RichText = [RichTextBold](#richtextbold) | [RichTextItalic](#richtextitalic) | [RichTextUnderline](#richtextunderline) | [RichTextStrikethrough](#richtextstrikethrough) | [RichTextSpoiler](#richtextspoiler) | [RichTextDateTime](#richtextdatetime) | [RichTextTextMention](#richtexttextmention) | [RichTextSubscript](#richtextsubscript) | [RichTextSuperscript](#richtextsuperscript) | [RichTextMarked](#richtextmarked) | [RichTextCode](#richtextcode) | [RichTextCustomEmoji](#richtextcustomemoji) | [RichTextMathematicalExpression](#richtextmathematicalexpression) | [RichTextUrl](#richtexturl) | [RichTextEmailAddress](#richtextemailaddress) | [RichTextPhoneNumber](#richtextphonenumber) | [RichTextBankCardNumber](#richtextbankcardnumber) | [RichTextMention](#richtextmention) | [RichTextHashtag](#richtexthashtag) | [RichTextCashtag](#richtextcashtag) | [RichTextBotCommand](#richtextbotcommand) | [RichTextButton](#richtextbutton) | [RichTextAnchor](#richtextanchor) | [RichTextAnchorLink](#richtextanchorlink) | [RichTextReference](#richtextreference) | [RichTextReferenceLink](#richtextreferencelink);
 ```
 
 ### `RichTextAnchor`
@@ -6442,6 +6565,15 @@ type RichTextBold = {
 type RichTextBotCommand = {
   bot_command: string;
   text: [RichText](#richtext);
+  type: string;
+};
+```
+
+### `RichTextButton`
+
+```ts
+type RichTextButton = {
+  button: [RichMessageButton](#richmessagebutton);
   type: string;
 };
 ```
@@ -6679,20 +6811,19 @@ type SendAnimationParams = {
   allow_paid_broadcast?: boolean;
   animation: [InputFile](#inputfile) | string;
   business_connection_id?: string;
-  callback_query_id?: string;
   caption?: string;
   caption_entities?: [MessageEntity](#messageentity)[];
   chat_id: number | string;
   direct_messages_topic_id?: number;
   disable_notification?: boolean;
   duration?: number;
+  ephemeral_message_parameters?: [EphemeralMessageParameters](#ephemeralmessageparameters);
   has_spoiler?: boolean;
   height?: number;
   message_effect_id?: string;
   message_thread_id?: number;
   parse_mode?: string;
   protect_content?: boolean;
-  receiver_user_id?: number;
   reply_markup?: [InlineKeyboardMarkup](#inlinekeyboardmarkup) | [ReplyKeyboardMarkup](#replykeyboardmarkup) | [ReplyKeyboardRemove](#replykeyboardremove) | [ForceReply](#forcereply);
   reply_parameters?: [ReplyParameters](#replyparameters);
   show_caption_above_media?: boolean;
@@ -6715,19 +6846,18 @@ type SendAudioParams = {
   allow_paid_broadcast?: boolean;
   audio: [InputFile](#inputfile) | string;
   business_connection_id?: string;
-  callback_query_id?: string;
   caption?: string;
   caption_entities?: [MessageEntity](#messageentity)[];
   chat_id: number | string;
   direct_messages_topic_id?: number;
   disable_notification?: boolean;
   duration?: number;
+  ephemeral_message_parameters?: [EphemeralMessageParameters](#ephemeralmessageparameters);
   message_effect_id?: string;
   message_thread_id?: number;
   parse_mode?: string;
   performer?: string;
   protect_content?: boolean;
-  receiver_user_id?: number;
   reply_markup?: [InlineKeyboardMarkup](#inlinekeyboardmarkup) | [ReplyKeyboardMarkup](#replykeyboardmarkup) | [ReplyKeyboardRemove](#replykeyboardremove) | [ForceReply](#forcereply);
   reply_parameters?: [ReplyParameters](#replyparameters);
   suggested_post_parameters?: [SuggestedPostParameters](#suggestedpostparameters);
@@ -6801,17 +6931,16 @@ type SendChecklistResult = [Message](#message);
 type SendContactParams = {
   allow_paid_broadcast?: boolean;
   business_connection_id?: string;
-  callback_query_id?: string;
   chat_id: number | string;
   direct_messages_topic_id?: number;
   disable_notification?: boolean;
+  ephemeral_message_parameters?: [EphemeralMessageParameters](#ephemeralmessageparameters);
   first_name: string;
   last_name?: string;
   message_effect_id?: string;
   message_thread_id?: number;
   phone_number: string;
   protect_content?: boolean;
-  receiver_user_id?: number;
   reply_markup?: [InlineKeyboardMarkup](#inlinekeyboardmarkup) | [ReplyKeyboardMarkup](#replykeyboardmarkup) | [ReplyKeyboardRemove](#replykeyboardremove) | [ForceReply](#forcereply);
   reply_parameters?: [ReplyParameters](#replyparameters);
   suggested_post_parameters?: [SuggestedPostParameters](#suggestedpostparameters);
@@ -6856,7 +6985,6 @@ type SendDiceResult = [Message](#message);
 type SendDocumentParams = {
   allow_paid_broadcast?: boolean;
   business_connection_id?: string;
-  callback_query_id?: string;
   caption?: string;
   caption_entities?: [MessageEntity](#messageentity)[];
   chat_id: number | string;
@@ -6864,11 +6992,11 @@ type SendDocumentParams = {
   disable_content_type_detection?: boolean;
   disable_notification?: boolean;
   document: [InputFile](#inputfile) | string;
+  ephemeral_message_parameters?: [EphemeralMessageParameters](#ephemeralmessageparameters);
   message_effect_id?: string;
   message_thread_id?: number;
   parse_mode?: string;
   protect_content?: boolean;
-  receiver_user_id?: number;
   reply_markup?: [InlineKeyboardMarkup](#inlinekeyboardmarkup) | [ReplyKeyboardMarkup](#replykeyboardmarkup) | [ReplyKeyboardRemove](#replykeyboardremove) | [ForceReply](#forcereply);
   reply_parameters?: [ReplyParameters](#replyparameters);
   suggested_post_parameters?: [SuggestedPostParameters](#suggestedpostparameters);
@@ -6975,12 +7103,12 @@ type SendInvoiceResult = [Message](#message);
 type SendLivePhotoParams = {
   allow_paid_broadcast?: boolean;
   business_connection_id?: string;
-  callback_query_id?: string;
   caption?: string;
   caption_entities?: [MessageEntity](#messageentity)[];
   chat_id: number | string;
   direct_messages_topic_id?: number;
   disable_notification?: boolean;
+  ephemeral_message_parameters?: [EphemeralMessageParameters](#ephemeralmessageparameters);
   has_spoiler?: boolean;
   live_photo: [InputFile](#inputfile) | string;
   message_effect_id?: string;
@@ -6988,7 +7116,6 @@ type SendLivePhotoParams = {
   parse_mode?: string;
   photo: [InputFile](#inputfile) | string;
   protect_content?: boolean;
-  receiver_user_id?: number;
   reply_markup?: [InlineKeyboardMarkup](#inlinekeyboardmarkup) | [ReplyKeyboardMarkup](#replykeyboardmarkup) | [ReplyKeyboardRemove](#replykeyboardremove) | [ForceReply](#forcereply);
   reply_parameters?: [ReplyParameters](#replyparameters);
   show_caption_above_media?: boolean;
@@ -7008,10 +7135,10 @@ type SendLivePhotoResult = [Message](#message);
 type SendLocationParams = {
   allow_paid_broadcast?: boolean;
   business_connection_id?: string;
-  callback_query_id?: string;
   chat_id: number | string;
   direct_messages_topic_id?: number;
   disable_notification?: boolean;
+  ephemeral_message_parameters?: [EphemeralMessageParameters](#ephemeralmessageparameters);
   heading?: number;
   horizontal_accuracy?: number;
   latitude: number;
@@ -7021,7 +7148,6 @@ type SendLocationParams = {
   message_thread_id?: number;
   protect_content?: boolean;
   proximity_alert_radius?: number;
-  receiver_user_id?: number;
   reply_markup?: [InlineKeyboardMarkup](#inlinekeyboardmarkup) | [ReplyKeyboardMarkup](#replykeyboardmarkup) | [ReplyKeyboardRemove](#replykeyboardremove) | [ForceReply](#forcereply);
   reply_parameters?: [ReplyParameters](#replyparameters);
   suggested_post_parameters?: [SuggestedPostParameters](#suggestedpostparameters);
@@ -7061,9 +7187,11 @@ type SendMediaGroupResult = [Message](#message)[];
 
 ```ts
 type SendMessageDraftParams = {
+  can_stop?: boolean;
   chat_id: number;
   draft_id: number;
   entities?: [MessageEntity](#messageentity)[];
+  keep_on_stop?: boolean;
   message_thread_id?: number;
   parse_mode?: string;
   text?: string;
@@ -7082,17 +7210,16 @@ type SendMessageDraftResult = boolean;
 type SendMessageParams = {
   allow_paid_broadcast?: boolean;
   business_connection_id?: string;
-  callback_query_id?: string;
   chat_id: number | string;
   direct_messages_topic_id?: number;
   disable_notification?: boolean;
   entities?: [MessageEntity](#messageentity)[];
+  ephemeral_message_parameters?: [EphemeralMessageParameters](#ephemeralmessageparameters);
   link_preview_options?: [LinkPreviewOptions](#linkpreviewoptions);
   message_effect_id?: string;
   message_thread_id?: number;
   parse_mode?: string;
   protect_content?: boolean;
-  receiver_user_id?: number;
   reply_markup?: [InlineKeyboardMarkup](#inlinekeyboardmarkup) | [ReplyKeyboardMarkup](#replykeyboardmarkup) | [ReplyKeyboardRemove](#replykeyboardremove) | [ForceReply](#forcereply);
   reply_parameters?: [ReplyParameters](#replyparameters);
   suggested_post_parameters?: [SuggestedPostParameters](#suggestedpostparameters);
@@ -7142,19 +7269,18 @@ type SendPaidMediaResult = [Message](#message);
 type SendPhotoParams = {
   allow_paid_broadcast?: boolean;
   business_connection_id?: string;
-  callback_query_id?: string;
   caption?: string;
   caption_entities?: [MessageEntity](#messageentity)[];
   chat_id: number | string;
   direct_messages_topic_id?: number;
   disable_notification?: boolean;
+  ephemeral_message_parameters?: [EphemeralMessageParameters](#ephemeralmessageparameters);
   has_spoiler?: boolean;
   message_effect_id?: string;
   message_thread_id?: number;
   parse_mode?: string;
   photo: [InputFile](#inputfile) | string;
   protect_content?: boolean;
-  receiver_user_id?: number;
   reply_markup?: [InlineKeyboardMarkup](#inlinekeyboardmarkup) | [ReplyKeyboardMarkup](#replykeyboardmarkup) | [ReplyKeyboardRemove](#replykeyboardremove) | [ForceReply](#forcereply);
   reply_parameters?: [ReplyParameters](#replyparameters);
   show_caption_above_media?: boolean;
@@ -7219,8 +7345,10 @@ type SendPollResult = [Message](#message);
 
 ```ts
 type SendRichMessageDraftParams = {
+  can_stop?: boolean;
   chat_id: number;
   draft_id: number;
+  keep_on_stop?: boolean;
   message_thread_id?: number;
   rich_message: [InputRichMessage](#inputrichmessage);
 };
@@ -7241,6 +7369,7 @@ type SendRichMessageParams = {
   chat_id: number | string;
   direct_messages_topic_id?: number;
   disable_notification?: boolean;
+  ephemeral_message_parameters?: [EphemeralMessageParameters](#ephemeralmessageparameters);
   message_effect_id?: string;
   message_thread_id?: number;
   protect_content?: boolean;
@@ -7263,15 +7392,14 @@ type SendRichMessageResult = [Message](#message);
 type SendStickerParams = {
   allow_paid_broadcast?: boolean;
   business_connection_id?: string;
-  callback_query_id?: string;
   chat_id: number | string;
   direct_messages_topic_id?: number;
   disable_notification?: boolean;
   emoji?: string;
+  ephemeral_message_parameters?: [EphemeralMessageParameters](#ephemeralmessageparameters);
   message_effect_id?: string;
   message_thread_id?: number;
   protect_content?: boolean;
-  receiver_user_id?: number;
   reply_markup?: [InlineKeyboardMarkup](#inlinekeyboardmarkup) | [ReplyKeyboardMarkup](#replykeyboardmarkup) | [ReplyKeyboardRemove](#replykeyboardremove) | [ForceReply](#forcereply);
   reply_parameters?: [ReplyParameters](#replyparameters);
   sticker: [InputFile](#inputfile) | string;
@@ -7292,10 +7420,10 @@ type SendVenueParams = {
   address: string;
   allow_paid_broadcast?: boolean;
   business_connection_id?: string;
-  callback_query_id?: string;
   chat_id: number | string;
   direct_messages_topic_id?: number;
   disable_notification?: boolean;
+  ephemeral_message_parameters?: [EphemeralMessageParameters](#ephemeralmessageparameters);
   foursquare_id?: string;
   foursquare_type?: string;
   google_place_id?: string;
@@ -7305,7 +7433,6 @@ type SendVenueParams = {
   message_effect_id?: string;
   message_thread_id?: number;
   protect_content?: boolean;
-  receiver_user_id?: number;
   reply_markup?: [InlineKeyboardMarkup](#inlinekeyboardmarkup) | [ReplyKeyboardMarkup](#replykeyboardmarkup) | [ReplyKeyboardRemove](#replykeyboardremove) | [ForceReply](#forcereply);
   reply_parameters?: [ReplyParameters](#replyparameters);
   suggested_post_parameters?: [SuggestedPostParameters](#suggestedpostparameters);
@@ -7325,16 +7452,15 @@ type SendVenueResult = [Message](#message);
 type SendVideoNoteParams = {
   allow_paid_broadcast?: boolean;
   business_connection_id?: string;
-  callback_query_id?: string;
   chat_id: number | string;
   direct_messages_topic_id?: number;
   disable_notification?: boolean;
   duration?: number;
+  ephemeral_message_parameters?: [EphemeralMessageParameters](#ephemeralmessageparameters);
   length?: number;
   message_effect_id?: string;
   message_thread_id?: number;
   protect_content?: boolean;
-  receiver_user_id?: number;
   reply_markup?: [InlineKeyboardMarkup](#inlinekeyboardmarkup) | [ReplyKeyboardMarkup](#replykeyboardmarkup) | [ReplyKeyboardRemove](#replykeyboardremove) | [ForceReply](#forcereply);
   reply_parameters?: [ReplyParameters](#replyparameters);
   suggested_post_parameters?: [SuggestedPostParameters](#suggestedpostparameters);
@@ -7355,7 +7481,6 @@ type SendVideoNoteResult = [Message](#message);
 type SendVideoParams = {
   allow_paid_broadcast?: boolean;
   business_connection_id?: string;
-  callback_query_id?: string;
   caption?: string;
   caption_entities?: [MessageEntity](#messageentity)[];
   chat_id: number | string;
@@ -7363,13 +7488,13 @@ type SendVideoParams = {
   direct_messages_topic_id?: number;
   disable_notification?: boolean;
   duration?: number;
+  ephemeral_message_parameters?: [EphemeralMessageParameters](#ephemeralmessageparameters);
   has_spoiler?: boolean;
   height?: number;
   message_effect_id?: string;
   message_thread_id?: number;
   parse_mode?: string;
   protect_content?: boolean;
-  receiver_user_id?: number;
   reply_markup?: [InlineKeyboardMarkup](#inlinekeyboardmarkup) | [ReplyKeyboardMarkup](#replykeyboardmarkup) | [ReplyKeyboardRemove](#replykeyboardremove) | [ForceReply](#forcereply);
   reply_parameters?: [ReplyParameters](#replyparameters);
   show_caption_above_media?: boolean;
@@ -7394,18 +7519,17 @@ type SendVideoResult = [Message](#message);
 type SendVoiceParams = {
   allow_paid_broadcast?: boolean;
   business_connection_id?: string;
-  callback_query_id?: string;
   caption?: string;
   caption_entities?: [MessageEntity](#messageentity)[];
   chat_id: number | string;
   direct_messages_topic_id?: number;
   disable_notification?: boolean;
   duration?: number;
+  ephemeral_message_parameters?: [EphemeralMessageParameters](#ephemeralmessageparameters);
   message_effect_id?: string;
   message_thread_id?: number;
   parse_mode?: string;
   protect_content?: boolean;
-  receiver_user_id?: number;
   reply_markup?: [InlineKeyboardMarkup](#inlinekeyboardmarkup) | [ReplyKeyboardMarkup](#replykeyboardmarkup) | [ReplyKeyboardRemove](#replykeyboardremove) | [ForceReply](#forcereply);
   reply_parameters?: [ReplyParameters](#replyparameters);
   suggested_post_parameters?: [SuggestedPostParameters](#suggestedpostparameters);
@@ -8497,12 +8621,15 @@ type UniqueGiftColors = {
 
 ```ts
 type UniqueGiftInfo = {
+  entities?: [MessageEntity](#messageentity)[];
   gift: [UniqueGift](#uniquegift);
+  is_private?: true;
   last_resale_amount?: number;
   last_resale_currency?: string;
   next_transfer_date?: number;
   origin: string;
   owned_gift_id?: string;
+  text?: string;
   transfer_star_count?: number;
 };
 ```
@@ -8694,6 +8821,10 @@ type Update = {
   update_id: number;
 } & {
   subscription: [BotSubscriptionUpdated](#botsubscriptionupdated);
+} | {
+  update_id: number;
+} & {
+  stopped_message_generation: [MessageGenerationStopped](#messagegenerationstopped);
 };
 ```
 
@@ -9035,7 +9166,7 @@ const HTTP_STATUS_TOO_MANY_REQUESTS: 429;
 `Update` field names dispatched as events (every `Update` payload key except `update_id`).
 
 ```ts
-const UPDATE_TYPES: readonly ["message", "edited_message", "channel_post", "edited_channel_post", "business_connection", "business_message", "edited_business_message", "deleted_business_messages", "guest_message", "message_reaction", "message_reaction_count", "inline_query", "chosen_inline_result", "callback_query", "shipping_query", "pre_checkout_query", "purchased_paid_media", "poll", "poll_answer", "my_chat_member", "chat_member", "chat_join_request", "chat_boost", "removed_chat_boost", "managed_bot", "subscription"];
+const UPDATE_TYPES: readonly ["message", "edited_message", "channel_post", "edited_channel_post", "business_connection", "business_message", "edited_business_message", "deleted_business_messages", "guest_message", "message_reaction", "message_reaction_count", "inline_query", "chosen_inline_result", "callback_query", "shipping_query", "pre_checkout_query", "purchased_paid_media", "poll", "poll_answer", "my_chat_member", "chat_member", "chat_join_request", "chat_boost", "removed_chat_boost", "managed_bot", "subscription", "stopped_message_generation"];
 ```
 
 ### `nextPagesWebhook`
