@@ -282,37 +282,6 @@ await startWebhook(new Bot(TOKEN), { port: 8080, path: "/telegram", secretToken:
 
 Register the URL once: `api.setWebhook({ url, secret_token })`. The `secret_token` is the only thing authenticating callers (payloads aren't signed) - treat it as required in production, and terminate TLS at your proxy.
 
-## ⚠️ Errors
-
-Errors expose structured fields, so you branch on values, not message text.
-
-```ts
-import { TelegramApiError, NetworkError, TimeoutError } from "node-telegram-bot-api";
-
-try {
-  await api.sendMessage({ chat_id, text });
-} catch (err) {
-  // 🔁 429s are auto-retried (honoring retry_after) by default - this is the manual form
-  if (err instanceof TelegramApiError && err.errorCode === 429) {
-    await sleep((err.retryAfter ?? 1) * 1000);
-  } else if (err instanceof NetworkError || err instanceof TimeoutError) {
-    // transient transport failure
-  }
-}
-```
-
-### 🧯 Handler errors: the boundary contract
-
-An error thrown by a handler never stops the bot. It is routed to the error boundary, which by default logs it via `console.error` and consumes the update - polling keeps pumping, and a webhook delivery is ACKed (Telegram does not redeliver it). Install your own boundary with `bot.catch()`:
-
-```ts
-bot.catch((err, ctx) => {
-  console.error("update", ctx.update.update_id, "failed:", err);
-});
-```
-
-Throwing from the boundary opts back into fail-loud: `startPolling()` rejects (the update was never confirmed, so Telegram redelivers it on restart) and `webhookCallback` responds 500 (Telegram redelivers). `bot.catch((err) => { throw err; })` is the explicit fail-loud opt-in.
-
 ## 💾 Sessions
 
 Opt-in `session()` middleware adds a persistent, per-chat bag reached through `ctx.getSession<T>()`. The `store` is **required** - no implicit default, so the durability choice is always explicit. It works the same under long-polling and one-invocation-per-update serverless: nothing lives in process memory between updates, only what the store persists.
@@ -371,6 +340,37 @@ bot.use(session<Session>({ store: new RedisSessionStorage({ ttlSeconds: 86400 })
 ```
 
 The `node-telegram-bot-api/bun` stores import Bun built-ins and are isolated behind that subpath - a Node or edge install never resolves them. Any other backend (ioredis, `pg`, a KV service) is ~10 lines implementing the three `SessionStore` methods.
+
+## ⚠️ Errors
+
+Errors expose structured fields, so you branch on values, not message text.
+
+```ts
+import { TelegramApiError, NetworkError, TimeoutError } from "node-telegram-bot-api";
+
+try {
+  await api.sendMessage({ chat_id, text });
+} catch (err) {
+  // 🔁 429s are auto-retried (honoring retry_after) by default - this is the manual form
+  if (err instanceof TelegramApiError && err.errorCode === 429) {
+    await sleep((err.retryAfter ?? 1) * 1000);
+  } else if (err instanceof NetworkError || err instanceof TimeoutError) {
+    // transient transport failure
+  }
+}
+```
+
+### 🧯 Handler errors: the boundary contract
+
+An error thrown by a handler never stops the bot. It is routed to the error boundary, which by default logs it via `console.error` and consumes the update - polling keeps pumping, and a webhook delivery is ACKed (Telegram does not redeliver it). Install your own boundary with `bot.catch()`:
+
+```ts
+bot.catch((err, ctx) => {
+  console.error("update", ctx.update.update_id, "failed:", err);
+});
+```
+
+Throwing from the boundary opts back into fail-loud: `startPolling()` rejects (the update was never confirmed, so Telegram redelivers it on restart) and `webhookCallback` responds 500 (Telegram redelivers). `bot.catch((err) => { throw err; })` is the explicit fail-loud opt-in.
 
 ## 🛡️ Resilience & rate limiting
 
