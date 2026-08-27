@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { mkdtemp, readdir, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { FileSessionStorage } from "../../src/node/session-file-storage.js";
+import { FileSessionStorage } from "../../src/node/file-session-storage.js";
 
 async function withDir(fn: (dir: string) => Promise<void>): Promise<void> {
   const dir = await mkdtemp(join(tmpdir(), "ntba-session-"));
