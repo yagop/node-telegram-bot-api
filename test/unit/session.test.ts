@@ -2,7 +2,7 @@ import { describe, test } from "node:test";
 import assert from "node:assert/strict";
 import type { Api } from "../../src/core/api.js";
 import { Context } from "../../src/core/context.js";
-import { SessionMemoryStorage, session, type SessionStore } from "../../src/core/session.js";
+import { MemorySessionStorage, session, type SessionStore } from "../../src/core/session.js";
 import type { Update } from "../../src/types/index.js";
 
 /** A recording store to assert persistence without a real backend. */
@@ -107,7 +107,7 @@ describe("session()", () => {
 
 describe("expectReply / matchReply", () => {
   test("matches a reply to the expected message and consumes the marker", async () => {
-    const store = new SessionMemoryStorage();
+    const store = new MemorySessionStorage();
     const mw = session({ store });
 
     // Turn 1: register that message 555 awaits a "name".
@@ -134,7 +134,7 @@ describe("expectReply / matchReply", () => {
   });
 
   test("returns undefined for a non-reply or an unexpected reply", async () => {
-    const mw = session({ store: new SessionMemoryStorage() });
+    const mw = session({ store: new MemorySessionStorage() });
     const notReply = new Context(msg("hi"), api);
     await mw(notReply, async () => {
       assert.equal(notReply.getSession().matchReply(), undefined);

@@ -1,5 +1,5 @@
 /**
- * `SessionFileStorage` - a durable, one-file-per-key `SessionStore` for the
+ * `FileSessionStorage` - a durable, one-file-per-key `SessionStore` for the
  * `session()` middleware (`./node`, the only folder allowed to import `node:*`).
  *
  * Persists each session envelope as a JSON file under a directory, so state
@@ -11,7 +11,7 @@
  * so a crafted key cannot escape the directory.
  *
  * The store is value-agnostic (it persists whatever JSON the middleware hands
- * it), so it takes no type parameter: `new SessionFileStorage({ path })`.
+ * it), so it takes no type parameter: `new FileSessionStorage({ path })`.
  */
 
 import { randomUUID } from "node:crypto";
@@ -19,16 +19,16 @@ import { mkdir, readFile, rename, unlink, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import type { SessionStore } from "../core/session.js";
 
-export type SessionFileStorageOptions = {
+export type FileSessionStorageOptions = {
   /** Directory to hold the per-key JSON files; created (recursively) on first write. */
   path: string;
 };
 
-export class SessionFileStorage implements SessionStore {
+export class FileSessionStorage implements SessionStore {
   private readonly dir: string;
   private ensured?: Promise<unknown>;
 
-  constructor(options: SessionFileStorageOptions) {
+  constructor(options: FileSessionStorageOptions) {
     this.dir = options.path;
   }
 

@@ -10,7 +10,7 @@
  * continuation survives across updates, only the persisted marker does.
  *
  * Storage is injectable via `SessionStore` and required - no implicit default,
- * so the durability choice is always explicit. `SessionMemoryStorage` (here) is
+ * so the durability choice is always explicit. `MemorySessionStorage` (here) is
  * edge-safe (zero `node:*`) but process-local and non-durable; a file / Redis /
  * DynamoDB store implements the same interface and (for the fs-backed ones)
  * lives in `./node` or userland so core stays Node-free.
@@ -36,11 +36,11 @@ export type SessionStore = {
  * Process-local, in-memory store. Zero-dependency and edge-safe, but not durable
  * and not shared across instances - state is lost on restart and never leaves the
  * process, so it is for long-polling / single-process bots, never serverless. Pass
- * it explicitly (`session({ store: new SessionMemoryStorage() })`) so the choice of
- * a non-durable backend is deliberate; for durability use `SessionFileStorage`
+ * it explicitly (`session({ store: new MemorySessionStorage() })`) so the choice of
+ * a non-durable backend is deliberate; for durability use `FileSessionStorage`
  * (`./node`) or a networked store.
  */
-export class SessionMemoryStorage implements SessionStore {
+export class MemorySessionStorage implements SessionStore {
   private readonly map = new Map<string, unknown>();
   read<V>(key: string): V | undefined {
     return this.map.get(key) as V | undefined;
@@ -95,8 +95,8 @@ export type SessionOptions<T> = {
   /**
    * Backend for the envelope. Required - there is no implicit store, so the
    * durability choice is always explicit (a silent memory default would look
-   * like data loss on serverless). Use `new SessionMemoryStorage()` for a
-   * single process, `SessionFileStorage` / a networked store for durability.
+   * like data loss on serverless). Use `new MemorySessionStorage()` for a
+   * single process, `FileSessionStorage` / a networked store for durability.
    */
   store: SessionStore;
   /** Derives the storage key from the update. Default: per-chat (`chat:<id>`). */

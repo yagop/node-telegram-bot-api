@@ -87,12 +87,12 @@ bot.catch((err, ctx) => console.error("handler failed", err));
 Opt-in `session()` middleware adds a persistent, per-chat bag reached through `ctx.getSession<T>()`. The `store` is **required** - no implicit default, so the durability choice is always explicit. It works the same under long-polling and one-invocation-per-update serverless: nothing lives in process memory between updates, only what the store persists.
 
 ```ts
-import { Bot, session, SessionMemoryStorage } from "node-telegram-bot-api";
+import { Bot, session, MemorySessionStorage } from "node-telegram-bot-api";
 
 type Session = { count: number };
 
 const bot = new Bot(process.env.BOT_TOKEN!);
-bot.use(session<Session>({ store: new SessionMemoryStorage(), initial: () => ({ count: 0 }) }));
+bot.use(session<Session>({ store: new MemorySessionStorage(), initial: () => ({ count: 0 }) }));
 
 bot.command("count", async (ctx) => {
   const s = ctx.getSession<Session>();
@@ -122,8 +122,8 @@ Every backend implements the same `SessionStore` (`read<V>` / `write` / `delete`
 
 | Store | Import | Runtime | Durable | Notes |
 | --- | --- | --- | --- | --- |
-| `SessionMemoryStorage` | `node-telegram-bot-api` | any | ❌ | process-local; single-process / polling only |
-| `SessionFileStorage` | `node-telegram-bot-api/node` | Node | ✅ | one JSON file per key; atomic writes; single host |
+| `MemorySessionStorage` | `node-telegram-bot-api` | any | ❌ | process-local; single-process / polling only |
+| `FileSessionStorage` | `node-telegram-bot-api/node` | Node | ✅ | one JSON file per key; atomic writes; single host |
 | `SqliteSessionStorage` | `node-telegram-bot-api/bun` | Bun | ✅ | `bun:sqlite`; sync; single process |
 | `SqlSessionStorage` | `node-telegram-bot-api/bun` | Bun | ✅ | Bun `SQL` (Postgres); cross-instance |
 | `RedisSessionStorage` | `node-telegram-bot-api/bun` | Bun | ✅ | Bun `redis`; cross-instance; optional TTL |
@@ -131,8 +131,8 @@ Every backend implements the same `SessionStore` (`read<V>` / `write` / `delete`
 ```ts
 // durable on Node (e.g. a webhook on one host)
 import { session } from "node-telegram-bot-api";
-import { SessionFileStorage } from "node-telegram-bot-api/node";
-bot.use(session<Session>({ store: new SessionFileStorage({ path: "./.sessions" }) }));
+import { FileSessionStorage } from "node-telegram-bot-api/node";
+bot.use(session<Session>({ store: new FileSessionStorage({ path: "./.sessions" }) }));
 
 // durable on Bun, shared across instances
 import { RedisSessionStorage } from "node-telegram-bot-api/bun";

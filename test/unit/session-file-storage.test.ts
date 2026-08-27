@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { mkdtemp, readdir, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { SessionFileStorage } from "../../src/node/session-file-storage.js";
+import { FileSessionStorage } from "../../src/node/session-file-storage.js";
 
 async function withDir(fn: (dir: string) => Promise<void>): Promise<void> {
   const dir = await mkdtemp(join(tmpdir(), "ntba-session-"));
@@ -14,29 +14,29 @@ async function withDir(fn: (dir: string) => Promise<void>): Promise<void> {
   }
 }
 
-describe("SessionFileStorage", () => {
+describe("FileSessionStorage", () => {
   test("round-trips a value and survives a fresh instance (durable)", async () => {
     await withDir(async (dir) => {
-      const a = new SessionFileStorage({ path: join(dir, "sessions") });
+      const a = new FileSessionStorage({ path: join(dir, "sessions") });
       const value = { data: { n: 3 }, awaiting: { 555: { field: "name" } } };
       await a.write("chat:42", value);
 
       // A brand-new instance (i.e. after a restart) reads it back.
-      const b = new SessionFileStorage({ path: join(dir, "sessions") });
+      const b = new FileSessionStorage({ path: join(dir, "sessions") });
       assert.deepEqual(await b.read("chat:42"), value);
     });
   });
 
   test("read returns undefined for a missing key", async () => {
     await withDir(async (dir) => {
-      const store = new SessionFileStorage({ path: dir });
+      const store = new FileSessionStorage({ path: dir });
       assert.equal(await store.read("chat:absent"), undefined);
     });
   });
 
   test("delete removes the key and is a no-op when absent", async () => {
     await withDir(async (dir) => {
-      const store = new SessionFileStorage({ path: dir });
+      const store = new FileSessionStorage({ path: dir });
       await store.write("chat:1", { data: { n: 1 }, awaiting: {} });
       await store.delete("chat:1");
       assert.equal(await store.read("chat:1"), undefined);
@@ -46,7 +46,7 @@ describe("SessionFileStorage", () => {
 
   test("encodes keys into safe filenames and leaves no temp files", async () => {
     await withDir(async (dir) => {
-      const store = new SessionFileStorage({ path: dir });
+      const store = new FileSessionStorage({ path: dir });
       // A key with a path separator must not escape the directory.
       await store.write("chat:../../etc/x", { data: { n: 9 }, awaiting: {} });
       const files = await readdir(dir);

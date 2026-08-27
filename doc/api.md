@@ -288,6 +288,16 @@ UTF-16 code units (JS string `.length`).
 | `textMention` | `s`: string, `user`: [User](#user) | this | A text_mention entity for a user without a username. |
 | `underline` | `s`: string | this | - |
 
+### `FileSessionStorage`
+
+#### Methods
+
+| Method | Params | Returns | Description |
+| --- | --- | --- | --- |
+| `delete` | `key`: string | Promise<void> | - |
+| `read` | `key`: string | Promise<V \| undefined> | - |
+| `write` | `key`: string, `value`: unknown | Promise<void> | - |
+
 ### `InlineKeyboardBuilder`
 
 Fluent inline-keyboard builder. Buttons append to the current row; `row()`
@@ -344,6 +354,23 @@ level once `serializeParams` resolves the files.
 | `livePhoto` | `item`: Omit<[InputMediaLivePhoto](#inputmedialivephoto), "type"> | this | A live photo: `media` is the live photo, `photo` the still cover. Both upload. |
 | `photo` | `item`: Omit<[InputMediaPhoto](#inputmediaphoto), "type"> | this | - |
 | `video` | `item`: Omit<[InputMediaVideo](#inputmediavideo), "type"> | this | - |
+
+### `MemorySessionStorage`
+
+Process-local, in-memory store. Zero-dependency and edge-safe, but not durable
+and not shared across instances - state is lost on restart and never leaves the
+process, so it is for long-polling / single-process bots, never serverless. Pass
+it explicitly (`session({ store: new MemorySessionStorage() })`) so the choice of
+a non-durable backend is deliberate; for durability use `FileSessionStorage`
+(`./node`) or a networked store.
+
+#### Methods
+
+| Method | Params | Returns | Description |
+| --- | --- | --- | --- |
+| `delete` | `key`: string | void | - |
+| `read` | `key`: string | V \| undefined | - |
+| `write` | `key`: string, `value`: unknown | void | - |
 
 ### `NetworkError`
 
@@ -557,33 +584,6 @@ own data. `.build()` returns the plain `RichText` (its accumulated sequence).
 | `textMention` | `content`: [RichTextContent](#richtextcontent), `user`: [User](#user) | this | A text_mention of a user (works without a username). |
 | `underline` | `content`: [RichTextContent](#richtextcontent) | this | - |
 | `url` | `content`: [RichTextContent](#richtextcontent), `url`: string | this | A hyperlink to `url`. |
-
-### `SessionFileStorage`
-
-#### Methods
-
-| Method | Params | Returns | Description |
-| --- | --- | --- | --- |
-| `delete` | `key`: string | Promise<void> | - |
-| `read` | `key`: string | Promise<V \| undefined> | - |
-| `write` | `key`: string, `value`: unknown | Promise<void> | - |
-
-### `SessionMemoryStorage`
-
-Process-local, in-memory store. Zero-dependency and edge-safe, but not durable
-and not shared across instances - state is lost on restart and never leaves the
-process, so it is for long-polling / single-process bots, never serverless. Pass
-it explicitly (`session({ store: new SessionMemoryStorage() })`) so the choice of
-a non-durable backend is deliberate; for durability use `SessionFileStorage`
-(`./node`) or a networked store.
-
-#### Methods
-
-| Method | Params | Returns | Description |
-| --- | --- | --- | --- |
-| `delete` | `key`: string | void | - |
-| `read` | `key`: string | V \| undefined | - |
-| `write` | `key`: string, `value`: unknown | void | - |
 
 ### `SqlSessionStorage`
 
@@ -3231,6 +3231,14 @@ type File = {
   file_path?: string;
   file_size?: number;
   file_unique_id: string;
+};
+```
+
+### `FileSessionStorageOptions`
+
+```ts
+type FileSessionStorageOptions = {
+  path: string;
 };
 ```
 
@@ -7856,14 +7864,6 @@ single store round-trip covers both; callers never see `awaiting` - they use
 type SessionEnvelope = {
   awaiting: Record<number, [ReplyMarker](#replymarker)>;
   data: T;
-};
-```
-
-### `SessionFileStorageOptions`
-
-```ts
-type SessionFileStorageOptions = {
-  path: string;
 };
 ```
 
