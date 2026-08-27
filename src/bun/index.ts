@@ -9,4 +9,5 @@
  */
 
 export * from "./redis-storage.js";
+export * from "./sql-storage.js";
 export * from "./sqlite-storage.js";

@@ -585,6 +585,16 @@ a non-durable backend is deliberate; for durability use `SessionFileStorage`
 | `read` | `key`: string | V \| undefined | - |
 | `write` | `key`: string, `value`: unknown | void | - |
 
+### `SqlSessionStorage`
+
+#### Methods
+
+| Method | Params | Returns | Description |
+| --- | --- | --- | --- |
+| `delete` | `key`: string | Promise<void> | - |
+| `read` | `key`: string | Promise<V \| undefined> | - |
+| `write` | `key`: string, `value`: unknown | Promise<void> | - |
+
 ### `SqliteSessionStorage`
 
 #### Methods
@@ -8443,6 +8453,16 @@ type ShippingQuery = {
   id: string;
   invoice_payload: string;
   shipping_address: [ShippingAddress](#shippingaddress);
+};
+```
+
+### `SqlSessionStorageOptions`
+
+```ts
+type SqlSessionStorageOptions = {
+  sql?: SQL;
+  table?: string;
+  url?: string;
 };
 ```
 
