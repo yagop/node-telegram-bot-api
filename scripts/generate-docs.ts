@@ -15,7 +15,7 @@
 import { Application, ReflectionKind } from "typedoc";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 
-const ENTRY_POINTS = ["src/core/index.ts", "src/node/index.ts"];
+const ENTRY_POINTS = ["src/core/index.ts", "src/node/index.ts", "src/bun/index.ts"];
 const TSCONFIG = "tsconfig.json";
 const JSON_OUT = "doc/api.json";
 const MD_OUT = "doc/api.md";
