@@ -4,9 +4,14 @@
  * single table, upserted on write; values are JSON strings. Suited to a
  * horizontally-scaled Bun deployment already using Postgres.
  *
- * Targets Postgres semantics (the `ON CONFLICT ... DO UPDATE` upsert and `$1`
- * positional binds), which is Bun SQL's primary adapter. The table is created
- * lazily on first use.
+ * Targets Postgres semantics (the `ON CONFLICT ... DO UPDATE` upsert), which is
+ * Bun SQL's primary adapter. The table is created lazily on first use.
+ *
+ * `key` and `value` are bound parameters via safe `sql`...`` templates - never
+ * string-interpolated. Only the table name is interpolated, because Bun (like
+ * Postgres) can't bind an identifier and offers no identifier-escaping helper;
+ * it goes through a narrowly-scoped `sql.unsafe` fragment and is validated to a
+ * safe charset in the constructor, so it can't carry an injection.
  *
  * Bun-only: `SQL` / `sql` come from the `bun` module, absent on Node, so this
  * module lives behind the `./bun` export and is never reached from `.` /
@@ -41,33 +46,33 @@ export class SqlSessionStorage implements SessionStore {
     this.sql = options.sql ?? (options.url !== undefined ? new SQL(options.url) : bunSql);
   }
 
+  /** The validated table name as a raw SQL fragment (identifiers can't be bound). */
+  private get ref() {
+    return this.sql.unsafe(this.table);
+  }
+
   /** Create the table once, lazily (the constructor can't await). Memoized. */
   private ready(): Promise<void> {
     return (this.ensured ??= (async () => {
-      await this.sql.unsafe(`CREATE TABLE IF NOT EXISTS ${this.table} (key TEXT PRIMARY KEY, value TEXT NOT NULL)`);
+      await this.sql`CREATE TABLE IF NOT EXISTS ${this.ref} (key TEXT PRIMARY KEY, value TEXT NOT NULL)`;
     })());
   }
 
   async read<V>(key: string): Promise<V | undefined> {
     await this.ready();
-    const rows = await this.sql.unsafe<Array<{ value: string }>>(
-      `SELECT value FROM ${this.table} WHERE key = $1`,
-      [key],
-    );
+    const rows = (await this.sql`SELECT value FROM ${this.ref} WHERE key = ${key}`) as Array<{ value: string }>;
     const row = rows[0];
     return row ? (JSON.parse(row.value) as V) : undefined;
   }
 
   async write(key: string, value: unknown): Promise<void> {
     await this.ready();
-    await this.sql.unsafe(
-      `INSERT INTO ${this.table} (key, value) VALUES ($1, $2) ON CONFLICT (key) DO UPDATE SET value = excluded.value`,
-      [key, JSON.stringify(value)],
-    );
+    await this.sql`INSERT INTO ${this.ref} (key, value) VALUES (${key}, ${JSON.stringify(value)})
+      ON CONFLICT (key) DO UPDATE SET value = excluded.value`;
   }
 
   async delete(key: string): Promise<void> {
     await this.ready();
-    await this.sql.unsafe(`DELETE FROM ${this.table} WHERE key = $1`, [key]);
+    await this.sql`DELETE FROM ${this.ref} WHERE key = ${key}`;
   }
 }
