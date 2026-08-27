@@ -376,24 +376,11 @@ a non-durable backend is deliberate; for durability use `FileSessionStorage`
 
 A transport-level failure: DNS, connection reset, fetch threw, etc.
 
-#### Methods
-
-| Method | Params | Returns | Description |
-| --- | --- | --- | --- |
-| `captureStackTrace` | `targetObject`: object, `constructorOpt?`: Function | void | Creates a `.stack` property on `targetObject`, which when accessed returns a string representing the location in the code at which `Error.captureStackTrace()` was called.  ```js const myObject = {}; Error.captureStackTrace(myObject); myObject.stack;  // Similar to `new Error().stack` ```  The first line of the trace will be prefixed with `${myObject.name}: ${myObject.message}`.  The optional `constructorOpt` argument accepts a function. If given, all frames above `constructorOpt`, including `constructorOpt`, will be omitted from the generated stack trace.  The `constructorOpt` argument is useful for hiding implementation details of error generation from the user. For instance:  ```js function a() {   b(); }  function b() {   c(); }  function c() {   // Create an error without stack trace to avoid calculating the stack trace twice.   const { stackTraceLimit } = Error;   Error.stackTraceLimit = 0;   const error = new Error();   Error.stackTraceLimit = stackTraceLimit;    // Capture the stack trace above function b   Error.captureStackTrace(error, b); // Neither function c, nor b is included in the stack trace   throw error; }  a(); ``` |
-| `isError` | `value`: unknown | value is Error | Check if a value is an instance of Error |
-| `prepareStackTrace` | `err`: Error, `stackTraces`: CallSite[] | any | - |
-
 #### Properties
 
 | Property | Type |
 | --- | --- |
-| `cause`? | unknown |
 | `code` | string |
-| `message` | string |
-| `name` | string |
-| `stack`? | string |
-| `stackTraceLimit` | number |
 
 ### `PaidMediaGroupBuilder`
 
@@ -414,25 +401,12 @@ response type). `.build()` returns the plain array with raw `InputFile`s embedde
 
 The response body could not be parsed as the expected JSON envelope.
 
-#### Methods
-
-| Method | Params | Returns | Description |
-| --- | --- | --- | --- |
-| `captureStackTrace` | `targetObject`: object, `constructorOpt?`: Function | void | Creates a `.stack` property on `targetObject`, which when accessed returns a string representing the location in the code at which `Error.captureStackTrace()` was called.  ```js const myObject = {}; Error.captureStackTrace(myObject); myObject.stack;  // Similar to `new Error().stack` ```  The first line of the trace will be prefixed with `${myObject.name}: ${myObject.message}`.  The optional `constructorOpt` argument accepts a function. If given, all frames above `constructorOpt`, including `constructorOpt`, will be omitted from the generated stack trace.  The `constructorOpt` argument is useful for hiding implementation details of error generation from the user. For instance:  ```js function a() {   b(); }  function b() {   c(); }  function c() {   // Create an error without stack trace to avoid calculating the stack trace twice.   const { stackTraceLimit } = Error;   Error.stackTraceLimit = 0;   const error = new Error();   Error.stackTraceLimit = stackTraceLimit;    // Capture the stack trace above function b   Error.captureStackTrace(error, b); // Neither function c, nor b is included in the stack trace   throw error; }  a(); ``` |
-| `isError` | `value`: unknown | value is Error | Check if a value is an instance of Error |
-| `prepareStackTrace` | `err`: Error, `stackTraces`: CallSite[] | any | - |
-
 #### Properties
 
 | Property | Type |
 | --- | --- |
-| `cause`? | unknown |
 | `code` | string |
-| `message` | string |
-| `name` | string |
 | `responseText`? | string |
-| `stack`? | string |
-| `stackTraceLimit` | number |
 
 ### `PhotoStoryBuilder`
 
@@ -634,73 +608,34 @@ so `addStickerToSet`/`replaceStickerInSet` take that plain object directly.
 
 Telegram answered with `{ ok: false }`. Carries the structured error fields.
 
-#### Methods
-
-| Method | Params | Returns | Description |
-| --- | --- | --- | --- |
-| `captureStackTrace` | `targetObject`: object, `constructorOpt?`: Function | void | Creates a `.stack` property on `targetObject`, which when accessed returns a string representing the location in the code at which `Error.captureStackTrace()` was called.  ```js const myObject = {}; Error.captureStackTrace(myObject); myObject.stack;  // Similar to `new Error().stack` ```  The first line of the trace will be prefixed with `${myObject.name}: ${myObject.message}`.  The optional `constructorOpt` argument accepts a function. If given, all frames above `constructorOpt`, including `constructorOpt`, will be omitted from the generated stack trace.  The `constructorOpt` argument is useful for hiding implementation details of error generation from the user. For instance:  ```js function a() {   b(); }  function b() {   c(); }  function c() {   // Create an error without stack trace to avoid calculating the stack trace twice.   const { stackTraceLimit } = Error;   Error.stackTraceLimit = 0;   const error = new Error();   Error.stackTraceLimit = stackTraceLimit;    // Capture the stack trace above function b   Error.captureStackTrace(error, b); // Neither function c, nor b is included in the stack trace   throw error; }  a(); ``` |
-| `isError` | `value`: unknown | value is Error | Check if a value is an instance of Error |
-| `prepareStackTrace` | `err`: Error, `stackTraces`: CallSite[] | any | - |
-
 #### Properties
 
 | Property | Type |
 | --- | --- |
-| `cause`? | unknown |
 | `code` | string |
 | `description` | string |
 | `errorCode` | number |
-| `message` | string |
-| `name` | string |
 | `parameters`? | [ApiErrorParameters](#apierrorparameters) |
-| `stack`? | string |
-| `stackTraceLimit` | number |
 | `migrateToChatId` | number \| undefined |
 | `retryAfter` | number \| undefined |
 
 ### `TelegramBotError`
 
-#### Methods
-
-| Method | Params | Returns | Description |
-| --- | --- | --- | --- |
-| `captureStackTrace` | `targetObject`: object, `constructorOpt?`: Function | void | Creates a `.stack` property on `targetObject`, which when accessed returns a string representing the location in the code at which `Error.captureStackTrace()` was called.  ```js const myObject = {}; Error.captureStackTrace(myObject); myObject.stack;  // Similar to `new Error().stack` ```  The first line of the trace will be prefixed with `${myObject.name}: ${myObject.message}`.  The optional `constructorOpt` argument accepts a function. If given, all frames above `constructorOpt`, including `constructorOpt`, will be omitted from the generated stack trace.  The `constructorOpt` argument is useful for hiding implementation details of error generation from the user. For instance:  ```js function a() {   b(); }  function b() {   c(); }  function c() {   // Create an error without stack trace to avoid calculating the stack trace twice.   const { stackTraceLimit } = Error;   Error.stackTraceLimit = 0;   const error = new Error();   Error.stackTraceLimit = stackTraceLimit;    // Capture the stack trace above function b   Error.captureStackTrace(error, b); // Neither function c, nor b is included in the stack trace   throw error; }  a(); ``` |
-| `isError` | `value`: unknown | value is Error | Check if a value is an instance of Error |
-| `prepareStackTrace` | `err`: Error, `stackTraces`: CallSite[] | any | - |
-
 #### Properties
 
 | Property | Type |
 | --- | --- |
-| `cause`? | unknown |
 | `code` | string |
-| `message` | string |
-| `name` | string |
-| `stack`? | string |
-| `stackTraceLimit` | number |
 
 ### `TimeoutError`
 
 The request exceeded the configured client timeout.
 
-#### Methods
-
-| Method | Params | Returns | Description |
-| --- | --- | --- | --- |
-| `captureStackTrace` | `targetObject`: object, `constructorOpt?`: Function | void | Creates a `.stack` property on `targetObject`, which when accessed returns a string representing the location in the code at which `Error.captureStackTrace()` was called.  ```js const myObject = {}; Error.captureStackTrace(myObject); myObject.stack;  // Similar to `new Error().stack` ```  The first line of the trace will be prefixed with `${myObject.name}: ${myObject.message}`.  The optional `constructorOpt` argument accepts a function. If given, all frames above `constructorOpt`, including `constructorOpt`, will be omitted from the generated stack trace.  The `constructorOpt` argument is useful for hiding implementation details of error generation from the user. For instance:  ```js function a() {   b(); }  function b() {   c(); }  function c() {   // Create an error without stack trace to avoid calculating the stack trace twice.   const { stackTraceLimit } = Error;   Error.stackTraceLimit = 0;   const error = new Error();   Error.stackTraceLimit = stackTraceLimit;    // Capture the stack trace above function b   Error.captureStackTrace(error, b); // Neither function c, nor b is included in the stack trace   throw error; }  a(); ``` |
-| `isError` | `value`: unknown | value is Error | Check if a value is an instance of Error |
-| `prepareStackTrace` | `err`: Error, `stackTraces`: CallSite[] | any | - |
-
 #### Properties
 
 | Property | Type |
 | --- | --- |
-| `cause`? | unknown |
 | `code` | string |
-| `message` | string |
-| `name` | string |
-| `stack`? | string |
-| `stackTraceLimit` | number |
 
 ### `TokenBucket`
 

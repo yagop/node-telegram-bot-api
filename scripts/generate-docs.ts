@@ -201,8 +201,11 @@ function renderPart(p: Obj): string {
 const renderSummary = (comment: Obj | undefined) =>
   comment?.summary?.map(renderPart).join("").trim() || "";
 
-// Members of a class/interface, grouped by kind.
-const membersOf = (r: Obj) => r.children || [];
+// Members of a class/interface, grouped by kind. Externally-sourced members
+// (statics inherited from lib globals like `Error.isError` /
+// `Error.captureStackTrace`, which @types/node and @types/bun graft onto every
+// `extends Error` class) are dropped - they are not part of this API surface.
+const membersOf = (r: Obj) => (r.children || []).filter((m: Obj) => !m.flags?.isExternal);
 const methodsOf = (r: Obj) => membersOf(r).filter((m: Obj) => m.kind === K.Method || m.kind === K.Function);
 const propsOf = (r: Obj) => membersOf(r).filter((m: Obj) => m.kind === K.Property || m.kind === K.Accessor);
 
