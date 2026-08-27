@@ -9,33 +9,43 @@
  * same under long-polling and under one-invocation-per-update serverless: no
  * continuation survives across updates, only the persisted marker does.
  *
- * Storage is injectable via `SessionStore`. The in-memory default is edge-safe
- * (zero `node:*`) but process-local and non-durable; a file / Redis / DynamoDB
- * store implements the same interface and (for the fs-backed ones) lives in
- * `./node` or userland so core stays Node-free.
+ * Storage is injectable via `SessionStore` and required - no implicit default,
+ * so the durability choice is always explicit. `SessionMemoryStorage` (here) is
+ * edge-safe (zero `node:*`) but process-local and non-durable; a file / Redis /
+ * DynamoDB store implements the same interface and (for the fs-backed ones)
+ * lives in `./node` or userland so core stays Node-free.
  */
 
 import type { Middleware } from "./compose.js";
 import type { Context } from "./context.js";
 
 /**
- * Minimal async key/value contract a session backend must satisfy. `read`
- * resolves to `undefined` for a missing key; every method may be sync or async
- * so an in-memory `Map` and a networked store share one interface.
+ * Minimal async key/value contract a session backend must satisfy - a
+ * value-agnostic KV store, deliberately not generic. `read` resolves to
+ * `undefined` for a missing key and to `unknown` otherwise (bytes off a durable
+ * backend are untrusted until the middleware interprets them); every method may
+ * be sync or async so an in-memory `Map` and a networked store share one shape.
  */
-export type SessionStore<T> = {
-  read(key: string): T | undefined | Promise<T | undefined>;
-  write(key: string, value: T): void | Promise<void>;
+export type SessionStore = {
+  read<V>(key: string): V | undefined | Promise<V | undefined>;
+  write(key: string, value: unknown): void | Promise<void>;
   delete(key: string): void | Promise<void>;
 };
 
-/** Process-local default store. Not durable, not shared across instances. */
-export class MemorySessionStore<T> implements SessionStore<T> {
-  private readonly map = new Map<string, T>();
-  read(key: string): T | undefined {
-    return this.map.get(key);
+/**
+ * Process-local, in-memory store. Zero-dependency and edge-safe, but not durable
+ * and not shared across instances - state is lost on restart and never leaves the
+ * process, so it is for long-polling / single-process bots, never serverless. Pass
+ * it explicitly (`session({ store: new SessionMemoryStorage() })`) so the choice of
+ * a non-durable backend is deliberate; for durability use `SessionFileStorage`
+ * (`./node`) or a networked store.
+ */
+export class SessionMemoryStorage implements SessionStore {
+  private readonly map = new Map<string, unknown>();
+  read<V>(key: string): V | undefined {
+    return this.map.get(key) as V | undefined;
   }
-  write(key: string, value: T): void {
+  write(key: string, value: unknown): void {
     this.map.set(key, value);
   }
   delete(key: string): void {
@@ -82,8 +92,13 @@ export type SessionHandle<T> = {
 export const SESSION_STATE_KEY = "session";
 
 export type SessionOptions<T> = {
-  /** Backend for the envelope. Defaults to a process-local `MemorySessionStore`. */
-  store?: SessionStore<SessionEnvelope<T>>;
+  /**
+   * Backend for the envelope. Required - there is no implicit store, so the
+   * durability choice is always explicit (a silent memory default would look
+   * like data loss on serverless). Use `new SessionMemoryStorage()` for a
+   * single process, `SessionFileStorage` / a networked store for durability.
+   */
+  store: SessionStore;
   /** Derives the storage key from the update. Default: per-chat (`chat:<id>`). */
   getSessionKey?: (ctx: Context) => string | undefined;
   /** Initial `data` bag for a key with no session yet. Default: `{}`. */
@@ -102,10 +117,8 @@ function defaultKey(ctx: Context): string | undefined {
  * downstream untouched (no `ctx.session`), so guard access when your bot sees
  * keyless updates, or narrow with `on(...)` first.
  */
-export function session<T = Record<string, unknown>>(
-  options: SessionOptions<T> = {},
-): Middleware<Context> {
-  const store = options.store ?? new MemorySessionStore<SessionEnvelope<T>>();
+export function session<T = Record<string, unknown>>(options: SessionOptions<T>): Middleware<Context> {
+  const store = options.store;
   const getSessionKey = options.getSessionKey ?? defaultKey;
   const initial = options.initial ?? (() => ({}) as T);
 
@@ -115,7 +128,7 @@ export function session<T = Record<string, unknown>>(
       return next();
     }
 
-    const loaded = await store.read(key);
+    const loaded = await store.read<SessionEnvelope<T>>(key);
     const envelope: SessionEnvelope<T> = loaded ?? { data: initial(ctx), awaiting: {} };
 
     const handle: SessionHandle<T> = {

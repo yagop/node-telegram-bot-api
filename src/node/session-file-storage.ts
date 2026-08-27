@@ -10,8 +10,8 @@
  * `encodeURIComponent`-encoded into filenames, which also neutralizes any `/`
  * so a crafted key cannot escape the directory.
  *
- * The stored value type is the `SessionEnvelope<T>` the middleware round-trips,
- * so type it that way: `new SessionFileStorage<SessionEnvelope<Session>>({ path })`.
+ * The store is value-agnostic (it persists whatever JSON the middleware hands
+ * it), so it takes no type parameter: `new SessionFileStorage({ path })`.
  */
 
 import { randomUUID } from "node:crypto";
@@ -24,7 +24,7 @@ export type SessionFileStorageOptions = {
   path: string;
 };
 
-export class SessionFileStorage<T> implements SessionStore<T> {
+export class SessionFileStorage implements SessionStore {
   private readonly dir: string;
   private ensured?: Promise<unknown>;
 
@@ -41,7 +41,7 @@ export class SessionFileStorage<T> implements SessionStore<T> {
     return join(this.dir, `${encodeURIComponent(key)}.json`);
   }
 
-  async read(key: string): Promise<T | undefined> {
+  async read<V>(key: string): Promise<V | undefined> {
     let raw: string;
     try {
       raw = await readFile(this.fileFor(key), "utf8");
@@ -49,10 +49,10 @@ export class SessionFileStorage<T> implements SessionStore<T> {
       if ((err as { code?: string }).code === "ENOENT") return undefined;
       throw err;
     }
-    return JSON.parse(raw) as T;
+    return JSON.parse(raw) as V;
   }
 
-  async write(key: string, value: T): Promise<void> {
+  async write(key: string, value: unknown): Promise<void> {
     await this.ensureDir();
     const file = this.fileFor(key);
     const tmp = `${file}.${randomUUID()}.tmp`;

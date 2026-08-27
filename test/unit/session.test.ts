@@ -2,20 +2,20 @@ import { describe, test } from "node:test";
 import assert from "node:assert/strict";
 import type { Api } from "../../src/core/api.js";
 import { Context } from "../../src/core/context.js";
-import { MemorySessionStore, type ReplyMarker, session, type SessionStore } from "../../src/core/session.js";
+import { SessionMemoryStorage, session, type SessionStore } from "../../src/core/session.js";
 import type { Update } from "../../src/types/index.js";
 
 /** A recording store to assert persistence without a real backend. */
-function fakeStore<T>(): SessionStore<T> & { reads: string[]; writes: Array<[string, T]> } {
-  const map = new Map<string, T>();
+function fakeStore(): SessionStore & { reads: string[]; writes: Array<[string, unknown]> } {
+  const map = new Map<string, unknown>();
   const reads: string[] = [];
-  const writes: Array<[string, T]> = [];
+  const writes: Array<[string, unknown]> = [];
   return {
     reads,
     writes,
-    read(key) {
+    read<V>(key: string): V | undefined {
       reads.push(key);
-      return map.get(key);
+      return map.get(key) as V | undefined;
     },
     write(key, value) {
       writes.push([key, value]);
@@ -46,7 +46,7 @@ function msg(text: string, replyTo?: number): Update {
 
 describe("session()", () => {
   test("keys per chat, defaults to an empty bag, writes back on flush", async () => {
-    const store = fakeStore<{ data: Record<string, unknown>; awaiting: Record<number, ReplyMarker> }>();
+    const store = fakeStore();
     const mw = session({ store });
     const ctx = new Context(msg("hi"), api);
 
@@ -59,7 +59,7 @@ describe("session()", () => {
   });
 
   test("persists mutations across updates on the same key", async () => {
-    const store = fakeStore<{ data: { n: number }; awaiting: Record<number, ReplyMarker> }>();
+    const store = fakeStore();
     const mw = session<{ n: number }>({ store, initial: () => ({ n: 0 }) });
 
     const first = new Context(msg("a"), api);
@@ -76,7 +76,7 @@ describe("session()", () => {
   });
 
   test("skips updates with no derivable key", async () => {
-    const store = fakeStore<never>();
+    const store = fakeStore();
     const mw = session({ store });
     const pollAnswer = { update_id: 2, poll_answer: { poll_id: "x", option_ids: [0] } } as unknown as Update;
     const ctx = new Context(pollAnswer, api);
@@ -91,7 +91,7 @@ describe("session()", () => {
   });
 
   test("flushes even when the handler throws", async () => {
-    const store = fakeStore<{ data: Record<string, unknown>; awaiting: Record<number, ReplyMarker> }>();
+    const store = fakeStore();
     const mw = session({ store });
     const ctx = new Context(msg("boom"), api);
     await assert.rejects(async () => {
@@ -107,7 +107,7 @@ describe("session()", () => {
 
 describe("expectReply / matchReply", () => {
   test("matches a reply to the expected message and consumes the marker", async () => {
-    const store = new MemorySessionStore<{ data: Record<string, unknown>; awaiting: Record<number, ReplyMarker> }>();
+    const store = new SessionMemoryStorage();
     const mw = session({ store });
 
     // Turn 1: register that message 555 awaits a "name".
@@ -134,7 +134,7 @@ describe("expectReply / matchReply", () => {
   });
 
   test("returns undefined for a non-reply or an unexpected reply", async () => {
-    const mw = session();
+    const mw = session({ store: new SessionMemoryStorage() });
     const notReply = new Context(msg("hi"), api);
     await mw(notReply, async () => {
       assert.equal(notReply.getSession().matchReply(), undefined);

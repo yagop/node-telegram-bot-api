@@ -244,6 +244,7 @@ An animated profile photo (a video); `main_frame_timestamp` picks the still fram
 | Method | Params | Returns | Description |
 | --- | --- | --- | --- |
 | `answerCallbackQuery` | `other?`: Omit<[AnswerCallbackQueryParams](#answercallbackqueryparams), "callback_query_id"> | Promise<boolean> | Answer the callback query that triggered this update. Throws if the update is not a callback query. |
+| `getSession` | - | [SessionHandle](#sessionhandle)<T> | The session handle for this update, installed by the `session()` middleware: `.data` (the persistent bag) plus the `expectReply` / `matchReply` reply helpers. The `<T>` type parameter is the caller's asserted `data` shape. Throws if `session()` has not run for this update (not installed, or the update had no derivable session key). |
 | `reply` | `text`: string, `other?`: Omit<[SendMessageParams](#sendmessageparams), "chat_id" \| "text"> | Promise<[Message](#message)> | Send a message to the inferred chat. Throws if no chat id can be derived from the update (e.g. an inline query carries no chat). |
 
 #### Properties
@@ -544,6 +545,33 @@ own data. `.build()` returns the plain `RichText` (its accumulated sequence).
 | `textMention` | `content`: [RichTextContent](#richtextcontent), `user`: [User](#user) | this | A text_mention of a user (works without a username). |
 | `underline` | `content`: [RichTextContent](#richtextcontent) | this | - |
 | `url` | `content`: [RichTextContent](#richtextcontent), `url`: string | this | A hyperlink to `url`. |
+
+### `SessionFileStorage`
+
+#### Methods
+
+| Method | Params | Returns | Description |
+| --- | --- | --- | --- |
+| `delete` | `key`: string | Promise<void> | - |
+| `read` | `key`: string | Promise<V \| undefined> | - |
+| `write` | `key`: string, `value`: unknown | Promise<void> | - |
+
+### `SessionMemoryStorage`
+
+Process-local, in-memory store. Zero-dependency and edge-safe, but not durable
+and not shared across instances - state is lost on restart and never leaves the
+process, so it is for long-polling / single-process bots, never serverless. Pass
+it explicitly (`session({ store: new SessionMemoryStorage() })`) so the choice of
+a non-durable backend is deliberate; for durability use `SessionFileStorage`
+(`./node`) or a networked store.
+
+#### Methods
+
+| Method | Params | Returns | Description |
+| --- | --- | --- | --- |
+| `delete` | `key`: string | void | - |
+| `read` | `key`: string | V \| undefined | - |
+| `write` | `key`: string, `value`: unknown | void | - |
 
 ### `StaticProfilePhotoBuilder`
 
@@ -957,6 +985,20 @@ comparison always inspects every position, so it leaks no information about
 | `b` | string |
 
 **Returns:** boolean
+
+### `session()`
+
+Middleware that loads the session before `next()` and flushes the (possibly
+mutated) envelope after - even if a downstream handler throws, so a marker
+written before an error still persists. Updates with no derivable key run
+downstream untouched (no `ctx.session`), so guard access when your bot sees
+keyless updates, or narrow with `on(...)` first.
+
+| Param | Type |
+| --- | --- |
+| `options` | [SessionOptions](#sessionoptions)<T> |
+
+**Returns:** [Middleware](#middleware)<[Context](#context)>
 
 ### `startWebhook()`
 
@@ -6270,6 +6312,14 @@ type ReplyKeyboardRemove = {
 };
 ```
 
+### `ReplyMarker`
+
+Opaque, JSON-serializable tag a caller attaches to an awaited reply.
+
+```ts
+type ReplyMarker = Record<string, unknown>;
+```
+
 ### `ReplyMarkup`
 
 Union of the four reply-markup objects.
@@ -7747,6 +7797,69 @@ type SentGuestMessage = {
 ```ts
 type SentWebAppMessage = {
   inline_message_id?: string;
+};
+```
+
+### `SessionEnvelope`
+
+What actually gets persisted per key: the caller's `data` bag plus the
+reply-await table (`message_id we sent -> marker`). Kept as one envelope so a
+single store round-trip covers both; callers never see `awaiting` - they use
+`expectReply` / `matchReply`.
+
+```ts
+type SessionEnvelope = {
+  awaiting: Record<number, [ReplyMarker](#replymarker)>;
+  data: T;
+};
+```
+
+### `SessionFileStorageOptions`
+
+```ts
+type SessionFileStorageOptions = {
+  path: string;
+};
+```
+
+### `SessionHandle`
+
+The typed handle `ctx.getSession<T>()` returns once `session()` has run. `data`
+is the persistent bag (mutate in place, or reassign - it flushes after the
+handler); the two reply helpers are scoped here rather than on `ctx`, so the
+`Context` shape is untouched and needs no cast.
+
+```ts
+type SessionHandle = {
+  data: T;
+  expectReply: ;
+  matchReply: ;
+};
+```
+
+### `SessionOptions`
+
+```ts
+type SessionOptions = {
+  getSessionKey?: (ctx: [Context](#context)) => string | undefined;
+  initial?: (ctx: [Context](#context)) => T;
+  store: [SessionStore](#sessionstore);
+};
+```
+
+### `SessionStore`
+
+Minimal async key/value contract a session backend must satisfy - a
+value-agnostic KV store, deliberately not generic. `read` resolves to
+`undefined` for a missing key and to `unknown` otherwise (bytes off a durable
+backend are untrusted until the middleware interprets them); every method may
+be sync or async so an in-memory `Map` and a networked store share one shape.
+
+```ts
+type SessionStore = {
+  delete: ;
+  read: ;
+  write: ;
 };
 ```
 
@@ -9350,6 +9463,14 @@ stays Node-free (no `node:*` imports).
 
 ```ts
 const HTTP_STATUS_TOO_MANY_REQUESTS: 429;
+```
+
+### `SESSION_STATE_KEY`
+
+`ctx.state` slot the middleware stashes the handle under; read by `ctx.getSession`.
+
+```ts
+const SESSION_STATE_KEY: "session";
 ```
 
 ### `UPDATE_TYPES`
