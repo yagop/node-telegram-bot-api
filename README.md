@@ -82,65 +82,6 @@ bot.use(async (ctx, next) => {
 bot.catch((err, ctx) => console.error("handler failed", err));
 ```
 
-## 💾 Sessions
-
-Opt-in `session()` middleware adds a persistent, per-chat bag reached through `ctx.getSession<T>()`. The `store` is **required** - no implicit default, so the durability choice is always explicit. It works the same under long-polling and one-invocation-per-update serverless: nothing lives in process memory between updates, only what the store persists.
-
-```ts
-import { Bot, session, MemorySessionStorage } from "node-telegram-bot-api";
-
-type Session = { count: number };
-
-const bot = new Bot(process.env.BOT_TOKEN!);
-bot.use(session<Session>({ store: new MemorySessionStorage(), initial: () => ({ count: 0 }) }));
-
-bot.command("count", async (ctx) => {
-  const s = ctx.getSession<Session>();
-  s.data.count++;
-  await ctx.reply(`Seen ${s.data.count} times`);
-});
-```
-
-The handle also carries **reply tracking** - `expectReply` / `matchReply` record "awaiting a reply to a specific message" as plain session data (matched on `reply_to_message.message_id`), never a live promise, so it survives a restart:
-
-```ts
-bot.command("start", async (ctx) => {
-  const sent = await ctx.reply("What's your name?", { reply_markup: { force_reply: true } });
-  ctx.getSession().expectReply(sent.message_id, { field: "name" });
-});
-
-bot.on("message", async (ctx, next) => {
-  const hit = ctx.getSession().matchReply<{ field: string }>();
-  if (!hit) return next();
-  await ctx.reply(`Nice to meet you, ${ctx.message?.text}`);
-});
-```
-
-### Storage backends
-
-Every backend implements the same `SessionStore` (`read<V>` / `write` / `delete`), so swapping one for another is a one-line change. Pick by runtime and durability need:
-
-| Store | Import | Runtime | Durable | Notes |
-| --- | --- | --- | --- | --- |
-| `MemorySessionStorage` | `node-telegram-bot-api` | any | ❌ | process-local; single-process / polling only |
-| `FileSessionStorage` | `node-telegram-bot-api/node` | Node | ✅ | one JSON file per key; atomic writes; single host |
-| `SqliteSessionStorage` | `node-telegram-bot-api/bun` | Bun | ✅ | `bun:sqlite`; sync; single process |
-| `SqlSessionStorage` | `node-telegram-bot-api/bun` | Bun | ✅ | Bun `SQL` (Postgres); cross-instance |
-| `RedisSessionStorage` | `node-telegram-bot-api/bun` | Bun | ✅ | Bun `redis`; cross-instance; optional TTL |
-
-```ts
-// durable on Node (e.g. a webhook on one host)
-import { session } from "node-telegram-bot-api";
-import { FileSessionStorage } from "node-telegram-bot-api/node";
-bot.use(session<Session>({ store: new FileSessionStorage({ path: "./.sessions" }) }));
-
-// durable on Bun, shared across instances
-import { RedisSessionStorage } from "node-telegram-bot-api/bun";
-bot.use(session<Session>({ store: new RedisSessionStorage({ ttlSeconds: 86400 }) }));
-```
-
-The `node-telegram-bot-api/bun` stores import Bun built-ins and are isolated behind that subpath - a Node or edge install never resolves them. Any other backend (ioredis, `pg`, a KV service) is ~10 lines implementing the three `SessionStore` methods.
-
 ## ⌨️ Keyboards & formatting
 
 Structured fields are plain typed objects - pass a literal or use a fluent builder; the pipeline serializes either.
@@ -371,6 +312,65 @@ bot.catch((err, ctx) => {
 ```
 
 Throwing from the boundary opts back into fail-loud: `startPolling()` rejects (the update was never confirmed, so Telegram redelivers it on restart) and `webhookCallback` responds 500 (Telegram redelivers). `bot.catch((err) => { throw err; })` is the explicit fail-loud opt-in.
+
+## 💾 Sessions
+
+Opt-in `session()` middleware adds a persistent, per-chat bag reached through `ctx.getSession<T>()`. The `store` is **required** - no implicit default, so the durability choice is always explicit. It works the same under long-polling and one-invocation-per-update serverless: nothing lives in process memory between updates, only what the store persists.
+
+```ts
+import { Bot, session, MemorySessionStorage } from "node-telegram-bot-api";
+
+type Session = { count: number };
+
+const bot = new Bot(process.env.BOT_TOKEN!);
+bot.use(session<Session>({ store: new MemorySessionStorage(), initial: () => ({ count: 0 }) }));
+
+bot.command("count", async (ctx) => {
+  const s = ctx.getSession<Session>();
+  s.data.count++;
+  await ctx.reply(`Seen ${s.data.count} times`);
+});
+```
+
+The handle also carries **reply tracking** - `expectReply` / `matchReply` record "awaiting a reply to a specific message" as plain session data (matched on `reply_to_message.message_id`), never a live promise, so it survives a restart:
+
+```ts
+bot.command("start", async (ctx) => {
+  const sent = await ctx.reply("What's your name?", { reply_markup: { force_reply: true } });
+  ctx.getSession().expectReply(sent.message_id, { field: "name" });
+});
+
+bot.on("message", async (ctx, next) => {
+  const hit = ctx.getSession().matchReply<{ field: string }>();
+  if (!hit) return next();
+  await ctx.reply(`Nice to meet you, ${ctx.message?.text}`);
+});
+```
+
+### Storage backends
+
+Every backend implements the same `SessionStore` (`read<V>` / `write` / `delete`), so swapping one for another is a one-line change. Pick by runtime and durability need:
+
+| Store | Import | Runtime | Durable | Notes |
+| --- | --- | --- | --- | --- |
+| `MemorySessionStorage` | `node-telegram-bot-api` | any | ❌ | process-local; single-process / polling only |
+| `FileSessionStorage` | `node-telegram-bot-api/node` | Node | ✅ | one JSON file per key; atomic writes; single host |
+| `SqliteSessionStorage` | `node-telegram-bot-api/bun` | Bun | ✅ | `bun:sqlite`; sync; single process |
+| `SqlSessionStorage` | `node-telegram-bot-api/bun` | Bun | ✅ | Bun `SQL` (Postgres); cross-instance |
+| `RedisSessionStorage` | `node-telegram-bot-api/bun` | Bun | ✅ | Bun `redis`; cross-instance; optional TTL |
+
+```ts
+// durable on Node (e.g. a webhook on one host)
+import { session } from "node-telegram-bot-api";
+import { FileSessionStorage } from "node-telegram-bot-api/node";
+bot.use(session<Session>({ store: new FileSessionStorage({ path: "./.sessions" }) }));
+
+// durable on Bun, shared across instances
+import { RedisSessionStorage } from "node-telegram-bot-api/bun";
+bot.use(session<Session>({ store: new RedisSessionStorage({ ttlSeconds: 86400 }) }));
+```
+
+The `node-telegram-bot-api/bun` stores import Bun built-ins and are isolated behind that subpath - a Node or edge install never resolves them. Any other backend (ioredis, `pg`, a KV service) is ~10 lines implementing the three `SessionStore` methods.
 
 ## 🛡️ Resilience & rate limiting
 
