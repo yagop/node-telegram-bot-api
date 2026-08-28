@@ -2,7 +2,7 @@ import { describe, test } from "node:test";
 import assert from "node:assert/strict";
 import type { Api } from "../../src/core/api.js";
 import { Context } from "../../src/core/context.js";
-import { MemorySessionStorage, session, type SessionStore } from "../../src/core/session.js";
+import { MemorySessionStorage, session, type SessionStore, taggedReplies } from "../../src/core/session.js";
 import type { Update } from "../../src/types/index.js";
 
 /** A recording store to assert persistence without a real backend. */
@@ -142,6 +142,40 @@ describe("expectReply / matchReply", () => {
     const wrongTarget = new Context(msg("hi", 999), api);
     await mw(wrongTarget, async () => {
       assert.equal(wrongTarget.getSession().matchReply(), undefined);
+    });
+  });
+});
+
+describe("taggedReplies", () => {
+  test("boxes a string tag on expect and unboxes it on match", async () => {
+    const mw = session({ store: new MemorySessionStorage() });
+
+    // Turn 1: expect a reply to 555, tagged with the bare string "EMAIL".
+    const ask = new Context(msg("Your email?"), api);
+    await mw(ask, async () => {
+      taggedReplies<"NAME" | "EMAIL">(ask).expect(555, "EMAIL");
+    });
+
+    // Turn 2: the reply to 555 yields the string back (not { tag }).
+    const answer = new Context(msg("a@b.c", 555), api);
+    let tag: string | undefined = "unset";
+    await mw(answer, async () => {
+      tag = taggedReplies<"NAME" | "EMAIL">(answer).match();
+    });
+    assert.equal(tag, "EMAIL");
+
+    // Turn 3: consumed - no longer matches.
+    const again = new Context(msg("a@b.c", 555), api);
+    await mw(again, async () => {
+      assert.equal(taggedReplies<"NAME" | "EMAIL">(again).match(), undefined);
+    });
+  });
+
+  test("match returns undefined for a non-reply", async () => {
+    const mw = session({ store: new MemorySessionStorage() });
+    const ctx = new Context(msg("hi"), api);
+    await mw(ctx, async () => {
+      assert.equal(taggedReplies<"X">(ctx).match(), undefined);
     });
   });
 });

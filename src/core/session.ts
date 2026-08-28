@@ -171,3 +171,25 @@ export function session<T = Record<string, unknown>>(options: SessionOptions<T>)
     }
   };
 }
+
+/**
+ * Typed reply gate for plain **string** tags. `expectReply` / `matchReply` type
+ * their marker as an object (`ReplyMarker`), so a bare string like
+ * `"EMAIL_REPLY"` cannot be passed directly; this wraps them for a string union
+ * `Tag`, boxing it as `{ tag }` on write and unboxing on read. One `Tag` types
+ * both ends, so the stored and matched tags cannot drift apart.
+ *
+ * @example
+ * taggedReplies<"NAME" | "EMAIL">(ctx).expect(sent.message_id, "EMAIL");
+ * const tag = taggedReplies<"NAME" | "EMAIL">(ctx).match(); // "NAME" | "EMAIL" | undefined
+ */
+export function taggedReplies<Tag extends string>(ctx: Context): {
+  expect(messageId: number, tag: Tag): void;
+  match(): Tag | undefined;
+} {
+  const handle = ctx.getSession();
+  return {
+    expect: (messageId, tag) => handle.expectReply(messageId, { tag }),
+    match: () => handle.matchReply<{ tag: Tag }>()?.tag,
+  };
+}

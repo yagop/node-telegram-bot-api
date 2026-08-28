@@ -992,6 +992,20 @@ await startWebhook(bot, { port: 8443, path: "/telegram", secretToken });
 
 **Returns:** Promise<void>
 
+### `taggedReplies()`
+
+Typed reply gate for plain **string** tags. `expectReply` / `matchReply` type
+their marker as an object (`ReplyMarker`), so a bare string like
+`"EMAIL_REPLY"` cannot be passed directly; this wraps them for a string union
+`Tag`, boxing it as `{ tag }` on write and unboxing on read. One `Tag` types
+both ends, so the stored and matched tags cannot drift apart.
+
+| Param | Type |
+| --- | --- |
+| `ctx` | [Context](#context) |
+
+**Returns:** { expect: ; match:  }
+
 ### `webhookCallback()`
 
 | Param | Type |

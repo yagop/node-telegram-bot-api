@@ -332,6 +332,15 @@ bot.on("message", async (ctx, next) => {
 
 With one prompt in flight you can drop the marker entirely (`expectReply(sent.message_id)`) - its presence alone is the signal.
 
+The marker is an object (`ReplyMarker`), and `expectReply` / `matchReply` type it independently. To tie both ends to one type - or to use a bare string tag - wrap them with `taggedReplies`:
+
+```ts
+import { taggedReplies } from "node-telegram-bot-api";
+
+taggedReplies<"NAME" | "EMAIL">(ctx).expect(sent.message_id, "EMAIL");
+const tag = taggedReplies<"NAME" | "EMAIL">(ctx).match(); // "NAME" | "EMAIL" | undefined
+```
+
 ### Storage backends
 
 Every backend implements the same `SessionStore` (`read<V>` / `write` / `delete`), so swapping one for another is a one-line change. Pick by runtime and durability need:
