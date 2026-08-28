@@ -315,17 +315,17 @@ bot.command("start", async (ctx) => {
 });
 
 bot.on("message", async (ctx, next) => {
-  const session = ctx.getSession<Session>();
   // <{ step: ... }> is a type-only hint for the stored marker; matchReply takes no args
-  const hit = session.matchReply<{ step: "name" | "email" }>();
+  const hit = ctx.getSession<Session>().matchReply<{ step: "name" | "email" }>();
   if (!hit) return next(); // not a reply we're waiting on -> let other handlers run
 
   if (hit.step === "name") {
-    session.data.name = ctx.message?.text;
+    ctx.getSession<Session>().data.name = ctx.message?.text;
     const sent = await ctx.reply("And your email?", { reply_markup: { force_reply: true } });
-    session.expectReply(sent.message_id, { step: "email" }); // chain the next prompt
+    ctx.getSession<Session>().expectReply(sent.message_id, { step: "email" }); // chain the next prompt
   } else {
-    await ctx.reply(`Thanks ${session.data.name}, got your email: ${ctx.message?.text}`);
+    const { name } = ctx.getSession<Session>().data;
+    await ctx.reply(`Thanks ${name}, got your email: ${ctx.message?.text}`);
   }
 });
 ```
