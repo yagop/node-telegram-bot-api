@@ -33,8 +33,16 @@ export class FileSessionStorage implements SessionStore {
   }
 
   private ensureDir(): Promise<unknown> {
-    // Memoized so concurrent writes issue one mkdir, not one per call.
-    return (this.ensured ??= mkdir(this.dir, { recursive: true }));
+    // Memoized so concurrent writes issue one mkdir, not one per call. On
+    // failure, clear the cache so a later write retries instead of re-throwing
+    // a stale (possibly transient) rejection forever.
+    if (this.ensured === undefined) {
+      this.ensured = mkdir(this.dir, { recursive: true }).catch((err: unknown) => {
+        this.ensured = undefined;
+        throw err;
+      });
+    }
+    return this.ensured;
   }
 
   private fileFor(key: string): string {

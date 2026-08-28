@@ -143,8 +143,16 @@ export function session<T = Record<string, unknown>>(options: SessionOptions<T>)
       return next();
     }
 
-    const loaded = await store.read<SessionEnvelope<T>>(key);
-    const envelope: SessionEnvelope<T> = loaded ?? { data: initial(ctx), awaiting: {} };
+    // Normalize the loaded value field-by-field: a store may return `undefined`
+    // (missing key), or - after a schema change / hand-edit / foreign write - a
+    // value that isn't a well-formed envelope. Optional chaining yields
+    // `undefined` for a missing/`data`-less/`awaiting`-less or non-object value,
+    // so a malformed record starts fresh instead of throwing on `.awaiting[...]`.
+    const loaded = await store.read<Partial<SessionEnvelope<T>>>(key);
+    const envelope: SessionEnvelope<T> = {
+      data: loaded?.data ?? initial(ctx),
+      awaiting: loaded?.awaiting ?? {},
+    };
 
     const handle: SessionHandle<T> = {
       data: envelope.data,

@@ -75,6 +75,20 @@ describe("session()", () => {
     assert.equal(seen, 1);
   });
 
+  test("starts fresh when the stored value is malformed (missing awaiting, or not an envelope)", async () => {
+    const store = fakeStore();
+    // Pre-seed this chat's key with junk a well-formed envelope never looks like.
+    store.write("chat:42", "not-an-envelope");
+    const mw = session<{ n: number }>({ store, initial: () => ({ n: 7 }) });
+    const ctx = new Context(msg("hi"), api);
+    await mw(ctx, async () => {
+      // Would throw on `.awaiting[...]` without normalization; must fall back instead.
+      assert.equal(ctx.getSession<{ n: number }>().data.n, 7);
+      ctx.getSession().expectReply(1, { ok: true });
+    });
+    assert.deepEqual(store.writes.at(-1), ["chat:42", { data: { n: 7 }, awaiting: { 1: { ok: true } } }]);
+  });
+
   test("skips updates with no derivable key", async () => {
     const store = fakeStore();
     const mw = session({ store });

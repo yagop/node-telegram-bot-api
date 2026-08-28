@@ -1,6 +1,6 @@
 import { describe, test } from "node:test";
 import assert from "node:assert/strict";
-import { mkdtemp, readdir, rm } from "node:fs/promises";
+import { mkdtemp, readdir, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { FileSessionStorage } from "../../src/node/file-session-storage.js";
@@ -41,6 +41,21 @@ describe("FileSessionStorage", () => {
       await store.delete("chat:1");
       assert.equal(await store.read("chat:1"), undefined);
       await store.delete("chat:1"); // absent -> must not throw
+    });
+  });
+
+  test("retries directory creation after a transient failure (no permanently-cached rejection)", async () => {
+    await withDir(async (dir) => {
+      const target = join(dir, "blocked");
+      // A regular file where the store wants a directory -> mkdir(recursive) rejects.
+      await writeFile(target, "x");
+      const store = new FileSessionStorage({ path: target });
+      await assert.rejects(store.write("k", { data: {}, awaiting: {} }));
+
+      // Clear the blocker; a later write must re-attempt mkdir, not re-throw the cached error.
+      await rm(target);
+      await store.write("k", { data: { ok: true }, awaiting: {} });
+      assert.deepEqual(await store.read("k"), { data: { ok: true }, awaiting: {} });
     });
   });
 

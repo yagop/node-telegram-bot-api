@@ -51,11 +51,21 @@ export class SqlSessionStorage implements SessionStore {
     return this.sql.unsafe(this.table);
   }
 
-  /** Create the table once, lazily (the constructor can't await). Memoized. */
+  /**
+   * Create the table once, lazily (the constructor can't await). Memoized; on
+   * failure the cache is cleared so a later call retries instead of re-throwing
+   * a stale (possibly transient) rejection forever.
+   */
   private ready(): Promise<void> {
-    return (this.ensured ??= (async () => {
-      await this.sql`CREATE TABLE IF NOT EXISTS ${this.ref} (key TEXT PRIMARY KEY, value TEXT NOT NULL)`;
-    })());
+    if (this.ensured === undefined) {
+      this.ensured = (async () => {
+        await this.sql`CREATE TABLE IF NOT EXISTS ${this.ref} (key TEXT PRIMARY KEY, value TEXT NOT NULL)`;
+      })().catch((err: unknown) => {
+        this.ensured = undefined;
+        throw err;
+      });
+    }
+    return this.ensured;
   }
 
   async read<V>(key: string): Promise<V | undefined> {
