@@ -308,25 +308,24 @@ The handle also carries **reply tracking** - `expectReply` / `matchReply` record
 ```ts
 type Session = { name?: string };
 
-// ask, tagging the sent message with the step this reply will answer
-async function ask(ctx: Context, text: string, step: "name" | "email") {
-  const sent = await ctx.reply(text, { reply_markup: { force_reply: true } });
-  ctx.getSession<Session>().expectReply(sent.message_id, { step });
-}
-
-bot.command("start", (ctx) => ask(ctx, "What's your name?", "name"));
+bot.command("start", async (ctx) => {
+  const sent = await ctx.reply("What's your name?", { reply_markup: { force_reply: true } });
+  // tag the message we sent with the step its reply will answer
+  ctx.getSession<Session>().expectReply(sent.message_id, { step: "name" });
+});
 
 bot.on("message", async (ctx, next) => {
+  const session = ctx.getSession<Session>();
   // <{ step: ... }> is a type-only hint for the stored marker; matchReply takes no args
-  const hit = ctx.getSession<Session>().matchReply<{ step: "name" | "email" }>();
+  const hit = session.matchReply<{ step: "name" | "email" }>();
   if (!hit) return next(); // not a reply we're waiting on -> let other handlers run
 
   if (hit.step === "name") {
-    ctx.getSession<Session>().data.name = ctx.message?.text;
-    await ask(ctx, "And your email?", "email"); // chain the next prompt
+    session.data.name = ctx.message?.text;
+    const sent = await ctx.reply("And your email?", { reply_markup: { force_reply: true } });
+    session.expectReply(sent.message_id, { step: "email" }); // chain the next prompt
   } else {
-    const { name } = ctx.getSession<Session>().data;
-    await ctx.reply(`Thanks ${name}, got your email: ${ctx.message?.text}`);
+    await ctx.reply(`Thanks ${session.data.name}, got your email: ${ctx.message?.text}`);
   }
 });
 ```
