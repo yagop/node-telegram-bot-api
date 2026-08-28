@@ -1,9 +1,12 @@
 {
+  "// note": "Build emits the whole package including the Bun subpath, so it needs the `bun` types and must not inherit the root's src/bun exclude.",
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "outDir": "./dist",
     "rootDir": "./src",
+    "types": ["node", "bun"],
     "noEmit": false
   },
-  "include": ["src"]
+  "include": ["src"],
+  "exclude": []
 }
