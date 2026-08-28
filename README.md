@@ -303,26 +303,27 @@ bot.command("count", async (ctx) => {
 
 The handle also carries **reply tracking** - `expectReply` / `matchReply` record "awaiting a reply to a specific message" as plain session data (matched on `reply_to_message.message_id`), never a live promise, so it survives a restart.
 
-`expectReply(messageId, marker?)` tags the message you sent with an arbitrary `marker`; when the reply arrives, `matchReply()` returns that marker, so you know **which** prompt is being answered - the reason it exists is that a chat can have several prompts outstanding at once. Below, the `step` marker drives a two-question flow through a single `message` handler:
+You tag the message you sent; when its reply arrives, you read the tag back, so you know **which** prompt is being answered - the reason it exists is that a chat can have several prompts outstanding at once. `taggedReplies<Tag>(ctx)` wraps both ends for a plain string tag, tying `expect` and `match` to one type. Below, the `step` tag drives a two-question flow through a single `message` handler:
 
 ```ts
+import { taggedReplies } from "node-telegram-bot-api";
+
 type Session = { name?: string };
 
 bot.command("start", async (ctx) => {
   const sent = await ctx.reply("What's your name?", { reply_markup: { force_reply: true } });
   // tag the message we sent with the step its reply will answer
-  ctx.getSession<Session>().expectReply(sent.message_id, { step: "name" });
+  taggedReplies<"name" | "email">(ctx).expect(sent.message_id, "name");
 });
 
 bot.on("message", async (ctx, next) => {
-  // <{ step: ... }> is a type-only hint for the stored marker; matchReply takes no args
-  const hit = ctx.getSession<Session>().matchReply<{ step: "name" | "email" }>();
-  if (!hit) return next(); // not a reply we're waiting on -> let other handlers run
+  const step = taggedReplies<"name" | "email">(ctx).match(); // "name" | "email" | undefined
+  if (!step) return next(); // not a reply we're waiting on -> let other handlers run
 
-  if (hit.step === "name") {
+  if (step === "name") {
     ctx.getSession<Session>().data.name = ctx.message?.text;
     const sent = await ctx.reply("And your email?", { reply_markup: { force_reply: true } });
-    ctx.getSession<Session>().expectReply(sent.message_id, { step: "email" }); // chain the next prompt
+    taggedReplies<"name" | "email">(ctx).expect(sent.message_id, "email"); // chain the next prompt
   } else {
     const { name } = ctx.getSession<Session>().data;
     await ctx.reply(`Thanks ${name}, got your email: ${ctx.message?.text}`);
@@ -330,16 +331,7 @@ bot.on("message", async (ctx, next) => {
 });
 ```
 
-With one prompt in flight you can drop the marker entirely (`expectReply(sent.message_id)`) - its presence alone is the signal.
-
-The marker is an object (`ReplyMarker`), and `expectReply` / `matchReply` type it independently. To tie both ends to one type - or to use a bare string tag - wrap them with `taggedReplies`:
-
-```ts
-import { taggedReplies } from "node-telegram-bot-api";
-
-taggedReplies<"NAME" | "EMAIL">(ctx).expect(sent.message_id, "EMAIL");
-const tag = taggedReplies<"NAME" | "EMAIL">(ctx).match(); // "NAME" | "EMAIL" | undefined
-```
+`taggedReplies` is sugar over the primitives on the handle: `getSession().expectReply(id, marker?)` stores any JSON `marker` object and `getSession().matchReply<M>()` returns it (the two ends typed independently). With a single prompt in flight you can drop the marker entirely (`expectReply(sent.message_id)`) - its presence alone is the signal.
 
 ### Storage backends
 
