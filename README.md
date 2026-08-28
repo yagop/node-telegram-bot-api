@@ -301,20 +301,37 @@ bot.command("count", async (ctx) => {
 });
 ```
 
-The handle also carries **reply tracking** - `expectReply` / `matchReply` record "awaiting a reply to a specific message" as plain session data (matched on `reply_to_message.message_id`), never a live promise, so it survives a restart:
+The handle also carries **reply tracking** - `expectReply` / `matchReply` record "awaiting a reply to a specific message" as plain session data (matched on `reply_to_message.message_id`), never a live promise, so it survives a restart.
+
+`expectReply(messageId, marker?)` tags the message you sent with an arbitrary `marker`; when the reply arrives, `matchReply()` returns that marker, so you know **which** prompt is being answered - the reason it exists is that a chat can have several prompts outstanding at once. Below, the `step` marker drives a two-question flow through a single `message` handler:
 
 ```ts
-bot.command("start", async (ctx) => {
-  const sent = await ctx.reply("What's your name?", { reply_markup: { force_reply: true } });
-  ctx.getSession().expectReply(sent.message_id, { field: "name" });
-});
+type Session = { name?: string };
+
+// ask, tagging the sent message with the step this reply will answer
+async function ask(ctx: Context, text: string, step: "name" | "email") {
+  const sent = await ctx.reply(text, { reply_markup: { force_reply: true } });
+  ctx.getSession<Session>().expectReply(sent.message_id, { step });
+}
+
+bot.command("start", (ctx) => ask(ctx, "What's your name?", "name"));
 
 bot.on("message", async (ctx, next) => {
-  const hit = ctx.getSession().matchReply<{ field: string }>();
-  if (!hit) return next();
-  await ctx.reply(`Nice to meet you, ${ctx.message?.text}`);
+  // <{ step: ... }> is a type-only hint for the stored marker; matchReply takes no args
+  const hit = ctx.getSession<Session>().matchReply<{ step: "name" | "email" }>();
+  if (!hit) return next(); // not a reply we're waiting on -> let other handlers run
+
+  if (hit.step === "name") {
+    ctx.getSession<Session>().data.name = ctx.message?.text;
+    await ask(ctx, "And your email?", "email"); // chain the next prompt
+  } else {
+    const { name } = ctx.getSession<Session>().data;
+    await ctx.reply(`Thanks ${name}, got your email: ${ctx.message?.text}`);
+  }
 });
 ```
+
+With one prompt in flight you can drop the marker entirely (`expectReply(sent.message_id)`) - its presence alone is the signal.
 
 ### Storage backends
 

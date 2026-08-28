@@ -74,16 +74,31 @@ export type SessionHandle<T> = {
   /** The persistent, per-key bag. */
   data: T;
   /**
-   * Record that a reply to the message you just sent (`messageId`) is expected,
-   * tagging it with `marker`. Pure session write - safe on serverless. Pair the
-   * sent message with `reply_markup: { force_reply: true }` so the client quotes
-   * it and the reply carries `reply_to_message.message_id`.
+   * Record that a reply to the message you just sent (`messageId`) is expected.
+   *
+   * `marker` is arbitrary JSON you attach to that specific message; when the
+   * reply arrives, {@link matchReply} hands it back so you know *which* prompt
+   * is being answered. That is the point of it: a chat can have several prompts
+   * outstanding at once (name, then email, ...), each its own sent message, and
+   * the marker is how you tell their replies apart - e.g. `{ step: "email" }`.
+   * If you only ever have one prompt in flight, `marker` can be omitted (it
+   * defaults to `{}`) and its presence is enough.
+   *
+   * Pure session write - safe on serverless. Pair the sent message with
+   * `reply_markup: { force_reply: true }` so the client quotes it and the reply
+   * carries `reply_to_message.message_id`.
    */
   expectReply(messageId: number, marker?: ReplyMarker): void;
   /**
-   * If the current update is a reply to a message a prior `expectReply`
-   * registered, consume and return its marker; otherwise `undefined`. Matches on
-   * `reply_to_message.message_id` within the current key's session.
+   * If the current update is a reply to a message a prior {@link expectReply}
+   * registered (matched on `reply_to_message.message_id` within this key's
+   * session), consume and return that message's `marker`; otherwise `undefined`.
+   * Returns `undefined` for a non-reply, or a reply to an unregistered message -
+   * so a handler typically does `const hit = matchReply(); if (!hit) return next();`.
+   *
+   * `M` is a type-only assertion for the marker you stored (like the `<T>` on
+   * `getSession`): it types the return value, generates no runtime check, and
+   * takes no argument - the message id is read from the current update.
    */
   matchReply<M extends ReplyMarker = ReplyMarker>(): M | undefined;
 };
