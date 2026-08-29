@@ -44,6 +44,17 @@ describe("FileSessionStorage", () => {
     });
   });
 
+  test("init() creates the directory up front and is idempotent", async () => {
+    await withDir(async (dir) => {
+      const path = join(dir, "nested", "sessions");
+      const store = new FileSessionStorage({ path });
+      await store.init(); // fail-fast-at-boot path: dir created before any write
+      await store.init(); // idempotent - no throw
+      await store.write("k", { data: { ok: true }, awaiting: {} });
+      assert.deepEqual(await store.read("k"), { data: { ok: true }, awaiting: {} });
+    });
+  });
+
   test("retries directory creation after a transient failure (no permanently-cached rejection)", async () => {
     await withDir(async (dir) => {
       const target = join(dir, "blocked");

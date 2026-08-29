@@ -52,11 +52,13 @@ export class SqlSessionStorage implements SessionStore {
   }
 
   /**
-   * Create the table once, lazily (the constructor can't await). Memoized; on
-   * failure the cache is cleared so a later call retries instead of re-throwing
-   * a stale (possibly transient) rejection forever.
+   * Create the table once, lazily (the constructor can't await). Idempotent and
+   * memoized; on failure the cache is cleared so a later call retries instead of
+   * re-throwing a stale (possibly transient) rejection. `session()` calls this
+   * before the first query; `await store.init()` at boot to fail fast if the
+   * database is unreachable.
    */
-  private ready(): Promise<void> {
+  init(): Promise<void> {
     if (this.ensured === undefined) {
       this.ensured = (async () => {
         await this.sql`CREATE TABLE IF NOT EXISTS ${this.ref} (key TEXT PRIMARY KEY, value TEXT NOT NULL)`;
@@ -69,20 +71,20 @@ export class SqlSessionStorage implements SessionStore {
   }
 
   async read<V>(key: string): Promise<V | undefined> {
-    await this.ready();
+    await this.init();
     const rows = (await this.sql`SELECT value FROM ${this.ref} WHERE key = ${key}`) as Array<{ value: string }>;
     const row = rows[0];
     return row ? (JSON.parse(row.value) as V) : undefined;
   }
 
   async write(key: string, value: unknown): Promise<void> {
-    await this.ready();
+    await this.init();
     await this.sql`INSERT INTO ${this.ref} (key, value) VALUES (${key}, ${JSON.stringify(value)})
       ON CONFLICT (key) DO UPDATE SET value = excluded.value`;
   }
 
   async delete(key: string): Promise<void> {
-    await this.ready();
+    await this.init();
     await this.sql`DELETE FROM ${this.ref} WHERE key = ${key}`;
   }
 }

@@ -30,6 +30,15 @@ export type SessionStore = {
   read<V>(key: string): V | undefined | Promise<V | undefined>;
   write(key: string, value: unknown): void | Promise<void>;
   delete(key: string): void | Promise<void>;
+  /**
+   * Optional one-time setup (create a directory / table, open a connection).
+   * Idempotent and safe to call repeatedly - stores memoize it. `session()`
+   * kicks it off when the middleware is built and awaits it before the first
+   * read, so setup overlaps startup; `await store.init()` yourself before
+   * `bot.use` to fail fast at boot on a bad path / unreachable backend instead
+   * of on the first update. Stores needing no async setup omit it.
+   */
+  init?(): Promise<void>;
 };
 
 /**
@@ -137,11 +146,20 @@ export function session<T = Record<string, unknown>>(options: SessionOptions<T>)
   const getSessionKey = options.getSessionKey ?? defaultKey;
   const initial = options.initial ?? (() => ({}) as T);
 
+  // Kick off store setup now (at `bot.use` time) so it overlaps startup; ignore
+  // the result here (surfaced per-request below) and swallow the rejection so an
+  // idle bot doesn't log an unhandled rejection. The store memoizes success, so
+  // the per-request `init` below is cheap - and, per its reset-on-failure, still
+  // retries after a transient error rather than re-throwing this one promise.
+  store.init?.()?.catch(() => {});
+
   return async (ctx, next) => {
     const key = getSessionKey(ctx);
     if (key === undefined) {
       return next();
     }
+
+    await store.init?.(); // ensure setup completed (rejects here on failure)
 
     // Normalize the loaded value field-by-field: a store may return `undefined`
     // (missing key), or - after a schema change / hand-edit / foreign write - a

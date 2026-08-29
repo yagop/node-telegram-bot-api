@@ -26,21 +26,26 @@ export type FileSessionStorageOptions = {
 
 export class FileSessionStorage implements SessionStore {
   private readonly dir: string;
-  private ensured?: Promise<unknown>;
+  private ensured?: Promise<void>;
 
   constructor(options: FileSessionStorageOptions) {
     this.dir = options.path;
   }
 
-  private ensureDir(): Promise<unknown> {
-    // Memoized so concurrent writes issue one mkdir, not one per call. On
-    // failure, clear the cache so a later write retries instead of re-throwing
-    // a stale (possibly transient) rejection forever.
+  /**
+   * Create the directory. Idempotent and memoized so concurrent writes issue one
+   * mkdir; on failure the cache is cleared so a later call retries instead of
+   * re-throwing a stale (possibly transient) rejection. `session()` calls this
+   * before the first write; `await store.init()` at boot to fail fast on a bad path.
+   */
+  init(): Promise<void> {
     if (this.ensured === undefined) {
-      this.ensured = mkdir(this.dir, { recursive: true }).catch((err: unknown) => {
-        this.ensured = undefined;
-        throw err;
-      });
+      this.ensured = mkdir(this.dir, { recursive: true })
+        .then(() => {})
+        .catch((err: unknown) => {
+          this.ensured = undefined;
+          throw err;
+        });
     }
     return this.ensured;
   }
@@ -61,7 +66,7 @@ export class FileSessionStorage implements SessionStore {
   }
 
   async write(key: string, value: unknown): Promise<void> {
-    await this.ensureDir();
+    await this.init();
     const file = this.fileFor(key);
     const tmp = `${file}.${randomUUID()}.tmp`;
     await writeFile(tmp, JSON.stringify(value), "utf8");

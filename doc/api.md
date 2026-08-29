@@ -295,6 +295,7 @@ UTF-16 code units (JS string `.length`).
 | Method | Params | Returns | Description |
 | --- | --- | --- | --- |
 | `delete` | `key`: string | Promise<void> | - |
+| `init` | - | Promise<void> | Create the directory. Idempotent and memoized so concurrent writes issue one mkdir; on failure the cache is cleared so a later call retries instead of re-throwing a stale (possibly transient) rejection. `session()` calls this before the first write; `await store.init()` at boot to fail fast on a bad path. |
 | `read` | `key`: string | Promise<V \| undefined> | - |
 | `write` | `key`: string, `value`: unknown | Promise<void> | - |
 
@@ -434,16 +435,6 @@ bound for long-lived bots that talk to many distinct chats.
 | --- | --- | --- | --- |
 | `acquire` | `chatId`: string \| number \| undefined, `signal?`: AbortSignal | Promise<void> | - |
 
-### `RedisSessionStorage`
-
-#### Methods
-
-| Method | Params | Returns | Description |
-| --- | --- | --- | --- |
-| `delete` | `key`: string | Promise<void> | - |
-| `read` | `key`: string | Promise<V \| undefined> | - |
-| `write` | `key`: string, `value`: unknown | Promise<void> | - |
-
 ### `ReplyKeyboardBuilder`
 
 Fluent reply-keyboard builder. Buttons append to the current row; `row()`
@@ -558,26 +549,6 @@ own data. `.build()` returns the plain `RichText` (its accumulated sequence).
 | `textMention` | `content`: [RichTextContent](#richtextcontent), `user`: [User](#user) | this | A text_mention of a user (works without a username). |
 | `underline` | `content`: [RichTextContent](#richtextcontent) | this | - |
 | `url` | `content`: [RichTextContent](#richtextcontent), `url`: string | this | A hyperlink to `url`. |
-
-### `SqlSessionStorage`
-
-#### Methods
-
-| Method | Params | Returns | Description |
-| --- | --- | --- | --- |
-| `delete` | `key`: string | Promise<void> | - |
-| `read` | `key`: string | Promise<V \| undefined> | - |
-| `write` | `key`: string, `value`: unknown | Promise<void> | - |
-
-### `SqliteSessionStorage`
-
-#### Methods
-
-| Method | Params | Returns | Description |
-| --- | --- | --- | --- |
-| `delete` | `key`: string | void | - |
-| `read` | `key`: string | V \| undefined | - |
-| `write` | `key`: string, `value`: unknown | void | - |
 
 ### `StaticProfilePhotoBuilder`
 
@@ -1032,7 +1003,7 @@ Subset of Telegram's `ResponseParameters` carried on API errors.
 | Property | Type |
 | --- | --- |
 | `apiRoot`? | string |
-| `fetch`? | typeof fetch |
+| `fetch`? | (input: string \| URL \| Request, init?: RequestInit) => Promise<Response> |
 | `maxRetries`? | number |
 | `maxRetryAfterMs`? | number |
 | `rateLimit`? | [RateLimitOptions](#ratelimitoptions) |
@@ -1163,7 +1134,7 @@ Options for a table block; `caption` is rich text.
 | Property | Type |
 | --- | --- |
 | `apiRoot`? | string |
-| `fetch`? | typeof fetch |
+| `fetch`? | (input: string \| URL \| Request, init?: RequestInit) => Promise<Response> |
 | `maxRetries`? | number |
 | `maxRetryAfterMs`? | number |
 | `rateLimit`? | [RateLimitOptions](#ratelimitoptions) |
@@ -6139,16 +6110,6 @@ type ReadBusinessMessageParams = {
 type ReadBusinessMessageResult = boolean;
 ```
 
-### `RedisSessionStorageOptions`
-
-```ts
-type RedisSessionStorageOptions = {
-  client?: RedisClient;
-  prefix?: string;
-  ttlSeconds?: number;
-};
-```
-
 ### `RefundStarPaymentParams`
 
 ```ts
@@ -7852,6 +7813,7 @@ be sync or async so an in-memory `Map` and a networked store share one shape.
 ```ts
 type SessionStore = {
   delete: ;
+  init?: ;
   read: ;
   write: ;
 };
@@ -8402,25 +8364,6 @@ type ShippingQuery = {
   id: string;
   invoice_payload: string;
   shipping_address: [ShippingAddress](#shippingaddress);
-};
-```
-
-### `SqlSessionStorageOptions`
-
-```ts
-type SqlSessionStorageOptions = {
-  sql?: SQL;
-  table?: string;
-  url?: string;
-};
-```
-
-### `SqliteSessionStorageOptions`
-
-```ts
-type SqliteSessionStorageOptions = {
-  database?: Database | string;
-  table?: string;
 };
 ```
 

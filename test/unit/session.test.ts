@@ -160,6 +160,36 @@ describe("expectReply / matchReply", () => {
   });
 });
 
+describe("session() + store.init", () => {
+  test("awaits store.init before serving an update and surfaces its failure", async () => {
+    const store: SessionStore = {
+      ...fakeStore(),
+      init: () => Promise.reject(new Error("init boom")),
+    };
+    const mw = session({ store });
+    let handlerRan = false;
+    // If session() did not await init, the handler would run and the update would resolve.
+    await assert.rejects(async () => {
+      await mw(new Context(msg("a"), api), async () => {
+        handlerRan = true;
+      });
+    }, /init boom/);
+    assert.equal(handlerRan, false);
+  });
+
+  test("a store without init works unchanged", async () => {
+    const store = fakeStore();
+    assert.equal("init" in store, false);
+    const ctx = new Context(msg("hi"), api);
+    let ran = false;
+    await session({ store })(ctx, async () => {
+      ran = true;
+      ctx.getSession();
+    });
+    assert.equal(ran, true);
+  });
+});
+
 describe("taggedReplies", () => {
   test("boxes a string tag on expect and unboxes it on match", async () => {
     const mw = session({ store: new MemorySessionStorage() });

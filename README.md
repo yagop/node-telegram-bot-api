@@ -358,6 +358,14 @@ bot.use(session<Session>({ store: new RedisSessionStorage({ ttlSeconds: 86400 })
 
 The `node-telegram-bot-api/bun` stores import Bun built-ins and are isolated behind that subpath - a Node or edge install never resolves them. Any other backend (ioredis, `pg`, a KV service) is ~10 lines implementing the three `SessionStore` methods.
 
+Stores that need setup (directory, table) do it lazily on first use; `session()` also kicks it off at registration so it overlaps startup. To fail fast at boot instead - on a bad path or an unreachable backend - `await store.init()` before `bot.use`:
+
+```ts
+const store = new FileSessionStorage({ path: "./.sessions" });
+await store.init(); // optional: surfaces setup errors now, not on the first update
+bot.use(session<Session>({ store }));
+```
+
 ## ⚠️ Errors
 
 Errors expose structured fields, so you branch on values, not message text.
