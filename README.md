@@ -284,7 +284,7 @@ Register the URL once: `api.setWebhook({ url, secret_token })`. The `secret_toke
 
 ## 💾 Sessions
 
-Opt-in `session()` middleware adds a persistent, per-chat bag reached through `ctx.getSession<T>()`. The `store` is **required** - no implicit default, so the durability choice is always explicit. It works the same under long-polling and one-invocation-per-update serverless: nothing lives in process memory between updates, only what the store persists.
+Opt-in `session()` middleware adds a persistent, per-chat bag reached through `ctx.getSession<T>()`. The `store` is **required** - no implicit default, so the durability choice is always explicit. Nothing lives in process memory between updates - only what the store persists - so it works under one-invocation-per-update serverless as well as long-polling. (One caveat: each update is read-modify-write with no per-key lock, so concurrent updates for the *same* chat are last-writer-wins; long-polling dispatches serially and is unaffected.)
 
 ```ts
 import { Bot, session, MemorySessionStorage } from "node-telegram-bot-api";

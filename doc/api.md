@@ -932,8 +932,15 @@ comparison always inspects every position, so it leaks no information about
 Middleware that loads the session before `next()` and flushes the (possibly
 mutated) envelope after - even if a downstream handler throws, so a marker
 written before an error still persists. Updates with no derivable key run
-downstream untouched (no `ctx.session`), so guard access when your bot sees
-keyless updates, or narrow with `on(...)` first.
+downstream untouched (`getSession()` throws), so guard access when your bot
+sees keyless updates, or narrow with `on(...)` first.
+
+Concurrency: each update does read -> handler -> write, with no per-key lock.
+Long-polling dispatches updates serially, so it is safe there. Under webhooks
+(concurrent invocations), two updates for the *same* key can interleave and
+the later write wins, dropping the earlier's `data` mutation or reply marker.
+If a chat can have overlapping in-flight updates, serialize them upstream or
+use a store with compare-and-swap.
 
 | Param | Type |
 | --- | --- |

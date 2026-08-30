@@ -1,13 +1,14 @@
 /**
- * Opt-in session middleware + the reply-tracking helpers (phase 1).
+ * Opt-in session middleware + the reply-tracking helpers.
  *
- * Attaches a persistent, keyed `ctx.session` bag on top of the per-update
- * `ctx.state`, plus two Lambda-safe helpers - `ctx.expectReply` /
- * `ctx.matchReply` - that record and match "waiting for a reply to a specific
- * message" as plain session data (a marker), never a live Promise. Because the
- * whole thing is read-through / write-back around one store, it behaves the
- * same under long-polling and under one-invocation-per-update serverless: no
- * continuation survives across updates, only the persisted marker does.
+ * Attaches a persistent, keyed session reached through `ctx.getSession<T>()`,
+ * whose handle carries a mutable `data` bag plus two Lambda-safe helpers -
+ * `expectReply` / `matchReply` - that record and match "waiting for a reply to a
+ * specific message" as plain session data (a marker), never a live Promise.
+ * Because the whole thing is read-through / write-back around one store, it
+ * behaves the same under long-polling and under one-invocation-per-update
+ * serverless: no continuation survives across updates, only the persisted marker
+ * does. (Concurrent updates for the same key are last-writer-wins - see below.)
  *
  * Storage is injectable via `SessionStore` and required - no implicit default,
  * so the durability choice is always explicit. `MemorySessionStorage` (here) is
@@ -138,8 +139,15 @@ function defaultKey(ctx: Context): string | undefined {
  * Middleware that loads the session before `next()` and flushes the (possibly
  * mutated) envelope after - even if a downstream handler throws, so a marker
  * written before an error still persists. Updates with no derivable key run
- * downstream untouched (no `ctx.session`), so guard access when your bot sees
- * keyless updates, or narrow with `on(...)` first.
+ * downstream untouched (`getSession()` throws), so guard access when your bot
+ * sees keyless updates, or narrow with `on(...)` first.
+ *
+ * Concurrency: each update does read -> handler -> write, with no per-key lock.
+ * Long-polling dispatches updates serially, so it is safe there. Under webhooks
+ * (concurrent invocations), two updates for the *same* key can interleave and
+ * the later write wins, dropping the earlier's `data` mutation or reply marker.
+ * If a chat can have overlapping in-flight updates, serialize them upstream or
+ * use a store with compare-and-swap.
  */
 export function session<T = Record<string, unknown>>(options: SessionOptions<T>): Middleware<Context> {
   const store = options.store;
