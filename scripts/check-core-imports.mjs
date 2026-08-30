@@ -79,18 +79,22 @@ function collectTsFiles(dir) {
   return out;
 }
 
-// Match the specifier of an import/export/dynamic-import/require statement.
-// Grouped so whichever quote captures, the specifier is in group `spec`.
+// Match an import/export/dynamic-import/require specifier. Run over the WHOLE
+// file (global) and anchored on the specifier itself (after `from` / `import` /
+// `import(` / `require(`), so a multi-line `import { ... } from "node:fs"` -
+// keyword and clause on different lines - is still caught. `spec` captures it.
+const SPEC = String.raw`["'\`](?<spec>[^"'\`]+)["'\`]`;
 const PATTERNS = [
-  // import ... from "spec"   /   import "spec"
-  /\bimport\b(?:[^'"`;]*?\bfrom\s*)?["'`](?<spec>[^"'`]+)["'`]/,
-  // export ... from "spec"
-  /\bexport\b[^'"`;]*?\bfrom\s*["'`](?<spec>[^"'`]+)["'`]/,
-  // dynamic import("spec")
-  /\bimport\s*\(\s*["'`](?<spec>[^"'`]+)["'`]\s*\)/,
-  // require("spec")
-  /\brequire\s*\(\s*["'`](?<spec>[^"'`]+)["'`]\s*\)/,
+  new RegExp(String.raw`\bfrom\s*${SPEC}`, "g"),
+  new RegExp(String.raw`\bimport\s*${SPEC}`, "g"),
+  new RegExp(String.raw`\bimport\s*\(\s*${SPEC}`, "g"),
+  new RegExp(String.raw`\brequire\s*\(\s*${SPEC}`, "g"),
 ];
+
+/** Blank out comments while preserving newline positions, so line numbers stay accurate. */
+function stripCommentsWhole(text) {
+  return text.replace(/\/\*[\s\S]*?\*\//g, (m) => m.replace(/[^\n]/g, " ")).replace(/\/\/[^\n]*/g, "");
+}
 
 /** Strip line/block comments so we don't match specifiers inside comments. */
 function stripComments(line) {
@@ -147,6 +151,28 @@ const files = collectTsFiles(CORE_DIR);
 const importOffenders = [];
 const globalOffenders = [];
 
+// ── Node built-in import/require specifiers (whole-file, multi-line safe) ────
+for (const file of files) {
+  const raw = readFileSync(file, "utf8");
+  const rawLines = raw.split(/\r?\n/);
+  const scanned = stripCommentsWhole(raw);
+  const seen = new Set();
+  for (const re of PATTERNS) {
+    re.lastIndex = 0;
+    let m;
+    while ((m = re.exec(scanned)) !== null) {
+      const spec = m.groups?.spec;
+      if (!spec || !isNodeBuiltin(spec)) continue;
+      const line = scanned.slice(0, m.index).split(/\r?\n/).length;
+      const key = `${line}:${spec}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      importOffenders.push({ file: file.slice(ROOT.length + 1), line, spec, text: (rawLines[line - 1] ?? "").trim() });
+    }
+  }
+}
+
+// ── Node-only globals (line-based; globals are single tokens) ────────────────
 for (const file of files) {
   const lines = readFileSync(file, "utf8").split(/\r?\n/);
   let inBlockComment = false;
@@ -169,21 +195,7 @@ for (const file of files) {
 
     const cleaned = stripComments(line);
 
-    // ── Check 1: Node built-in import/require specifiers ──────────────────
-    for (const re of PATTERNS) {
-      const m = re.exec(cleaned);
-      if (m?.groups?.spec && isNodeBuiltin(m.groups.spec)) {
-        importOffenders.push({
-          file: file.slice(ROOT.length + 1),
-          line: i + 1,
-          spec: m.groups.spec,
-          text: line.trim(),
-        });
-        break; // one report per line is enough
-      }
-    }
-
-    // ── Check 2: Node-only globals as identifiers ─────────────────────────
+    // ── Node-only globals as identifiers ──────────────────────────────────
     // String contents are blanked so globals named inside a literal don't trip
     // the scan; comments are already stripped above.
     const code = stripStringContents(cleaned);
