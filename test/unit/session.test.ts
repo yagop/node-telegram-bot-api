@@ -89,6 +89,19 @@ describe("session()", () => {
     assert.deepEqual(store.writes.at(-1), ["chat:42", { data: { n: 7 }, awaiting: { 1: { ok: true } } }]);
   });
 
+  test("coerces a non-object `awaiting` to {} instead of throwing", async () => {
+    const store = fakeStore();
+    // A well-formed `data` but a corrupt `awaiting` (truthy non-object).
+    store.write("chat:42", { data: { n: 1 }, awaiting: "x" });
+    const mw = session<{ n: number }>({ store });
+    const ctx = new Context(msg("hi"), api);
+    await mw(ctx, async () => {
+      assert.equal(ctx.getSession<{ n: number }>().data.n, 1); // data preserved
+      ctx.getSession().expectReply(9, { ok: true }); // would throw on `"x"[9] = ...`
+    });
+    assert.deepEqual(store.writes.at(-1), ["chat:42", { data: { n: 1 }, awaiting: { 9: { ok: true } } }]);
+  });
+
   test("skips updates with no derivable key", async () => {
     const store = fakeStore();
     const mw = session({ store });

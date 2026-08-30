@@ -218,11 +218,12 @@ export class Context {
   /**
    * The session handle for this update, installed by the `session()` middleware:
    * `.data` (the persistent bag) plus the `expectReply` / `matchReply` reply
-   * helpers. The `<T>` type parameter is the caller's asserted `data` shape.
+   * helpers. The `<T>` type parameter is the caller's asserted `data` shape; it
+   * defaults to `Record<string, unknown>`, matching `session()`'s default.
    * Throws if `session()` has not run for this update (not installed, or the
    * update had no derivable session key).
    */
-  getSession<T>(): SessionHandle<T> {
+  getSession<T = Record<string, unknown>>(): SessionHandle<T> {
     const handle = this.state[SESSION_STATE_KEY];
     if (handle === undefined) {
       throw new Error("ctx.getSession: session() middleware is not installed for this update");

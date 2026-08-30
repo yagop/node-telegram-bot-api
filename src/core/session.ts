@@ -175,9 +175,16 @@ export function session<T = Record<string, unknown>>(options: SessionOptions<T>)
     // `undefined` for a missing/`data`-less/`awaiting`-less or non-object value,
     // so a malformed record starts fresh instead of throwing on `.awaiting[...]`.
     const loaded = await store.read<Partial<SessionEnvelope<T>>>(key);
+    const storedAwaiting = loaded?.awaiting;
     const envelope: SessionEnvelope<T> = {
       data: loaded?.data ?? initial(ctx),
-      awaiting: loaded?.awaiting ?? {},
+      // Coerce to {} unless it's a plain object: a stored non-object `awaiting`
+      // (e.g. `"x"`, or an array) would otherwise make `expectReply` throw when
+      // it assigns into it.
+      awaiting:
+        typeof storedAwaiting === "object" && storedAwaiting !== null && !Array.isArray(storedAwaiting)
+          ? storedAwaiting
+          : {},
     };
 
     const handle: SessionHandle<T> = {

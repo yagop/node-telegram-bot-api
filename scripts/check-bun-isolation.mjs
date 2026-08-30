@@ -16,11 +16,6 @@ import { fileURLToPath } from "node:url";
 const ROOT = join(fileURLToPath(new URL(".", import.meta.url)), "..");
 const GUARDED_DIRS = [join(ROOT, "src", "core"), join(ROOT, "src", "node")];
 
-/** Is `spec` the Bun module or a `bun:` builtin? */
-function isBunModule(spec) {
-  return spec === "bun" || spec.startsWith("bun:");
-}
-
 function collectTsFiles(dir) {
   const out = [];
   let entries;
@@ -37,30 +32,41 @@ function collectTsFiles(dir) {
   return out;
 }
 
-// import ... from "spec" / import "spec" / export ... from "spec" / import("spec") / require("spec")
+// Specifier patterns, run over the WHOLE file (not line-by-line) and anchored on
+// the `bun` / `bun:*` specifier itself, so a multi-line `import { ... } from
+// "bun"` - where `import` and the `from "..."` clause sit on different lines - is
+// still caught. Covers: import/export ... from, bare import, dynamic import(),
+// and require().
+const SPEC = String.raw`["'\`](bun|bun:[^"'\`]*)["'\`]`;
 const PATTERNS = [
-  /\bimport\b(?:[^'"`;]*?\bfrom\s*)?["'`](?<spec>[^"'`]+)["'`]/,
-  /\bexport\b[^'"`;]*?\bfrom\s*["'`](?<spec>[^"'`]+)["'`]/,
-  /\bimport\s*\(\s*["'`](?<spec>[^"'`]+)["'`]\s*\)/,
-  /\brequire\s*\(\s*["'`](?<spec>[^"'`]+)["'`]\s*\)/,
+  new RegExp(String.raw`\bfrom\s*${SPEC}`, "g"),
+  new RegExp(String.raw`\bimport\s*${SPEC}`, "g"),
+  new RegExp(String.raw`\bimport\s*\(\s*${SPEC}`, "g"),
+  new RegExp(String.raw`\brequire\s*\(\s*${SPEC}`, "g"),
 ];
 
-function stripComments(line) {
-  return line.replace(/\/\*.*?\*\//g, "").replace(/\/\/.*$/, "");
+/** Blank out comments while preserving newline positions, so line numbers stay accurate. */
+function stripComments(text) {
+  return text.replace(/\/\*[\s\S]*?\*\//g, (m) => m.replace(/[^\n]/g, " ")).replace(/\/\/[^\n]*/g, "");
 }
 
 const offenders = [];
 for (const dir of GUARDED_DIRS) {
   for (const file of collectTsFiles(dir)) {
-    const lines = readFileSync(file, "utf8").split(/\r?\n/);
-    for (let i = 0; i < lines.length; i++) {
-      const cleaned = stripComments(lines[i]);
-      for (const re of PATTERNS) {
-        const m = re.exec(cleaned);
-        if (m?.groups?.spec && isBunModule(m.groups.spec)) {
-          offenders.push({ file: file.slice(ROOT.length + 1), line: i + 1, spec: m.groups.spec, text: lines[i].trim() });
-          break;
-        }
+    const raw = readFileSync(file, "utf8");
+    const rawLines = raw.split(/\r?\n/);
+    const scanned = stripComments(raw);
+    const seen = new Set();
+    for (const re of PATTERNS) {
+      re.lastIndex = 0;
+      let m;
+      while ((m = re.exec(scanned)) !== null) {
+        const line = scanned.slice(0, m.index).split(/\r?\n/).length;
+        const spec = m[1];
+        const key = `${line}:${spec}`;
+        if (seen.has(key)) continue;
+        seen.add(key);
+        offenders.push({ file: file.slice(ROOT.length + 1), line, spec, text: (rawLines[line - 1] ?? "").trim() });
       }
     }
   }
