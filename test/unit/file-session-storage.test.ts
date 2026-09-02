@@ -18,12 +18,12 @@ describe("FileSessionStorage", () => {
   test("round-trips a value and survives a fresh instance (durable)", async () => {
     await withDir(async (dir) => {
       const a = new FileSessionStorage({ path: join(dir, "sessions") });
-      const value = { data: { n: 3 }, awaiting: { 555: { field: "name" } } };
+      const value = JSON.stringify({ v: 1, data: { n: 3 } });
       await a.write("chat:42", value);
 
-      // A brand-new instance (i.e. after a restart) reads it back.
+      // A brand-new instance (i.e. after a restart) reads the string back verbatim.
       const b = new FileSessionStorage({ path: join(dir, "sessions") });
-      assert.deepEqual(await b.read("chat:42"), value);
+      assert.equal(await b.read("chat:42"), value);
     });
   });
 
@@ -37,7 +37,7 @@ describe("FileSessionStorage", () => {
   test("delete removes the key and is a no-op when absent", async () => {
     await withDir(async (dir) => {
       const store = new FileSessionStorage({ path: dir });
-      await store.write("chat:1", { data: { n: 1 }, awaiting: {} });
+      await store.write("chat:1", '{"v":1}');
       await store.delete("chat:1");
       assert.equal(await store.read("chat:1"), undefined);
       await store.delete("chat:1"); // absent -> must not throw
@@ -50,8 +50,8 @@ describe("FileSessionStorage", () => {
       const store = new FileSessionStorage({ path });
       await store.init(); // fail-fast-at-boot path: dir created before any write
       await store.init(); // idempotent - no throw
-      await store.write("k", { data: { ok: true }, awaiting: {} });
-      assert.deepEqual(await store.read("k"), { data: { ok: true }, awaiting: {} });
+      await store.write("k", '{"ok":true}');
+      assert.equal(await store.read("k"), '{"ok":true}');
     });
   });
 
@@ -61,12 +61,12 @@ describe("FileSessionStorage", () => {
       // A regular file where the store wants a directory -> mkdir(recursive) rejects.
       await writeFile(target, "x");
       const store = new FileSessionStorage({ path: target });
-      await assert.rejects(store.write("k", { data: {}, awaiting: {} }));
+      await assert.rejects(store.write("k", "{}"));
 
       // Clear the blocker; a later write must re-attempt mkdir, not re-throw the cached error.
       await rm(target);
-      await store.write("k", { data: { ok: true }, awaiting: {} });
-      assert.deepEqual(await store.read("k"), { data: { ok: true }, awaiting: {} });
+      await store.write("k", '{"ok":true}');
+      assert.equal(await store.read("k"), '{"ok":true}');
     });
   });
 
@@ -74,13 +74,12 @@ describe("FileSessionStorage", () => {
     await withDir(async (dir) => {
       const store = new FileSessionStorage({ path: dir });
       // A key with a path separator must not escape the directory.
-      await store.write("chat:../../etc/x", { data: { n: 9 }, awaiting: {} });
+      await store.write("chat:../../etc/x", '{"n":9}');
       const files = await readdir(dir);
       assert.equal(files.length, 1);
       assert.match(files[0]!, /\.json$/);
       assert.doesNotMatch(files[0]!, /\.tmp$/); // temp file was renamed away
-      const loaded = (await store.read("chat:../../etc/x")) as { data: unknown };
-      assert.deepEqual(loaded.data, { n: 9 });
+      assert.equal(await store.read("chat:../../etc/x"), '{"n":9}');
     });
   });
 });

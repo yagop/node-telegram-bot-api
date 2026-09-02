@@ -1,17 +1,23 @@
 /**
  * 16 - Sessions: durable per-chat state + reply tracking.
  *
- * Opt-in `session()` middleware gives each chat a persistent bag reached through
- * `ctx.getSession<T>()`; the `store` is required, so durability is an explicit
- * choice. Here `FileSessionStorage` (`/node`) persists to disk, so the profile
- * and the edit count survive a restart - stop the process and run it again, the
- * data is still there.
+ * Handlers reach the state through `ctx.getSession<Session>()`: `.data` is the
+ * bag, and the handle also carries `createdAt` / `updatedAt` / `delete()`. The
+ * `<Session>` is a plain call-site generic - no global type augmentation; to fix
+ * it once instead, keep the `createSession()` result and call its
+ * `.get(ctx)`. The `store` is
+ * required, so durability is an explicit choice; `FileSessionStorage` (`/node`)
+ * persists to disk, so the profile and the edit count survive a restart - stop
+ * the process and run it again, the data is still there. `run()` calls
+ * `bot.init()` (which creates the directory up front, failing at boot on a bad
+ * path) and `bot.dispose()` on shutdown.
  *
- * The reply flow uses `taggedReplies`: `/start` sends a `force_reply` prompt and
- * tags the sent message with the step its answer belongs to; a single `message`
- * handler reads the tag back with `.match()` and routes name -> email -> done.
- * Nothing lives in process memory between updates (only the store persists), so
- * the same code works under webhooks / serverless too.
+ * The reply flow uses `taggedReplies`, a layer built on the session's `ext`
+ * namespace: `/start` sends a `force_reply` prompt and tags the sent message
+ * with the step its answer belongs to; a single `message` handler reads the tag
+ * back with `.match()` and routes name -> email -> done. Nothing lives in
+ * process memory between updates (only the store persists), so the same code
+ * works under webhooks / serverless too.
  *
  * For a Bun deployment, swap the store for a Bun-native one - e.g.
  * `import { SqliteSessionStorage } from "node-telegram-bot-api/bun"` and
@@ -19,7 +25,7 @@
  *
  * Run: BOT_TOKEN=123:abc bun examples/16-sessions.ts
  */
-import { Bot, session, taggedReplies } from "node-telegram-bot-api";
+import { Bot, createSession, taggedReplies } from "node-telegram-bot-api";
 import { FileSessionStorage, run } from "node-telegram-bot-api/node";
 
 type Session = {
@@ -32,7 +38,7 @@ const bot = new Bot(process.env.BOT_TOKEN!);
 
 // One durable session per chat (default key). Swap the store to change backend.
 bot.use(
-  session<Session>({
+  createSession<Session>({
     store: new FileSessionStorage({ path: "./.sessions" }),
     initial: () => ({ edits: 0 }),
   }),
@@ -49,6 +55,12 @@ bot.command("me", (ctx) => {
   const { name, email, edits } = ctx.getSession<Session>().data;
   if (name === undefined) return ctx.reply("No profile yet - send /start.");
   return ctx.reply(`Name: ${name}\nEmail: ${email ?? "-"}\nCompleted ${edits}x`);
+});
+
+// `/forget` drops the whole session for this chat.
+bot.command("forget", (ctx) => {
+  ctx.getSession().delete();
+  return ctx.reply("Forgotten. Send /start to begin again.");
 });
 
 // One handler routes every awaited reply by its tag.

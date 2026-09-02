@@ -223,13 +223,15 @@ An animated profile photo (a video); `main_frame_timestamp` picks the still fram
 | --- | --- | --- | --- |
 | `catch` | `handler`: (err: unknown, ctx: [Context](#context)) => unknown | this | Replace the error boundary. The default logs via `console.error` and consumes the update, so a handler error never stops `startPolling()` or fails a webhook delivery. A throw from the installed handler opts back into fail-loud: `startPolling()` rejects and `webhookCallback` responds 500, so Telegram redelivers the update. |
 | `command` | `name`: string \| string[], `...handlers`: [Middleware](#middleware)<[Context](#context)>[] | this | Match a message/channel-post text starting with `/name` (also `/name@bot` and trailing args). Sets `ctx.match` to the trimmed args string ("" if none). |
+| `dispose` | - | Promise<void> | Release resources held by registered middleware: runs every `dispose()` in reverse registration order. Call it after `stop()` (or when a webhook process shuts down); a later `init()` re-runs setup. |
 | `handleUpdate` | `update`: [Update](#update) | Promise<void> | Build a Context and run the composed chain; route errors to the `catch` boundary (default: log and continue). Rejects only when that boundary itself throws. |
 | `hears` | `trigger`: string \| RegExp \| (string \| RegExp)[], `...handlers`: [Middleware](#middleware)<[Context](#context)>[] | this | Match message text: a string matches exactly (sets `ctx.match` to the text); a RegExp matches when `text.match(re)` is non-null (sets `ctx.match` to the `RegExpMatchArray`). |
+| `init` | - | Promise<void> | Run every registered middleware's `init()` once, in registration order. Memoized, and awaited by `startPolling()` and `handleUpdate()`, so setup failures surface at boot (or on the first webhook invocation) rather than as a per-update lazy path. A failure is not cached: the next call retries. Call it yourself to fail fast before serving anything. |
 | `isRunning` | - | boolean | - |
 | `on` | `kind`: "message" \| "edited_message" \| "channel_post" \| "edited_channel_post" \| "business_connection" \| "business_message" \| "edited_business_message" \| "deleted_business_messages" \| "guest_message" \| "message_reaction" \| "message_reaction_count" \| "inline_query" \| "chosen_inline_result" \| "callback_query" \| "shipping_query" \| "pre_checkout_query" \| "purchased_paid_media" \| "poll" \| "poll_answer" \| "my_chat_member" \| "chat_member" \| "chat_join_request" \| "chat_boost" \| "removed_chat_boost" \| "managed_bot" \| "subscription" \| "stopped_message_generation" \| ("message" \| "edited_message" \| "channel_post" \| "edited_channel_post" \| "business_connection" \| "business_message" \| "edited_business_message" \| "deleted_business_messages" \| "guest_message" \| "message_reaction" \| "message_reaction_count" \| "inline_query" \| "chosen_inline_result" \| "callback_query" \| "shipping_query" \| "pre_checkout_query" \| "purchased_paid_media" \| "poll" \| "poll_answer" \| "my_chat_member" \| "chat_member" \| "chat_join_request" \| "chat_boost" \| "removed_chat_boost" \| "managed_bot" \| "subscription" \| "stopped_message_generation")[], `...handlers`: [Middleware](#middleware)<[Context](#context)>[] | this | Run `handlers` only when the given payload key (e.g. `"message"`, `"callback_query"`) is present on the update. |
 | `startPolling` | `source?`: AsyncIterable<[Update](#update), any, any>, `options?`: [LongPollOptions](#longpolloptions) | Promise<void> | Pump an update source (default `longPoll`) through `handleUpdate` until `stop()` aborts. Resolves when the source is exhausted or aborted. This is long-poll mode; for webhooks use `webhookCallback`/`createWebhookServer`.  A handler error does not stop the pump: it is routed to the `catch` boundary (default: log and continue). The promise rejects only when that boundary itself throws - the fail-loud opt-in (see `catch`).  Not re-entrant: calling it while a previous pump is still active throws, so `isRunning()` stays truthful and the prior `AbortController` is never orphaned. Stop the running loop (`stop()`, then `await` its promise) first. |
 | `stop` | - | void | Abort the running pump loop. |
-| `use` | `...mw`: [Middleware](#middleware)<[Context](#context)>[] | this | Register one or more middleware to run on every update. |
+| `use` | `...mw`: [Middleware](#middleware)<[Context](#context)>[] | this | Register one or more middleware to run on every update. A middleware that also carries `init` / `dispose` (see MiddlewarePlugin) is picked up for the bot lifecycle: its setup runs once via Bot.init, its teardown via Bot.dispose. |
 
 #### Properties
 
@@ -244,7 +246,7 @@ An animated profile photo (a video); `main_frame_timestamp` picks the still fram
 | Method | Params | Returns | Description |
 | --- | --- | --- | --- |
 | `answerCallbackQuery` | `other?`: Omit<[AnswerCallbackQueryParams](#answercallbackqueryparams), "callback_query_id"> | Promise<boolean> | Answer the callback query that triggered this update. Throws if the update is not a callback query. |
-| `getSession` | - | [SessionHandle](#sessionhandle)<T> | The session handle for this update, installed by the `session()` middleware: `.data` (the persistent bag) plus the `expectReply` / `matchReply` reply helpers. The `<T>` type parameter is the caller's asserted `data` shape; it defaults to `Record<string, unknown>`, matching `session()`'s default. Throws if `session()` has not run for this update (not installed, or the update had no derivable session key). |
+| `getSession` | - | [SessionHandle](#sessionhandle)<T> | The session handle for this update: `.data` (the persistent bag - mutate it in place or reassign it, it flushes after the handler), `.createdAt` / `.updatedAt`, `.ext()` for layers built on sessions, and `.delete()` to evict the key. `<T>` is the caller's asserted `data` shape, defaulting to `Record<string, unknown>` like `createSession()` itself; to fix it once instead of per call site, use the middleware's own `.get(ctx)`. Throws if the session middleware has not run for this update (not registered, or no derivable session key). |
 | `reply` | `text`: string, `other?`: Omit<[SendMessageParams](#sendmessageparams), "chat_id" \| "text"> | Promise<[Message](#message)> | Send a message to the inferred chat. Throws if no chat id can be derived from the update (e.g. an inline query carries no chat). |
 
 #### Properties
@@ -295,9 +297,9 @@ UTF-16 code units (JS string `.length`).
 | Method | Params | Returns | Description |
 | --- | --- | --- | --- |
 | `delete` | `key`: string | Promise<void> | - |
-| `init` | - | Promise<void> | Create the directory. Idempotent and memoized so concurrent writes issue one mkdir; on failure the cache is cleared so a later call retries instead of re-throwing a stale (possibly transient) rejection. `session()` calls this before the first write; `await store.init()` at boot to fail fast on a bad path. |
-| `read` | `key`: string | Promise<V \| undefined> | - |
-| `write` | `key`: string, `value`: unknown | Promise<void> | - |
+| `init` | - | Promise<void> | Create the directory. Idempotent and memoized so concurrent writes issue one mkdir; on failure the cache is cleared so a later call retries instead of re-throwing a stale (possibly transient) rejection. `bot.init()` runs it at startup, so a bad path fails at boot rather than on the first update. |
+| `read` | `key`: string | Promise<string \| undefined> | The stored string for `key`, or `undefined` when there is none. |
+| `write` | `key`: string, `value`: string | Promise<void> | Persist `value` verbatim under `key`. |
 
 ### `InlineKeyboardBuilder`
 
@@ -358,20 +360,13 @@ level once `serializeParams` resolves the files.
 
 ### `MemorySessionStorage`
 
-Process-local, in-memory store. Zero-dependency and edge-safe, but not durable
-and not shared across instances - state is lost on restart and never leaves the
-process, so it is for long-polling / single-process bots, never serverless. Pass
-it explicitly (`session({ store: new MemorySessionStorage() })`) so the choice of
-a non-durable backend is deliberate; for durability use `FileSessionStorage`
-(`./node`) or a networked store.
-
 #### Methods
 
 | Method | Params | Returns | Description |
 | --- | --- | --- | --- |
 | `delete` | `key`: string | void | - |
-| `read` | `key`: string | V \| undefined | - |
-| `write` | `key`: string, `value`: unknown | void | - |
+| `read` | `key`: string | string \| undefined | The stored string for `key`, or `undefined` when there is none. |
+| `write` | `key`: string, `value`: string, `options?`: [SessionWriteOptions](#sessionwriteoptions) | void | Persist `value` verbatim under `key`. |
 
 ### `NetworkError`
 
@@ -442,8 +437,8 @@ bound for long-lived bots that talk to many distinct chats.
 | Method | Params | Returns | Description |
 | --- | --- | --- | --- |
 | `delete` | `key`: string | Promise<void> | - |
-| `read` | `key`: string | Promise<V \| undefined> | - |
-| `write` | `key`: string, `value`: unknown | Promise<void> | - |
+| `read` | `key`: string | Promise<string \| undefined> | The stored string for `key`, or `undefined` when there is none. |
+| `write` | `key`: string, `value`: string, `options?`: [SessionWriteOptions](#sessionwriteoptions) | Promise<void> | Persist `value` verbatim under `key`. |
 
 ### `ReplyKeyboardBuilder`
 
@@ -567,9 +562,10 @@ own data. `.build()` returns the plain `RichText` (its accumulated sequence).
 | Method | Params | Returns | Description |
 | --- | --- | --- | --- |
 | `delete` | `key`: string | Promise<void> | - |
-| `init` | - | Promise<void> | Create the table once, lazily (the constructor can't await). Idempotent and memoized; on failure the cache is cleared so a later call retries instead of re-throwing a stale (possibly transient) rejection. `session()` calls this before the first query; `await store.init()` at boot to fail fast if the database is unreachable. |
-| `read` | `key`: string | Promise<V \| undefined> | - |
-| `write` | `key`: string, `value`: unknown | Promise<void> | - |
+| `dispose` | - | Promise<void> | Close the client, but only if this store opened it (a passed-in `sql` is the caller's). |
+| `init` | - | Promise<void> | Create the table once, lazily (the constructor can't await). Idempotent and memoized; on failure the cache is cleared so a later call retries instead of re-throwing a stale (possibly transient) rejection. `bot.init()` runs it at startup, so an unreachable database fails at boot. |
+| `read` | `key`: string | Promise<string \| undefined> | The stored string for `key`, or `undefined` when there is none. |
+| `write` | `key`: string, `value`: string | Promise<void> | Persist `value` verbatim under `key`. |
 
 ### `SqliteSessionStorage`
 
@@ -578,8 +574,9 @@ own data. `.build()` returns the plain `RichText` (its accumulated sequence).
 | Method | Params | Returns | Description |
 | --- | --- | --- | --- |
 | `delete` | `key`: string | void | - |
-| `read` | `key`: string | V \| undefined | - |
-| `write` | `key`: string, `value`: unknown | void | - |
+| `dispose` | - | void | Close the database, but only if this store opened it (a passed-in handle is the caller's). |
+| `read` | `key`: string | string \| undefined | The stored string for `key`, or `undefined` when there is none. |
+| `write` | `key`: string, `value`: string | void | Persist `value` verbatim under `key`. |
 
 ### `StaticProfilePhotoBuilder`
 
@@ -713,6 +710,31 @@ trailing `next`) has settled.
 
 **Returns:** (ctx: C, next?: [NextFn](#nextfn)) => Promise<void>
 
+### `createSession()`
+
+Build the session middleware. The result is callable (`bot.use(session)`) and
+carries `.get(ctx)` - typed once here, so handlers need no per-call generic
+and no cast:
+
+```ts
+const session = createSession<Session>({ store: new MemorySessionStorage() });
+bot.use(session);
+bot.command("start", (ctx) => { session.get(ctx).data.count += 1; });
+```
+
+Updates with no derivable key run downstream untouched (`get()` throws,
+`find()` returns `undefined`), so guard access when your bot sees keyless
+updates, or narrow with `on(...)` first.
+
+The envelope is flushed after the handler even if it throws, so a marker
+written before an error still persists - and only when it actually changed.
+
+| Param | Type |
+| --- | --- |
+| `options` | [SessionOptions](#sessionoptions)<T> |
+
+**Returns:** [SessionMiddleware](#sessionmiddleware)<T>
+
 ### `createWebhookServer()`
 
 Create (but do not start) a `node:http` server that handles Telegram webhook
@@ -751,6 +773,39 @@ so tracing stays a no-op.
 | `streaming` | boolean |
 
 **Returns:** Promise<[EncodedRequest](#encodedrequest)>
+
+### `expectReply()`
+
+Record that a reply to the message you just sent (`messageId`) is expected.
+
+`marker` is arbitrary JSON attached to that specific message; when the reply
+arrives, matchReply hands it back so you know *which* prompt is being
+answered - a chat can have several outstanding at once (name, then email, ...)
+and the marker is how you tell their replies apart. With a single prompt in
+flight it can be omitted (it defaults to `{}`) and its presence is enough.
+
+Pure session write - safe on serverless. Pair the sent message with
+`reply_markup: { force_reply: true }` so the client quotes it and the reply
+carries `reply_to_message.message_id`.
+
+| Param | Type |
+| --- | --- |
+| `ctx` | [Context](#context) |
+| `messageId` | number |
+| `marker` | [ReplyMarker](#replymarker) |
+
+**Returns:** void
+
+### `forgetReply()`
+
+Forget a pending expectation (a prompt that timed out, or was cancelled).
+
+| Param | Type |
+| --- | --- |
+| `ctx` | [Context](#context) |
+| `messageId` | number |
+
+**Returns:** void
 
 ### `formPart()`
 
@@ -832,6 +887,22 @@ Async-generator update source (ADR-004): long-polls `getUpdates` and yields each
 | `signal?` | AbortSignal |
 
 **Returns:** AsyncGenerator<[Update](#update)>
+
+### `matchReply()`
+
+If the current update is a reply to a message a prior expectReply
+registered (matched on `reply_to_message.message_id` within this session key),
+consume and return that message's marker; otherwise `undefined` - so a handler
+typically does `const hit = matchReply(ctx); if (!hit) return next();`.
+
+`M` is a type-only assertion for the marker you stored (like the `<T>` on
+`ctx.getSession`): it types the return value and generates no runtime check.
+
+| Param | Type |
+| --- | --- |
+| `ctx` | [Context](#context) |
+
+**Returns:** M | undefined
 
 ### `nextAppWebhook()`
 
@@ -934,7 +1005,10 @@ A table cell; `align` defaults to `"left"`, `valign` to `"top"`.
 
 Start the bot's long-poll loop and resolve when it stops. Installs
 `SIGINT`/`SIGTERM` handlers that trigger `bot.stop()` for a clean shutdown,
-cleaned up in a `finally` so repeated runs don't leak listeners.
+cleaned up in a `finally` so repeated runs don't leak listeners. Middleware
+setup runs first (via `bot.startPolling` -> `bot.init()`), so a bad session
+store fails before the first poll; teardown (`bot.dispose()`) runs on the way
+out, whether the loop stopped or threw.
 
 | Param | Type |
 | --- | --- |
@@ -957,27 +1031,6 @@ comparison always inspects every position, so it leaks no information about
 | `b` | string |
 
 **Returns:** boolean
-
-### `session()`
-
-Middleware that loads the session before `next()` and flushes the (possibly
-mutated) envelope after - even if a downstream handler throws, so a marker
-written before an error still persists. Updates with no derivable key run
-downstream untouched (`getSession()` throws), so guard access when your bot
-sees keyless updates, or narrow with `on(...)` first.
-
-Concurrency: each update does read -> handler -> write, with no per-key lock.
-Long-polling dispatches updates serially, so it is safe there. Under webhooks
-(concurrent invocations), two updates for the *same* key can interleave and
-the later write wins, dropping the earlier's `data` mutation or reply marker.
-If a chat can have overlapping in-flight updates, serialize them upstream or
-use a store with compare-and-swap.
-
-| Param | Type |
-| --- | --- |
-| `options` | [SessionOptions](#sessionoptions)<T> |
-
-**Returns:** [Middleware](#middleware)<[Context](#context)>
 
 ### `startWebhook()`
 
@@ -1003,17 +1056,16 @@ await startWebhook(bot, { port: 8443, path: "/telegram", secretToken });
 
 ### `taggedReplies()`
 
-Typed reply gate for plain **string** tags. `expectReply` / `matchReply` type
-their marker as an object (`ReplyMarker`), so a bare string like
-`"EMAIL_REPLY"` cannot be passed directly; this wraps them for a string union
-`Tag`, boxing it as `{ tag }` on write and unboxing on read. One `Tag` types
-both ends, so the stored and matched tags cannot drift apart.
+Reply tracking for plain **string** tags. Markers are objects, so a bare
+`"EMAIL"` cannot be stored directly; this boxes it as `{ tag }` on write and
+unboxes it on read. One `Tag` union types both ends, so the stored and matched
+tags cannot drift apart.
 
 | Param | Type |
 | --- | --- |
 | `ctx` | [Context](#context) |
 
-**Returns:** { expect: (messageId: number, tag: Tag) => void; match: () => Tag | undefined }
+**Returns:** { expect: (messageId: number, tag: Tag) => void; forget: (messageId: number) => void; match: () => Tag | undefined }
 
 ### `webhookCallback()`
 
@@ -5595,6 +5647,22 @@ A middleware over context `C`. Return value is ignored.
 type Middleware = (ctx: C, next: [NextFn](#nextfn)) => unknown | Promise<unknown>;
 ```
 
+### `MiddlewarePlugin`
+
+Optional lifecycle a middleware may carry (duck-typed - no base class, no
+registration API). `bot.init()` runs every registered `init` once, in
+registration order, before the first update; `bot.dispose()` runs every
+`dispose` in reverse order. This is how a middleware that owns a resource - a
+session store's directory / table / connection pool - gets a deterministic
+start and stop instead of inventing per-request lazy setup of its own.
+
+```ts
+type MiddlewarePlugin = {
+  dispose?: () => void | Promise<void>;
+  init?: () => void | Promise<void>;
+};
+```
+
 ### `NextFn`
 
 Continuation passed to a middleware; awaiting it runs the rest of the chain.
@@ -7811,32 +7879,61 @@ type SentWebAppMessage = {
 };
 ```
 
+### `SessionCodec`
+
+How a value is turned into the string a store persists. Default: JSON.
+
+```ts
+type SessionCodec = {
+  decode: (raw: string) => unknown;
+  encode: (envelope: unknown) => string;
+};
+```
+
 ### `SessionEnvelope`
 
-What actually gets persisted per key: the caller's `data` bag plus the
-reply-await table (`message_id we sent -> marker`). Kept as one envelope so a
-single store round-trip covers both; callers never see `awaiting` - they use
-`expectReply` / `matchReply`.
+What actually gets persisted per key: the caller's `data` bag plus `ext`, the
+namespace map that session-backed layers (reply tracking, and anything else
+built the same way) store their own state under. One store round-trip covers
+all of them.
 
 ```ts
 type SessionEnvelope = {
-  awaiting: Record<number, [ReplyMarker](#replymarker)>;
+  createdAt: string;
   data: T;
+  ext?: Record<string, unknown>;
+  updatedAt: string;
+  v: number;
 };
 ```
 
 ### `SessionHandle`
 
-The typed handle `ctx.getSession<T>()` returns once `session()` has run. `data`
-is the persistent bag (mutate in place, or reassign - it flushes after the
-handler); the two reply helpers are scoped here rather than on `ctx`, so the
-`Context` shape is untouched and needs no cast.
+The typed handle `session.get(ctx)` returns. `data` is the persistent bag
+(mutate in place, or reassign - it flushes after the handler); `ext` is how a
+layer claims its own namespace; `delete()` drops the whole key on flush.
 
 ```ts
 type SessionHandle = {
+  readonly createdAt: Date;
   data: T;
-  expectReply: (messageId: number, marker?: [ReplyMarker](#replymarker)) => void;
-  matchReply: <M>() => M | undefined;
+  readonly updatedAt: Date;
+  delete: () => void;
+  ext: <E>(namespace: string, initial: () => E) => E;
+};
+```
+
+### `SessionMiddleware`
+
+The value `session()` returns: the middleware itself, plus the typed accessor
+and the lifecycle hooks `Bot` picks up from `use()`.
+
+```ts
+type SessionMiddleware = [Middleware](#middleware)<[Context](#context)> & {
+  dispose: () => Promise<void>;
+  find: (ctx: [Context](#context)) => [SessionHandle](#sessionhandle)<T> | undefined;
+  get: (ctx: [Context](#context)) => [SessionHandle](#sessionhandle)<T>;
+  init: () => Promise<void>;
 };
 ```
 
@@ -7844,26 +7941,39 @@ type SessionHandle = {
 
 ```ts
 type SessionOptions = {
+  codec?: [SessionCodec](#sessioncodec);
   getSessionKey?: (ctx: [Context](#context)) => string | undefined;
   initial?: (ctx: [Context](#context)) => T;
+  now?: () => number;
   store: [SessionStore](#sessionstore);
+  ttlSeconds?: number;
 };
 ```
 
 ### `SessionStore`
 
-Minimal async key/value contract a session backend must satisfy - a
-value-agnostic KV store, deliberately not generic. `read` resolves to
-`undefined` for a missing key and to `unknown` otherwise (bytes off a durable
-backend are untrusted until the middleware interprets them); every method may
-be sync or async so an in-memory `Map` and a networked store share one shape.
+Minimal key/value contract a session backend must satisfy. Deliberately
+**string-valued and non-generic**: the middleware owns encoding, so a store
+never parses, never holds a live object, and can be swapped without changing
+what round-trips.
 
 ```ts
 type SessionStore = {
   delete: (key: string) => void | Promise<void>;
-  init?: () => Promise<void>;
-  read: <V>(key: string) => V | Promise<V | undefined> | undefined;
-  write: (key: string, value: unknown) => void | Promise<void>;
+  dispose?: () => void | Promise<void>;
+  init?: () => void | Promise<void>;
+  read: (key: string) => string | Promise<string | undefined> | undefined;
+  write: (key: string, value: string, options?: [SessionWriteOptions](#sessionwriteoptions)) => void | Promise<void>;
+};
+```
+
+### `SessionWriteOptions`
+
+Per-write hints. A store ignores what it cannot honor.
+
+```ts
+type SessionWriteOptions = {
+  ttlSeconds?: number;
 };
 ```
 
@@ -9488,12 +9598,30 @@ stays Node-free (no `node:*` imports).
 const HTTP_STATUS_TOO_MANY_REQUESTS: 429;
 ```
 
+### `REPLY_NAMESPACE`
+
+The `ext` namespace this layer stores its table under.
+
+```ts
+const REPLY_NAMESPACE: "reply";
+```
+
 ### `SESSION_STATE_KEY`
 
-`ctx.state` slot the middleware stashes the handle under; read by `ctx.getSession`.
+`ctx.state` slot the middleware stashes the handle under; read by
+`ctx.getSession()`. With more than one session middleware registered, the
+last one to run for an update owns the slot.
 
 ```ts
 const SESSION_STATE_KEY: "session";
+```
+
+### `SESSION_VERSION`
+
+Current envelope version, stamped on every write so a future format can migrate.
+
+```ts
+const SESSION_VERSION: 1;
 ```
 
 ### `UPDATE_TYPES`
@@ -9510,4 +9638,12 @@ Next.js Pages API uses the same `(req, res)` handler.
 
 ```ts
 const nextPagesWebhook: (bot: [Bot](#bot), options?: [WebhookOptions](#webhookoptions)) => (req: [NodeLikeRequest](#nodelikerequest), res: [NodeLikeResponse](#nodelikeresponse)) => Promise<void>;
+```
+
+### `session`
+
+Alias for createSession - `bot.use(session({ store }))` reads naturally.
+
+```ts
+const session: <T>(options: [SessionOptions](#sessionoptions)<T>) => [SessionMiddleware](#sessionmiddleware)<T>;
 ```

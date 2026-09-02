@@ -1,9 +1,12 @@
 /**
  * `RedisSessionStorage` - a durable, cross-instance `SessionStore` backed by
- * Bun's built-in Redis client (`./bun`, the Bun-only subpath). Values are stored
- * as JSON strings under a key prefix; an optional TTL expires idle sessions.
- * Suitable for horizontally-scaled Bun deployments (webhooks behind a load
- * balancer) where the session must be shared across processes.
+ * Bun's built-in Redis client (`./bun`, the Bun-only subpath). Stores the
+ * encoded envelope string under a key prefix; an optional TTL expires idle
+ * sessions. Suitable for horizontally-scaled Bun deployments (webhooks behind a
+ * load balancer) where the session must be shared across processes.
+ *
+ * Writes from two instances for the same key are last-writer-wins (within one
+ * process the middleware's per-key lock serializes them).
  *
  * Bun-only: `redis` / `RedisClient` come from the `bun` module, absent on Node,
  * so this module lives behind the `./bun` export and is never reached from `.` /
@@ -11,14 +14,17 @@
  */
 
 import { redis, type RedisClient } from "bun";
-import type { SessionStore } from "../core/session.js";
+import type { SessionStore, SessionWriteOptions } from "../core/session.js";
 
 export type RedisSessionStorageOptions = {
   /** Bun `RedisClient` to use. Defaults to Bun's shared `redis` (REDIS_URL / VALKEY_URL). */
   client?: RedisClient;
   /** Prefix prepended to every key. Default `"session:"`. */
   prefix?: string;
-  /** If set, each write (re)sets this expiry in seconds; omit to persist indefinitely. */
+  /**
+   * Default expiry in seconds applied on every write; omit to persist
+   * indefinitely. The middleware's own `ttlSeconds` option, when set, wins.
+   */
   ttlSeconds?: number;
 };
 
@@ -33,16 +39,16 @@ export class RedisSessionStorage implements SessionStore {
     this.ttlSeconds = options.ttlSeconds;
   }
 
-  async read<V>(key: string): Promise<V | undefined> {
-    const raw = await this.client.get(this.prefix + key);
-    return raw == null ? undefined : (JSON.parse(raw) as V);
+  async read(key: string): Promise<string | undefined> {
+    return (await this.client.get(this.prefix + key)) ?? undefined;
   }
 
-  async write(key: string, value: unknown): Promise<void> {
+  async write(key: string, value: string, options?: SessionWriteOptions): Promise<void> {
     const k = this.prefix + key;
-    await this.client.set(k, JSON.stringify(value));
-    if (this.ttlSeconds !== undefined) {
-      await this.client.expire(k, this.ttlSeconds);
+    await this.client.set(k, value);
+    const ttl = options?.ttlSeconds ?? this.ttlSeconds;
+    if (ttl !== undefined) {
+      await this.client.expire(k, ttl);
     }
   }
 

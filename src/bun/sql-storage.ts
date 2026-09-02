@@ -1,11 +1,22 @@
 /**
  * `SqlSessionStorage` - a durable, cross-instance `SessionStore` backed by Bun's
  * built-in SQL client (`./bun`, the Bun-only subpath). One row per key in a
- * single table, upserted on write; values are JSON strings. Suited to a
- * horizontally-scaled Bun deployment already using Postgres.
+ * single table (`key`, `value`, `created_at`, `updated_at`), upserted on
+ * write; the value is the encoded envelope string the middleware hands over.
+ * Suited to a horizontally-scaled Bun deployment already using Postgres.
+ *
+ * The timestamp columns are ISO-8601 UTC text (lexicographically ordered, and
+ * portable across Bun SQL's Postgres and SQLite adapters - a real `TIMESTAMPTZ`
+ * is not): `created_at` set on insert and never touched again, `updated_at` on
+ * every write. They exist for operational queries the session API cannot answer
+ * ("delete sessions idle for 90 days"), alongside the same two fields inside the
+ * envelope, which is what handlers read.
+ *
+ * Writes from two instances for the same key are last-writer-wins (within one
+ * process the middleware's per-key lock serializes them).
  *
  * Targets Postgres semantics (the `ON CONFLICT ... DO UPDATE` upsert), which is
- * Bun SQL's primary adapter. The table is created lazily on first use.
+ * Bun SQL's primary adapter; its SQLite adapter supports it too.
  *
  * `key` and `value` are bound parameters via safe `sql`...`` templates - never
  * string-interpolated. Only the table name is interpolated, because Bun (like
@@ -33,6 +44,8 @@ export type SqlSessionStorageOptions = {
 export class SqlSessionStorage implements SessionStore {
   private readonly sql: SQL;
   private readonly table: string;
+  /** True when this store opened the client itself, so `dispose()` may close it. */
+  private readonly owned: boolean;
   private ensured?: Promise<void>;
 
   constructor(options: SqlSessionStorageOptions = {}) {
@@ -43,6 +56,7 @@ export class SqlSessionStorage implements SessionStore {
       throw new Error(`SqlSessionStorage: invalid table name ${JSON.stringify(table)}`);
     }
     this.table = table;
+    this.owned = options.sql === undefined && options.url !== undefined;
     this.sql = options.sql ?? (options.url !== undefined ? new SQL(options.url) : bunSql);
   }
 
@@ -54,14 +68,18 @@ export class SqlSessionStorage implements SessionStore {
   /**
    * Create the table once, lazily (the constructor can't await). Idempotent and
    * memoized; on failure the cache is cleared so a later call retries instead of
-   * re-throwing a stale (possibly transient) rejection. `session()` calls this
-   * before the first query; `await store.init()` at boot to fail fast if the
-   * database is unreachable.
+   * re-throwing a stale (possibly transient) rejection. `bot.init()` runs it at
+   * startup, so an unreachable database fails at boot.
    */
   init(): Promise<void> {
     if (this.ensured === undefined) {
       this.ensured = (async () => {
-        await this.sql`CREATE TABLE IF NOT EXISTS ${this.ref} (key TEXT PRIMARY KEY, value TEXT NOT NULL)`;
+        await this.sql`CREATE TABLE IF NOT EXISTS ${this.ref} (
+          key TEXT PRIMARY KEY,
+          value TEXT NOT NULL,
+          created_at TEXT NOT NULL,
+          updated_at TEXT NOT NULL
+        )`;
       })().catch((err: unknown) => {
         this.ensured = undefined;
         throw err;
@@ -70,17 +88,23 @@ export class SqlSessionStorage implements SessionStore {
     return this.ensured;
   }
 
-  async read<V>(key: string): Promise<V | undefined> {
-    await this.init();
-    const rows = (await this.sql`SELECT value FROM ${this.ref} WHERE key = ${key}`) as Array<{ value: string }>;
-    const row = rows[0];
-    return row ? (JSON.parse(row.value) as V) : undefined;
+  /** Close the client, but only if this store opened it (a passed-in `sql` is the caller's). */
+  async dispose(): Promise<void> {
+    if (this.owned) await this.sql.close();
   }
 
-  async write(key: string, value: unknown): Promise<void> {
+  async read(key: string): Promise<string | undefined> {
     await this.init();
-    await this.sql`INSERT INTO ${this.ref} (key, value) VALUES (${key}, ${JSON.stringify(value)})
-      ON CONFLICT (key) DO UPDATE SET value = excluded.value`;
+    const rows = (await this.sql`SELECT value FROM ${this.ref} WHERE key = ${key}`) as Array<{ value: string }>;
+    return rows[0]?.value;
+  }
+
+  async write(key: string, value: string): Promise<void> {
+    await this.init();
+    const at = new Date().toISOString();
+    await this.sql`INSERT INTO ${this.ref} (key, value, created_at, updated_at)
+      VALUES (${key}, ${value}, ${at}, ${at})
+      ON CONFLICT (key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at`;
   }
 
   async delete(key: string): Promise<void> {

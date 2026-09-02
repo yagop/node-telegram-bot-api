@@ -32,21 +32,23 @@ function fakeRedis(): RedisClient & { store: Map<string, string>; expires: Map<s
   return client as unknown as RedisClient & { store: Map<string, string>; expires: Map<string, number> };
 }
 
+const envelope = JSON.stringify({ v: 1, data: { n: 1 } });
+
 describe("RedisSessionStorage", () => {
-  test("prefixes keys and round-trips JSON", async () => {
+  test("prefixes keys and round-trips the encoded string", async () => {
     const client = fakeRedis();
     const store = new RedisSessionStorage({ client });
-    await store.write("chat:42", { data: { n: 1 }, awaiting: {} });
+    await store.write("chat:42", envelope);
 
-    assert.equal(client.store.has("session:chat:42"), true); // default prefix applied
-    assert.deepEqual(await store.read("chat:42"), { data: { n: 1 }, awaiting: {} });
+    assert.equal(client.store.get("session:chat:42"), envelope); // default prefix applied
+    assert.equal(await store.read("chat:42"), envelope);
   });
 
   test("read returns undefined for a missing key; delete removes it", async () => {
     const client = fakeRedis();
     const store = new RedisSessionStorage({ client, prefix: "s:" });
     assert.equal(await store.read("nope"), undefined);
-    await store.write("k", { data: {}, awaiting: {} });
+    await store.write("k", envelope);
     await store.delete("k");
     assert.equal(client.store.has("s:k"), false);
     assert.equal(await store.read("k"), undefined);
@@ -54,11 +56,17 @@ describe("RedisSessionStorage", () => {
 
   test("applies a TTL on write only when configured", async () => {
     const withTtl = fakeRedis();
-    await new RedisSessionStorage({ client: withTtl, ttlSeconds: 3600 }).write("k", { data: {}, awaiting: {} });
+    await new RedisSessionStorage({ client: withTtl, ttlSeconds: 3600 }).write("k", envelope);
     assert.equal(withTtl.expires.get("session:k"), 3600);
 
     const noTtl = fakeRedis();
-    await new RedisSessionStorage({ client: noTtl }).write("k", { data: {}, awaiting: {} });
+    await new RedisSessionStorage({ client: noTtl }).write("k", envelope);
     assert.equal(noTtl.expires.has("session:k"), false);
+  });
+
+  test("a per-write TTL (from the middleware) wins over the store default", async () => {
+    const client = fakeRedis();
+    await new RedisSessionStorage({ client, ttlSeconds: 3600 }).write("k", envelope, { ttlSeconds: 60 });
+    assert.equal(client.expires.get("session:k"), 60);
   });
 });

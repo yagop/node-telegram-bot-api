@@ -22,6 +22,19 @@ import type { TransportOptions } from "./transport.js";
 
 export interface BotOptions extends TransportOptions {}
 
+/**
+ * Optional lifecycle a middleware may carry (duck-typed - no base class, no
+ * registration API). `bot.init()` runs every registered `init` once, in
+ * registration order, before the first update; `bot.dispose()` runs every
+ * `dispose` in reverse order. This is how a middleware that owns a resource - a
+ * session store's directory / table / connection pool - gets a deterministic
+ * start and stop instead of inventing per-request lazy setup of its own.
+ */
+export type MiddlewarePlugin = {
+  init?(): void | Promise<void>;
+  dispose?(): void | Promise<void>;
+};
+
 /** A composed sub-chain used by the routing helpers. */
 type Composed = (ctx: Context, next: () => Promise<void>) => Promise<void>;
 
@@ -43,6 +56,8 @@ export class Bot {
 
   private readonly middleware: Middleware<Context>[] = [];
   private errorHandler: (err: unknown, ctx: Context) => unknown = defaultErrorHandler;
+  private readonly plugins: MiddlewarePlugin[] = [];
+  private started?: Promise<void>;
   private controller?: AbortController;
   private running = false;
 
@@ -50,10 +65,54 @@ export class Bot {
     this.api = new Api(token, options);
   }
 
-  /** Register one or more middleware to run on every update. */
+  /**
+   * Register one or more middleware to run on every update. A middleware that
+   * also carries `init` / `dispose` (see {@link MiddlewarePlugin}) is picked up
+   * for the bot lifecycle: its setup runs once via {@link Bot.init}, its
+   * teardown via {@link Bot.dispose}.
+   */
   use(...mw: Middleware<Context>[]): this {
+    for (const fn of mw) {
+      const plugin = fn as Middleware<Context> & MiddlewarePlugin;
+      if (typeof plugin.init === "function" || typeof plugin.dispose === "function") {
+        this.plugins.push(plugin);
+      }
+    }
     this.middleware.push(...mw);
     return this;
+  }
+
+  /**
+   * Run every registered middleware's `init()` once, in registration order.
+   * Memoized, and awaited by `startPolling()` and `handleUpdate()`, so setup
+   * failures surface at boot (or on the first webhook invocation) rather than
+   * as a per-update lazy path. A failure is not cached: the next call retries.
+   * Call it yourself to fail fast before serving anything.
+   */
+  init(): Promise<void> {
+    if (this.started === undefined) {
+      this.started = (async () => {
+        for (const plugin of this.plugins) {
+          await plugin.init?.();
+        }
+      })().catch((err: unknown) => {
+        this.started = undefined;
+        throw err;
+      });
+    }
+    return this.started;
+  }
+
+  /**
+   * Release resources held by registered middleware: runs every `dispose()` in
+   * reverse registration order. Call it after `stop()` (or when a webhook
+   * process shuts down); a later `init()` re-runs setup.
+   */
+  async dispose(): Promise<void> {
+    this.started = undefined;
+    for (const plugin of [...this.plugins].reverse()) {
+      await plugin.dispose?.();
+    }
   }
 
   /**
@@ -134,6 +193,7 @@ export class Bot {
    * itself throws.
    */
   async handleUpdate(update: Update): Promise<void> {
+    await this.init(); // memoized; a no-op once startup has run
     const ctx = new Context(update, this.api);
     try {
       await compose(this.middleware)(ctx, () => Promise.resolve());
@@ -161,9 +221,12 @@ export class Bot {
     }
     const controller = new AbortController();
     this.controller = controller;
+    // Claim the slot synchronously, before the first await, so `isRunning()` is
+    // true for anyone who calls it in the same tick as `startPolling()`.
     this.running = true;
-    const iterable = source ?? longPoll(this.api, options, controller.signal);
     try {
+      await this.init(); // fail fast on a bad store/plugin before the first poll
+      const iterable = source ?? longPoll(this.api, options, controller.signal);
       for await (const update of iterable) {
         if (controller.signal.aborted) break;
         await this.handleUpdate(update);

@@ -284,24 +284,42 @@ Register the URL once: `api.setWebhook({ url, secret_token })`. The `secret_toke
 
 ## 💾 Sessions
 
-Opt-in `session()` middleware adds a persistent, per-chat bag reached through `ctx.getSession<T>()`. The `store` is **required** - no implicit default, so the durability choice is always explicit. Nothing lives in process memory between updates - only what the store persists - so it works under one-invocation-per-update serverless as well as long-polling. (One caveat: each update is read-modify-write with no per-key lock, so concurrent updates for the *same* chat are last-writer-wins; long-polling dispatches serially and is unaffected.)
+Opt-in session middleware adds a persistent, per-chat bag, reached from the context with **`ctx.getSession<T>()`**. The `store` is **required** - no implicit default, so the durability choice is always explicit. Nothing lives in process memory between updates (only what the store persists), so the same code works under one-invocation-per-update serverless and under long-polling.
 
 ```ts
-import { Bot, session, MemorySessionStorage } from "node-telegram-bot-api";
+import { Bot, createSession, MemorySessionStorage } from "node-telegram-bot-api";
 
 type Session = { count: number };
 
 const bot = new Bot(process.env.BOT_TOKEN!);
-bot.use(session<Session>({ store: new MemorySessionStorage(), initial: () => ({ count: 0 }) }));
+bot.use(createSession<Session>({ store: new MemorySessionStorage(), initial: () => ({ count: 0 }) }));
 
 bot.command("count", async (ctx) => {
   const s = ctx.getSession<Session>();
-  s.data.count++;
+  s.data.count++; // mutate in place, or reassign: s.data = { count: 0 }
   await ctx.reply(`Seen ${s.data.count} times`);
 });
 ```
 
-The handle also carries **reply tracking** - `expectReply` / `matchReply` record "awaiting a reply to a specific message" as plain session data (matched on `reply_to_message.message_id`), never a live promise, so it survives a restart.
+Tired of repeating `<Session>`? Keep the middleware and use its own accessor, typed once at construction - `createSession<Session>()` returns a middleware carrying `.get(ctx)` and `.find(ctx)` (the latter returns `undefined` instead of throwing when the update had no session key):
+
+```ts
+const session = createSession<Session>({ store: new MemorySessionStorage(), initial: () => ({ count: 0 }) });
+bot.use(session);
+bot.command("count", (ctx) => ctx.reply(`Seen ${++session.get(ctx).data.count} times`));
+```
+
+Both return the same handle, which is also where the non-bag members live: `.createdAt` / `.updatedAt`, `.ext()` for layers built on sessions, and `.delete()`, which evicts the whole key on flush - an explicit end-of-conversation / `/forget` / erasure hook. `ctx.getSession()` and `session.get(ctx)` throw when the middleware did not run for this update (not registered, or no derivable key).
+
+What is persisted is a versioned envelope, `{ v, data, ext, createdAt, updatedAt }`: `data` is your bag, `ext` is a namespace map that layers built on sessions claim a slot in, and the two ISO-8601 timestamps are first-seen / last-active. The flush happens after the handler (even if it throws, so state written before an error survives) and is **skipped when the encoded envelope is unchanged**, so an untouched chat costs one read and no write.
+
+`createdAt` and `updatedAt` are on the handle as `Date`s - `updatedAt` as loaded, i.e. the previous write, so it doubles as "when was this chat last active". A skipped flush leaves it alone, so it tracks real writes rather than mere traffic. `SqlSessionStorage` and `SqliteSessionStorage` also keep them as real `created_at` / `updated_at` columns (ISO-8601 text, so `ORDER BY` and range filters work) for the operational queries the session API cannot answer - `DELETE FROM sessions WHERE updated_at < '2026-06-01'`, or counting chats first seen this week. Pass `now` to `createSession` to inject a clock in tests.
+
+**Concurrency.** Updates for the same key are serialized in-process by a per-key lock, so two concurrent webhook invocations for one chat cannot interleave read-modify-write. Across processes there is no lock: two instances handling updates for the same chat are last-writer-wins (as in the rest of the ecosystem). If that matters for your deployment, key sessions so one chat lands on one instance, or serialize upstream.
+
+### Reply tracking
+
+Reply tracking is a layer **on top of** the session (it stores its table in the envelope's `ext.reply`, so a bot that never uses it persists nothing extra). It records "awaiting a reply to a specific message" as plain data matched on `reply_to_message.message_id` - never a live promise - so it survives a restart and works on serverless.
 
 You tag the message you sent; when its reply arrives, you read the tag back, so you know **which** prompt is being answered - the reason it exists is that a chat can have several prompts outstanding at once. `taggedReplies<Tag>(ctx)` wraps both ends for a plain string tag, tying `expect` and `match` to one type. Below, the `step` tag drives a two-question flow through a single `message` handler:
 
@@ -325,46 +343,48 @@ bot.on("message", async (ctx, next) => {
     const sent = await ctx.reply("And your email?", { reply_markup: { force_reply: true } });
     taggedReplies<"name" | "email">(ctx).expect(sent.message_id, "email"); // chain the next prompt
   } else {
-    const { name } = ctx.getSession<Session>().data;
-    await ctx.reply(`Thanks ${name}, got your email: ${ctx.message?.text}`);
+    await ctx.reply(`Thanks ${ctx.getSession<Session>().data.name}, got your email: ${ctx.message?.text}`);
   }
 });
 ```
 
-`taggedReplies` is sugar over the primitives on the handle: `getSession().expectReply(id, marker?)` stores any JSON `marker` object and `getSession().matchReply<M>()` returns it (the two ends typed independently). With a single prompt in flight you can drop the marker entirely (`expectReply(sent.message_id)`) - its presence alone is the signal.
+`taggedReplies` is sugar over the primitives `expectReply(ctx, id, marker?)` (stores any JSON marker object), `matchReply<M>(ctx)` (returns it typed as `M`) and `forgetReply(ctx, id)` (cancels a pending expectation). With a single prompt in flight you can drop the marker entirely - its presence alone is the signal.
 
 ### Storage backends
 
-Every backend implements the same `SessionStore` (`read<V>` / `write` / `delete`), so swapping one for another is a one-line change. Pick by runtime and durability need:
+Every backend implements the same `SessionStore`: a **string** key/value contract - `read(key)`, `write(key, value, { ttlSeconds })`, `delete(key)`, plus optional `init` / `dispose`. Serialization happens once in the middleware's codec, never inside a store, so the in-memory store is a faithful simulation of a durable one - a `Date` in the bag comes back a string everywhere, not only on Redis. Swapping backends is a one-line change:
 
 | Store | Import | Runtime | Durable | Notes |
 | --- | --- | --- | --- | --- |
-| `MemorySessionStorage` | `node-telegram-bot-api` | any | ❌ | process-local; single-process / polling only |
-| `FileSessionStorage` | `node-telegram-bot-api/node` | Node | ✅ | one JSON file per key; atomic writes; single host |
-| `SqliteSessionStorage` | `node-telegram-bot-api/bun` | Bun | ✅ | `bun:sqlite`; sync; single process |
+| `MemorySessionStorage` | `node-telegram-bot-api` | any | ❌ | process-local; single-process / polling only; optional TTL |
+| `FileSessionStorage` | `node-telegram-bot-api/node` | Node | ✅ | one file per key; atomic writes; single host |
+| `SqliteSessionStorage` | `node-telegram-bot-api/bun` | Bun | ✅ | `bun:sqlite`; sync; single host |
 | `SqlSessionStorage` | `node-telegram-bot-api/bun` | Bun | ✅ | Bun `SQL` (Postgres); cross-instance |
 | `RedisSessionStorage` | `node-telegram-bot-api/bun` | Bun | ✅ | Bun `redis`; cross-instance; optional TTL |
 
 ```ts
 // durable on Node (e.g. a webhook on one host)
-import { session } from "node-telegram-bot-api";
+import { createSession } from "node-telegram-bot-api";
 import { FileSessionStorage } from "node-telegram-bot-api/node";
-bot.use(session<Session>({ store: new FileSessionStorage({ path: "./.sessions" }) }));
+bot.use(createSession<Session>({ store: new FileSessionStorage({ path: "./.sessions" }) }));
 
-// durable on Bun, shared across instances
+// durable on Bun, shared across instances, idle sessions expiring after a day
 import { RedisSessionStorage } from "node-telegram-bot-api/bun";
-bot.use(session<Session>({ store: new RedisSessionStorage({ ttlSeconds: 86400 }) }));
+bot.use(createSession<Session>({ store: new RedisSessionStorage(), ttlSeconds: 86400 }));
 ```
 
-The `node-telegram-bot-api/bun` stores import Bun built-ins and are isolated behind that subpath - a Node or edge install never resolves them. Any other backend (ioredis, `pg`, a KV service) is ~10 lines implementing the three `SessionStore` methods.
+Any other backend (ioredis, `pg`, a KV service) is ~10 lines implementing the three methods. The `node-telegram-bot-api/bun` stores import Bun built-ins and are isolated behind that subpath - a Node or edge install never resolves them.
 
-Stores that need setup (directory, table) do it lazily on first use; `session()` also kicks it off at registration so it overlaps startup. To fail fast at boot instead - on a bad path or an unreachable backend - `await store.init()` before `bot.use`:
+### Lifecycle
+
+A middleware may carry `init` / `dispose`; `bot.use` picks those up, `bot.init()` runs them once in registration order and `bot.dispose()` in reverse. Session middleware forwards both to its store, so setup (create the directory / table, open the pool) happens **at startup**, not lazily on update #1:
 
 ```ts
-const store = new FileSessionStorage({ path: "./.sessions" });
-await store.init(); // optional: surfaces setup errors now, not on the first update
-bot.use(session<Session>({ store }));
+bot.use(createSession<Session>({ store: new FileSessionStorage({ path: "./.sessions" }) }));
+await bot.init(); // optional: a bad path / unreachable backend fails here, at boot
 ```
+
+`startPolling()` and `handleUpdate()` await `bot.init()` themselves (memoized), so this is only about *when* a setup error surfaces. `run()` (`/node`) calls `bot.dispose()` on shutdown.
 
 ## ⚠️ Errors
 

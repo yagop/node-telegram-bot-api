@@ -1,17 +1,16 @@
 /**
  * `FileSessionStorage` - a durable, one-file-per-key `SessionStore` for the
- * `session()` middleware (`./node`, the only folder allowed to import `node:*`).
+ * session middleware (`./node`, the only folder allowed to import `node:*`).
  *
- * Persists each session envelope as a JSON file under a directory, so state
- * survives a process restart - the point of a durable store on serverless /
- * long-running Node. It is a single-host store (one machine's disk); reach for
- * Redis / DynamoDB across instances. Writes are atomic (temp file + `rename`),
- * so a crash mid-write never leaves a half-written, unparseable file; keys are
- * `encodeURIComponent`-encoded into filenames, which also neutralizes any `/`
- * so a crafted key cannot escape the directory.
- *
- * The store is value-agnostic (it persists whatever JSON the middleware hands
- * it), so it takes no type parameter: `new FileSessionStorage({ path })`.
+ * Persists each encoded session envelope as a file under a directory, so state
+ * survives a process restart. It stores the string it is given verbatim -
+ * encoding lives in the middleware's codec, not here - and is a single-host
+ * store (one machine's disk); reach for Redis / Postgres across instances.
+ * Writes are atomic (temp file + `rename`), so a crash mid-write never leaves a
+ * half-written file; keys are `encodeURIComponent`-encoded into filenames,
+ * which also neutralizes any `/` so a crafted key cannot escape the directory.
+ * Cross-process writers to the same directory are last-writer-wins; within one
+ * process the middleware's per-key lock already serializes updates.
  */
 
 import { randomUUID } from "node:crypto";
@@ -20,7 +19,7 @@ import { join } from "node:path";
 import type { SessionStore } from "../core/session.js";
 
 export type FileSessionStorageOptions = {
-  /** Directory to hold the per-key JSON files; created (recursively) on first write. */
+  /** Directory to hold the per-key files; created (recursively) by `init()`. */
   path: string;
 };
 
@@ -35,8 +34,8 @@ export class FileSessionStorage implements SessionStore {
   /**
    * Create the directory. Idempotent and memoized so concurrent writes issue one
    * mkdir; on failure the cache is cleared so a later call retries instead of
-   * re-throwing a stale (possibly transient) rejection. `session()` calls this
-   * before the first write; `await store.init()` at boot to fail fast on a bad path.
+   * re-throwing a stale (possibly transient) rejection. `bot.init()` runs it at
+   * startup, so a bad path fails at boot rather than on the first update.
    */
   init(): Promise<void> {
     if (this.ensured === undefined) {
@@ -54,22 +53,20 @@ export class FileSessionStorage implements SessionStore {
     return join(this.dir, `${encodeURIComponent(key)}.json`);
   }
 
-  async read<V>(key: string): Promise<V | undefined> {
-    let raw: string;
+  async read(key: string): Promise<string | undefined> {
     try {
-      raw = await readFile(this.fileFor(key), "utf8");
+      return await readFile(this.fileFor(key), "utf8");
     } catch (err) {
       if ((err as { code?: string }).code === "ENOENT") return undefined;
       throw err;
     }
-    return JSON.parse(raw) as V;
   }
 
-  async write(key: string, value: unknown): Promise<void> {
+  async write(key: string, value: string): Promise<void> {
     await this.init();
     const file = this.fileFor(key);
     const tmp = `${file}.${randomUUID()}.tmp`;
-    await writeFile(tmp, JSON.stringify(value), "utf8");
+    await writeFile(tmp, value, "utf8");
     await rename(tmp, file); // atomic on the same filesystem: readers see old-or-new, never partial
   }
 

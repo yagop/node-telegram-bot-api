@@ -31,7 +31,9 @@ export * from "./longpoll.js";
 export * from "./media.js";
 // Opt-in rate limiting (ADR-004 §10, M3)
 export * from "./ratelimiter.js";
-// Opt-in session + reply-tracking helpers
+// Opt-in session middleware + its core store and the reply-tracking layer
+export * from "./memory-session-storage.js";
+export * from "./reply-tracking.js";
 export * from "./session.js";
 export * from "./richmessage.js";
 export * from "./richtext.js";

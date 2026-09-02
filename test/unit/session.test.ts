@@ -1,33 +1,48 @@
 import { describe, test } from "node:test";
 import assert from "node:assert/strict";
 import type { Api } from "../../src/core/api.js";
+import { Bot } from "../../src/core/bot.js";
 import { Context } from "../../src/core/context.js";
-import { MemorySessionStorage, session, type SessionStore, taggedReplies } from "../../src/core/session.js";
+import { expectReply, forgetReply, matchReply, taggedReplies } from "../../src/core/reply-tracking.js";
+import { MemorySessionStorage } from "../../src/core/memory-session-storage.js";
+import { createSession, session, type SessionStore } from "../../src/core/session.js";
 import type { Update } from "../../src/types/index.js";
 
 /** A recording store to assert persistence without a real backend. */
-function fakeStore(): SessionStore & { reads: string[]; writes: Array<[string, unknown]> } {
-  const map = new Map<string, unknown>();
+function fakeStore(): SessionStore & { reads: string[]; writes: Array<[string, string]>; deletes: string[] } {
+  const map = new Map<string, string>();
   const reads: string[] = [];
-  const writes: Array<[string, unknown]> = [];
+  const writes: Array<[string, string]> = [];
+  const deletes: string[] = [];
   return {
     reads,
     writes,
-    read<V>(key: string): V | undefined {
+    deletes,
+    read(key: string): string | undefined {
       reads.push(key);
-      return map.get(key) as V | undefined;
+      return map.get(key);
     },
-    write(key, value) {
+    write(key: string, value: string): void {
       writes.push([key, value]);
       map.set(key, value);
     },
-    delete(key) {
+    delete(key: string): void {
+      deletes.push(key);
       map.delete(key);
     },
   };
 }
 
 const api = {} as Api;
+
+/** A frozen clock, so envelope timestamps are byte-comparable in assertions. */
+const AT = "2030-01-01T00:00:00.000Z";
+const now = (): number => Date.parse(AT);
+
+/** The exact string the middleware persists for `{ data, ext? }` at `AT`. */
+function encoded(rest: { data: unknown; ext?: unknown }): string {
+  return JSON.stringify({ v: 1, ...rest, createdAt: AT, updatedAt: AT });
+}
 
 /** A message update, optionally a reply to `replyTo`, in a fixed chat. */
 function msg(text: string, replyTo?: number): Update {
@@ -44,73 +59,120 @@ function msg(text: string, replyTo?: number): Update {
   } as unknown as Update;
 }
 
-describe("session()", () => {
-  test("keys per chat, defaults to an empty bag, writes back on flush", async () => {
+describe("createSession()", () => {
+  test("keys per chat and exposes a typed handle through .get(ctx)", async () => {
     const store = fakeStore();
-    const mw = session({ store });
+    const mw = createSession<{ n: number }>({ store, initial: () => ({ n: 0 }), now });
     const ctx = new Context(msg("hi"), api);
 
     await mw(ctx, async () => {
-      assert.deepEqual(ctx.getSession().data, {});
+      mw.get(ctx).data.n += 1;
     });
     assert.deepEqual(store.reads, ["chat:42"]);
-    assert.equal(store.writes.length, 1);
-    assert.deepEqual(store.writes.at(0), ["chat:42", { data: {}, awaiting: {} }]);
+    assert.deepEqual(store.writes, [["chat:42", encoded({ data: { n: 1 } })]]);
   });
 
-  test("persists mutations across updates on the same key", async () => {
+  test("skips the write when nothing changed", async () => {
     const store = fakeStore();
-    const mw = session<{ n: number }>({ store, initial: () => ({ n: 0 }) });
+    const mw = createSession<{ n: number }>({ store, initial: () => ({ n: 0 }) });
+
+    await mw(new Context(msg("a"), api), async () => {});
+    assert.equal(store.writes.length, 0); // fresh, untouched session -> no row created
+
+    const ctx = new Context(msg("b"), api);
+    await mw(ctx, async () => {
+      mw.get(ctx).data.n = 1;
+    });
+    assert.equal(store.writes.length, 1);
+
+    const again = new Context(msg("c"), api);
+    await mw(again, async () => {
+      mw.get(again).data.n = 1; // same value -> byte-identical envelope
+    });
+    assert.equal(store.writes.length, 1, "an unchanged envelope must not be rewritten");
+  });
+
+  test("stores strings, so a store never sees (or shares) a live object", async () => {
+    const store = fakeStore();
+    const mw = createSession<{ when: unknown }>({ store, initial: () => ({ when: null as unknown }) });
 
     const first = new Context(msg("a"), api);
     await mw(first, async () => {
-      first.getSession<{ n: number }>().data.n++;
+      mw.get(first).data.when = new Date(0);
+    });
+
+    const second = new Context(msg("b"), api);
+    let seen: unknown;
+    await mw(second, async () => {
+      seen = mw.get(second).data.when;
+    });
+    // Memory behaves exactly like a durable backend: JSON round-trip, not a live ref.
+    assert.equal(seen, "1970-01-01T00:00:00.000Z");
+  });
+
+  test("persists mutations across updates on the same key", async () => {
+    const mw = createSession<{ n: number }>({ store: new MemorySessionStorage(), initial: () => ({ n: 0 }) });
+
+    const first = new Context(msg("a"), api);
+    await mw(first, async () => {
+      mw.get(first).data.n++;
     });
 
     const second = new Context(msg("b"), api);
     let seen = -1;
     await mw(second, async () => {
-      seen = second.getSession<{ n: number }>().data.n;
+      seen = mw.get(second).data.n;
     });
     assert.equal(seen, 1);
   });
 
-  test("starts fresh when the stored value is malformed (missing awaiting, or not an envelope)", async () => {
+  test("starts fresh when the stored value is not a well-formed envelope", async () => {
     const store = fakeStore();
-    // Pre-seed this chat's key with junk a well-formed envelope never looks like.
-    store.write("chat:42", "not-an-envelope");
-    const mw = session<{ n: number }>({ store, initial: () => ({ n: 7 }) });
+    store.write("chat:42", JSON.stringify("not-an-envelope"));
+    store.writes.length = 0;
+    const mw = createSession<{ n: number }>({ store, initial: () => ({ n: 7 }), now });
     const ctx = new Context(msg("hi"), api);
     await mw(ctx, async () => {
-      // Would throw on `.awaiting[...]` without normalization; must fall back instead.
-      assert.equal(ctx.getSession<{ n: number }>().data.n, 7);
-      ctx.getSession().expectReply(1, { ok: true });
+      assert.equal(mw.get(ctx).data.n, 7);
+      mw.get(ctx).data.n = 8;
     });
-    assert.deepEqual(store.writes.at(-1), ["chat:42", { data: { n: 7 }, awaiting: { 1: { ok: true } } }]);
+    assert.deepEqual(store.writes.at(-1), ["chat:42", encoded({ data: { n: 8 } })]);
   });
 
-  test("coerces a non-object `awaiting` to {} instead of throwing", async () => {
+  test("ignores a malformed ext namespace instead of throwing", async () => {
     const store = fakeStore();
-    // A well-formed `data` but a corrupt `awaiting` (truthy non-object).
-    store.write("chat:42", { data: { n: 1 }, awaiting: "x" });
-    const mw = session<{ n: number }>({ store });
+    store.write("chat:42", JSON.stringify({ v: 1, data: { n: 1 }, ext: { reply: "corrupt" }, createdAt: AT, updatedAt: AT }));
+    const mw = createSession<{ n: number }>({ store, now });
     const ctx = new Context(msg("hi"), api);
     await mw(ctx, async () => {
-      assert.equal(ctx.getSession<{ n: number }>().data.n, 1); // data preserved
-      ctx.getSession().expectReply(9, { ok: true }); // would throw on `"x"[9] = ...`
+      assert.equal(mw.get(ctx).data.n, 1); // data preserved
+      expectReply(ctx, 9, { ok: true }); // would throw on `"corrupt"[9] = ...`
     });
-    assert.deepEqual(store.writes.at(-1), ["chat:42", { data: { n: 1 }, awaiting: { 9: { ok: true } } }]);
+    assert.deepEqual(store.writes.at(-1), [
+      "chat:42",
+      encoded({ data: { n: 1 }, ext: { reply: { awaiting: { 9: { ok: true } } } } }),
+    ]);
+  });
+
+  test("throws on a corrupt encoding rather than silently resetting", async () => {
+    const store = fakeStore();
+    store.write("chat:42", "{not json");
+    const mw = createSession({ store });
+    await assert.rejects(async () => {
+      await mw(new Context(msg("hi"), api), async () => {});
+    });
   });
 
   test("skips updates with no derivable key", async () => {
     const store = fakeStore();
-    const mw = session({ store });
+    const mw = createSession({ store });
     const pollAnswer = { update_id: 2, poll_answer: { poll_id: "x", option_ids: [0] } } as unknown as Update;
     const ctx = new Context(pollAnswer, api);
     let ran = false;
     await mw(ctx, async () => {
       ran = true;
-      assert.throws(() => ctx.getSession(), /not installed/);
+      assert.equal(mw.find(ctx), undefined);
+      assert.throws(() => mw.get(ctx), /did not run/);
     });
     assert.equal(ran, true);
     assert.equal(store.reads.length, 0);
@@ -119,35 +181,253 @@ describe("session()", () => {
 
   test("flushes even when the handler throws", async () => {
     const store = fakeStore();
-    const mw = session({ store });
+    const mw = createSession<{ n: number }>({ store, initial: () => ({ n: 0 }), now });
     const ctx = new Context(msg("boom"), api);
     await assert.rejects(async () => {
       await mw(ctx, async () => {
-        ctx.getSession().expectReply(555, { field: "name" });
+        mw.get(ctx).data.n = 5;
         throw new Error("downstream");
       });
     });
-    assert.equal(store.writes.length, 1);
-    assert.deepEqual(store.writes.at(0)?.[1], { data: {}, awaiting: { 555: { field: "name" } } });
+    assert.deepEqual(store.writes, [["chat:42", encoded({ data: { n: 5 } })]]);
+  });
+
+  test("handle.delete() evicts the key", async () => {
+    const store = fakeStore();
+    const mw = createSession<{ n: number }>({ store, initial: () => ({ n: 0 }) });
+
+    const first = new Context(msg("a"), api);
+    await mw(first, async () => {
+      mw.get(first).data.n = 3;
+    });
+
+    const second = new Context(msg("b"), api);
+    await mw(second, async () => {
+      mw.get(second).delete();
+    });
+    assert.deepEqual(store.deletes, ["chat:42"]);
+    assert.equal(store.writes.length, 1, "a dropped session must not be written back");
+
+    const third = new Context(msg("c"), api);
+    let seen = -1;
+    await mw(third, async () => {
+      seen = mw.get(third).data.n;
+    });
+    assert.equal(seen, 0); // back to initial
+  });
+
+  test("stamps createdAt once and bumps updatedAt on each persisted write", async () => {
+    const store = fakeStore();
+    let clock = Date.parse("2030-01-01T00:00:00.000Z");
+    const mw = createSession<{ n: number }>({ store, initial: () => ({ n: 0 }), now: () => clock });
+
+    const first = new Context(msg("a"), api);
+    await mw(first, async () => {
+      assert.deepEqual(mw.get(first).createdAt, new Date(clock)); // never written -> now
+      mw.get(first).data.n = 1;
+    });
+
+    clock += 60_000;
+    const second = new Context(msg("b"), api);
+    await mw(second, async () => {
+      const handle = mw.get(second);
+      assert.equal(handle.createdAt.toISOString(), "2030-01-01T00:00:00.000Z", "createdAt is carried through");
+      assert.equal(handle.updatedAt.toISOString(), "2030-01-01T00:00:00.000Z", "as loaded: the previous write");
+      handle.data.n = 2;
+    });
+
+    const stored = JSON.parse(store.writes.at(-1)?.[1] as string) as { createdAt: string; updatedAt: string };
+    assert.equal(stored.createdAt, "2030-01-01T00:00:00.000Z");
+    assert.equal(stored.updatedAt, "2030-01-01T00:01:00.000Z");
+  });
+
+  test("a skipped flush leaves updatedAt alone", async () => {
+    const store = fakeStore();
+    let clock = Date.parse("2030-01-01T00:00:00.000Z");
+    const mw = createSession<{ n: number }>({ store, initial: () => ({ n: 0 }), now: () => clock });
+
+    const first = new Context(msg("a"), api);
+    await mw(first, async () => {
+      mw.get(first).data.n = 1;
+    });
+
+    clock += 60_000;
+    const second = new Context(msg("b"), api); // reads, changes nothing
+    await mw(second, async () => {});
+
+    assert.equal(store.writes.length, 1, "an untouched session must not be rewritten");
+    const stored = JSON.parse(store.writes.at(-1)?.[1] as string) as { updatedAt: string };
+    assert.equal(stored.updatedAt, "2030-01-01T00:00:00.000Z");
+  });
+
+  test("adopts timestamps for a record written before they existed", async () => {
+    const store = fakeStore();
+    store.write("chat:42", JSON.stringify({ v: 1, data: { n: 1 } })); // legacy shape
+    const mw = createSession<{ n: number }>({ store, now });
+    const ctx = new Context(msg("hi"), api);
+    await mw(ctx, async () => {
+      const handle = mw.get(ctx);
+      assert.equal(handle.data.n, 1); // data preserved
+      assert.equal(handle.createdAt.toISOString(), AT); // first sighting, not an invented past
+      assert.equal(handle.updatedAt.toISOString(), AT);
+    });
+  });
+
+  test("`session` is an alias of `createSession`", () => {
+    assert.equal(session, createSession);
   });
 });
 
-describe("expectReply / matchReply", () => {
-  test("matches a reply to the expected message and consumes the marker", async () => {
+describe("ctx.getSession", () => {
+  test("reads and writes the bag through the handle", async () => {
+    const store = fakeStore();
+    const mw = createSession<{ n: number }>({ store, initial: () => ({ n: 0 }), now });
+
+    const first = new Context(msg("a"), api);
+    await mw(first, async () => {
+      const handle = first.getSession<{ n: number }>();
+      assert.equal(handle.data.n, 0);
+      handle.data.n += 1;
+    });
+    assert.deepEqual(store.writes.at(-1), ["chat:42", encoded({ data: { n: 1 } })]);
+
+    // Reassigning `data` replaces the whole bag.
+    const second = new Context(msg("b"), api);
+    await mw(second, async () => {
+      second.getSession<{ n: number }>().data = { n: 42 };
+    });
+    assert.deepEqual(store.writes.at(-1), ["chat:42", encoded({ data: { n: 42 } })]);
+  });
+
+  test("throws when no session was installed for this update", () => {
+    const ctx = new Context(msg("hi"), api);
+    assert.throws(() => ctx.getSession(), /no session for this update/);
+  });
+
+  test("the middleware's own .get(ctx) returns the same handle", async () => {
+    const mw = createSession<{ n: number }>({ store: new MemorySessionStorage() });
+    const ctx = new Context(msg("hi"), api);
+    await mw(ctx, async () => {
+      assert.equal(mw.get(ctx), ctx.getSession<{ n: number }>());
+    });
+  });
+});
+
+describe("session concurrency", () => {
+  test("serializes concurrent updates for the same key (no lost update)", async () => {
     const store = new MemorySessionStorage();
-    const mw = session({ store });
+    const mw = createSession<{ n: number }>({ store, initial: () => ({ n: 0 }) });
+
+    // Both handlers read, yield, then increment - the classic interleaving that
+    // loses one increment without a per-key lock.
+    const run = async (): Promise<void> => {
+      const ctx = new Context(msg("x"), api);
+      await mw(ctx, async () => {
+        const handle = mw.get(ctx);
+        await Promise.resolve();
+        handle.data.n += 1;
+      });
+    };
+    await Promise.all([run(), run(), run()]);
+
+    const ctx = new Context(msg("read"), api);
+    let seen = -1;
+    await mw(ctx, async () => {
+      seen = mw.get(ctx).data.n;
+    });
+    assert.equal(seen, 3);
+  });
+
+  test("different keys are not serialized against each other", async () => {
+    const mw = createSession({ store: new MemorySessionStorage(), getSessionKey: (ctx) => ctx.message?.text });
+    let inFlight = 0;
+    let maxInFlight = 0;
+    const run = async (key: string): Promise<void> => {
+      const ctx = new Context(msg(key), api);
+      await mw(ctx, async () => {
+        inFlight += 1;
+        maxInFlight = Math.max(maxInFlight, inFlight);
+        await Promise.resolve();
+        inFlight -= 1;
+      });
+    };
+    await Promise.all([run("a"), run("b")]);
+    assert.equal(maxInFlight, 2);
+  });
+});
+
+describe("session lifecycle", () => {
+  test("bot.init() runs store setup once and bot.dispose() tears it down", async () => {
+    let inits = 0;
+    let disposes = 0;
+    const store: SessionStore = {
+      ...fakeStore(),
+      init: () => {
+        inits += 1;
+      },
+      dispose: () => {
+        disposes += 1;
+      },
+    };
+    const mw = createSession({ store });
+    const bot = new Bot("123:abc");
+    bot.use(mw);
+
+    await bot.init();
+    await bot.init();
+    assert.equal(inits, 1, "init is memoized");
+
+    await bot.handleUpdate(msg("hi"));
+    assert.equal(inits, 1, "handleUpdate must not re-run setup");
+
+    await bot.dispose();
+    assert.equal(disposes, 1);
+  });
+
+  test("a failing store surfaces at bot.init() and is retried, not cached", async () => {
+    let attempts = 0;
+    const store: SessionStore = {
+      ...fakeStore(),
+      init: () => {
+        attempts += 1;
+        if (attempts === 1) throw new Error("init boom");
+      },
+    };
+    const bot = new Bot("123:abc").use(createSession({ store }));
+    await assert.rejects(bot.init(), /init boom/);
+    await bot.init(); // retried, now succeeds
+    assert.equal(attempts, 2);
+  });
+
+  test("a store without init/dispose works unchanged", async () => {
+    const store = fakeStore();
+    assert.equal("init" in store, false);
+    const mw = createSession({ store });
+    const ctx = new Context(msg("hi"), api);
+    let ran = false;
+    await mw(ctx, async () => {
+      ran = true;
+      mw.get(ctx);
+    });
+    assert.equal(ran, true);
+  });
+});
+
+describe("reply tracking", () => {
+  test("matches a reply to the expected message and consumes the marker", async () => {
+    const mw = createSession({ store: new MemorySessionStorage() });
 
     // Turn 1: register that message 555 awaits a "name".
     const ask = new Context(msg("What's your name?"), api);
     await mw(ask, async () => {
-      ask.getSession().expectReply(555, { field: "name" });
+      expectReply(ask, 555, { field: "name" });
     });
 
     // Turn 2: a reply to 555 arrives.
     const answer = new Context(msg("Ada", 555), api);
     let hit: unknown;
     await mw(answer, async () => {
-      hit = answer.getSession().matchReply();
+      hit = matchReply<{ field: string }>(answer);
     });
     assert.deepEqual(hit, { field: "name" });
 
@@ -155,65 +435,58 @@ describe("expectReply / matchReply", () => {
     const again = new Context(msg("Ada", 555), api);
     let second: unknown = "unset";
     await mw(again, async () => {
-      second = again.getSession().matchReply();
+      second = matchReply(again);
     });
     assert.equal(second, undefined);
   });
 
   test("returns undefined for a non-reply or an unexpected reply", async () => {
-    const mw = session({ store: new MemorySessionStorage() });
+    const mw = createSession({ store: new MemorySessionStorage() });
     const notReply = new Context(msg("hi"), api);
     await mw(notReply, async () => {
-      assert.equal(notReply.getSession().matchReply(), undefined);
+      assert.equal(matchReply(notReply), undefined);
     });
     const wrongTarget = new Context(msg("hi", 999), api);
     await mw(wrongTarget, async () => {
-      assert.equal(wrongTarget.getSession().matchReply(), undefined);
+      assert.equal(matchReply(wrongTarget), undefined);
     });
   });
-});
 
-describe("session() + store.init", () => {
-  test("awaits store.init before serving an update and surfaces its failure", async () => {
-    const store: SessionStore = {
-      ...fakeStore(),
-      init: () => Promise.reject(new Error("init boom")),
-    };
-    const mw = session({ store });
-    let handlerRan = false;
-    // If session() did not await init, the handler would run and the update would resolve.
-    await assert.rejects(async () => {
-      await mw(new Context(msg("a"), api), async () => {
-        handlerRan = true;
-      });
-    }, /init boom/);
-    assert.equal(handlerRan, false);
+  test("forgetReply drops a pending expectation", async () => {
+    const mw = createSession({ store: new MemorySessionStorage() });
+
+    const ask = new Context(msg("?"), api);
+    await mw(ask, async () => {
+      expectReply(ask, 555);
+      forgetReply(ask, 555);
+    });
+
+    const answer = new Context(msg("Ada", 555), api);
+    await mw(answer, async () => {
+      assert.equal(matchReply(answer), undefined);
+    });
   });
 
-  test("a store without init works unchanged", async () => {
+  test("stores nothing in the envelope until a reply is expected", async () => {
     const store = fakeStore();
-    assert.equal("init" in store, false);
+    const mw = createSession<{ n: number }>({ store, initial: () => ({ n: 0 }), now });
     const ctx = new Context(msg("hi"), api);
-    let ran = false;
-    await session({ store })(ctx, async () => {
-      ran = true;
-      ctx.getSession();
+    await mw(ctx, async () => {
+      mw.get(ctx).data.n = 1;
     });
-    assert.equal(ran, true);
+    assert.deepEqual(store.writes.at(-1)?.[1], encoded({ data: { n: 1 } }));
   });
 });
 
 describe("taggedReplies", () => {
   test("boxes a string tag on expect and unboxes it on match", async () => {
-    const mw = session({ store: new MemorySessionStorage() });
+    const mw = createSession({ store: new MemorySessionStorage() });
 
-    // Turn 1: expect a reply to 555, tagged with the bare string "EMAIL".
     const ask = new Context(msg("Your email?"), api);
     await mw(ask, async () => {
       taggedReplies<"NAME" | "EMAIL">(ask).expect(555, "EMAIL");
     });
 
-    // Turn 2: the reply to 555 yields the string back (not { tag }).
     const answer = new Context(msg("a@b.c", 555), api);
     let tag: string | undefined = "unset";
     await mw(answer, async () => {
@@ -221,7 +494,6 @@ describe("taggedReplies", () => {
     });
     assert.equal(tag, "EMAIL");
 
-    // Turn 3: consumed - no longer matches.
     const again = new Context(msg("a@b.c", 555), api);
     await mw(again, async () => {
       assert.equal(taggedReplies<"NAME" | "EMAIL">(again).match(), undefined);
@@ -229,7 +501,7 @@ describe("taggedReplies", () => {
   });
 
   test("match returns undefined for a non-reply", async () => {
-    const mw = session({ store: new MemorySessionStorage() });
+    const mw = createSession({ store: new MemorySessionStorage() });
     const ctx = new Context(msg("hi"), api);
     await mw(ctx, async () => {
       assert.equal(taggedReplies<"X">(ctx).match(), undefined);
