@@ -515,6 +515,56 @@ describe("session lifecycle", () => {
     assert.deepEqual(order, ["init", "close:start", "close:end"]);
   });
 
+  test("a failing close does not strand the other teardowns, and still clears the memo", async () => {
+    const closed: string[] = [];
+    let inits = 0;
+    const plugin = (name: string, fail = false): SessionStore => ({
+      ...fakeStore(),
+      init: () => {
+        inits += 1;
+      },
+      close: () => {
+        closed.push(name);
+        if (fail) throw new Error(`${name} boom`);
+      },
+    });
+    const bot = new Bot("123:abc")
+      .use(createSession({ store: plugin("first") }))
+      .use(createSession({ store: plugin("second", true) }))
+      .use(createSession({ store: plugin("third") }));
+
+    await bot.init();
+    assert.equal(inits, 3);
+
+    // Reverse order, and the throw in the middle must not skip "first".
+    await assert.rejects(bot.close(), /second boom/);
+    assert.deepEqual(closed, ["third", "second", "first"]);
+
+    // The memo was cleared despite the failure, so setup can run again.
+    await bot.init();
+    assert.equal(inits, 6);
+  });
+
+  test("several failing closes surface as an AggregateError", async () => {
+    const boom = (name: string): SessionStore => ({
+      ...fakeStore(),
+      close: () => {
+        throw new Error(`${name} boom`);
+      },
+    });
+    const bot = new Bot("123:abc").use(createSession({ store: boom("a") })).use(createSession({ store: boom("b") }));
+
+    await assert.rejects(bot.close(), (err: unknown) => {
+      assert.ok(err instanceof AggregateError);
+      assert.equal(err.errors.length, 2);
+      assert.deepEqual(
+        err.errors.map((e: unknown) => (e as Error).message),
+        ["b boom", "a boom"],
+      );
+      return true;
+    });
+  });
+
   test("a store-init failure reaches the bot.catch boundary", async () => {
     const store: SessionStore = { ...fakeStore(), init: () => Promise.reject(new Error("init boom")) };
     const seen: unknown[] = [];

@@ -396,13 +396,17 @@ export function createSession<T = Record<string, unknown>>(options: SessionOptio
     },
     init,
     async close(): Promise<void> {
-      // Close first, then drop the memo. After the store is closed setup is no
-      // longer "done", so a later init() must run it again (a re-`run(bot)` in
-      // one process would otherwise keep using a closed pool / database handle);
-      // clearing it up front would instead let an update still in flight re-run
-      // setup behind the teardown's back.
-      await store.close?.();
-      setup = undefined;
+      // Close first, then drop the memo - in a `finally`, so a store that throws
+      // on the way out does not strand a stale memo and stop a later init() from
+      // ever running setup again. After the store is closed setup is no longer
+      // "done" (a re-`run(bot)` in one process would otherwise keep using a
+      // closed pool / database handle); clearing it up front would instead let
+      // an update still in flight re-run setup behind the teardown's back.
+      try {
+        await store.close?.();
+      } finally {
+        setup = undefined;
+      }
     },
   });
 }

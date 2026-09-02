@@ -116,19 +116,38 @@ export class Bot {
   /**
    * Release resources held by registered middleware: runs every `close()` in
    * reverse registration order. Call it after `stop()` (or when a webhook
-   * process shuts down); a later `init()` re-runs setup.
+   * process shuts down); a later `init()` re-runs setup. Every plugin is closed
+   * even if one throws: the failure surfaces afterwards (an `AggregateError`
+   * when more than one failed), never by skipping the remaining teardowns.
    *
    * Local teardown only - unrelated to Telegram's `close` method, which lives on
    * the client (`bot.api.close()`) and terminates the *bot's* server-side
    * session so it can be moved to another server.
    */
   async close(): Promise<void> {
-    for (const plugin of [...this.plugins].reverse()) {
-      await plugin.close?.();
+    // Every teardown is attempted: one plugin failing to close (a client that
+    // will not quit, a locked file) must not strand the ones after it, which
+    // would leak exactly the resources this method exists to release.
+    const failures: unknown[] = [];
+    try {
+      for (const plugin of [...this.plugins].reverse()) {
+        try {
+          await plugin.close?.();
+        } catch (err) {
+          failures.push(err);
+        }
+      }
+    } finally {
+      // Cleared after the loop, and even if it threw: an update arriving
+      // mid-shutdown would otherwise re-run every plugin's init() while teardown
+      // is still in progress, and leaving the memo set would stop a later
+      // init() from ever running setup again.
+      this.started = undefined;
     }
-    // Cleared last: an update arriving mid-shutdown would otherwise re-run every
-    // plugin's init() while this loop is still tearing them down.
-    this.started = undefined;
+    if (failures.length === 1) throw failures[0];
+    if (failures.length > 1) {
+      throw new AggregateError(failures, "Bot.close: some middleware failed to close");
+    }
   }
 
   /**

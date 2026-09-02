@@ -311,12 +311,6 @@ bot.command("count", (ctx) => ctx.reply(`Seen ${++session.get(ctx).data.count} t
 
 Both return the same handle, which is also where the non-bag members live: `.createdAt` / `.updatedAt`, `.ext()` for layers built on sessions, and `.delete()`, which evicts the whole key on flush - an explicit end-of-conversation / `/forget` / erasure hook. `ctx.getSession()` and `session.get(ctx)` throw when the middleware did not run for this update (not registered, or no derivable key).
 
-What is persisted is a versioned envelope, `{ v, data, ext, createdAt, updatedAt }`: `data` is your bag, `ext` is a namespace map that layers built on sessions claim a slot in, and the two ISO-8601 timestamps are first-seen / last-active. The flush happens after the handler (even if it throws, so state written before an error survives) and is **skipped when the encoded envelope is unchanged**, so an untouched chat costs one read and no write.
-
-`createdAt` and `updatedAt` are on the handle as `Date`s - `updatedAt` as loaded, i.e. the previous write, so it doubles as "when was this chat last active". A skipped flush leaves it alone, so it tracks real writes rather than mere traffic. `SqlSessionStorage` and `SqliteSessionStorage` also keep them as real `created_at` / `updated_at` columns (ISO-8601 text, so `ORDER BY` and range filters work) for the operational queries the session API cannot answer - `DELETE FROM sessions WHERE updated_at < '2026-06-01'`, or counting chats first seen this week. Pass `now` to `createSession` to inject a clock in tests.
-
-**Concurrency.** Updates for the same key are serialized in-process by a per-key lock, so two concurrent webhook invocations for one chat cannot interleave read-modify-write. Across processes there is no lock: two instances handling updates for the same chat are last-writer-wins (as in the rest of the ecosystem). If that matters for your deployment, key sessions so one chat lands on one instance, or serialize upstream.
-
 ### Reply tracking
 
 Reply tracking is a layer **on top of** the session (it stores its table in the envelope's `ext.reply`, so a bot that never uses it persists nothing extra). It records "awaiting a reply to a specific message" as plain data matched on `reply_to_message.message_id` - never a live promise - so it survives a restart and works on serverless.
