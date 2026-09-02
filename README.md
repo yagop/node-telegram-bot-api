@@ -352,7 +352,7 @@ bot.on("message", async (ctx, next) => {
 
 ### Storage backends
 
-Every backend implements the same `SessionStore`: a **string** key/value contract - `read(key)`, `write(key, value, { ttlSeconds })`, `delete(key)`, plus optional `init` / `dispose` and, for backends with a TTL, `touch(key, ttlSeconds)` (the middleware calls it when an update changed nothing, so an active chat is not evicted just because its data stood still). Serialization happens once in the middleware's codec, never inside a store, so the in-memory store is a faithful simulation of a durable one - a `Date` in the bag comes back a string everywhere, not only on Redis. Swapping backends is a one-line change:
+Every backend implements the same `SessionStore`: a **string** key/value contract - `read(key)`, `write(key, value, { ttlSeconds })`, `delete(key)`, plus optional `init` / `close` and, for backends with a TTL, `touch(key, ttlSeconds)` (the middleware calls it when an update changed nothing, so an active chat is not evicted just because its data stood still). Serialization happens once in the middleware's codec, never inside a store, so the in-memory store is a faithful simulation of a durable one - a `Date` in the bag comes back a string everywhere, not only on Redis. Swapping backends is a one-line change:
 
 | Store | Import | Runtime | Durable | Notes |
 | --- | --- | --- | --- | --- |
@@ -377,14 +377,14 @@ Any other backend (ioredis, `pg`, a KV service) is ~10 lines implementing the th
 
 ### Lifecycle
 
-A middleware may carry `init` / `dispose`; `bot.use` picks those up, `bot.init()` runs them once in registration order and `bot.dispose()` in reverse. Session middleware forwards both to its store, so setup (create the directory / table, open the pool) happens **at startup**, not lazily on update #1:
+A middleware may carry `init` / `close`; `bot.use` picks those up, `bot.init()` runs them once in registration order and `bot.close()` in reverse. Session middleware forwards both to its store, so setup (create the directory / table, open the pool) happens **at startup**, not lazily on update #1:
 
 ```ts
 bot.use(createSession<Session>({ store: new FileSessionStorage({ path: "./.sessions" }) }));
 await bot.init(); // optional: a bad path / unreachable backend fails here, at boot
 ```
 
-`startPolling()` and `handleUpdate()` await `bot.init()` themselves (memoized), so this is only about *when* a setup error surfaces - one raised during an update goes to the `bot.catch()` boundary like any other. `run()` (`/node`) calls `bot.dispose()` on shutdown, and `dispose()` drops the setup memo so a later `init()` starts over. A store that owned the connection it closed (`SqlSessionStorage` with a `url`, `SqliteSessionStorage` with a path) is spent after that - construct a new one; with a caller-supplied client the store stays usable.
+`startPolling()` and `handleUpdate()` await `bot.init()` themselves (memoized), so this is only about *when* a setup error surfaces - one raised during an update goes to the `bot.catch()` boundary like any other. `run()` (`/node`) calls `bot.close()` on shutdown, and `close()` drops the setup memo so a later `init()` starts over. A store that owned the connection it closed (`SqlSessionStorage` with a `url`, `SqliteSessionStorage` with a path) is spent after that - construct a new one; with a caller-supplied client the store stays usable.
 
 ## ⚠️ Errors
 

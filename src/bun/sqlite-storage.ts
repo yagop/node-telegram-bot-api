@@ -33,10 +33,10 @@ export type SqliteSessionStorageOptions = {
 
 export class SqliteSessionStorage implements SessionStore {
   private readonly db: Database;
-  /** True when this store opened the database itself, so `dispose()` may close it. */
+  /** True when this store opened the database itself, so `close()` may close it. */
   private readonly owned: boolean;
-  /** Set once `dispose()` closed a database this store owned - the store is then spent. */
-  private disposed = false;
+  /** Set once `close()` closed a database this store owned - the store is then spent. */
+  private closed = false;
   private readonly getStmt: Statement;
   private readonly insertStmt: Statement;
   private readonly delStmt: Statement;
@@ -67,8 +67,8 @@ export class SqliteSessionStorage implements SessionStore {
   }
 
   private assertUsable(): void {
-    if (this.disposed) {
-      throw new Error("SqliteSessionStorage: this store was disposed; construct a new one");
+    if (this.closed) {
+      throw new Error("SqliteSessionStorage: this store was closed; construct a new one");
     }
   }
 
@@ -95,9 +95,9 @@ export class SqliteSessionStorage implements SessionStore {
    * with the handle - so a later use throws and you construct a new store
    * instead. With a caller-supplied handle this is a no-op.
    */
-  dispose(): void {
+  close(): void {
     if (this.owned) {
-      this.disposed = true;
+      this.closed = true;
       this.db.close();
     }
   }

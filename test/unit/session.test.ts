@@ -423,16 +423,16 @@ describe("session concurrency", () => {
 });
 
 describe("session lifecycle", () => {
-  test("bot.init() runs store setup once and bot.dispose() tears it down", async () => {
+  test("bot.init() runs store setup once and bot.close() tears it down", async () => {
     let inits = 0;
-    let disposes = 0;
+    let closes = 0;
     const store: SessionStore = {
       ...fakeStore(),
       init: () => {
         inits += 1;
       },
-      dispose: () => {
-        disposes += 1;
+      close: () => {
+        closes += 1;
       },
     };
     const mw = createSession({ store });
@@ -446,8 +446,8 @@ describe("session lifecycle", () => {
     await bot.handleUpdate(msg("hi"));
     assert.equal(inits, 1, "handleUpdate must not re-run setup");
 
-    await bot.dispose();
-    assert.equal(disposes, 1);
+    await bot.close();
+    assert.equal(closes, 1);
   });
 
   test("a failing store surfaces at bot.init() and is retried, not cached", async () => {
@@ -465,28 +465,28 @@ describe("session lifecycle", () => {
     assert.equal(attempts, 2);
   });
 
-  test("dispose drops the setup memo, so a later init re-runs store setup", async () => {
+  test("close drops the setup memo, so a later init re-runs store setup", async () => {
     let inits = 0;
-    let disposes = 0;
+    let closes = 0;
     const store: SessionStore = {
       ...fakeStore(),
       init: () => {
         inits += 1;
       },
-      dispose: () => {
-        disposes += 1;
+      close: () => {
+        closes += 1;
       },
     };
     const bot = new Bot("123:abc").use(createSession({ store }));
 
     await bot.init();
-    await bot.dispose();
+    await bot.close();
     await bot.init(); // a second run() in one process must not reuse a closed store
     assert.equal(inits, 2);
-    assert.equal(disposes, 1);
+    assert.equal(closes, 1);
   });
 
-  test("bot.dispose clears the memo only after teardown has finished", async () => {
+  test("bot.close clears the memo only after teardown has finished", async () => {
     const order: string[] = [];
     let released!: () => void;
     const gate = new Promise<void>((resolve) => {
@@ -497,22 +497,22 @@ describe("session lifecycle", () => {
       init: () => {
         order.push("init");
       },
-      dispose: async () => {
-        order.push("dispose:start");
+      close: async () => {
+        order.push("close:start");
         await gate;
-        order.push("dispose:end");
+        order.push("close:end");
       },
     };
     const bot = new Bot("123:abc").use(createSession({ store }));
     await bot.init();
 
-    const disposing = bot.dispose();
-    // An update landing mid-shutdown must not re-run setup behind dispose's back.
+    const closing = bot.close();
+    // An update landing mid-shutdown must not re-run setup behind close's back.
     const midShutdown = bot.handleUpdate(msg("hi"));
     released();
-    await disposing;
+    await closing;
     await midShutdown;
-    assert.deepEqual(order, ["init", "dispose:start", "dispose:end"]);
+    assert.deepEqual(order, ["init", "close:start", "close:end"]);
   });
 
   test("a store-init failure reaches the bot.catch boundary", async () => {
@@ -543,7 +543,7 @@ describe("session lifecycle", () => {
     assert.equal(inits, 1);
   });
 
-  test("a store without init/dispose works unchanged", async () => {
+  test("a store without init/close works unchanged", async () => {
     const store = fakeStore();
     assert.equal("init" in store, false);
     const mw = createSession({ store });

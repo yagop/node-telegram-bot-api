@@ -222,8 +222,8 @@ An animated profile photo (a video); `main_frame_timestamp` picks the still fram
 | Method | Params | Returns | Description |
 | --- | --- | --- | --- |
 | `catch` | `handler`: (err: unknown, ctx: [Context](#context)) => unknown | this | Replace the error boundary. The default logs via `console.error` and consumes the update, so a handler error never stops `startPolling()` or fails a webhook delivery. A throw from the installed handler opts back into fail-loud: `startPolling()` rejects and `webhookCallback` responds 500, so Telegram redelivers the update. |
+| `close` | - | Promise<void> | Release resources held by registered middleware: runs every `close()` in reverse registration order. Call it after `stop()` (or when a webhook process shuts down); a later `init()` re-runs setup.  Local teardown only - unrelated to Telegram's `close` method, which lives on the client (`bot.api.close()`) and terminates the *bot's* server-side session so it can be moved to another server. |
 | `command` | `name`: string \| string[], `...handlers`: [Middleware](#middleware)<[Context](#context)>[] | this | Match a message/channel-post text starting with `/name` (also `/name@bot` and trailing args). Sets `ctx.match` to the trimmed args string ("" if none). |
-| `dispose` | - | Promise<void> | Release resources held by registered middleware: runs every `dispose()` in reverse registration order. Call it after `stop()` (or when a webhook process shuts down); a later `init()` re-runs setup. |
 | `handleUpdate` | `update`: [Update](#update) | Promise<void> | Build a Context and run the composed chain; route errors to the `catch` boundary (default: log and continue). Rejects only when that boundary itself throws. |
 | `hears` | `trigger`: string \| RegExp \| (string \| RegExp)[], `...handlers`: [Middleware](#middleware)<[Context](#context)>[] | this | Match message text: a string matches exactly (sets `ctx.match` to the text); a RegExp matches when `text.match(re)` is non-null (sets `ctx.match` to the `RegExpMatchArray`). |
 | `init` | - | Promise<void> | Run every registered middleware's `init()` once, in registration order. Memoized, and awaited by `startPolling()` and `handleUpdate()`, so setup failures surface at boot (or on the first webhook invocation) rather than as a per-update lazy path. A failure is not cached: the next call retries. Call it yourself to fail fast before serving anything. |
@@ -231,7 +231,7 @@ An animated profile photo (a video); `main_frame_timestamp` picks the still fram
 | `on` | `kind`: "message" \| "edited_message" \| "channel_post" \| "edited_channel_post" \| "business_connection" \| "business_message" \| "edited_business_message" \| "deleted_business_messages" \| "guest_message" \| "message_reaction" \| "message_reaction_count" \| "inline_query" \| "chosen_inline_result" \| "callback_query" \| "shipping_query" \| "pre_checkout_query" \| "purchased_paid_media" \| "poll" \| "poll_answer" \| "my_chat_member" \| "chat_member" \| "chat_join_request" \| "chat_boost" \| "removed_chat_boost" \| "managed_bot" \| "subscription" \| "stopped_message_generation" \| ("message" \| "edited_message" \| "channel_post" \| "edited_channel_post" \| "business_connection" \| "business_message" \| "edited_business_message" \| "deleted_business_messages" \| "guest_message" \| "message_reaction" \| "message_reaction_count" \| "inline_query" \| "chosen_inline_result" \| "callback_query" \| "shipping_query" \| "pre_checkout_query" \| "purchased_paid_media" \| "poll" \| "poll_answer" \| "my_chat_member" \| "chat_member" \| "chat_join_request" \| "chat_boost" \| "removed_chat_boost" \| "managed_bot" \| "subscription" \| "stopped_message_generation")[], `...handlers`: [Middleware](#middleware)<[Context](#context)>[] | this | Run `handlers` only when the given payload key (e.g. `"message"`, `"callback_query"`) is present on the update. |
 | `startPolling` | `source?`: AsyncIterable<[Update](#update), any, any>, `options?`: [LongPollOptions](#longpolloptions) | Promise<void> | Pump an update source (default `longPoll`) through `handleUpdate` until `stop()` aborts. Resolves when the source is exhausted or aborted. This is long-poll mode; for webhooks use `webhookCallback`/`createWebhookServer`.  A handler error does not stop the pump: it is routed to the `catch` boundary (default: log and continue). The promise rejects only when that boundary itself throws - the fail-loud opt-in (see `catch`).  Not re-entrant: calling it while a previous pump is still active throws, so `isRunning()` stays truthful and the prior `AbortController` is never orphaned. Stop the running loop (`stop()`, then `await` its promise) first. |
 | `stop` | - | void | Abort the running pump loop. |
-| `use` | `...mw`: [Middleware](#middleware)<[Context](#context)>[] | this | Register one or more middleware to run on every update. A middleware that also carries `init` / `dispose` (see MiddlewarePlugin) is picked up for the bot lifecycle: its setup runs once via Bot.init, its teardown via Bot.dispose. |
+| `use` | `...mw`: [Middleware](#middleware)<[Context](#context)>[] | this | Register one or more middleware to run on every update. A middleware that also carries `init` / `close` (see MiddlewarePlugin) is picked up for the bot lifecycle: its setup runs once via Bot.init, its teardown via Bot.close. |
 
 #### Properties
 
@@ -563,8 +563,8 @@ own data. `.build()` returns the plain `RichText` (its accumulated sequence).
 
 | Method | Params | Returns | Description |
 | --- | --- | --- | --- |
+| `close` | - | Promise<void> | Close the client, but only if this store opened it (a passed-in `sql` is the caller's). Closing ends this store's life - the client cannot be reopened, so a later use throws and you construct a new store instead. With a caller-supplied client the store stays usable: only the table-setup memo is dropped, so a later `init()` re-checks the schema. |
 | `delete` | `key`: string | Promise<void> | - |
-| `dispose` | - | Promise<void> | Close the client, but only if this store opened it (a passed-in `sql` is the caller's). Closing ends this store's life - the client cannot be reopened, so a later use throws and you construct a new store instead. With a caller-supplied client the store stays usable: only the table-setup memo is dropped, so a later `init()` re-checks the schema. |
 | `init` | - | Promise<void> | Create the table once, lazily (the constructor can't await). Idempotent and memoized; on failure the cache is cleared so a later call retries instead of re-throwing a stale (possibly transient) rejection. `bot.init()` runs it at startup, so an unreachable database fails at boot. |
 | `read` | `key`: string | Promise<string \| undefined> | The stored string for `key`, or `undefined` when there is none. |
 | `write` | `key`: string, `value`: string | Promise<void> | Persist `value` verbatim under `key`. |
@@ -575,8 +575,8 @@ own data. `.build()` returns the plain `RichText` (its accumulated sequence).
 
 | Method | Params | Returns | Description |
 | --- | --- | --- | --- |
+| `close` | - | void | Close the database, but only if this store opened it (a passed-in handle is the caller's). Closing ends this store's life - its prepared statements go with the handle - so a later use throws and you construct a new store instead. With a caller-supplied handle this is a no-op. |
 | `delete` | `key`: string | void | - |
-| `dispose` | - | void | Close the database, but only if this store opened it (a passed-in handle is the caller's). Closing ends this store's life - its prepared statements go with the handle - so a later use throws and you construct a new store instead. With a caller-supplied handle this is a no-op. |
 | `read` | `key`: string | string \| undefined | The stored string for `key`, or `undefined` when there is none. |
 | `write` | `key`: string, `value`: string | void | Persist `value` verbatim under `key`. |
 
@@ -1009,7 +1009,7 @@ Start the bot's long-poll loop and resolve when it stops. Installs
 `SIGINT`/`SIGTERM` handlers that trigger `bot.stop()` for a clean shutdown,
 cleaned up in a `finally` so repeated runs don't leak listeners. Middleware
 setup runs first (via `bot.startPolling` -> `bot.init()`), so a bad session
-store fails before the first poll; teardown (`bot.dispose()`) runs on the way
+store fails before the first poll; teardown (`bot.close()`) runs on the way
 out, whether the loop stopped or threw.
 
 | Param | Type |
@@ -5653,14 +5653,14 @@ type Middleware = (ctx: C, next: [NextFn](#nextfn)) => unknown | Promise<unknown
 
 Optional lifecycle a middleware may carry (duck-typed - no base class, no
 registration API). `bot.init()` runs every registered `init` once, in
-registration order, before the first update; `bot.dispose()` runs every
-`dispose` in reverse order. This is how a middleware that owns a resource - a
+registration order, before the first update; `bot.close()` runs every
+`close` in reverse order. This is how a middleware that owns a resource - a
 session store's directory / table / connection pool - gets a deterministic
 start and stop instead of inventing per-request lazy setup of its own.
 
 ```ts
 type MiddlewarePlugin = {
-  dispose?: () => void | Promise<void>;
+  close?: () => void | Promise<void>;
   init?: () => void | Promise<void>;
 };
 ```
@@ -7932,7 +7932,7 @@ and the lifecycle hooks `Bot` picks up from `use()`.
 
 ```ts
 type SessionMiddleware = [Middleware](#middleware)<[Context](#context)> & {
-  dispose: () => Promise<void>;
+  close: () => Promise<void>;
   find: (ctx: [Context](#context)) => [SessionHandle](#sessionhandle)<T> | undefined;
   get: (ctx: [Context](#context)) => [SessionHandle](#sessionhandle)<T>;
   init: () => Promise<void>;
@@ -7961,8 +7961,8 @@ what round-trips.
 
 ```ts
 type SessionStore = {
+  close?: () => void | Promise<void>;
   delete: (key: string) => void | Promise<void>;
-  dispose?: () => void | Promise<void>;
   init?: () => void | Promise<void>;
   read: (key: string) => string | Promise<string | undefined> | undefined;
   touch?: (key: string, ttlSeconds: number) => void | Promise<void>;

@@ -6,7 +6,7 @@
  * Shape of the layer:
  *
  * - `SessionStore` is a **string** key/value contract (`read` / `write` /
- *   `delete`, plus optional `init` / `dispose`). Serialization happens exactly
+ *   `delete`, plus optional `init` / `close`). Serialization happens exactly
  *   once, here in the middleware's codec - never inside a store - so an
  *   in-memory store is a faithful simulation of a durable one: a `Date` in the
  *   bag comes back a string everywhere, not only on Redis.
@@ -70,8 +70,8 @@ export type SessionStore = {
    * a bad path or an unreachable backend fails at boot, not on update #1.
    */
   init?(): void | Promise<void>;
-  /** Optional teardown (close a pool / connection); run by `bot.dispose()`. */
-  dispose?(): void | Promise<void>;
+  /** Optional teardown (close a pool / connection); run by `bot.close()`. */
+  close?(): void | Promise<void>;
 };
 
 /** How a value is turned into the string a store persists. Default: JSON. */
@@ -197,7 +197,7 @@ export type SessionMiddleware<T> = Middleware<Context> & {
   /** Run the store's setup once (memoized, retried after a failure). */
   init(): Promise<void>;
   /** Release the store's resources. */
-  dispose(): Promise<void>;
+  close(): Promise<void>;
 };
 
 /** Default key: one session per chat. Updates with no chat (poll answers, ...) skip. */
@@ -395,13 +395,13 @@ export function createSession<T = Record<string, unknown>>(options: SessionOptio
       return handles.get(ctx);
     },
     init,
-    async dispose(): Promise<void> {
+    async close(): Promise<void> {
       // Close first, then drop the memo. After the store is closed setup is no
       // longer "done", so a later init() must run it again (a re-`run(bot)` in
       // one process would otherwise keep using a closed pool / database handle);
       // clearing it up front would instead let an update still in flight re-run
       // setup behind the teardown's back.
-      await store.dispose?.();
+      await store.close?.();
       setup = undefined;
     },
   });

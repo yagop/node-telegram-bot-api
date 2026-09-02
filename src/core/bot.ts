@@ -25,14 +25,14 @@ export interface BotOptions extends TransportOptions {}
 /**
  * Optional lifecycle a middleware may carry (duck-typed - no base class, no
  * registration API). `bot.init()` runs every registered `init` once, in
- * registration order, before the first update; `bot.dispose()` runs every
- * `dispose` in reverse order. This is how a middleware that owns a resource - a
+ * registration order, before the first update; `bot.close()` runs every
+ * `close` in reverse order. This is how a middleware that owns a resource - a
  * session store's directory / table / connection pool - gets a deterministic
  * start and stop instead of inventing per-request lazy setup of its own.
  */
 export type MiddlewarePlugin = {
   init?(): void | Promise<void>;
-  dispose?(): void | Promise<void>;
+  close?(): void | Promise<void>;
 };
 
 /** A composed sub-chain used by the routing helpers. */
@@ -67,9 +67,9 @@ export class Bot {
 
   /**
    * Register one or more middleware to run on every update. A middleware that
-   * also carries `init` / `dispose` (see {@link MiddlewarePlugin}) is picked up
+   * also carries `init` / `close` (see {@link MiddlewarePlugin}) is picked up
    * for the bot lifecycle: its setup runs once via {@link Bot.init}, its
-   * teardown via {@link Bot.dispose}.
+   * teardown via {@link Bot.close}.
    */
   use(...mw: Middleware<Context>[]): this {
     this.register(mw);
@@ -78,7 +78,7 @@ export class Bot {
   }
 
   /**
-   * Pick up the `init` / `dispose` of any middleware that carries them. Called
+   * Pick up the `init` / `close` of any middleware that carries them. Called
    * for `use` and for the routing helpers alike: `on`/`command`/`hears` push a
    * *wrapper* onto the chain, which carries no lifecycle of its own, so
    * `bot.on("message", session)` would otherwise silently lose its setup.
@@ -86,7 +86,7 @@ export class Bot {
   private register(mw: ReadonlyArray<Middleware<Context>>): void {
     for (const fn of mw) {
       const plugin = fn as Middleware<Context> & MiddlewarePlugin;
-      if (typeof plugin.init === "function" || typeof plugin.dispose === "function") {
+      if (typeof plugin.init === "function" || typeof plugin.close === "function") {
         this.plugins.push(plugin);
       }
     }
@@ -114,13 +114,17 @@ export class Bot {
   }
 
   /**
-   * Release resources held by registered middleware: runs every `dispose()` in
+   * Release resources held by registered middleware: runs every `close()` in
    * reverse registration order. Call it after `stop()` (or when a webhook
    * process shuts down); a later `init()` re-runs setup.
+   *
+   * Local teardown only - unrelated to Telegram's `close` method, which lives on
+   * the client (`bot.api.close()`) and terminates the *bot's* server-side
+   * session so it can be moved to another server.
    */
-  async dispose(): Promise<void> {
+  async close(): Promise<void> {
     for (const plugin of [...this.plugins].reverse()) {
-      await plugin.dispose?.();
+      await plugin.close?.();
     }
     // Cleared last: an update arriving mid-shutdown would otherwise re-run every
     // plugin's init() while this loop is still tearing them down.

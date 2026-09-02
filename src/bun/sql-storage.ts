@@ -44,10 +44,10 @@ export type SqlSessionStorageOptions = {
 export class SqlSessionStorage implements SessionStore {
   private readonly sql: SQL;
   private readonly table: string;
-  /** True when this store opened the client itself, so `dispose()` may close it. */
+  /** True when this store opened the client itself, so `close()` may close it. */
   private readonly owned: boolean;
-  /** Set once `dispose()` closed a client this store owned - the store is then spent. */
-  private disposed = false;
+  /** Set once `close()` closed a client this store owned - the store is then spent. */
+  private closed = false;
   private ensured?: Promise<void>;
 
   constructor(options: SqlSessionStorageOptions = {}) {
@@ -74,8 +74,8 @@ export class SqlSessionStorage implements SessionStore {
    * startup, so an unreachable database fails at boot.
    */
   init(): Promise<void> {
-    if (this.disposed) {
-      return Promise.reject(new Error("SqlSessionStorage: this store was disposed; construct a new one"));
+    if (this.closed) {
+      return Promise.reject(new Error("SqlSessionStorage: this store was closed; construct a new one"));
     }
     if (this.ensured === undefined) {
       this.ensured = (async () => {
@@ -100,10 +100,10 @@ export class SqlSessionStorage implements SessionStore {
    * caller-supplied client the store stays usable: only the table-setup memo is
    * dropped, so a later `init()` re-checks the schema.
    */
-  async dispose(): Promise<void> {
+  async close(): Promise<void> {
     this.ensured = undefined;
     if (this.owned) {
-      this.disposed = true;
+      this.closed = true;
       await this.sql.close();
     }
   }

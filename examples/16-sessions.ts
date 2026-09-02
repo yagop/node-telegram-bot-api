@@ -10,7 +10,7 @@
  * persists to disk, so the profile and the edit count survive a restart - stop
  * the process and run it again, the data is still there. `run()` calls
  * `bot.init()` (which creates the directory up front, failing at boot on a bad
- * path) and `bot.dispose()` on shutdown.
+ * path) and `bot.close()` on shutdown.
  *
  * The reply flow uses `taggedReplies`, a layer built on the session's `ext`
  * namespace: `/start` sends a `force_reply` prompt and tags the sent message

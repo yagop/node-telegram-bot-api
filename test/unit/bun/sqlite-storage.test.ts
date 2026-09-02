@@ -46,19 +46,19 @@ describe("SqliteSessionStorage", () => {
     assert.ok(updated.updated_at > inserted.updated_at, "updated_at must move forward");
   });
 
-  test("a disposed store that owned its database refuses further use", () => {
+  test("a closed store that owned its database refuses further use", () => {
     const store = new SqliteSessionStorage(); // owns its :memory: database
     store.write("k", "v");
-    store.dispose();
-    assert.throws(() => store.read("k"), /was disposed/);
-    assert.throws(() => store.write("k", "v"), /was disposed/);
+    store.close();
+    assert.throws(() => store.read("k"), /was closed/);
+    assert.throws(() => store.write("k", "v"), /was closed/);
   });
 
   test("rejects an unsafe table name", () => {
     assert.throws(() => new SqliteSessionStorage({ table: "a; DROP TABLE x" }), /invalid table name/);
   });
 
-  test("persists across instances sharing one Database; dispose leaves it open", async () => {
+  test("persists across instances sharing one Database; close leaves it open", async () => {
     const { Database } = await import("bun:sqlite");
     const db = new Database(":memory:");
     const first = new SqliteSessionStorage({ database: db });
@@ -67,8 +67,8 @@ describe("SqliteSessionStorage", () => {
     const reopened = new SqliteSessionStorage({ database: db });
     assert.equal(reopened.read("chat:7"), "seen");
 
-    // The handle is the caller's, so disposing a store must not close it.
-    first.dispose();
+    // The handle is the caller's, so closing a store must not close it.
+    first.close();
     assert.equal(reopened.read("chat:7"), "seen");
   });
 });

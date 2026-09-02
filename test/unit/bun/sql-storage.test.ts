@@ -59,11 +59,11 @@ describe("SqlSessionStorage", () => {
     assert.throws(() => new SqlSessionStorage({ sql: memSql(), table: "a; DROP TABLE x" }), /invalid table name/);
   });
 
-  test("dispose leaves a caller-supplied client open and the store usable", async () => {
+  test("close leaves a caller-supplied client open and the store usable", async () => {
     const sql = memSql();
     const store = new SqlSessionStorage({ sql });
     await store.write("k", "v");
-    await store.dispose(); // owns nothing -> only the schema memo is dropped
+    await store.close(); // owns nothing -> only the schema memo is dropped
     assert.equal(await store.read("k"), "v");
   });
 });
