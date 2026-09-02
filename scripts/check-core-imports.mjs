@@ -151,7 +151,7 @@ const files = collectTsFiles(CORE_DIR);
 const importOffenders = [];
 const globalOffenders = [];
 
-// ── Node built-in import/require specifiers (whole-file, multi-line safe) ────
+// -- Node built-in import/require specifiers (whole-file, multi-line safe) --
 for (const file of files) {
   const raw = readFileSync(file, "utf8");
   const rawLines = raw.split(/\r?\n/);
