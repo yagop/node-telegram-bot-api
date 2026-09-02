@@ -54,6 +54,18 @@ describe("SqliteSessionStorage", () => {
     assert.throws(() => store.write("k", "v"), /was closed/);
   });
 
+  test("reports a foreign table whose value column does not hold TEXT", async () => {
+    const { Database } = await import("bun:sqlite");
+    const db = new Database(":memory:");
+    // SQLite is dynamically typed: a foreign writer can put a number in there.
+    db.run(`CREATE TABLE "sessions" (key TEXT PRIMARY KEY, value BLOB NOT NULL,
+      created_at TEXT NOT NULL, updated_at TEXT NOT NULL)`);
+    db.run(`INSERT INTO "sessions" (key, value, created_at, updated_at) VALUES ('k', 42, 'now', 'now')`);
+
+    const store = new SqliteSessionStorage({ database: db });
+    assert.throws(() => store.read("k"), /sessions\.value must be TEXT/);
+  });
+
   test("rejects an unsafe table name", () => {
     assert.throws(() => new SqliteSessionStorage({ table: "a; DROP TABLE x" }), /invalid table name/);
   });

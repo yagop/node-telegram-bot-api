@@ -55,6 +55,19 @@ describe("SqlSessionStorage", () => {
     assert.equal(await store.read("k"), "v");
   });
 
+  test("reports a foreign table whose value column is not TEXT", async () => {
+    const sql = memSql();
+    // A table of that name already exists and `CREATE TABLE IF NOT EXISTS` adopts
+    // it; its `value` is not text, so the driver hands back a non-string. (On
+    // Postgres the same happens with a JSON/JSONB column, which arrives parsed.)
+    await sql`CREATE TABLE sessions (key TEXT PRIMARY KEY, value INTEGER NOT NULL,
+      created_at TEXT NOT NULL, updated_at TEXT NOT NULL)`;
+    await sql`INSERT INTO sessions (key, value, created_at, updated_at) VALUES ('k', 42, 'now', 'now')`;
+
+    const store = new SqlSessionStorage({ sql });
+    await assert.rejects(store.read("k"), /sessions\.value must be TEXT, got number/);
+  });
+
   test("rejects an unsafe table name", () => {
     assert.throws(() => new SqlSessionStorage({ sql: memSql(), table: "a; DROP TABLE x" }), /invalid table name/);
   });

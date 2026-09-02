@@ -33,6 +33,7 @@ export type SqliteSessionStorageOptions = {
 
 export class SqliteSessionStorage implements SessionStore {
   private readonly db: Database;
+  private readonly table: string;
   /** True when this store opened the database itself, so `close()` may close it. */
   private readonly owned: boolean;
   /** Set once `close()` closed a database this store owned - the store is then spent. */
@@ -48,6 +49,7 @@ export class SqliteSessionStorage implements SessionStore {
     if (!/^[A-Za-z0-9_]+$/.test(table)) {
       throw new Error(`SqliteSessionStorage: invalid table name ${JSON.stringify(table)}`);
     }
+    this.table = table;
     this.owned = typeof options.database !== "object";
     this.db = typeof options.database === "object" ? options.database : new Database(options.database ?? ":memory:");
     this.db.run(
@@ -74,8 +76,16 @@ export class SqliteSessionStorage implements SessionStore {
 
   read(key: string): string | undefined {
     this.assertUsable();
-    const row = this.getStmt.get(key) as { value: string } | null;
-    return row?.value;
+    const row = this.getStmt.get(key) as { value: unknown } | null;
+    if (row === null) return undefined;
+    // `CREATE TABLE IF NOT EXISTS` adopts a pre-existing table of that name, so
+    // the column may not hold the TEXT we assume (SQLite stores whatever a
+    // foreign writer bound). Say so here rather than letting a non-string reach
+    // the codec and fail as a baffling JSON.parse error.
+    if (typeof row.value !== "string") {
+      throw new TypeError(`SqliteSessionStorage: ${this.table}.value must be TEXT, got ${typeof row.value}`);
+    }
+    return row.value;
   }
 
   write(key: string, value: string): void {

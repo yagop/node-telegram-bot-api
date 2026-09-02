@@ -110,8 +110,16 @@ export class SqlSessionStorage implements SessionStore {
 
   async read(key: string): Promise<string | undefined> {
     await this.init();
-    const rows = (await this.sql`SELECT value FROM ${this.ref} WHERE key = ${key}`) as Array<{ value: string }>;
-    return rows[0]?.value;
+    const [row] = (await this.sql`SELECT value FROM ${this.ref} WHERE key = ${key}`) as Array<{ value: unknown }>;
+    if (row === undefined) return undefined;
+    // `CREATE TABLE IF NOT EXISTS` adopts a pre-existing table of that name, so
+    // the column may not be the TEXT we assume - a JSON/JSONB one comes back
+    // already parsed. Say so here rather than letting a non-string reach the
+    // codec and fail as a baffling JSON.parse error.
+    if (typeof row.value !== "string") {
+      throw new TypeError(`SqlSessionStorage: ${this.table}.value must be TEXT, got ${typeof row.value}`);
+    }
+    return row.value;
   }
 
   async write(key: string, value: string): Promise<void> {
