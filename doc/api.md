@@ -366,6 +366,7 @@ level once `serializeParams` resolves the files.
 | --- | --- | --- | --- |
 | `delete` | `key`: string | void | - |
 | `read` | `key`: string | string \| undefined | The stored string for `key`, or `undefined` when there is none. |
+| `touch` | `key`: string, `ttlSeconds`: number | void | Refresh an existing key's expiry without rewriting its value. |
 | `write` | `key`: string, `value`: string, `options?`: [SessionWriteOptions](#sessionwriteoptions) | void | Persist `value` verbatim under `key`. |
 
 ### `NetworkError`
@@ -438,6 +439,7 @@ bound for long-lived bots that talk to many distinct chats.
 | --- | --- | --- | --- |
 | `delete` | `key`: string | Promise<void> | - |
 | `read` | `key`: string | Promise<string \| undefined> | The stored string for `key`, or `undefined` when there is none. |
+| `touch` | `key`: string, `ttlSeconds`: number | Promise<void> | Refresh a key's expiry without rewriting it - what the middleware calls when an update changed nothing, so an active chat is not evicted mid-conversation. |
 | `write` | `key`: string, `value`: string, `options?`: [SessionWriteOptions](#sessionwriteoptions) | Promise<void> | Persist `value` verbatim under `key`. |
 
 ### `ReplyKeyboardBuilder`
@@ -562,7 +564,7 @@ own data. `.build()` returns the plain `RichText` (its accumulated sequence).
 | Method | Params | Returns | Description |
 | --- | --- | --- | --- |
 | `delete` | `key`: string | Promise<void> | - |
-| `dispose` | - | Promise<void> | Close the client, but only if this store opened it (a passed-in `sql` is the caller's). |
+| `dispose` | - | Promise<void> | Close the client, but only if this store opened it (a passed-in `sql` is the caller's). Closing ends this store's life - the client cannot be reopened, so a later use throws and you construct a new store instead. With a caller-supplied client the store stays usable: only the table-setup memo is dropped, so a later `init()` re-checks the schema. |
 | `init` | - | Promise<void> | Create the table once, lazily (the constructor can't await). Idempotent and memoized; on failure the cache is cleared so a later call retries instead of re-throwing a stale (possibly transient) rejection. `bot.init()` runs it at startup, so an unreachable database fails at boot. |
 | `read` | `key`: string | Promise<string \| undefined> | The stored string for `key`, or `undefined` when there is none. |
 | `write` | `key`: string, `value`: string | Promise<void> | Persist `value` verbatim under `key`. |
@@ -574,7 +576,7 @@ own data. `.build()` returns the plain `RichText` (its accumulated sequence).
 | Method | Params | Returns | Description |
 | --- | --- | --- | --- |
 | `delete` | `key`: string | void | - |
-| `dispose` | - | void | Close the database, but only if this store opened it (a passed-in handle is the caller's). |
+| `dispose` | - | void | Close the database, but only if this store opened it (a passed-in handle is the caller's). Closing ends this store's life - its prepared statements go with the handle - so a later use throws and you construct a new store instead. With a caller-supplied handle this is a no-op. |
 | `read` | `key`: string | string \| undefined | The stored string for `key`, or `undefined` when there is none. |
 | `write` | `key`: string, `value`: string | void | Persist `value` verbatim under `key`. |
 
@@ -7919,7 +7921,7 @@ type SessionHandle = {
   data: T;
   readonly updatedAt: Date;
   delete: () => void;
-  ext: <E>(namespace: string, initial: () => E) => E;
+  ext: <E>(namespace: string, initial: () => E, isValid?: (slot: Record<string, unknown>) => boolean) => E;
 };
 ```
 
@@ -7963,6 +7965,7 @@ type SessionStore = {
   dispose?: () => void | Promise<void>;
   init?: () => void | Promise<void>;
   read: (key: string) => string | Promise<string | undefined> | undefined;
+  touch?: (key: string, ttlSeconds: number) => void | Promise<void>;
   write: (key: string, value: string, options?: [SessionWriteOptions](#sessionwriteoptions)) => void | Promise<void>;
 };
 ```

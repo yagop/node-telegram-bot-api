@@ -35,6 +35,8 @@ export class SqliteSessionStorage implements SessionStore {
   private readonly db: Database;
   /** True when this store opened the database itself, so `dispose()` may close it. */
   private readonly owned: boolean;
+  /** Set once `dispose()` closed a database this store owned - the store is then spent. */
+  private disposed = false;
   private readonly getStmt: Statement;
   private readonly insertStmt: Statement;
   private readonly delStmt: Statement;
@@ -64,22 +66,39 @@ export class SqliteSessionStorage implements SessionStore {
     this.delStmt = this.db.query(`DELETE FROM "${table}" WHERE key = ?`);
   }
 
+  private assertUsable(): void {
+    if (this.disposed) {
+      throw new Error("SqliteSessionStorage: this store was disposed; construct a new one");
+    }
+  }
+
   read(key: string): string | undefined {
+    this.assertUsable();
     const row = this.getStmt.get(key) as { value: string } | null;
     return row?.value;
   }
 
   write(key: string, value: string): void {
+    this.assertUsable();
     const at = new Date().toISOString();
     this.insertStmt.run(key, value, at, at);
   }
 
   delete(key: string): void {
+    this.assertUsable();
     this.delStmt.run(key);
   }
 
-  /** Close the database, but only if this store opened it (a passed-in handle is the caller's). */
+  /**
+   * Close the database, but only if this store opened it (a passed-in handle is
+   * the caller's). Closing ends this store's life - its prepared statements go
+   * with the handle - so a later use throws and you construct a new store
+   * instead. With a caller-supplied handle this is a no-op.
+   */
   dispose(): void {
-    if (this.owned) this.db.close();
+    if (this.owned) {
+      this.disposed = true;
+      this.db.close();
+    }
   }
 }

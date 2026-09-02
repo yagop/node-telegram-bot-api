@@ -46,6 +46,14 @@ describe("SqliteSessionStorage", () => {
     assert.ok(updated.updated_at > inserted.updated_at, "updated_at must move forward");
   });
 
+  test("a disposed store that owned its database refuses further use", () => {
+    const store = new SqliteSessionStorage(); // owns its :memory: database
+    store.write("k", "v");
+    store.dispose();
+    assert.throws(() => store.read("k"), /was disposed/);
+    assert.throws(() => store.write("k", "v"), /was disposed/);
+  });
+
   test("rejects an unsafe table name", () => {
     assert.throws(() => new SqliteSessionStorage({ table: "a; DROP TABLE x" }), /invalid table name/);
   });

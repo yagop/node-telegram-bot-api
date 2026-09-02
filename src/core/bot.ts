@@ -72,14 +72,24 @@ export class Bot {
    * teardown via {@link Bot.dispose}.
    */
   use(...mw: Middleware<Context>[]): this {
+    this.register(mw);
+    this.middleware.push(...mw);
+    return this;
+  }
+
+  /**
+   * Pick up the `init` / `dispose` of any middleware that carries them. Called
+   * for `use` and for the routing helpers alike: `on`/`command`/`hears` push a
+   * *wrapper* onto the chain, which carries no lifecycle of its own, so
+   * `bot.on("message", session)` would otherwise silently lose its setup.
+   */
+  private register(mw: ReadonlyArray<Middleware<Context>>): void {
     for (const fn of mw) {
       const plugin = fn as Middleware<Context> & MiddlewarePlugin;
       if (typeof plugin.init === "function" || typeof plugin.dispose === "function") {
         this.plugins.push(plugin);
       }
     }
-    this.middleware.push(...mw);
-    return this;
   }
 
   /**
@@ -109,10 +119,12 @@ export class Bot {
    * process shuts down); a later `init()` re-runs setup.
    */
   async dispose(): Promise<void> {
-    this.started = undefined;
     for (const plugin of [...this.plugins].reverse()) {
       await plugin.dispose?.();
     }
+    // Cleared last: an update arriving mid-shutdown would otherwise re-run every
+    // plugin's init() while this loop is still tearing them down.
+    this.started = undefined;
   }
 
   /**
@@ -121,6 +133,7 @@ export class Bot {
    */
   on(kind: UpdateType | UpdateType[], ...handlers: Middleware<Context>[]): this {
     const kinds = Array.isArray(kind) ? kind : [kind];
+    this.register(handlers);
     const run = compose(handlers) satisfies Composed;
     return this.use((ctx, next) => {
       const matched = kinds.some((k) => k in ctx.update);
@@ -134,6 +147,7 @@ export class Bot {
    */
   command(name: string | string[], ...handlers: Middleware<Context>[]): this {
     const names = (Array.isArray(name) ? name : [name]).map((n) => n.replace(/^\//, ""));
+    this.register(handlers);
     const re = new RegExp(`^\\/(${names.map(escapeRegExp).join("|")})(@\\w+)?(?:\\s+(.*))?$`, "s");
     const run = compose(handlers) satisfies Composed;
     return this.use((ctx, next) => {
@@ -153,6 +167,7 @@ export class Bot {
    */
   hears(trigger: string | RegExp | Array<string | RegExp>, ...handlers: Middleware<Context>[]): this {
     const triggers = Array.isArray(trigger) ? trigger : [trigger];
+    this.register(handlers);
     const run = compose(handlers) satisfies Composed;
     return this.use((ctx, next) => {
       const text = ctx.message?.text;
@@ -193,11 +208,13 @@ export class Bot {
    * itself throws.
    */
   async handleUpdate(update: Update): Promise<void> {
-    await this.init(); // memoized; a no-op once startup has run
     const ctx = new Context(update, this.api);
     try {
+      await this.init(); // memoized; a no-op once startup has run
       await compose(this.middleware)(ctx, () => Promise.resolve());
     } catch (err) {
+      // Inside the boundary: a plugin's setup failure is an update-processing
+      // error like any other, so `catch()` decides whether it is fatal.
       await this.errorHandler(err, ctx);
     }
   }

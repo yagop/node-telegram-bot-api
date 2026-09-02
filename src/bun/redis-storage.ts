@@ -52,6 +52,14 @@ export class RedisSessionStorage implements SessionStore {
     }
   }
 
+  /**
+   * Refresh a key's expiry without rewriting it - what the middleware calls when
+   * an update changed nothing, so an active chat is not evicted mid-conversation.
+   */
+  async touch(key: string, ttlSeconds: number): Promise<void> {
+    await this.client.expire(this.prefix + key, ttlSeconds);
+  }
+
   async delete(key: string): Promise<void> {
     await this.client.del(this.prefix + key);
   }

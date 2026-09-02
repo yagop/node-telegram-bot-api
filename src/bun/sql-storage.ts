@@ -46,6 +46,8 @@ export class SqlSessionStorage implements SessionStore {
   private readonly table: string;
   /** True when this store opened the client itself, so `dispose()` may close it. */
   private readonly owned: boolean;
+  /** Set once `dispose()` closed a client this store owned - the store is then spent. */
+  private disposed = false;
   private ensured?: Promise<void>;
 
   constructor(options: SqlSessionStorageOptions = {}) {
@@ -72,6 +74,9 @@ export class SqlSessionStorage implements SessionStore {
    * startup, so an unreachable database fails at boot.
    */
   init(): Promise<void> {
+    if (this.disposed) {
+      return Promise.reject(new Error("SqlSessionStorage: this store was disposed; construct a new one"));
+    }
     if (this.ensured === undefined) {
       this.ensured = (async () => {
         await this.sql`CREATE TABLE IF NOT EXISTS ${this.ref} (
@@ -88,9 +93,19 @@ export class SqlSessionStorage implements SessionStore {
     return this.ensured;
   }
 
-  /** Close the client, but only if this store opened it (a passed-in `sql` is the caller's). */
+  /**
+   * Close the client, but only if this store opened it (a passed-in `sql` is the
+   * caller's). Closing ends this store's life - the client cannot be reopened,
+   * so a later use throws and you construct a new store instead. With a
+   * caller-supplied client the store stays usable: only the table-setup memo is
+   * dropped, so a later `init()` re-checks the schema.
+   */
   async dispose(): Promise<void> {
-    if (this.owned) await this.sql.close();
+    this.ensured = undefined;
+    if (this.owned) {
+      this.disposed = true;
+      await this.sql.close();
+    }
   }
 
   async read(key: string): Promise<string | undefined> {

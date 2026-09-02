@@ -58,6 +58,13 @@ export type SessionStore = {
   write(key: string, value: string, options?: SessionWriteOptions): void | Promise<void>;
   delete(key: string): void | Promise<void>;
   /**
+   * Re-set `key`'s expiry without rewriting its value. Only stores with a TTL
+   * need it: the middleware skips the write when nothing changed, so without a
+   * `touch` an active chat whose data happens not to change would still expire.
+   * Stores with no TTL omit it (there is nothing to refresh).
+   */
+  touch?(key: string, ttlSeconds: number): void | Promise<void>;
+  /**
    * Optional one-time setup (create a directory / table, open a connection).
    * Idempotent; `Bot` runs it once at startup via the middleware's `init()`, so
    * a bad path or an unreachable backend fails at boot, not on update #1.
@@ -137,8 +144,12 @@ export type SessionHandle<T> = {
    * first use. Persisted inside the same envelope under `namespace`, so the
    * layer costs no extra round-trip and no change to the session format. Use a
    * distinct, stable `namespace` per layer (`"reply"`, `"scene"`, ...).
+   *
+   * The stored slot is untrusted (a foreign writer, a hand edit, an older
+   * layout), so pass `isValid` to have a slot that fails the check replaced by a
+   * fresh `initial()` instead of reaching the layer half-formed.
    */
-  ext<E extends object>(namespace: string, initial: () => E): E;
+  ext<E extends object>(namespace: string, initial: () => E, isValid?: (slot: Record<string, unknown>) => boolean): E;
   /**
    * Drop this key from the store when the handler finishes (an explicit
    * eviction: end-of-conversation, a `/forget` command, GDPR erasure). Later
@@ -290,10 +301,14 @@ export function createSession<T = Record<string, unknown>>(options: SessionOptio
         data: envelope.data,
         createdAt: new Date(envelope.createdAt),
         updatedAt: new Date(envelope.updatedAt),
-        ext<E extends object>(namespace: string, makeInitial: () => E): E {
+        ext<E extends object>(
+          namespace: string,
+          makeInitial: () => E,
+          isValid?: (slot: Record<string, unknown>) => boolean,
+        ): E {
           const ext = (envelope.ext ??= {});
           const current = ext[namespace];
-          if (!isPlainObject(current)) {
+          if (!isPlainObject(current) || (isValid !== undefined && !isValid(current))) {
             const fresh = makeInitial();
             ext[namespace] = fresh;
             return fresh;
@@ -356,7 +371,13 @@ export function createSession<T = Record<string, unknown>>(options: SessionOptio
     // Compare with `updatedAt` still at its loaded value, so "did anything
     // change?" is about the content - stamping the clock first would make every
     // update look dirty and defeat the skip.
-    if (codec.encode(envelope) === before) return; // untouched (or a brand-new, still-empty session)
+    if (codec.encode(envelope) === before) {
+      // Untouched (or a brand-new, still-empty session). Nothing to persist -
+      // but an existing row's TTL must not lapse just because this update
+      // changed nothing, so refresh it in place.
+      if (existed && ttlSeconds !== undefined) await store.touch?.(key, ttlSeconds);
+      return;
+    }
 
     envelope.updatedAt = new Date(now()).toISOString();
     await store.write(key, codec.encode(envelope), { ttlSeconds });
@@ -375,7 +396,13 @@ export function createSession<T = Record<string, unknown>>(options: SessionOptio
     },
     init,
     async dispose(): Promise<void> {
+      // Close first, then drop the memo. After the store is closed setup is no
+      // longer "done", so a later init() must run it again (a re-`run(bot)` in
+      // one process would otherwise keep using a closed pool / database handle);
+      // clearing it up front would instead let an update still in flight re-run
+      // setup behind the teardown's back.
       await store.dispose?.();
+      setup = undefined;
     },
   });
 }

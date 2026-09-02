@@ -29,11 +29,16 @@ export async function run(bot: Bot, options?: LongPollOptions): Promise<void> {
   process.on("SIGINT", stop);
   process.on("SIGTERM", stop);
 
+  // Only a call that actually owns the pump may dispose. `startPolling` refuses
+  // when another run is already active (as a rejection - it is async - so the
+  // loser cannot be told apart after the fact); checking first is what keeps this
+  // call from closing stores under the run that is still using them.
+  const owned = !bot.isRunning();
   try {
     return await bot.startPolling(undefined, options);
   } finally {
     process.off("SIGINT", stop);
     process.off("SIGTERM", stop);
-    await bot.dispose();
+    if (owned) await bot.dispose();
   }
 }

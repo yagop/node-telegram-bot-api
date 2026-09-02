@@ -40,9 +40,17 @@ export const REPLY_NAMESPACE = "reply";
 
 type ReplyState = { awaiting: Record<number, ReplyMarker> };
 
-/** This key's reply table, created on first use inside the session envelope. */
+/**
+ * This key's reply table, created on first use inside the session envelope. The
+ * stored slot is untrusted, so a slot whose `awaiting` is missing or not a plain
+ * object is replaced by a fresh table rather than blowing up on the first write.
+ */
 function replyState(ctx: Context): ReplyState {
-  return ctx.getSession().ext<ReplyState>(REPLY_NAMESPACE, () => ({ awaiting: {} }));
+  return ctx.getSession().ext<ReplyState>(
+    REPLY_NAMESPACE,
+    () => ({ awaiting: {} }),
+    (slot) => typeof slot.awaiting === "object" && slot.awaiting !== null && !Array.isArray(slot.awaiting),
+  );
 }
 
 /**

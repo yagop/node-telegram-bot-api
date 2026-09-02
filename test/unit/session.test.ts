@@ -154,6 +154,21 @@ describe("createSession()", () => {
     ]);
   });
 
+  test("replaces an ext slot that fails its validity check", async () => {
+    const store = fakeStore();
+    // A plain object, but not a well-formed reply table (no `awaiting`).
+    store.write("chat:42", JSON.stringify({ v: 1, data: {}, ext: { reply: {} }, createdAt: AT, updatedAt: AT }));
+    const mw = createSession({ store, now });
+    const ctx = new Context(msg("hi"), api);
+    await mw(ctx, async () => {
+      expectReply(ctx, 7, { ok: true }); // would throw on `undefined[7] = ...`
+    });
+    assert.deepEqual(store.writes.at(-1), [
+      "chat:42",
+      encoded({ data: {}, ext: { reply: { awaiting: { 7: { ok: true } } } } }),
+    ]);
+  });
+
   test("throws on a corrupt encoding rather than silently resetting", async () => {
     const store = fakeStore();
     store.write("chat:42", "{not json");
@@ -278,6 +293,57 @@ describe("createSession()", () => {
   });
 });
 
+describe("session TTL", () => {
+  test("refreshes the expiry when a read-only update skips the write", async () => {
+    const touches: Array<[string, number]> = [];
+    const base = fakeStore();
+    const store: SessionStore = { ...base, touch: (key, ttlSeconds) => void touches.push([key, ttlSeconds]) };
+    const mw = createSession<{ n: number }>({ store, initial: () => ({ n: 0 }), ttlSeconds: 60 });
+
+    const first = new Context(msg("a"), api);
+    await mw(first, async () => {
+      mw.get(first).data.n = 1;
+    });
+    assert.equal(base.writes.length, 1);
+    assert.deepEqual(touches, [], "the write itself carries the TTL");
+
+    const second = new Context(msg("b"), api); // reads, changes nothing
+    await mw(second, async () => {});
+    assert.equal(base.writes.length, 1, "still no rewrite");
+    assert.deepEqual(touches, [["chat:42", 60]], "but the TTL must not lapse");
+  });
+
+  test("does not touch a session that was never stored, or when no TTL is set", async () => {
+    const touches: string[] = [];
+    const base = fakeStore();
+    const store: SessionStore = { ...base, touch: (key) => void touches.push(key) };
+
+    const withTtl = createSession({ store, ttlSeconds: 60 });
+    await withTtl(new Context(msg("a"), api), async () => {}); // nothing stored yet
+    assert.deepEqual(touches, []);
+
+    const noTtl = createSession<{ n: number }>({ store, initial: () => ({ n: 0 }) });
+    const ctx = new Context(msg("b"), api);
+    await noTtl(ctx, async () => {
+      noTtl.get(ctx).data.n = 1;
+    });
+    await noTtl(new Context(msg("c"), api), async () => {});
+    assert.deepEqual(touches, []);
+  });
+
+  test("a store without touch is left alone", async () => {
+    const store = fakeStore();
+    assert.equal("touch" in store, false);
+    const mw = createSession<{ n: number }>({ store, initial: () => ({ n: 0 }), ttlSeconds: 60 });
+    const first = new Context(msg("a"), api);
+    await mw(first, async () => {
+      mw.get(first).data.n = 1;
+    });
+    await mw(new Context(msg("b"), api), async () => {}); // must not throw
+    assert.equal(store.writes.length, 1);
+  });
+});
+
 describe("ctx.getSession", () => {
   test("reads and writes the bag through the handle", async () => {
     const store = fakeStore();
@@ -397,6 +463,84 @@ describe("session lifecycle", () => {
     await assert.rejects(bot.init(), /init boom/);
     await bot.init(); // retried, now succeeds
     assert.equal(attempts, 2);
+  });
+
+  test("dispose drops the setup memo, so a later init re-runs store setup", async () => {
+    let inits = 0;
+    let disposes = 0;
+    const store: SessionStore = {
+      ...fakeStore(),
+      init: () => {
+        inits += 1;
+      },
+      dispose: () => {
+        disposes += 1;
+      },
+    };
+    const bot = new Bot("123:abc").use(createSession({ store }));
+
+    await bot.init();
+    await bot.dispose();
+    await bot.init(); // a second run() in one process must not reuse a closed store
+    assert.equal(inits, 2);
+    assert.equal(disposes, 1);
+  });
+
+  test("bot.dispose clears the memo only after teardown has finished", async () => {
+    const order: string[] = [];
+    let released!: () => void;
+    const gate = new Promise<void>((resolve) => {
+      released = resolve;
+    });
+    const store: SessionStore = {
+      ...fakeStore(),
+      init: () => {
+        order.push("init");
+      },
+      dispose: async () => {
+        order.push("dispose:start");
+        await gate;
+        order.push("dispose:end");
+      },
+    };
+    const bot = new Bot("123:abc").use(createSession({ store }));
+    await bot.init();
+
+    const disposing = bot.dispose();
+    // An update landing mid-shutdown must not re-run setup behind dispose's back.
+    const midShutdown = bot.handleUpdate(msg("hi"));
+    released();
+    await disposing;
+    await midShutdown;
+    assert.deepEqual(order, ["init", "dispose:start", "dispose:end"]);
+  });
+
+  test("a store-init failure reaches the bot.catch boundary", async () => {
+    const store: SessionStore = { ...fakeStore(), init: () => Promise.reject(new Error("init boom")) };
+    const seen: unknown[] = [];
+    const bot = new Bot("123:abc")
+      .use(createSession({ store }))
+      .catch((err) => {
+        seen.push(err);
+      });
+
+    await bot.handleUpdate(msg("hi")); // consumed by the boundary, not thrown
+    assert.equal(seen.length, 1);
+    assert.match((seen[0] as Error).message, /init boom/);
+  });
+
+  test("the routing helpers pick up middleware lifecycle too", async () => {
+    let inits = 0;
+    const store: SessionStore = {
+      ...fakeStore(),
+      init: () => {
+        inits += 1;
+      },
+    };
+    const bot = new Bot("123:abc");
+    bot.on("message", createSession({ store })); // not bot.use()
+    await bot.init();
+    assert.equal(inits, 1);
   });
 
   test("a store without init/dispose works unchanged", async () => {

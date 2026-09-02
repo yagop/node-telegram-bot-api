@@ -64,6 +64,15 @@ describe("RedisSessionStorage", () => {
     assert.equal(noTtl.expires.has("session:k"), false);
   });
 
+  test("touch re-sets the expiry without rewriting the value", async () => {
+    const client = fakeRedis();
+    const store = new RedisSessionStorage({ client });
+    await store.write("k", envelope);
+    await store.touch("k", 120);
+    assert.equal(client.expires.get("session:k"), 120);
+    assert.equal(client.store.get("session:k"), envelope); // value untouched
+  });
+
   test("a per-write TTL (from the middleware) wins over the store default", async () => {
     const client = fakeRedis();
     await new RedisSessionStorage({ client, ttlSeconds: 3600 }).write("k", envelope, { ttlSeconds: 60 });
