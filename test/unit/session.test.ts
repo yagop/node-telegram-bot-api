@@ -553,6 +553,7 @@ describe("session lifecycle", () => {
       },
     });
     const bot = new Bot("123:abc").use(createSession({ store: boom("a") })).use(createSession({ store: boom("b") }));
+    await bot.init(); // only initialized plugins are closed
 
     await assert.rejects(bot.close(), (err: unknown) => {
       assert.ok(err instanceof AggregateError);
@@ -563,6 +564,77 @@ describe("session lifecycle", () => {
       );
       return true;
     });
+  });
+
+  test("a retry resumes at the plugin that failed, without re-running the earlier ones", async () => {
+    const runs: string[] = [];
+    let failOnce = true;
+    const plugin = (name: string, fails = false): SessionStore => ({
+      ...fakeStore(),
+      init: () => {
+        runs.push(name);
+        if (fails && failOnce) {
+          failOnce = false;
+          throw new Error(`${name} boom`);
+        }
+      },
+    });
+    const bot = new Bot("123:abc")
+      .use(createSession({ store: plugin("first") }))
+      .use(createSession({ store: plugin("second", true) }))
+      .use(createSession({ store: plugin("third") }));
+
+    await assert.rejects(bot.init(), /second boom/);
+    assert.deepEqual(runs, ["first", "second"], "the run stops at the failure");
+
+    await bot.init(); // "first" already completed - a retry must not open it twice
+    assert.deepEqual(runs, ["first", "second", "second", "third"]);
+  });
+
+  test("a plugin that never initialized is not closed", async () => {
+    const closed: string[] = [];
+    const plugin = (name: string, fails = false): SessionStore => ({
+      ...fakeStore(),
+      init: () => {
+        if (fails) throw new Error(`${name} boom`);
+      },
+      close: () => {
+        closed.push(name);
+      },
+    });
+    const bot = new Bot("123:abc")
+      .use(createSession({ store: plugin("first") }))
+      .use(createSession({ store: plugin("second", true) }))
+      .use(createSession({ store: plugin("third") }));
+
+    await assert.rejects(bot.init(), /second boom/);
+    await bot.close();
+    // "second" threw (never finished opening) and "third" was never reached.
+    assert.deepEqual(closed, ["first"]);
+  });
+
+  test("the same middleware registered twice gets one lifecycle", async () => {
+    let inits = 0;
+    let closes = 0;
+    const mw = createSession({
+      store: {
+        ...fakeStore(),
+        init: () => {
+          inits += 1;
+        },
+        close: () => {
+          closes += 1;
+        },
+      },
+    });
+    const bot = new Bot("123:abc");
+    bot.use(mw);
+    bot.on("message", mw); // the same object reaching the registry a second time
+
+    await bot.init();
+    await bot.close();
+    assert.equal(inits, 1);
+    assert.equal(closes, 1);
   });
 
   test("a store-init failure reaches the bot.catch boundary", async () => {

@@ -57,6 +57,8 @@ export class Bot {
   private readonly middleware: Middleware<Context>[] = [];
   private errorHandler: (err: unknown, ctx: Context) => unknown = defaultErrorHandler;
   private readonly plugins: MiddlewarePlugin[] = [];
+  /** Plugins whose `init()` completed, so a retry resumes and `close()` skips the rest. */
+  private readonly initialized = new Set<MiddlewarePlugin>();
   private started?: Promise<void>;
   private controller?: AbortController;
   private running = false;
@@ -86,9 +88,10 @@ export class Bot {
   private register(mw: ReadonlyArray<Middleware<Context>>): void {
     for (const fn of mw) {
       const plugin = fn as Middleware<Context> & MiddlewarePlugin;
-      if (typeof plugin.init === "function" || typeof plugin.close === "function") {
-        this.plugins.push(plugin);
-      }
+      if (typeof plugin.init !== "function" && typeof plugin.close !== "function") continue;
+      // The same middleware can reach us twice (`bot.use(session)` and then
+      // `bot.on(..., session)`); it is one resource, so it gets one lifecycle.
+      if (!this.plugins.includes(plugin)) this.plugins.push(plugin);
     }
   }
 
@@ -96,14 +99,22 @@ export class Bot {
    * Run every registered middleware's `init()` once, in registration order.
    * Memoized, and awaited by `startPolling()` and `handleUpdate()`, so setup
    * failures surface at boot (or on the first webhook invocation) rather than
-   * as a per-update lazy path. A failure is not cached: the next call retries.
-   * Call it yourself to fail fast before serving anything.
+   * as a per-update lazy path. Call it yourself to fail fast before serving
+   * anything.
+   *
+   * A failure is not cached: the next call retries, and *resumes* at the plugin
+   * that failed - one whose setup already completed is not run a second time,
+   * so a plugin that opens a resource per call cannot leak one per retry.
    */
   init(): Promise<void> {
     if (this.started === undefined) {
       this.started = (async () => {
         for (const plugin of this.plugins) {
+          if (this.initialized.has(plugin)) continue;
           await plugin.init?.();
+          // Marked only on success: a plugin that threw never finished opening,
+          // so `close()` must not try to close it.
+          this.initialized.add(plugin);
         }
       })().catch((err: unknown) => {
         this.started = undefined;
@@ -115,10 +126,12 @@ export class Bot {
 
   /**
    * Release resources held by registered middleware: runs every `close()` in
-   * reverse registration order. Call it after `stop()` (or when a webhook
-   * process shuts down); a later `init()` re-runs setup. Every plugin is closed
-   * even if one throws: the failure surfaces afterwards (an `AggregateError`
-   * when more than one failed), never by skipping the remaining teardowns.
+   * reverse registration order - only those whose `init()` completed, since a
+   * plugin that never opened has nothing to close. Call it after `stop()` (or
+   * when a webhook process shuts down); a later `init()` re-runs setup. Every
+   * plugin is closed even if one throws: the failure surfaces afterwards (an
+   * `AggregateError` when more than one failed), never by skipping the
+   * remaining teardowns.
    *
    * Local teardown only - unrelated to Telegram's `close` method, which lives on
    * the client (`bot.api.close()`) and terminates the *bot's* server-side
@@ -131,6 +144,10 @@ export class Bot {
     const failures: unknown[] = [];
     try {
       for (const plugin of [...this.plugins].reverse()) {
+        // Skip what never initialized; unmark before closing, so that even a
+        // failed teardown leaves the plugin eligible for a later init() rather
+        // than stranded as "open" forever.
+        if (!this.initialized.delete(plugin)) continue;
         try {
           await plugin.close?.();
         } catch (err) {
