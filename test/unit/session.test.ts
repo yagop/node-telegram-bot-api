@@ -3,7 +3,14 @@ import assert from "node:assert/strict";
 import type { Api } from "../../src/core/api.js";
 import { Bot } from "../../src/core/bot.js";
 import { Context } from "../../src/core/context.js";
-import { expectReply, forgetReply, matchReply, taggedReplies } from "../../src/core/reply-tracking.js";
+import {
+  expectCallback,
+  expectReply,
+  forgetReply,
+  matchCallback,
+  matchReply,
+  taggedReplies,
+} from "../../src/core/reply-tracking.js";
 import { MemorySessionStorage } from "../../src/core/memory-session-storage.js";
 import { createSession, session, type SessionStore } from "../../src/core/session.js";
 import type { Update } from "../../src/types/index.js";
@@ -772,5 +779,112 @@ describe("taggedReplies", () => {
     await mw(ctx, async () => {
       assert.equal(taggedReplies<"X">(ctx).match(), undefined);
     });
+  });
+});
+
+describe("callback tracking", () => {
+  /** A callback-query update whose keyboard sits on message `onMessage`, in the same chat. */
+  function press(onMessage?: number): Update {
+    return {
+      update_id: 3,
+      callback_query: {
+        id: "cq1",
+        from: { id: 7, is_bot: false, first_name: "Ada" },
+        chat_instance: "ci",
+        data: "noop",
+        ...(onMessage !== undefined
+          ? { message: { message_id: onMessage, date: 0, chat: { id: 42, type: "private" } } }
+          : {}),
+      },
+    } as unknown as Update;
+  }
+
+  test("matches a press on the expected message and keeps the marker for later presses", async () => {
+    const mw = createSession({ store: new MemorySessionStorage() });
+
+    const ask = new Context(msg("Pick a page"), api);
+    await mw(ask, async () => {
+      expectCallback(ask, 555, { view: "page" });
+    });
+
+    // A keyboard stays live: two presses, both matching.
+    for (const _ of [1, 2]) {
+      const tap = new Context(press(555), api);
+      let hit: unknown;
+      await mw(tap, async () => {
+        hit = matchCallback<{ view: string }>(tap);
+      });
+      assert.deepEqual(hit, { view: "page" });
+    }
+  });
+
+  test("{ once: true } consumes the marker, so a second press misses", async () => {
+    const mw = createSession({ store: new MemorySessionStorage() });
+
+    const ask = new Context(msg("Delete it?"), api);
+    await mw(ask, async () => {
+      expectCallback(ask, 777, { confirm: "delete" });
+    });
+
+    const first = new Context(press(777), api);
+    let hit: unknown;
+    await mw(first, async () => {
+      hit = matchCallback(first, { once: true });
+    });
+    assert.deepEqual(hit, { confirm: "delete" });
+
+    const second = new Context(press(777), api);
+    let again: unknown = "unset";
+    await mw(second, async () => {
+      again = matchCallback(second, { once: true });
+    });
+    assert.equal(again, undefined);
+  });
+
+  test("returns undefined for an unexpected message, and when the query carries none", async () => {
+    const mw = createSession({ store: new MemorySessionStorage() });
+
+    const other = new Context(press(999), api);
+    await mw(other, async () => {
+      assert.equal(matchCallback(other), undefined);
+    });
+
+    // Inline-mode / too-old messages arrive without `message` - nothing to key on.
+    const inline = new Context(press(), api);
+    await mw(inline, async () => {
+      assert.equal(matchCallback(inline), undefined);
+    });
+  });
+
+  test("a reply marker and a press share one table, so either can claim it", async () => {
+    const mw = createSession({ store: new MemorySessionStorage() });
+
+    const ask = new Context(msg("?"), api);
+    await mw(ask, async () => {
+      expectReply(ask, 111, { step: "name" });
+    });
+
+    const tap = new Context(press(111), api);
+    let hit: unknown;
+    await mw(tap, async () => {
+      hit = matchCallback(tap);
+    });
+    assert.deepEqual(hit, { step: "name" });
+  });
+
+  test("taggedReplies boxes and unboxes a press tag", async () => {
+    const mw = createSession({ store: new MemorySessionStorage() });
+
+    const ask = new Context(msg("Pick"), api);
+    await mw(ask, async () => {
+      taggedReplies<"NEXT" | "PREV">(ask).expectPress(555, "NEXT");
+    });
+
+    const tap = new Context(press(555), api);
+    let tag: string | undefined = "unset";
+    await mw(tap, async () => {
+      tag = taggedReplies<"NEXT" | "PREV">(tap).matchPress();
+    });
+    assert.equal(tag, "NEXT");
   });
 });

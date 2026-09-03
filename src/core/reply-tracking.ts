@@ -12,6 +12,15 @@
  *   deliberately no awaitable `waitForReply`: a Promise cannot cross an
  *   invocation).
  *
+ * The same table also backs **callback queries** ({@link expectCallback} /
+ * {@link matchCallback}), keyed on the message the inline keyboard is attached
+ * to. Note a callback query already carries your own `callback_data`, so reach
+ * for those only when 64 bytes of client-visible text are not enough: a bigger
+ * marker, one the client must not see (callback_data is plain text in the app),
+ * or a button that must fire once. And unlike a reply, a keyboard is often
+ * pressed repeatedly, so matching a callback does *not* consume the marker
+ * unless you ask.
+ *
  * Everything here reads the session off the context (`ctx.getSession()`), so it
  * needs the session middleware registered and an update with a session key -
  * otherwise it throws, like `ctx.getSession()` itself.
@@ -32,7 +41,7 @@
 
 import type { Context } from "./context.js";
 
-/** Opaque, JSON-serializable tag a caller attaches to an awaited reply. */
+/** Opaque, JSON-serializable tag a caller attaches to an awaited reply or button press. */
 export type ReplyMarker = Record<string, unknown>;
 
 /** The `ext` namespace this layer stores its table under. */
@@ -95,10 +104,55 @@ export function forgetReply(ctx: Context, messageId: number): void {
 }
 
 /**
- * Reply tracking for plain **string** tags. Markers are objects, so a bare
- * `"EMAIL"` cannot be stored directly; this boxes it as `{ tag }` on write and
- * unboxes it on read. One `Tag` union types both ends, so the stored and matched
- * tags cannot drift apart.
+ * Record that a **button press** on the message you just sent (`messageId`) is
+ * expected - the callback-query peer of {@link expectReply}, sharing one table,
+ * so a message cannot be awaiting a reply and a press under different markers.
+ *
+ * Prefer plain `callback_data` when it suffices: Telegram round-trips those 64
+ * bytes for you, with no session and no store, and that is the idiomatic way to
+ * route a button. This is for what `callback_data` cannot carry - a marker too
+ * big for 64 bytes, one the client must not be able to read (callback_data is
+ * plain text in the app), or a button that must work only once.
+ */
+export function expectCallback(ctx: Context, messageId: number, marker: ReplyMarker = {}): void {
+  replyState(ctx).awaiting[messageId] = marker;
+}
+
+/**
+ * If the current update is a callback query on a message a prior
+ * {@link expectCallback} registered (matched on `callback_query.message.message_id`
+ * within this session key), return that message's marker; otherwise `undefined`.
+ *
+ * Unlike {@link matchReply} this does **not** consume the marker by default: an
+ * inline keyboard usually stays live for several presses (paging, a toggle), and
+ * consuming would break every press after the first. Pass `{ once: true }` for a
+ * one-shot button - a confirm/cancel pair, say - so a double tap or a press on a
+ * stale message cannot fire it twice; {@link forgetReply} drops it explicitly.
+ */
+export function matchCallback<M extends ReplyMarker = ReplyMarker>(
+  ctx: Context,
+  options?: { once?: boolean },
+): M | undefined {
+  // `message` is absent when the keyboard is on an inline-mode message or one
+  // too old for Telegram to send along (only `inline_message_id` arrives), so
+  // there is nothing to key on - route those by `callback_data` instead.
+  const pressed = ctx.callbackQuery?.message?.message_id;
+  if (pressed === undefined) return undefined;
+  const state = replyState(ctx);
+  const marker = state.awaiting[pressed];
+  if (marker === undefined) return undefined;
+  if (options?.once === true) delete state.awaiting[pressed];
+  return marker as M;
+}
+
+/**
+ * Reply and callback tracking for plain **string** tags. Markers are objects, so
+ * a bare `"EMAIL"` cannot be stored directly; this boxes it as `{ tag }` on write
+ * and unboxes it on read. One `Tag` union types both ends, so the stored and
+ * matched tags cannot drift apart.
+ *
+ * `expectPress` / `matchPress` are the callback-query peers of `expect` /
+ * `match`, keeping the non-consuming default of {@link matchCallback}.
  *
  * @example
  * taggedReplies<"NAME" | "EMAIL">(ctx).expect(sent.message_id, "EMAIL");
@@ -109,11 +163,15 @@ export function taggedReplies<Tag extends string>(
 ): {
   expect(messageId: number, tag: Tag): void;
   match(): Tag | undefined;
+  expectPress(messageId: number, tag: Tag): void;
+  matchPress(options?: { once?: boolean }): Tag | undefined;
   forget(messageId: number): void;
 } {
   return {
     expect: (messageId, tag) => expectReply(ctx, messageId, { tag }),
     match: () => matchReply<{ tag: Tag }>(ctx)?.tag,
+    expectPress: (messageId, tag) => expectCallback(ctx, messageId, { tag }),
+    matchPress: (options) => matchCallback<{ tag: Tag }>(ctx, options)?.tag,
     forget: (messageId) => forgetReply(ctx, messageId),
   };
 }

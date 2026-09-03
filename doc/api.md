@@ -776,6 +776,26 @@ so tracing stays a no-op.
 
 **Returns:** Promise<[EncodedRequest](#encodedrequest)>
 
+### `expectCallback()`
+
+Record that a **button press** on the message you just sent (`messageId`) is
+expected - the callback-query peer of expectReply, sharing one table,
+so a message cannot be awaiting a reply and a press under different markers.
+
+Prefer plain `callback_data` when it suffices: Telegram round-trips those 64
+bytes for you, with no session and no store, and that is the idiomatic way to
+route a button. This is for what `callback_data` cannot carry - a marker too
+big for 64 bytes, one the client must not be able to read (callback_data is
+plain text in the app), or a button that must work only once.
+
+| Param | Type |
+| --- | --- |
+| `ctx` | [Context](#context) |
+| `messageId` | number |
+| `marker` | [ReplyMarker](#replymarker) |
+
+**Returns:** void
+
 ### `expectReply()`
 
 Record that a reply to the message you just sent (`messageId`) is expected.
@@ -889,6 +909,25 @@ Async-generator update source (ADR-004): long-polls `getUpdates` and yields each
 | `signal?` | AbortSignal |
 
 **Returns:** AsyncGenerator<[Update](#update)>
+
+### `matchCallback()`
+
+If the current update is a callback query on a message a prior
+expectCallback registered (matched on `callback_query.message.message_id`
+within this session key), return that message's marker; otherwise `undefined`.
+
+Unlike matchReply this does **not** consume the marker by default: an
+inline keyboard usually stays live for several presses (paging, a toggle), and
+consuming would break every press after the first. Pass `{ once: true }` for a
+one-shot button - a confirm/cancel pair, say - so a double tap or a press on a
+stale message cannot fire it twice; forgetReply drops it explicitly.
+
+| Param | Type |
+| --- | --- |
+| `ctx` | [Context](#context) |
+| `options?` | { once?: boolean } |
+
+**Returns:** M | undefined
 
 ### `matchReply()`
 
@@ -1058,16 +1097,19 @@ await startWebhook(bot, { port: 8443, path: "/telegram", secretToken });
 
 ### `taggedReplies()`
 
-Reply tracking for plain **string** tags. Markers are objects, so a bare
-`"EMAIL"` cannot be stored directly; this boxes it as `{ tag }` on write and
-unboxes it on read. One `Tag` union types both ends, so the stored and matched
-tags cannot drift apart.
+Reply and callback tracking for plain **string** tags. Markers are objects, so
+a bare `"EMAIL"` cannot be stored directly; this boxes it as `{ tag }` on write
+and unboxes it on read. One `Tag` union types both ends, so the stored and
+matched tags cannot drift apart.
+
+`expectPress` / `matchPress` are the callback-query peers of `expect` /
+`match`, keeping the non-consuming default of matchCallback.
 
 | Param | Type |
 | --- | --- |
 | `ctx` | [Context](#context) |
 
-**Returns:** { expect: (messageId: number, tag: Tag) => void; forget: (messageId: number) => void; match: () => Tag | undefined }
+**Returns:** { expect: (messageId: number, tag: Tag) => void; expectPress: (messageId: number, tag: Tag) => void; forget: (messageId: number) => void; match: () => Tag | undefined; matchPress: (options?: { once?: boolean }) => Tag | undefined }
 
 ### `webhookCallback()`
 
@@ -6395,7 +6437,7 @@ type ReplyKeyboardRemove = {
 
 ### `ReplyMarker`
 
-Opaque, JSON-serializable tag a caller attaches to an awaited reply.
+Opaque, JSON-serializable tag a caller attaches to an awaited reply or button press.
 
 ```ts
 type ReplyMarker = Record<string, unknown>;

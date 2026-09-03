@@ -344,6 +344,33 @@ bot.on("message", async (ctx, next) => {
 
 `taggedReplies` is sugar over the primitives `expectReply(ctx, id, marker?)` (stores any JSON marker object), `matchReply<M>(ctx)` (returns it typed as `M`) and `forgetReply(ctx, id)` (cancels a pending expectation). With a single prompt in flight you can drop the marker entirely - its presence alone is the signal.
 
+#### Button presses
+
+`expectCallback(ctx, id, marker?)` / `matchCallback<M>(ctx, { once? })` are the callback-query peers, keyed on `callback_query.message.message_id` and sharing the same table (`taggedReplies(ctx).expectPress` / `.matchPress` for string tags).
+
+**Reach for them only when `callback_data` is not enough.** A button already carries 64 bytes you chose, round-tripped by Telegram for free - that is the idiomatic way to route a press, and it needs no session at all:
+
+```ts
+bot.on("callback_query", (ctx) => {
+  if (ctx.callbackQuery?.data === "confirm") { /* ... */ }
+});
+```
+
+The session-backed version earns its keep for a marker that does not fit in 64 bytes, one the client must not read (`callback_data` is plain text in the app), or a button that must fire once:
+
+```ts
+const sent = await ctx.reply("Delete everything?", { reply_markup: { inline_keyboard: [[{ text: "Yes", callback_data: "y" }]] } });
+expectCallback(ctx, sent.message_id, { op: "delete", scope: "all" });
+
+bot.on("callback_query", async (ctx, next) => {
+  const hit = matchCallback<{ op: string }>(ctx, { once: true }); // one-shot: a double tap can't fire twice
+  if (!hit) return next();
+  await ctx.answerCallbackQuery({ text: `Running ${hit.op}` });
+});
+```
+
+Unlike a reply, matching a press does **not** consume the marker by default - an inline keyboard usually stays live for several presses (paging, a toggle), and consuming would break every press after the first. Pass `{ once: true }` for a one-shot button. A press on an inline-mode message carries no `message`, so there is nothing to key on; route those by `callback_data`.
+
 ### Storage backends
 
 Every backend implements the same `SessionStore`: a **string** key/value contract - `read(key)`, `write(key, value, { ttlSeconds })`, `delete(key)`, plus optional `init` / `close` and, for backends with a TTL, `touch(key, ttlSeconds)` (the middleware calls it when an update changed nothing, so an active chat is not evicted just because its data stood still). Serialization happens once in the middleware's codec, never inside a store, so the in-memory store is a faithful simulation of a durable one - a `Date` in the bag comes back a string everywhere, not only on Redis. Swapping backends is a one-line change:
