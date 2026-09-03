@@ -5646,7 +5646,7 @@ type MessageReactionUpdated = {
 A middleware over context `C`. Return value is ignored.
 
 ```ts
-type Middleware = (ctx: C, next: [NextFn](#nextfn)) => unknown | Promise<unknown>;
+type Middleware<C> = (ctx: C, next: [NextFn](#nextfn)) => unknown | Promise<unknown>;
 ```
 
 ### `MiddlewarePlugin`
@@ -7900,7 +7900,7 @@ built the same way) store their own state under. One store round-trip covers
 all of them.
 
 ```ts
-type SessionEnvelope = {
+type SessionEnvelope<T> = {
   createdAt: string;
   data: T;
   ext?: Record<string, unknown>;
@@ -7916,12 +7916,12 @@ The typed handle `session.get(ctx)` returns. `data` is the persistent bag
 layer claims its own namespace; `delete()` drops the whole key on flush.
 
 ```ts
-type SessionHandle = {
+type SessionHandle<T> = {
   readonly createdAt: Date;
   data: T;
   readonly updatedAt: Date;
   delete: () => void;
-  ext: <E>(namespace: string, initial: () => E, isValid?: (slot: Record<string, unknown>) => boolean) => E;
+  ext: <E extends object>(namespace: string, initial: () => E, isValid?: (slot: Record<string, unknown>) => boolean) => E;
 };
 ```
 
@@ -7931,7 +7931,7 @@ The value `session()` returns: the middleware itself, plus the typed accessor
 and the lifecycle hooks `Bot` picks up from `use()`.
 
 ```ts
-type SessionMiddleware = [Middleware](#middleware)<[Context](#context)> & {
+type SessionMiddleware<T> = [Middleware](#middleware)<[Context](#context)> & {
   close: () => Promise<void>;
   find: (ctx: [Context](#context)) => [SessionHandle](#sessionhandle)<T> | undefined;
   get: (ctx: [Context](#context)) => [SessionHandle](#sessionhandle)<T>;
@@ -7942,7 +7942,7 @@ type SessionMiddleware = [Middleware](#middleware)<[Context](#context)> & {
 ### `SessionOptions`
 
 ```ts
-type SessionOptions = {
+type SessionOptions<T> = {
   codec?: [SessionCodec](#sessioncodec);
   getSessionKey?: (ctx: [Context](#context)) => string | undefined;
   initial?: (ctx: [Context](#context)) => T;
@@ -9648,5 +9648,5 @@ const nextPagesWebhook: (bot: [Bot](#bot), options?: [WebhookOptions](#webhookop
 Alias for createSession - `bot.use(session({ store }))` reads naturally.
 
 ```ts
-const session: <T>(options: [SessionOptions](#sessionoptions)<T>) => [SessionMiddleware](#sessionmiddleware)<T>;
+const session: <T = Record<string, unknown>>(options: [SessionOptions](#sessionoptions)<T>) => [SessionMiddleware](#sessionmiddleware)<T>;
 ```

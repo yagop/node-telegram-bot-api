@@ -150,12 +150,23 @@ function renderType(t: Obj | undefined, inline = true, indent = ""): string {
   }
 }
 
+// Type-parameter list, with the constraint and default TypeDoc keeps in a param's
+// `type` / `default`: `<E extends object>`, `<T = Record<string, unknown>>`. Names
+// alone would misstate the declared surface, so render all three parts.
+function typeParams(tps: Obj[] | undefined, indent = ""): string {
+  if (!tps?.length) return "";
+  const parts = tps.map((t: Obj) => {
+    const constraint = t.type ? ` extends ${renderType(t.type, true, indent)}` : "";
+    const dflt = t.default ? ` = ${renderType(t.default, true, indent)}` : "";
+    return `${t.name}${constraint}${dflt}`;
+  });
+  return `<${parts.join(", ")}>`;
+}
+
 // A call signature as a function type: `<T>(a: A, b: B) => R`.
 function sigType(sig: Obj, indent: string): string {
-  const tps: Obj[] = sig.typeParameters || [];
-  const generics = tps.length ? `<${tps.map((t: Obj) => t.name).join(", ")}>` : "";
   const params = (sig.parameters || []).map((p: Obj) => fieldSig(p)).join(", ");
-  return `${generics}(${params}) => ${renderType(sig.type, true, indent)}`;
+  return `${typeParams(sig.typeParameters, indent)}(${params}) => ${renderType(sig.type, true, indent)}`;
 }
 
 function fieldSig(m: Obj, indent = ""): string {
@@ -360,7 +371,8 @@ if (aliases.length) {
     md.push("", `### \`${a.name}\``);
     const sum = renderSummary(a.comment);
     if (sum) md.push("", sum);
-    md.push("", "```ts", `type ${a.name} = ${aliasRhs(a, true)};`, "```");
+    // The alias's own parameters too, or a body referring to `T` declares nothing.
+    md.push("", "```ts", `type ${a.name}${typeParams(a.typeParameters)} = ${aliasRhs(a, true)};`, "```");
   }
 }
 if (variables.length) {
