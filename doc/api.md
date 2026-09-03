@@ -779,20 +779,24 @@ so tracing stays a no-op.
 ### `expectCallback()`
 
 Record that a **button press** on the message you just sent (`messageId`) is
-expected - the callback-query peer of expectReply, sharing one table,
-so a message cannot be awaiting a reply and a press under different markers.
+expected - the callback-query peer of expectReply, in its own table.
 
 Prefer plain `callback_data` when it suffices: Telegram round-trips those 64
 bytes for you, with no session and no store, and that is the idiomatic way to
 route a button. This is for what `callback_data` cannot carry - a marker too
 big for 64 bytes, one the client must not be able to read (callback_data is
-plain text in the app), or a button that must work only once.
+plain text in the app), or a button that must work at most once.
+
+The per-chat caveat on expectReply applies here too, and more sharply:
+an inline keyboard in a group is pressable by every member, so a destructive
+button should carry the requester's id in its marker and check it.
 
 | Param | Type |
 | --- | --- |
 | `ctx` | [Context](#context) |
 | `messageId` | number |
 | `marker` | [ReplyMarker](#replymarker) |
+| `options?` | [ExpectOptions](#expectoptions) |
 
 **Returns:** void
 
@@ -810,17 +814,33 @@ Pure session write - safe on serverless. Pair the sent message with
 `reply_markup: { force_reply: true }` so the client quotes it and the reply
 carries `reply_to_message.message_id`.
 
+Note the default session key is per **chat**, so in a group the marker belongs
+to the group, and any member's reply matches it. Put the asker's id in the
+marker and check it, or key sessions per user, when that matters.
+
 | Param | Type |
 | --- | --- |
 | `ctx` | [Context](#context) |
 | `messageId` | number |
 | `marker` | [ReplyMarker](#replymarker) |
+| `options?` | [ExpectOptions](#expectoptions) |
+
+**Returns:** void
+
+### `forgetCallback()`
+
+Forget a pending press expectation (a keyboard that is no longer live).
+
+| Param | Type |
+| --- | --- |
+| `ctx` | [Context](#context) |
+| `messageId` | number |
 
 **Returns:** void
 
 ### `forgetReply()`
 
-Forget a pending expectation (a prompt that timed out, or was cancelled).
+Forget a pending reply expectation (a prompt that timed out, or was cancelled).
 
 | Param | Type |
 | --- | --- |
@@ -918,9 +938,14 @@ within this session key), return that message's marker; otherwise `undefined`.
 
 Unlike matchReply this does **not** consume the marker by default: an
 inline keyboard usually stays live for several presses (paging, a toggle), and
-consuming would break every press after the first. Pass `{ once: true }` for a
-one-shot button - a confirm/cancel pair, say - so a double tap or a press on a
-stale message cannot fire it twice; forgetReply drops it explicitly.
+consuming would break every press after the first. Pass `{ once: true }` when a
+button must fire at most once, so a second tap on *that message* finds nothing.
+It says nothing about other messages: two confirmations sent by two commands
+hold two markers, and each can still be pressed once - forgetCallback
+the older one if only the newest may act.
+
+"At most once", not "exactly once": the marker is consumed before your handler
+does its work, and the session flush persists that even if the handler throws.
 
 | Param | Type |
 | --- | --- |
@@ -935,6 +960,9 @@ If the current update is a reply to a message a prior expectReply
 registered (matched on `reply_to_message.message_id` within this session key),
 consume and return that message's marker; otherwise `undefined` - so a handler
 typically does `const hit = matchReply(ctx); if (!hit) return next();`.
+
+Only reply expectations are considered: a quoted reply never consumes a marker
+left by expectCallback.
 
 `M` is a type-only assertion for the marker you stored (like the `<T>` on
 `ctx.getSession`): it types the return value and generates no runtime check.
@@ -1102,14 +1130,14 @@ a bare `"EMAIL"` cannot be stored directly; this boxes it as `{ tag }` on write
 and unboxes it on read. One `Tag` union types both ends, so the stored and
 matched tags cannot drift apart.
 
-`expectPress` / `matchPress` are the callback-query peers of `expect` /
-`match`, keeping the non-consuming default of matchCallback.
+`expectPress` / `matchPress` / `forgetPress` are the callback-query peers,
+keeping the non-consuming default of matchCallback.
 
 | Param | Type |
 | --- | --- |
 | `ctx` | [Context](#context) |
 
-**Returns:** { expect: (messageId: number, tag: Tag) => void; expectPress: (messageId: number, tag: Tag) => void; forget: (messageId: number) => void; match: () => Tag | undefined; matchPress: (options?: { once?: boolean }) => Tag | undefined }
+**Returns:** { expect: (messageId: number, tag: Tag, options?: [ExpectOptions](#expectoptions)) => void; expectPress: (messageId: number, tag: Tag, options?: [ExpectOptions](#expectoptions)) => void; forget: (messageId: number) => void; forgetPress: (messageId: number) => void; match: () => Tag | undefined; matchPress: (options?: { once?: boolean }) => Tag | undefined }
 
 ### `webhookCallback()`
 
@@ -3227,6 +3255,16 @@ type EphemeralMessageParameters = {
   callback_query_id?: string;
   receiver_user_id: number;
   replace_callback_query_message?: boolean;
+};
+```
+
+### `ExpectOptions`
+
+How long a recorded expectation stays live. Omitted: until matched or forgotten.
+
+```ts
+type ExpectOptions = {
+  ttlSeconds?: number;
 };
 ```
 
@@ -9645,7 +9683,7 @@ const HTTP_STATUS_TOO_MANY_REQUESTS: 429;
 
 ### `REPLY_NAMESPACE`
 
-The `ext` namespace this layer stores its table under.
+The `ext` namespace this layer stores its tables under.
 
 ```ts
 const REPLY_NAMESPACE: "reply";
