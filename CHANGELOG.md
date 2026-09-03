@@ -5,6 +5,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased][Unreleased]
 
+## [2.2.0-rc0][2.2.0-rc0] - 2026-09-03
+
 ### Sessions
 
 - Added opt-in session middleware: `createSession<T>(options)` (aliased `session`)
@@ -1194,4 +1196,5 @@ Fixed:
 [1.1.2]:https://github.com/yagop/node-telegram-bot-api/releases/tag/v1.1.2
 [2.0.0]:https://github.com/yagop/node-telegram-bot-api/releases/tag/v2.0.0
 [2.1.0]:https://github.com/yagop/node-telegram-bot-api/releases/tag/v2.1.0
-[Unreleased]:https://github.com/yagop/node-telegram-bot-api/compare/v2.1.0...master
+[2.2.0-rc0]:https://github.com/yagop/node-telegram-bot-api/releases/tag/v2.2.0-rc0
+[Unreleased]:https://github.com/yagop/node-telegram-bot-api/compare/v2.2.0-rc0...master
