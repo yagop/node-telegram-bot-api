@@ -21,8 +21,10 @@
  * `key` and `value` are bound parameters via safe `sql`...`` templates - never
  * string-interpolated. Only the table name is interpolated, because Bun (like
  * Postgres) can't bind an identifier and offers no identifier-escaping helper;
- * it goes through a narrowly-scoped `sql.unsafe` fragment and is validated to a
- * safe charset in the constructor, so it can't carry an injection.
+ * it goes through a narrowly-scoped `sql.unsafe` fragment, validated to a safe
+ * charset in the constructor and quoted at the point of use, so it can't carry
+ * an injection and cannot be a name SQL rejects. The column names are fixed
+ * literals this store owns, so they need neither.
  *
  * Bun-only: `SQL` / `sql` come from the `bun` module, absent on Node, so this
  * module lives behind the `./bun` export and is never reached from `.` /
@@ -62,9 +64,16 @@ export class SqlSessionStorage implements SessionStore {
     this.sql = options.sql ?? (options.url !== undefined ? new SQL(options.url) : bunSql);
   }
 
-  /** The validated table name as a raw SQL fragment (identifiers can't be bound). */
+  /**
+   * The validated table name as a raw SQL fragment (identifiers can't be bound),
+   * double-quoted so every name the constructor accepts is also valid SQL - a
+   * numeric name (`123`) or a reserved word (`user` on Postgres) is a syntax
+   * error unquoted. Safe because the charset check excludes `"`, so nothing can
+   * escape the quotes; note Postgres then takes the name verbatim instead of
+   * folding it to lower case.
+   */
   private get ref() {
-    return this.sql.unsafe(this.table);
+    return this.sql.unsafe(`"${this.table}"`);
   }
 
   /**

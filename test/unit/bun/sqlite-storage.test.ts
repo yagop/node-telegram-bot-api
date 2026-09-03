@@ -66,6 +66,14 @@ describe("SqliteSessionStorage", () => {
     assert.throws(() => store.read("k"), /sessions\.value must be TEXT/);
   });
 
+  test("accepts a numeric or reserved-word table name (the identifier is quoted)", () => {
+    for (const table of ["123", "user"]) {
+      const store = new SqliteSessionStorage({ table });
+      store.write("k", "v");
+      assert.equal(store.read("k"), "v");
+    }
+  });
+
   test("rejects an unsafe table name", () => {
     assert.throws(() => new SqliteSessionStorage({ table: "a; DROP TABLE x" }), /invalid table name/);
   });

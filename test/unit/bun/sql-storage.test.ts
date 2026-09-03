@@ -68,6 +68,14 @@ describe("SqlSessionStorage", () => {
     await assert.rejects(store.read("k"), /sessions\.value must be TEXT, got number/);
   });
 
+  test("accepts a numeric or reserved-word table name (the identifier is quoted)", async () => {
+    for (const table of ["123", "user"]) {
+      const store = new SqlSessionStorage({ sql: memSql(), table });
+      await store.write("k", "v"); // unquoted, `123` is a syntax error
+      assert.equal(await store.read("k"), "v");
+    }
+  });
+
   test("rejects an unsafe table name", () => {
     assert.throws(() => new SqlSessionStorage({ sql: memSql(), table: "a; DROP TABLE x" }), /invalid table name/);
   });
