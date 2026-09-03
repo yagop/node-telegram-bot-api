@@ -15,8 +15,11 @@
 import { Application, ReflectionKind } from "typedoc";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 
-const ENTRY_POINTS = ["src/core/index.ts", "src/node/index.ts"];
-const TSCONFIG = "tsconfig.json";
+const ENTRY_POINTS = ["src/core/index.ts", "src/node/index.ts", "src/bun/index.ts"];
+// The build tsconfig (not the root) - it includes src/bun and the Bun ambient
+// types, so the ./bun entry point resolves and is documented. The root tsconfig
+// excludes src/bun and is node-only, which would drop the whole ./bun subpath.
+const TSCONFIG = "tsconfig.build.json";
 const JSON_OUT = "doc/api.json";
 const MD_OUT = "doc/api.md";
 
@@ -147,19 +150,39 @@ function renderType(t: Obj | undefined, inline = true, indent = ""): string {
   }
 }
 
+// Type-parameter list, with the constraint and default TypeDoc keeps in a param's
+// `type` / `default`: `<E extends object>`, `<T = Record<string, unknown>>`. Names
+// alone would misstate the declared surface, so render all three parts.
+function typeParams(tps: Obj[] | undefined, indent = ""): string {
+  if (!tps?.length) return "";
+  const parts = tps.map((t: Obj) => {
+    const constraint = t.type ? ` extends ${renderType(t.type, true, indent)}` : "";
+    const dflt = t.default ? ` = ${renderType(t.default, true, indent)}` : "";
+    return `${t.name}${constraint}${dflt}`;
+  });
+  return `<${parts.join(", ")}>`;
+}
+
+// A call signature as a function type: `<T>(a: A, b: B) => R`.
+function sigType(sig: Obj, indent: string): string {
+  const params = (sig.parameters || []).map((p: Obj) => fieldSig(p)).join(", ");
+  return `${typeParams(sig.typeParameters, indent)}(${params}) => ${renderType(sig.type, true, indent)}`;
+}
+
 function fieldSig(m: Obj, indent = ""): string {
   const ro = m.flags?.isReadonly ? "readonly " : "";
   const rest = m.flags?.isRest ? "..." : "";
   const opt = m.flags?.isOptional ? "?" : "";
-  return `${ro}${rest}${m.name}${opt}: ${renderType(m.type, true, indent)}`;
+  // A method member (e.g. `read<V>()`, `expectReply()`) carries call signatures
+  // directly and has no `.type`; render it as a function type so it isn't blank.
+  const type = m.signatures?.length ? sigType(m.signatures[0], indent) : renderType(m.type, true, indent);
+  return `${ro}${rest}${m.name}${opt}: ${type}`;
 }
 
 function renderDeclType(decl: Obj | undefined, inline: boolean, indent: string): string {
   if (!decl) return "{}";
   if (decl.signatures?.length) {
-    const sig = decl.signatures[0];
-    const params = (sig.parameters || []).map((p: Obj) => fieldSig(p)).join(", ");
-    return `(${params}) => ${renderType(sig.type, inline, indent)}`;
+    return sigType(decl.signatures[0], indent);
   }
   if (decl.children?.length) {
     const fields: Obj[] = decl.children;
@@ -201,8 +224,11 @@ function renderPart(p: Obj): string {
 const renderSummary = (comment: Obj | undefined) =>
   comment?.summary?.map(renderPart).join("").trim() || "";
 
-// Members of a class/interface, grouped by kind.
-const membersOf = (r: Obj) => r.children || [];
+// Members of a class/interface, grouped by kind. Externally-sourced members
+// (statics inherited from lib globals like `Error.isError` /
+// `Error.captureStackTrace`, which @types/node and @types/bun graft onto every
+// `extends Error` class) are dropped - they are not part of this API surface.
+const membersOf = (r: Obj) => (r.children || []).filter((m: Obj) => !m.flags?.isExternal);
 const methodsOf = (r: Obj) => membersOf(r).filter((m: Obj) => m.kind === K.Method || m.kind === K.Function);
 const propsOf = (r: Obj) => membersOf(r).filter((m: Obj) => m.kind === K.Property || m.kind === K.Accessor);
 
@@ -345,7 +371,8 @@ if (aliases.length) {
     md.push("", `### \`${a.name}\``);
     const sum = renderSummary(a.comment);
     if (sum) md.push("", sum);
-    md.push("", "```ts", `type ${a.name} = ${aliasRhs(a, true)};`, "```");
+    // The alias's own parameters too, or a body referring to `T` declares nothing.
+    md.push("", "```ts", `type ${a.name}${typeParams(a.typeParameters)} = ${aliasRhs(a, true)};`, "```");
   }
 }
 if (variables.length) {

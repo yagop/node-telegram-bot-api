@@ -22,6 +22,19 @@ import type { TransportOptions } from "./transport.js";
 
 export interface BotOptions extends TransportOptions {}
 
+/**
+ * Optional lifecycle a middleware may carry (duck-typed - no base class, no
+ * registration API). `bot.init()` runs every registered `init` once, in
+ * registration order, before the first update; `bot.close()` runs every
+ * `close` in reverse order. This is how a middleware that owns a resource - a
+ * session store's directory / table / connection pool - gets a deterministic
+ * start and stop instead of inventing per-request lazy setup of its own.
+ */
+export type MiddlewarePlugin = {
+  init?(): void | Promise<void>;
+  close?(): void | Promise<void>;
+};
+
 /** A composed sub-chain used by the routing helpers. */
 type Composed = (ctx: Context, next: () => Promise<void>) => Promise<void>;
 
@@ -43,6 +56,10 @@ export class Bot {
 
   private readonly middleware: Middleware<Context>[] = [];
   private errorHandler: (err: unknown, ctx: Context) => unknown = defaultErrorHandler;
+  private readonly plugins: MiddlewarePlugin[] = [];
+  /** Plugins whose `init()` completed, so a retry resumes and `close()` skips the rest. */
+  private readonly initialized = new Set<MiddlewarePlugin>();
+  private started?: Promise<void>;
   private controller?: AbortController;
   private running = false;
 
@@ -50,10 +67,104 @@ export class Bot {
     this.api = new Api(token, options);
   }
 
-  /** Register one or more middleware to run on every update. */
+  /**
+   * Register one or more middleware to run on every update. A middleware that
+   * also carries `init` / `close` (see {@link MiddlewarePlugin}) is picked up
+   * for the bot lifecycle: its setup runs once via {@link Bot.init}, its
+   * teardown via {@link Bot.close}.
+   */
   use(...mw: Middleware<Context>[]): this {
+    this.register(mw);
     this.middleware.push(...mw);
     return this;
+  }
+
+  /**
+   * Pick up the `init` / `close` of any middleware that carries them. Called
+   * for `use` and for the routing helpers alike: `on`/`command`/`hears` push a
+   * *wrapper* onto the chain, which carries no lifecycle of its own, so
+   * `bot.on("message", session)` would otherwise silently lose its setup.
+   */
+  private register(mw: ReadonlyArray<Middleware<Context>>): void {
+    for (const fn of mw) {
+      const plugin = fn as Middleware<Context> & MiddlewarePlugin;
+      if (typeof plugin.init !== "function" && typeof plugin.close !== "function") continue;
+      // The same middleware can reach us twice (`bot.use(session)` and then
+      // `bot.on(..., session)`); it is one resource, so it gets one lifecycle.
+      if (!this.plugins.includes(plugin)) this.plugins.push(plugin);
+    }
+  }
+
+  /**
+   * Run every registered middleware's `init()` once, in registration order.
+   * Memoized, and awaited by `startPolling()` and `handleUpdate()`, so setup
+   * failures surface at boot (or on the first webhook invocation) rather than
+   * as a per-update lazy path. Call it yourself to fail fast before serving
+   * anything.
+   *
+   * A failure is not cached: the next call retries, and *resumes* at the plugin
+   * that failed - one whose setup already completed is not run a second time,
+   * so a plugin that opens a resource per call cannot leak one per retry.
+   */
+  init(): Promise<void> {
+    if (this.started === undefined) {
+      this.started = (async () => {
+        for (const plugin of this.plugins) {
+          if (this.initialized.has(plugin)) continue;
+          await plugin.init?.();
+          // Marked only on success: a plugin that threw never finished opening,
+          // so `close()` must not try to close it.
+          this.initialized.add(plugin);
+        }
+      })().catch((err: unknown) => {
+        this.started = undefined;
+        throw err;
+      });
+    }
+    return this.started;
+  }
+
+  /**
+   * Release resources held by registered middleware: runs every `close()` in
+   * reverse registration order - only those whose `init()` completed, since a
+   * plugin that never opened has nothing to close. Call it after `stop()` (or
+   * when a webhook process shuts down); a later `init()` re-runs setup. Every
+   * plugin is closed even if one throws: the failure surfaces afterwards (an
+   * `AggregateError` when more than one failed), never by skipping the
+   * remaining teardowns.
+   *
+   * Local teardown only - unrelated to Telegram's `close` method, which lives on
+   * the client (`bot.api.close()`) and terminates the *bot's* server-side
+   * session so it can be moved to another server.
+   */
+  async close(): Promise<void> {
+    // Every teardown is attempted: one plugin failing to close (a client that
+    // will not quit, a locked file) must not strand the ones after it, which
+    // would leak exactly the resources this method exists to release.
+    const failures: unknown[] = [];
+    try {
+      for (const plugin of [...this.plugins].reverse()) {
+        // Skip what never initialized; unmark before closing, so that even a
+        // failed teardown leaves the plugin eligible for a later init() rather
+        // than stranded as "open" forever.
+        if (!this.initialized.delete(plugin)) continue;
+        try {
+          await plugin.close?.();
+        } catch (err) {
+          failures.push(err);
+        }
+      }
+    } finally {
+      // Cleared after the loop, and even if it threw: an update arriving
+      // mid-shutdown would otherwise re-run every plugin's init() while teardown
+      // is still in progress, and leaving the memo set would stop a later
+      // init() from ever running setup again.
+      this.started = undefined;
+    }
+    if (failures.length === 1) throw failures[0];
+    if (failures.length > 1) {
+      throw new AggregateError(failures, "Bot.close: some middleware failed to close");
+    }
   }
 
   /**
@@ -62,6 +173,7 @@ export class Bot {
    */
   on(kind: UpdateType | UpdateType[], ...handlers: Middleware<Context>[]): this {
     const kinds = Array.isArray(kind) ? kind : [kind];
+    this.register(handlers);
     const run = compose(handlers) satisfies Composed;
     return this.use((ctx, next) => {
       const matched = kinds.some((k) => k in ctx.update);
@@ -75,6 +187,7 @@ export class Bot {
    */
   command(name: string | string[], ...handlers: Middleware<Context>[]): this {
     const names = (Array.isArray(name) ? name : [name]).map((n) => n.replace(/^\//, ""));
+    this.register(handlers);
     const re = new RegExp(`^\\/(${names.map(escapeRegExp).join("|")})(@\\w+)?(?:\\s+(.*))?$`, "s");
     const run = compose(handlers) satisfies Composed;
     return this.use((ctx, next) => {
@@ -94,6 +207,7 @@ export class Bot {
    */
   hears(trigger: string | RegExp | Array<string | RegExp>, ...handlers: Middleware<Context>[]): this {
     const triggers = Array.isArray(trigger) ? trigger : [trigger];
+    this.register(handlers);
     const run = compose(handlers) satisfies Composed;
     return this.use((ctx, next) => {
       const text = ctx.message?.text;
@@ -136,8 +250,11 @@ export class Bot {
   async handleUpdate(update: Update): Promise<void> {
     const ctx = new Context(update, this.api);
     try {
+      await this.init(); // memoized; a no-op once startup has run
       await compose(this.middleware)(ctx, () => Promise.resolve());
     } catch (err) {
+      // Inside the boundary: a plugin's setup failure is an update-processing
+      // error like any other, so `catch()` decides whether it is fatal.
       await this.errorHandler(err, ctx);
     }
   }
@@ -161,9 +278,12 @@ export class Bot {
     }
     const controller = new AbortController();
     this.controller = controller;
+    // Claim the slot synchronously, before the first await, so `isRunning()` is
+    // true for anyone who calls it in the same tick as `startPolling()`.
     this.running = true;
-    const iterable = source ?? longPoll(this.api, options, controller.signal);
     try {
+      await this.init(); // fail fast on a bad store/plugin before the first poll
+      const iterable = source ?? longPoll(this.api, options, controller.signal);
       for await (const update of iterable) {
         if (controller.signal.aborted) break;
         await this.handleUpdate(update);

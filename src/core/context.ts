@@ -23,6 +23,7 @@ import type {
 } from "../types/index.js";
 import { UPDATE_TYPES } from "../types/index.js";
 import type { Api } from "./api.js";
+import { SESSION_STATE_KEY, type SessionHandle } from "./session.js";
 
 /**
  * The single `Update` variant whose payload key is `K` (each `Update` member is
@@ -212,5 +213,23 @@ export class Context {
       throw new Error("ctx.answerCallbackQuery: this update has no callback query");
     }
     return this.api.answerCallbackQuery({ callback_query_id: cq.id, ...other });
+  }
+
+  /**
+   * The session handle for this update: `.data` (the persistent bag - mutate it
+   * in place or reassign it, it flushes after the handler), `.createdAt` /
+   * `.updatedAt`, `.ext()` for layers built on sessions, and `.delete()` to
+   * evict the key. `<T>` is the caller's asserted `data` shape, defaulting to
+   * `Record<string, unknown>` like `createSession()` itself; to fix it once
+   * instead of per call site, use the middleware's own `.get(ctx)`.
+   * Throws if the session middleware has not run for this update (not
+   * registered, or no derivable session key).
+   */
+  getSession<T = Record<string, unknown>>(): SessionHandle<T> {
+    const handle = this.state[SESSION_STATE_KEY];
+    if (handle === undefined) {
+      throw new Error("ctx.getSession: no session for this update (session middleware not installed, or no key)");
+    }
+    return handle as SessionHandle<T>;
   }
 }

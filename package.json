@@ -36,6 +36,16 @@
         "types": "./dist/types/index.d.cts",
         "default": "./dist/types/index.cjs"
       }
+    },
+    "./bun": {
+      "import": {
+        "types": "./dist/bun/index.d.ts",
+        "default": "./dist/bun/index.js"
+      },
+      "require": {
+        "types": "./dist/bun/index.d.cts",
+        "default": "./dist/bun/index.cjs"
+      }
     }
   },
   "sideEffects": [
@@ -63,12 +73,14 @@
     "test": "bun test test/unit",
     "test:node:unit": "node --test --import tsx \"test/unit/*.test.ts\"",
     "test:e2e": "bun test --timeout 300000 test/e2e",
+    "typecheck:bun": "tsc -p tsconfig.bun.json --noEmit",
     "typecheck:test": "tsc -p test/tsconfig.json --noEmit",
     "typecheck:examples": "tsc -p examples/tsconfig.json --noEmit",
     "lint:core": "node scripts/check-core-imports.mjs",
+    "lint:bun-isolation": "node scripts/check-bun-isolation.mjs",
     "check:edge": "bun scripts/check-edge-bundle.mjs",
     "format": "biome check --write --indent-style=space --line-width=120 ./src",
-    "check": "npm run typecheck && npm run typecheck:test && npm run typecheck:examples && npm run lint:core && npm run check:edge && npm test",
+    "check": "npm run typecheck && npm run typecheck:bun && npm run typecheck:test && npm run typecheck:examples && npm run lint:core && npm run lint:bun-isolation && npm run check:edge && npm test",
     "generate:types": "bun scripts/api-parser.ts",
     "prepublishOnly": "npm run build",
     "generate:docs": "bun scripts/generate-docs.ts"
@@ -92,7 +104,8 @@
     "exports": {
       ".": "./src/core/index.ts",
       "./node": "./src/node/index.ts",
-      "./types": "./src/types/index.ts"
+      "./types": "./src/types/index.ts",
+      "./bun": "./src/bun/index.ts"
     },
     "noEdit": true
   },

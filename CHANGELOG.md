@@ -5,6 +5,60 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased][Unreleased]
 
+### Sessions
+
+- Added opt-in session middleware: `createSession<T>(options)` (aliased `session`)
+  attaches a persistent, keyed bag reached with `ctx.getSession<T>()`. The `store`
+  is required - there is no implicit default, so the durability choice is always
+  explicit. The returned middleware also carries `.get(ctx)` / `.find(ctx)`, typed
+  once at construction.
+- Added the `SessionStore` contract: a value-agnostic **string** KV -
+  `read(key)`, `write(key, value, { ttlSeconds })`, `delete(key)`, plus optional
+  `touch(key, ttlSeconds)`, `init()` and `close()`. Encoding happens once in the
+  middleware's codec, never inside a store, so an in-memory store round-trips
+  exactly like a durable one.
+- Added the stores: `MemorySessionStorage` (core, edge-safe, optional TTL),
+  `FileSessionStorage` (`/node`, one file per key, atomic temp-file + `rename`),
+  and, behind the new `./bun` subpath, `SqliteSessionStorage`,
+  `SqlSessionStorage` and `RedisSessionStorage`.
+- The persisted value is a versioned envelope, `{ v, data, ext, createdAt,
+  updatedAt }`. `ext` is a namespace map that layers built on sessions claim a
+  slot in; the timestamps are first-seen / last-active, and the two SQL stores
+  mirror them as `created_at` / `updated_at` columns.
+- The flush is skipped when the encoded envelope is unchanged, so an untouched
+  chat costs one read and no write; `touch()` refreshes a TTL in that case.
+  `ctx.getSession().delete()` evicts a key.
+- Updates for one key are serialized in-process by a per-key lock, so concurrent
+  webhook invocations cannot interleave read-modify-write. Across processes it is
+  last-writer-wins.
+
+### Reply and callback tracking
+
+- Added `expectReply(ctx, messageId, marker?)`, `matchReply<M>(ctx)` and
+  `forgetReply(ctx, messageId)` - "awaiting a reply to this message" recorded as
+  persisted data (matched on `reply_to_message.message_id`), never a live
+  continuation, so it survives a restart and works on serverless.
+- Added the callback-query peers `expectCallback(ctx, messageId, marker?)` and
+  `matchCallback<M>(ctx, { once? })`, keyed on `callback_query.message.message_id`
+  and sharing the same table. Matching a press does not consume the marker by
+  default (a keyboard usually stays live for several presses); `{ once: true }`
+  opts into a one-shot button. Plain `callback_data` remains the idiomatic router -
+  these are for a marker over 64 bytes, one the client must not read, or a
+  one-shot press.
+- Added `taggedReplies<Tag>(ctx)` - `expect` / `match` / `expectPress` /
+  `matchPress` / `forget` for plain string tags, typing both ends with one union.
+
+### Bot lifecycle
+
+- Added `bot.init()` and `bot.close()`. A middleware carrying `init` / `close` is
+  picked up by `use()` and by `on` / `command` / `hears`; setup runs once at
+  startup (awaited by `startPolling()` and `handleUpdate()`) and teardown runs in
+  reverse. `run()` (`/node`) closes on shutdown.
+- `init()` tracks completion per plugin, so a failure retries from the plugin that
+  failed instead of re-running the ones that succeeded; `close()` closes only what
+  initialized, attempts every teardown even if one throws, and reports failures
+  afterwards (an `AggregateError` when several failed).
+
 ## [2.1.0][2.1.0] - 2026-08-24
 
 ### Builders

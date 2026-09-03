@@ -222,14 +222,16 @@ An animated profile photo (a video); `main_frame_timestamp` picks the still fram
 | Method | Params | Returns | Description |
 | --- | --- | --- | --- |
 | `catch` | `handler`: (err: unknown, ctx: [Context](#context)) => unknown | this | Replace the error boundary. The default logs via `console.error` and consumes the update, so a handler error never stops `startPolling()` or fails a webhook delivery. A throw from the installed handler opts back into fail-loud: `startPolling()` rejects and `webhookCallback` responds 500, so Telegram redelivers the update. |
+| `close` | - | Promise<void> | Release resources held by registered middleware: runs every `close()` in reverse registration order - only those whose `init()` completed, since a plugin that never opened has nothing to close. Call it after `stop()` (or when a webhook process shuts down); a later `init()` re-runs setup. Every plugin is closed even if one throws: the failure surfaces afterwards (an `AggregateError` when more than one failed), never by skipping the remaining teardowns.  Local teardown only - unrelated to Telegram's `close` method, which lives on the client (`bot.api.close()`) and terminates the *bot's* server-side session so it can be moved to another server. |
 | `command` | `name`: string \| string[], `...handlers`: [Middleware](#middleware)<[Context](#context)>[] | this | Match a message/channel-post text starting with `/name` (also `/name@bot` and trailing args). Sets `ctx.match` to the trimmed args string ("" if none). |
 | `handleUpdate` | `update`: [Update](#update) | Promise<void> | Build a Context and run the composed chain; route errors to the `catch` boundary (default: log and continue). Rejects only when that boundary itself throws. |
 | `hears` | `trigger`: string \| RegExp \| (string \| RegExp)[], `...handlers`: [Middleware](#middleware)<[Context](#context)>[] | this | Match message text: a string matches exactly (sets `ctx.match` to the text); a RegExp matches when `text.match(re)` is non-null (sets `ctx.match` to the `RegExpMatchArray`). |
+| `init` | - | Promise<void> | Run every registered middleware's `init()` once, in registration order. Memoized, and awaited by `startPolling()` and `handleUpdate()`, so setup failures surface at boot (or on the first webhook invocation) rather than as a per-update lazy path. Call it yourself to fail fast before serving anything.  A failure is not cached: the next call retries, and *resumes* at the plugin that failed - one whose setup already completed is not run a second time, so a plugin that opens a resource per call cannot leak one per retry. |
 | `isRunning` | - | boolean | - |
 | `on` | `kind`: "message" \| "edited_message" \| "channel_post" \| "edited_channel_post" \| "business_connection" \| "business_message" \| "edited_business_message" \| "deleted_business_messages" \| "guest_message" \| "message_reaction" \| "message_reaction_count" \| "inline_query" \| "chosen_inline_result" \| "callback_query" \| "shipping_query" \| "pre_checkout_query" \| "purchased_paid_media" \| "poll" \| "poll_answer" \| "my_chat_member" \| "chat_member" \| "chat_join_request" \| "chat_boost" \| "removed_chat_boost" \| "managed_bot" \| "subscription" \| "stopped_message_generation" \| ("message" \| "edited_message" \| "channel_post" \| "edited_channel_post" \| "business_connection" \| "business_message" \| "edited_business_message" \| "deleted_business_messages" \| "guest_message" \| "message_reaction" \| "message_reaction_count" \| "inline_query" \| "chosen_inline_result" \| "callback_query" \| "shipping_query" \| "pre_checkout_query" \| "purchased_paid_media" \| "poll" \| "poll_answer" \| "my_chat_member" \| "chat_member" \| "chat_join_request" \| "chat_boost" \| "removed_chat_boost" \| "managed_bot" \| "subscription" \| "stopped_message_generation")[], `...handlers`: [Middleware](#middleware)<[Context](#context)>[] | this | Run `handlers` only when the given payload key (e.g. `"message"`, `"callback_query"`) is present on the update. |
 | `startPolling` | `source?`: AsyncIterable<[Update](#update), any, any>, `options?`: [LongPollOptions](#longpolloptions) | Promise<void> | Pump an update source (default `longPoll`) through `handleUpdate` until `stop()` aborts. Resolves when the source is exhausted or aborted. This is long-poll mode; for webhooks use `webhookCallback`/`createWebhookServer`.  A handler error does not stop the pump: it is routed to the `catch` boundary (default: log and continue). The promise rejects only when that boundary itself throws - the fail-loud opt-in (see `catch`).  Not re-entrant: calling it while a previous pump is still active throws, so `isRunning()` stays truthful and the prior `AbortController` is never orphaned. Stop the running loop (`stop()`, then `await` its promise) first. |
 | `stop` | - | void | Abort the running pump loop. |
-| `use` | `...mw`: [Middleware](#middleware)<[Context](#context)>[] | this | Register one or more middleware to run on every update. |
+| `use` | `...mw`: [Middleware](#middleware)<[Context](#context)>[] | this | Register one or more middleware to run on every update. A middleware that also carries `init` / `close` (see MiddlewarePlugin) is picked up for the bot lifecycle: its setup runs once via Bot.init, its teardown via Bot.close. |
 
 #### Properties
 
@@ -244,6 +246,7 @@ An animated profile photo (a video); `main_frame_timestamp` picks the still fram
 | Method | Params | Returns | Description |
 | --- | --- | --- | --- |
 | `answerCallbackQuery` | `other?`: Omit<[AnswerCallbackQueryParams](#answercallbackqueryparams), "callback_query_id"> | Promise<boolean> | Answer the callback query that triggered this update. Throws if the update is not a callback query. |
+| `getSession` | - | [SessionHandle](#sessionhandle)<T> | The session handle for this update: `.data` (the persistent bag - mutate it in place or reassign it, it flushes after the handler), `.createdAt` / `.updatedAt`, `.ext()` for layers built on sessions, and `.delete()` to evict the key. `<T>` is the caller's asserted `data` shape, defaulting to `Record<string, unknown>` like `createSession()` itself; to fix it once instead of per call site, use the middleware's own `.get(ctx)`. Throws if the session middleware has not run for this update (not registered, or no derivable session key). |
 | `reply` | `text`: string, `other?`: Omit<[SendMessageParams](#sendmessageparams), "chat_id" \| "text"> | Promise<[Message](#message)> | Send a message to the inferred chat. Throws if no chat id can be derived from the update (e.g. an inline query carries no chat). |
 
 #### Properties
@@ -286,6 +289,17 @@ UTF-16 code units (JS string `.length`).
 | `strikethrough` | `s`: string | this | - |
 | `textMention` | `s`: string, `user`: [User](#user) | this | A text_mention entity for a user without a username. |
 | `underline` | `s`: string | this | - |
+
+### `FileSessionStorage`
+
+#### Methods
+
+| Method | Params | Returns | Description |
+| --- | --- | --- | --- |
+| `delete` | `key`: string | Promise<void> | - |
+| `init` | - | Promise<void> | Create the directory. Idempotent and memoized so concurrent writes issue one mkdir; on failure the cache is cleared so a later call retries instead of re-throwing a stale (possibly transient) rejection. `bot.init()` runs it at startup, so a bad path fails at boot rather than on the first update. |
+| `read` | `key`: string | Promise<string \| undefined> | The stored string for `key`, or `undefined` when there is none. |
+| `write` | `key`: string, `value`: string | Promise<void> | Persist `value` verbatim under `key`. |
 
 ### `InlineKeyboardBuilder`
 
@@ -344,27 +358,26 @@ level once `serializeParams` resolves the files.
 | `photo` | `item`: Omit<[InputMediaPhoto](#inputmediaphoto), "type"> | this | - |
 | `video` | `item`: Omit<[InputMediaVideo](#inputmediavideo), "type"> | this | - |
 
-### `NetworkError`
-
-A transport-level failure: DNS, connection reset, fetch threw, etc.
+### `MemorySessionStorage`
 
 #### Methods
 
 | Method | Params | Returns | Description |
 | --- | --- | --- | --- |
-| `captureStackTrace` | `targetObject`: object, `constructorOpt?`: Function | void | Creates a `.stack` property on `targetObject`, which when accessed returns a string representing the location in the code at which `Error.captureStackTrace()` was called.  ```js const myObject = {}; Error.captureStackTrace(myObject); myObject.stack;  // Similar to `new Error().stack` ```  The first line of the trace will be prefixed with `${myObject.name}: ${myObject.message}`.  The optional `constructorOpt` argument accepts a function. If given, all frames above `constructorOpt`, including `constructorOpt`, will be omitted from the generated stack trace.  The `constructorOpt` argument is useful for hiding implementation details of error generation from the user. For instance:  ```js function a() {   b(); }  function b() {   c(); }  function c() {   // Create an error without stack trace to avoid calculating the stack trace twice.   const { stackTraceLimit } = Error;   Error.stackTraceLimit = 0;   const error = new Error();   Error.stackTraceLimit = stackTraceLimit;    // Capture the stack trace above function b   Error.captureStackTrace(error, b); // Neither function c, nor b is included in the stack trace   throw error; }  a(); ``` |
-| `prepareStackTrace` | `err`: Error, `stackTraces`: CallSite[] | any | - |
+| `delete` | `key`: string | void | - |
+| `read` | `key`: string | string \| undefined | The stored string for `key`, or `undefined` when there is none. |
+| `touch` | `key`: string, `ttlSeconds`: number | void | Refresh an existing key's expiry without rewriting its value. |
+| `write` | `key`: string, `value`: string, `options?`: [SessionWriteOptions](#sessionwriteoptions) | void | Persist `value` verbatim under `key`. |
+
+### `NetworkError`
+
+A transport-level failure: DNS, connection reset, fetch threw, etc.
 
 #### Properties
 
 | Property | Type |
 | --- | --- |
-| `cause`? | unknown |
 | `code` | string |
-| `message` | string |
-| `name` | string |
-| `stack`? | string |
-| `stackTraceLimit` | number |
 
 ### `PaidMediaGroupBuilder`
 
@@ -385,24 +398,12 @@ response type). `.build()` returns the plain array with raw `InputFile`s embedde
 
 The response body could not be parsed as the expected JSON envelope.
 
-#### Methods
-
-| Method | Params | Returns | Description |
-| --- | --- | --- | --- |
-| `captureStackTrace` | `targetObject`: object, `constructorOpt?`: Function | void | Creates a `.stack` property on `targetObject`, which when accessed returns a string representing the location in the code at which `Error.captureStackTrace()` was called.  ```js const myObject = {}; Error.captureStackTrace(myObject); myObject.stack;  // Similar to `new Error().stack` ```  The first line of the trace will be prefixed with `${myObject.name}: ${myObject.message}`.  The optional `constructorOpt` argument accepts a function. If given, all frames above `constructorOpt`, including `constructorOpt`, will be omitted from the generated stack trace.  The `constructorOpt` argument is useful for hiding implementation details of error generation from the user. For instance:  ```js function a() {   b(); }  function b() {   c(); }  function c() {   // Create an error without stack trace to avoid calculating the stack trace twice.   const { stackTraceLimit } = Error;   Error.stackTraceLimit = 0;   const error = new Error();   Error.stackTraceLimit = stackTraceLimit;    // Capture the stack trace above function b   Error.captureStackTrace(error, b); // Neither function c, nor b is included in the stack trace   throw error; }  a(); ``` |
-| `prepareStackTrace` | `err`: Error, `stackTraces`: CallSite[] | any | - |
-
 #### Properties
 
 | Property | Type |
 | --- | --- |
-| `cause`? | unknown |
 | `code` | string |
-| `message` | string |
-| `name` | string |
 | `responseText`? | string |
-| `stack`? | string |
-| `stackTraceLimit` | number |
 
 ### `PhotoStoryBuilder`
 
@@ -429,6 +430,17 @@ bound for long-lived bots that talk to many distinct chats.
 | Method | Params | Returns | Description |
 | --- | --- | --- | --- |
 | `acquire` | `chatId`: string \| number \| undefined, `signal?`: AbortSignal | Promise<void> | - |
+
+### `RedisSessionStorage`
+
+#### Methods
+
+| Method | Params | Returns | Description |
+| --- | --- | --- | --- |
+| `delete` | `key`: string | Promise<void> | - |
+| `read` | `key`: string | Promise<string \| undefined> | The stored string for `key`, or `undefined` when there is none. |
+| `touch` | `key`: string, `ttlSeconds`: number | Promise<void> | Refresh a key's expiry without rewriting it - what the middleware calls when an update changed nothing, so an active chat is not evicted mid-conversation. |
+| `write` | `key`: string, `value`: string, `options?`: [SessionWriteOptions](#sessionwriteoptions) | Promise<void> | Persist `value` verbatim under `key`. |
 
 ### `ReplyKeyboardBuilder`
 
@@ -545,6 +557,29 @@ own data. `.build()` returns the plain `RichText` (its accumulated sequence).
 | `underline` | `content`: [RichTextContent](#richtextcontent) | this | - |
 | `url` | `content`: [RichTextContent](#richtextcontent), `url`: string | this | A hyperlink to `url`. |
 
+### `SqlSessionStorage`
+
+#### Methods
+
+| Method | Params | Returns | Description |
+| --- | --- | --- | --- |
+| `close` | - | Promise<void> | Close the client, but only if this store opened it (a passed-in `sql` is the caller's). Closing ends this store's life - the client cannot be reopened, so a later use throws and you construct a new store instead. With a caller-supplied client the store stays usable: only the table-setup memo is dropped, so a later `init()` re-checks the schema. |
+| `delete` | `key`: string | Promise<void> | - |
+| `init` | - | Promise<void> | Create the table once, lazily (the constructor can't await). Idempotent and memoized; on failure the cache is cleared so a later call retries instead of re-throwing a stale (possibly transient) rejection. `bot.init()` runs it at startup, so an unreachable database fails at boot. |
+| `read` | `key`: string | Promise<string \| undefined> | The stored string for `key`, or `undefined` when there is none. |
+| `write` | `key`: string, `value`: string | Promise<void> | Persist `value` verbatim under `key`. |
+
+### `SqliteSessionStorage`
+
+#### Methods
+
+| Method | Params | Returns | Description |
+| --- | --- | --- | --- |
+| `close` | - | void | Close the database, but only if this store opened it (a passed-in handle is the caller's). Closing ends this store's life - its prepared statements go with the handle - so a later use throws and you construct a new store instead. With a caller-supplied handle this is a no-op. |
+| `delete` | `key`: string | void | - |
+| `read` | `key`: string | string \| undefined | The stored string for `key`, or `undefined` when there is none. |
+| `write` | `key`: string, `value`: string | void | Persist `value` verbatim under `key`. |
+
 ### `StaticProfilePhotoBuilder`
 
 A static profile photo (a still image). `.build()` returns the `InputProfilePhoto`.
@@ -574,70 +609,34 @@ so `addStickerToSet`/`replaceStickerInSet` take that plain object directly.
 
 Telegram answered with `{ ok: false }`. Carries the structured error fields.
 
-#### Methods
-
-| Method | Params | Returns | Description |
-| --- | --- | --- | --- |
-| `captureStackTrace` | `targetObject`: object, `constructorOpt?`: Function | void | Creates a `.stack` property on `targetObject`, which when accessed returns a string representing the location in the code at which `Error.captureStackTrace()` was called.  ```js const myObject = {}; Error.captureStackTrace(myObject); myObject.stack;  // Similar to `new Error().stack` ```  The first line of the trace will be prefixed with `${myObject.name}: ${myObject.message}`.  The optional `constructorOpt` argument accepts a function. If given, all frames above `constructorOpt`, including `constructorOpt`, will be omitted from the generated stack trace.  The `constructorOpt` argument is useful for hiding implementation details of error generation from the user. For instance:  ```js function a() {   b(); }  function b() {   c(); }  function c() {   // Create an error without stack trace to avoid calculating the stack trace twice.   const { stackTraceLimit } = Error;   Error.stackTraceLimit = 0;   const error = new Error();   Error.stackTraceLimit = stackTraceLimit;    // Capture the stack trace above function b   Error.captureStackTrace(error, b); // Neither function c, nor b is included in the stack trace   throw error; }  a(); ``` |
-| `prepareStackTrace` | `err`: Error, `stackTraces`: CallSite[] | any | - |
-
 #### Properties
 
 | Property | Type |
 | --- | --- |
-| `cause`? | unknown |
 | `code` | string |
 | `description` | string |
 | `errorCode` | number |
-| `message` | string |
-| `name` | string |
 | `parameters`? | [ApiErrorParameters](#apierrorparameters) |
-| `stack`? | string |
-| `stackTraceLimit` | number |
 | `migrateToChatId` | number \| undefined |
 | `retryAfter` | number \| undefined |
 
 ### `TelegramBotError`
 
-#### Methods
-
-| Method | Params | Returns | Description |
-| --- | --- | --- | --- |
-| `captureStackTrace` | `targetObject`: object, `constructorOpt?`: Function | void | Creates a `.stack` property on `targetObject`, which when accessed returns a string representing the location in the code at which `Error.captureStackTrace()` was called.  ```js const myObject = {}; Error.captureStackTrace(myObject); myObject.stack;  // Similar to `new Error().stack` ```  The first line of the trace will be prefixed with `${myObject.name}: ${myObject.message}`.  The optional `constructorOpt` argument accepts a function. If given, all frames above `constructorOpt`, including `constructorOpt`, will be omitted from the generated stack trace.  The `constructorOpt` argument is useful for hiding implementation details of error generation from the user. For instance:  ```js function a() {   b(); }  function b() {   c(); }  function c() {   // Create an error without stack trace to avoid calculating the stack trace twice.   const { stackTraceLimit } = Error;   Error.stackTraceLimit = 0;   const error = new Error();   Error.stackTraceLimit = stackTraceLimit;    // Capture the stack trace above function b   Error.captureStackTrace(error, b); // Neither function c, nor b is included in the stack trace   throw error; }  a(); ``` |
-| `prepareStackTrace` | `err`: Error, `stackTraces`: CallSite[] | any | - |
-
 #### Properties
 
 | Property | Type |
 | --- | --- |
-| `cause`? | unknown |
 | `code` | string |
-| `message` | string |
-| `name` | string |
-| `stack`? | string |
-| `stackTraceLimit` | number |
 
 ### `TimeoutError`
 
 The request exceeded the configured client timeout.
 
-#### Methods
-
-| Method | Params | Returns | Description |
-| --- | --- | --- | --- |
-| `captureStackTrace` | `targetObject`: object, `constructorOpt?`: Function | void | Creates a `.stack` property on `targetObject`, which when accessed returns a string representing the location in the code at which `Error.captureStackTrace()` was called.  ```js const myObject = {}; Error.captureStackTrace(myObject); myObject.stack;  // Similar to `new Error().stack` ```  The first line of the trace will be prefixed with `${myObject.name}: ${myObject.message}`.  The optional `constructorOpt` argument accepts a function. If given, all frames above `constructorOpt`, including `constructorOpt`, will be omitted from the generated stack trace.  The `constructorOpt` argument is useful for hiding implementation details of error generation from the user. For instance:  ```js function a() {   b(); }  function b() {   c(); }  function c() {   // Create an error without stack trace to avoid calculating the stack trace twice.   const { stackTraceLimit } = Error;   Error.stackTraceLimit = 0;   const error = new Error();   Error.stackTraceLimit = stackTraceLimit;    // Capture the stack trace above function b   Error.captureStackTrace(error, b); // Neither function c, nor b is included in the stack trace   throw error; }  a(); ``` |
-| `prepareStackTrace` | `err`: Error, `stackTraces`: CallSite[] | any | - |
-
 #### Properties
 
 | Property | Type |
 | --- | --- |
-| `cause`? | unknown |
 | `code` | string |
-| `message` | string |
-| `name` | string |
-| `stack`? | string |
-| `stackTraceLimit` | number |
 
 ### `TokenBucket`
 
@@ -713,6 +712,31 @@ trailing `next`) has settled.
 
 **Returns:** (ctx: C, next?: [NextFn](#nextfn)) => Promise<void>
 
+### `createSession()`
+
+Build the session middleware. The result is callable (`bot.use(session)`) and
+carries `.get(ctx)` - typed once here, so handlers need no per-call generic
+and no cast:
+
+```ts
+const session = createSession<Session>({ store: new MemorySessionStorage() });
+bot.use(session);
+bot.command("start", (ctx) => { session.get(ctx).data.count += 1; });
+```
+
+Updates with no derivable key run downstream untouched (`get()` throws,
+`find()` returns `undefined`), so guard access when your bot sees keyless
+updates, or narrow with `on(...)` first.
+
+The envelope is flushed after the handler even if it throws, so a marker
+written before an error still persists - and only when it actually changed.
+
+| Param | Type |
+| --- | --- |
+| `options` | [SessionOptions](#sessionoptions)<T> |
+
+**Returns:** [SessionMiddleware](#sessionmiddleware)<T>
+
 ### `createWebhookServer()`
 
 Create (but do not start) a `node:http` server that handles Telegram webhook
@@ -751,6 +775,59 @@ so tracing stays a no-op.
 | `streaming` | boolean |
 
 **Returns:** Promise<[EncodedRequest](#encodedrequest)>
+
+### `expectCallback()`
+
+Record that a **button press** on the message you just sent (`messageId`) is
+expected - the callback-query peer of expectReply, sharing one table,
+so a message cannot be awaiting a reply and a press under different markers.
+
+Prefer plain `callback_data` when it suffices: Telegram round-trips those 64
+bytes for you, with no session and no store, and that is the idiomatic way to
+route a button. This is for what `callback_data` cannot carry - a marker too
+big for 64 bytes, one the client must not be able to read (callback_data is
+plain text in the app), or a button that must work only once.
+
+| Param | Type |
+| --- | --- |
+| `ctx` | [Context](#context) |
+| `messageId` | number |
+| `marker` | [ReplyMarker](#replymarker) |
+
+**Returns:** void
+
+### `expectReply()`
+
+Record that a reply to the message you just sent (`messageId`) is expected.
+
+`marker` is arbitrary JSON attached to that specific message; when the reply
+arrives, matchReply hands it back so you know *which* prompt is being
+answered - a chat can have several outstanding at once (name, then email, ...)
+and the marker is how you tell their replies apart. With a single prompt in
+flight it can be omitted (it defaults to `{}`) and its presence is enough.
+
+Pure session write - safe on serverless. Pair the sent message with
+`reply_markup: { force_reply: true }` so the client quotes it and the reply
+carries `reply_to_message.message_id`.
+
+| Param | Type |
+| --- | --- |
+| `ctx` | [Context](#context) |
+| `messageId` | number |
+| `marker` | [ReplyMarker](#replymarker) |
+
+**Returns:** void
+
+### `forgetReply()`
+
+Forget a pending expectation (a prompt that timed out, or was cancelled).
+
+| Param | Type |
+| --- | --- |
+| `ctx` | [Context](#context) |
+| `messageId` | number |
+
+**Returns:** void
 
 ### `formPart()`
 
@@ -833,6 +910,41 @@ Async-generator update source (ADR-004): long-polls `getUpdates` and yields each
 
 **Returns:** AsyncGenerator<[Update](#update)>
 
+### `matchCallback()`
+
+If the current update is a callback query on a message a prior
+expectCallback registered (matched on `callback_query.message.message_id`
+within this session key), return that message's marker; otherwise `undefined`.
+
+Unlike matchReply this does **not** consume the marker by default: an
+inline keyboard usually stays live for several presses (paging, a toggle), and
+consuming would break every press after the first. Pass `{ once: true }` for a
+one-shot button - a confirm/cancel pair, say - so a double tap or a press on a
+stale message cannot fire it twice; forgetReply drops it explicitly.
+
+| Param | Type |
+| --- | --- |
+| `ctx` | [Context](#context) |
+| `options?` | { once?: boolean } |
+
+**Returns:** M | undefined
+
+### `matchReply()`
+
+If the current update is a reply to a message a prior expectReply
+registered (matched on `reply_to_message.message_id` within this session key),
+consume and return that message's marker; otherwise `undefined` - so a handler
+typically does `const hit = matchReply(ctx); if (!hit) return next();`.
+
+`M` is a type-only assertion for the marker you stored (like the `<T>` on
+`ctx.getSession`): it types the return value and generates no runtime check.
+
+| Param | Type |
+| --- | --- |
+| `ctx` | [Context](#context) |
+
+**Returns:** M | undefined
+
 ### `nextAppWebhook()`
 
 Next.js App Router handler. The App Router speaks Web `Request`/`Response`
@@ -879,7 +991,7 @@ registerExpressWebhook(bot, app, { path: "/telegram", secretToken });
 | Param | Type |
 | --- | --- |
 | `bot` | [Bot](#bot) |
-| `app` | { post:  } |
+| `app` | { post: (path: string, handler: (req: [NodeLikeRequest](#nodelikerequest), res: [NodeLikeResponse](#nodelikeresponse)) => unknown) => unknown } |
 | `options` | [WebhookOptions](#webhookoptions) & { path: string } |
 
 **Returns:** void
@@ -934,7 +1046,10 @@ A table cell; `align` defaults to `"left"`, `valign` to `"top"`.
 
 Start the bot's long-poll loop and resolve when it stops. Installs
 `SIGINT`/`SIGTERM` handlers that trigger `bot.stop()` for a clean shutdown,
-cleaned up in a `finally` so repeated runs don't leak listeners.
+cleaned up in a `finally` so repeated runs don't leak listeners. Middleware
+setup runs first (via `bot.startPolling` -> `bot.init()`), so a bad session
+store fails before the first poll; teardown (`bot.close()`) runs on the way
+out, whether the loop stopped or threw.
 
 | Param | Type |
 | --- | --- |
@@ -980,6 +1095,22 @@ await startWebhook(bot, { port: 8443, path: "/telegram", secretToken });
 
 **Returns:** Promise<void>
 
+### `taggedReplies()`
+
+Reply and callback tracking for plain **string** tags. Markers are objects, so
+a bare `"EMAIL"` cannot be stored directly; this boxes it as `{ tag }` on write
+and unboxes it on read. One `Tag` union types both ends, so the stored and
+matched tags cannot drift apart.
+
+`expectPress` / `matchPress` are the callback-query peers of `expect` /
+`match`, keeping the non-consuming default of matchCallback.
+
+| Param | Type |
+| --- | --- |
+| `ctx` | [Context](#context) |
+
+**Returns:** { expect: (messageId: number, tag: Tag) => void; expectPress: (messageId: number, tag: Tag) => void; forget: (messageId: number) => void; match: () => Tag | undefined; matchPress: (options?: { once?: boolean }) => Tag | undefined }
+
 ### `webhookCallback()`
 
 | Param | Type |
@@ -1006,7 +1137,7 @@ Subset of Telegram's `ResponseParameters` carried on API errors.
 | Property | Type |
 | --- | --- |
 | `apiRoot`? | string |
-| `fetch`? | (input: string \| URL \| Request, init?: RequestInit) => Promise<Response> |
+| `fetch`? | typeof fetch |
 | `maxRetries`? | number |
 | `maxRetryAfterMs`? | number |
 | `rateLimit`? | [RateLimitOptions](#ratelimitoptions) |
@@ -1137,7 +1268,7 @@ Options for a table block; `caption` is rich text.
 | Property | Type |
 | --- | --- |
 | `apiRoot`? | string |
-| `fetch`? | (input: string \| URL \| Request, init?: RequestInit) => Promise<Response> |
+| `fetch`? | typeof fetch |
 | `maxRetries`? | number |
 | `maxRetryAfterMs`? | number |
 | `rateLimit`? | [RateLimitOptions](#ratelimitoptions) |
@@ -3154,6 +3285,14 @@ type File = {
   file_path?: string;
   file_size?: number;
   file_unique_id: string;
+};
+```
+
+### `FileSessionStorageOptions`
+
+```ts
+type FileSessionStorageOptions = {
+  path: string;
 };
 ```
 
@@ -5549,7 +5688,23 @@ type MessageReactionUpdated = {
 A middleware over context `C`. Return value is ignored.
 
 ```ts
-type Middleware = (ctx: C, next: [NextFn](#nextfn)) => unknown | Promise<unknown>;
+type Middleware<C> = (ctx: C, next: [NextFn](#nextfn)) => unknown | Promise<unknown>;
+```
+
+### `MiddlewarePlugin`
+
+Optional lifecycle a middleware may carry (duck-typed - no base class, no
+registration API). `bot.init()` runs every registered `init` once, in
+registration order, before the first update; `bot.close()` runs every
+`close` in reverse order. This is how a middleware that owns a resource - a
+session store's directory / table / connection pool - gets a deterministic
+start and stop instead of inventing per-request lazy setup of its own.
+
+```ts
+type MiddlewarePlugin = {
+  close?: () => void | Promise<void>;
+  init?: () => void | Promise<void>;
+};
 ```
 
 ### `NextFn`
@@ -6105,6 +6260,16 @@ type ReadBusinessMessageParams = {
 type ReadBusinessMessageResult = boolean;
 ```
 
+### `RedisSessionStorageOptions`
+
+```ts
+type RedisSessionStorageOptions = {
+  client?: RedisClient;
+  prefix?: string;
+  ttlSeconds?: number;
+};
+```
+
 ### `RefundStarPaymentParams`
 
 ```ts
@@ -6268,6 +6433,14 @@ type ReplyKeyboardRemove = {
   remove_keyboard: true;
   selective?: boolean;
 };
+```
+
+### `ReplyMarker`
+
+Opaque, JSON-serializable tag a caller attaches to an awaited reply or button press.
+
+```ts
+type ReplyMarker = Record<string, unknown>;
 ```
 
 ### `ReplyMarkup`
@@ -7750,6 +7923,105 @@ type SentWebAppMessage = {
 };
 ```
 
+### `SessionCodec`
+
+How a value is turned into the string a store persists. Default: JSON.
+
+```ts
+type SessionCodec = {
+  decode: (raw: string) => unknown;
+  encode: (envelope: unknown) => string;
+};
+```
+
+### `SessionEnvelope`
+
+What actually gets persisted per key: the caller's `data` bag plus `ext`, the
+namespace map that session-backed layers (reply tracking, and anything else
+built the same way) store their own state under. One store round-trip covers
+all of them.
+
+```ts
+type SessionEnvelope<T> = {
+  createdAt: string;
+  data: T;
+  ext?: Record<string, unknown>;
+  updatedAt: string;
+  v: number;
+};
+```
+
+### `SessionHandle`
+
+The typed handle `session.get(ctx)` returns. `data` is the persistent bag
+(mutate in place, or reassign - it flushes after the handler); `ext` is how a
+layer claims its own namespace; `delete()` drops the whole key on flush.
+
+```ts
+type SessionHandle<T> = {
+  readonly createdAt: Date;
+  data: T;
+  readonly updatedAt: Date;
+  delete: () => void;
+  ext: <E extends object>(namespace: string, initial: () => E, isValid?: (slot: Record<string, unknown>) => boolean) => E;
+};
+```
+
+### `SessionMiddleware`
+
+The value `session()` returns: the middleware itself, plus the typed accessor
+and the lifecycle hooks `Bot` picks up from `use()`.
+
+```ts
+type SessionMiddleware<T> = [Middleware](#middleware)<[Context](#context)> & {
+  close: () => Promise<void>;
+  find: (ctx: [Context](#context)) => [SessionHandle](#sessionhandle)<T> | undefined;
+  get: (ctx: [Context](#context)) => [SessionHandle](#sessionhandle)<T>;
+  init: () => Promise<void>;
+};
+```
+
+### `SessionOptions`
+
+```ts
+type SessionOptions<T> = {
+  codec?: [SessionCodec](#sessioncodec);
+  getSessionKey?: (ctx: [Context](#context)) => string | undefined;
+  initial?: (ctx: [Context](#context)) => T;
+  now?: () => number;
+  store: [SessionStore](#sessionstore);
+  ttlSeconds?: number;
+};
+```
+
+### `SessionStore`
+
+Minimal key/value contract a session backend must satisfy. Deliberately
+**string-valued and non-generic**: the middleware owns encoding, so a store
+never parses, never holds a live object, and can be swapped without changing
+what round-trips.
+
+```ts
+type SessionStore = {
+  close?: () => void | Promise<void>;
+  delete: (key: string) => void | Promise<void>;
+  init?: () => void | Promise<void>;
+  read: (key: string) => string | Promise<string | undefined> | undefined;
+  touch?: (key: string, ttlSeconds: number) => void | Promise<void>;
+  write: (key: string, value: string, options?: [SessionWriteOptions](#sessionwriteoptions)) => void | Promise<void>;
+};
+```
+
+### `SessionWriteOptions`
+
+Per-write hints. A store ignores what it cannot honor.
+
+```ts
+type SessionWriteOptions = {
+  ttlSeconds?: number;
+};
+```
+
 ### `SetBusinessAccountBioParams`
 
 ```ts
@@ -8295,6 +8567,25 @@ type ShippingQuery = {
   id: string;
   invoice_payload: string;
   shipping_address: [ShippingAddress](#shippingaddress);
+};
+```
+
+### `SqlSessionStorageOptions`
+
+```ts
+type SqlSessionStorageOptions = {
+  sql?: SQL;
+  table?: string;
+  url?: string;
+};
+```
+
+### `SqliteSessionStorageOptions`
+
+```ts
+type SqliteSessionStorageOptions = {
+  database?: Database | string;
+  table?: string;
 };
 ```
 
@@ -9352,6 +9643,32 @@ stays Node-free (no `node:*` imports).
 const HTTP_STATUS_TOO_MANY_REQUESTS: 429;
 ```
 
+### `REPLY_NAMESPACE`
+
+The `ext` namespace this layer stores its table under.
+
+```ts
+const REPLY_NAMESPACE: "reply";
+```
+
+### `SESSION_STATE_KEY`
+
+`ctx.state` slot the middleware stashes the handle under; read by
+`ctx.getSession()`. With more than one session middleware registered, the
+last one to run for an update owns the slot.
+
+```ts
+const SESSION_STATE_KEY: "session";
+```
+
+### `SESSION_VERSION`
+
+Current envelope version, stamped on every write so a future format can migrate.
+
+```ts
+const SESSION_VERSION: 1;
+```
+
 ### `UPDATE_TYPES`
 
 `Update` field names dispatched as events (every `Update` payload key except `update_id`).
@@ -9366,4 +9683,12 @@ Next.js Pages API uses the same `(req, res)` handler.
 
 ```ts
 const nextPagesWebhook: (bot: [Bot](#bot), options?: [WebhookOptions](#webhookoptions)) => (req: [NodeLikeRequest](#nodelikerequest), res: [NodeLikeResponse](#nodelikeresponse)) => Promise<void>;
+```
+
+### `session`
+
+Alias for createSession - `bot.use(session({ store }))` reads naturally.
+
+```ts
+const session: <T = Record<string, unknown>>(options: [SessionOptions](#sessionoptions)<T>) => [SessionMiddleware](#sessionmiddleware)<T>;
 ```

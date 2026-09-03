@@ -18,5 +18,7 @@
     "forceConsistentCasingInFileNames": true,
     "esModuleInterop": true
   },
-  "include": ["src"]
+  "include": ["src"],
+  "// exclude": "src/bun is Bun-only (bun:sqlite, `bun`); it must not be typechecked with node-only types nor let Bun globals into the core check. It has its own tsconfig.bun.json.",
+  "exclude": ["src/bun"]
 }

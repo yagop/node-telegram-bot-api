@@ -282,6 +282,131 @@ await startWebhook(new Bot(TOKEN), { port: 8080, path: "/telegram", secretToken:
 
 Register the URL once: `api.setWebhook({ url, secret_token })`. The `secret_token` is the only thing authenticating callers (payloads aren't signed) - treat it as required in production, and terminate TLS at your proxy.
 
+## 💾 Sessions
+
+Opt-in session middleware adds a persistent, per-chat bag, reached from the context with **`ctx.getSession<T>()`**. The `store` is **required** - no implicit default, so the durability choice is always explicit. Nothing lives in process memory between updates (only what the store persists), so the same code works under one-invocation-per-update serverless and under long-polling.
+
+```ts
+import { Bot, createSession, MemorySessionStorage } from "node-telegram-bot-api";
+
+type Session = { count: number };
+
+const bot = new Bot(process.env.BOT_TOKEN!);
+bot.use(createSession<Session>({ store: new MemorySessionStorage(), initial: () => ({ count: 0 }) }));
+
+bot.command("count", async (ctx) => {
+  const s = ctx.getSession<Session>();
+  s.data.count++; // mutate in place, or reassign: s.data = { count: 0 }
+  await ctx.reply(`Seen ${s.data.count} times`);
+});
+```
+
+Tired of repeating `<Session>`? Keep the middleware and use its own accessor, typed once at construction - `createSession<Session>()` returns a middleware carrying `.get(ctx)` and `.find(ctx)` (the latter returns `undefined` instead of throwing when the update had no session key):
+
+```ts
+const session = createSession<Session>({ store: new MemorySessionStorage(), initial: () => ({ count: 0 }) });
+bot.use(session);
+bot.command("count", (ctx) => ctx.reply(`Seen ${++session.get(ctx).data.count} times`));
+```
+
+Both return the same handle, which is also where the non-bag members live: `.createdAt` / `.updatedAt`, `.ext()` for layers built on sessions, and `.delete()`, which evicts the whole key on flush - an explicit end-of-conversation / `/forget` / erasure hook. `ctx.getSession()` and `session.get(ctx)` throw when the middleware did not run for this update (not registered, or no derivable key).
+
+### Reply tracking
+
+Reply tracking is a layer **on top of** the session (it stores its table in the envelope's `ext.reply`, so a bot that never uses it persists nothing extra). It records "awaiting a reply to a specific message" as plain data matched on `reply_to_message.message_id` - never a live promise - so it survives a restart and works on serverless.
+
+You tag the message you sent; when its reply arrives, you read the tag back, so you know **which** prompt is being answered - the reason it exists is that a chat can have several prompts outstanding at once. `taggedReplies<Tag>(ctx)` wraps both ends for a plain string tag, tying `expect` and `match` to one type. Below, the `step` tag drives a two-question flow through a single `message` handler:
+
+```ts
+import { taggedReplies } from "node-telegram-bot-api";
+
+type Session = { name?: string };
+
+bot.command("start", async (ctx) => {
+  const sent = await ctx.reply("What's your name?", { reply_markup: { force_reply: true } });
+  // tag the message we sent with the step its reply will answer
+  taggedReplies<"name" | "email">(ctx).expect(sent.message_id, "name");
+});
+
+bot.on("message", async (ctx, next) => {
+  const step = taggedReplies<"name" | "email">(ctx).match(); // "name" | "email" | undefined
+  if (!step) return next(); // not a reply we're waiting on -> let other handlers run
+
+  if (step === "name") {
+    ctx.getSession<Session>().data.name = ctx.message?.text;
+    const sent = await ctx.reply("And your email?", { reply_markup: { force_reply: true } });
+    taggedReplies<"name" | "email">(ctx).expect(sent.message_id, "email"); // chain the next prompt
+  } else {
+    await ctx.reply(`Thanks ${ctx.getSession<Session>().data.name}, got your email: ${ctx.message?.text}`);
+  }
+});
+```
+
+`taggedReplies` is sugar over the primitives `expectReply(ctx, id, marker?)` (stores any JSON marker object), `matchReply<M>(ctx)` (returns it typed as `M`) and `forgetReply(ctx, id)` (cancels a pending expectation). With a single prompt in flight you can drop the marker entirely - its presence alone is the signal.
+
+#### Button presses
+
+`expectCallback(ctx, id, marker?)` / `matchCallback<M>(ctx, { once? })` are the callback-query peers, keyed on `callback_query.message.message_id` and sharing the same table (`taggedReplies(ctx).expectPress` / `.matchPress` for string tags).
+
+**Reach for them only when `callback_data` is not enough.** A button already carries 64 bytes you chose, round-tripped by Telegram for free - that is the idiomatic way to route a press, and it needs no session at all:
+
+```ts
+bot.on("callback_query", (ctx) => {
+  if (ctx.callbackQuery?.data === "confirm") { /* ... */ }
+});
+```
+
+The session-backed version earns its keep for a marker that does not fit in 64 bytes, one the client must not read (`callback_data` is plain text in the app), or a button that must fire once:
+
+```ts
+const sent = await ctx.reply("Delete everything?", { reply_markup: { inline_keyboard: [[{ text: "Yes", callback_data: "y" }]] } });
+expectCallback(ctx, sent.message_id, { op: "delete", scope: "all" });
+
+bot.on("callback_query", async (ctx, next) => {
+  const hit = matchCallback<{ op: string }>(ctx, { once: true }); // one-shot: a double tap can't fire twice
+  if (!hit) return next();
+  await ctx.answerCallbackQuery({ text: `Running ${hit.op}` });
+});
+```
+
+Unlike a reply, matching a press does **not** consume the marker by default - an inline keyboard usually stays live for several presses (paging, a toggle), and consuming would break every press after the first. Pass `{ once: true }` for a one-shot button. A press on an inline-mode message carries no `message`, so there is nothing to key on; route those by `callback_data`.
+
+### Storage backends
+
+Every backend implements the same `SessionStore`: a **string** key/value contract - `read(key)`, `write(key, value, { ttlSeconds })`, `delete(key)`, plus optional `init` / `close` and, for backends with a TTL, `touch(key, ttlSeconds)` (the middleware calls it when an update changed nothing, so an active chat is not evicted just because its data stood still). Serialization happens once in the middleware's codec, never inside a store, so the in-memory store is a faithful simulation of a durable one - a `Date` in the bag comes back a string everywhere, not only on Redis. Swapping backends is a one-line change:
+
+| Store | Import | Runtime | Durable | Notes |
+| --- | --- | --- | --- | --- |
+| `MemorySessionStorage` | `node-telegram-bot-api` | any | ❌ | process-local; single-process / polling only; optional TTL |
+| `FileSessionStorage` | `node-telegram-bot-api/node` | Node | ✅ | one file per key; atomic writes; single host |
+| `SqliteSessionStorage` | `node-telegram-bot-api/bun` | Bun | ✅ | `bun:sqlite`; sync; single host |
+| `SqlSessionStorage` | `node-telegram-bot-api/bun` | Bun | ✅ | Bun `SQL` (Postgres); cross-instance |
+| `RedisSessionStorage` | `node-telegram-bot-api/bun` | Bun | ✅ | Bun `redis`; cross-instance; optional TTL |
+
+```ts
+// durable on Node (e.g. a webhook on one host)
+import { createSession } from "node-telegram-bot-api";
+import { FileSessionStorage } from "node-telegram-bot-api/node";
+bot.use(createSession<Session>({ store: new FileSessionStorage({ path: "./.sessions" }) }));
+
+// durable on Bun, shared across instances, idle sessions expiring after a day
+import { RedisSessionStorage } from "node-telegram-bot-api/bun";
+bot.use(createSession<Session>({ store: new RedisSessionStorage(), ttlSeconds: 86400 }));
+```
+
+Any other backend (ioredis, `pg`, a KV service) is ~10 lines implementing the three methods. The `node-telegram-bot-api/bun` stores import Bun built-ins and are isolated behind that subpath - a Node or edge install never resolves them.
+
+### Lifecycle
+
+A middleware may carry `init` / `close`; `bot.use` picks those up, `bot.init()` runs them once in registration order and `bot.close()` in reverse. Session middleware forwards both to its store, so setup (create the directory / table, open the pool) happens **at startup**, not lazily on update #1:
+
+```ts
+bot.use(createSession<Session>({ store: new FileSessionStorage({ path: "./.sessions" }) }));
+await bot.init(); // optional: a bad path / unreachable backend fails here, at boot
+```
+
+`startPolling()` and `handleUpdate()` await `bot.init()` themselves (memoized), so this is only about *when* a setup error surfaces - one raised during an update goes to the `bot.catch()` boundary like any other. `run()` (`/node`) calls `bot.close()` on shutdown, and `close()` drops the setup memo so a later `init()` starts over. A store that owned the connection it closed (`SqlSessionStorage` with a `url`, `SqliteSessionStorage` with a path) is spent after that - construct a new one; with a caller-supplied client the store stays usable.
+
 ## ⚠️ Errors
 
 Errors expose structured fields, so you branch on values, not message text.

@@ -1,0 +1,10 @@
+{
+  "// note": "Typecheck config for the Bun-only subpath. Extends the root but adds the `bun` ambient types (bun:sqlite, the `bun` module) and scopes to src/bun. The root stays node-only so a stray Bun global in src/core fails `npm run typecheck`.",
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "types": ["node", "bun"],
+    "noEmit": true
+  },
+  "include": ["src/bun"],
+  "exclude": []
+}
