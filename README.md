@@ -342,11 +342,15 @@ bot.on("message", async (ctx, next) => {
 });
 ```
 
-`taggedReplies` is sugar over the primitives `expectReply(ctx, id, marker?)` (stores any JSON marker object), `matchReply<M>(ctx)` (returns it typed as `M`) and `forgetReply(ctx, id)` (cancels a pending expectation). With a single prompt in flight you can drop the marker entirely - its presence alone is the signal.
+`taggedReplies` is sugar over the primitives `expectReply(ctx, id, marker?, { ttlSeconds? })` (stores any JSON marker object), `matchReply<M>(ctx)` (returns it typed as `M`) and `forgetReply(ctx, id)` (cancels a pending expectation). With a single prompt in flight you can drop the marker entirely - its presence alone is the signal.
+
+Nothing expires on its own: a prompt answered tomorrow is normal, so a marker stays pending until it matches or you forget it. Pass `ttlSeconds` for prompts that go stale (a confirmation, a one-time code) - expired entries are pruned the next time the layer touches the session, which is what keeps a chat that ignores every prompt from growing its envelope forever.
+
+The default session key is per **chat**, so in a group the marker belongs to the group and any member's reply or press matches it. Put the asker's id in the marker and check it when that matters.
 
 #### Button presses
 
-`expectCallback(ctx, id, marker?)` / `matchCallback<M>(ctx, { once? })` are the callback-query peers, keyed on `callback_query.message.message_id` and sharing the same table (`taggedReplies(ctx).expectPress` / `.matchPress` for string tags).
+`expectCallback(ctx, id, marker?, { ttlSeconds? })` / `matchCallback<M>(ctx, { once? })` are the callback-query peers, keyed on `callback_query.message.message_id` (`taggedReplies(ctx).expectPress` / `.matchPress` for string tags). Replies and presses live in **separate tables**, so a quoted reply to a message that also carries a keyboard cannot consume the button's marker; register both if a message can be answered either way.
 
 **Reach for them only when `callback_data` is not enough.** A button already carries 64 bytes you chose, round-tripped by Telegram for free - that is the idiomatic way to route a press, and it needs no session at all:
 
@@ -356,20 +360,29 @@ bot.on("callback_query", (ctx) => {
 });
 ```
 
-The session-backed version earns its keep for a marker that does not fit in 64 bytes, one the client must not read (`callback_data` is plain text in the app), or a button that must fire once:
+The session-backed version earns its keep for a marker that does not fit in 64 bytes, one the client must not read (`callback_data` is plain text in the app), or a button that must fire at most once:
 
 ```ts
 const sent = await ctx.reply("Delete everything?", { reply_markup: { inline_keyboard: [[{ text: "Yes", callback_data: "y" }]] } });
-expectCallback(ctx, sent.message_id, { op: "delete", scope: "all" });
+expectCallback(ctx, sent.message_id, { op: "delete", by: ctx.from?.id }, { ttlSeconds: 3600 });
 
 bot.on("callback_query", async (ctx, next) => {
-  const hit = matchCallback<{ op: string }>(ctx, { once: true }); // one-shot: a double tap can't fire twice
+  const hit = matchCallback<{ op: string; by?: number }>(ctx, { once: true });
   if (!hit) return next();
+  if (ctx.from?.id !== hit.by) return ctx.answerCallbackQuery({ text: "Not your button." });
   await ctx.answerCallbackQuery({ text: `Running ${hit.op}` });
 });
 ```
 
-Unlike a reply, matching a press does **not** consume the marker by default - an inline keyboard usually stays live for several presses (paging, a toggle), and consuming would break every press after the first. Pass `{ once: true }` for a one-shot button. A press on an inline-mode message carries no `message`, so there is nothing to key on; route those by `callback_data`.
+Unlike a reply, matching a press does **not** consume the marker by default - an inline keyboard usually stays live for several presses (paging, a toggle), and consuming would break every press after the first. Pass `{ once: true }` for a one-shot button.
+
+Three things worth knowing about that "once":
+
+- It consumes only *that message's* marker. Send two confirmations and both stay armed - `forgetCallback(ctx, previousId)` the older one if only the newest may act.
+- It is **at most once**, not exactly once: the marker is consumed before your handler runs, and the flush persists that even if the handler throws.
+- A press on an inline-mode message carries no `message`, so there is nothing to key on; route those by `callback_data`.
+
+[`examples/17-callback-tracking.ts`](examples/17-callback-tracking.ts) puts both routes in one bot: `callback_data` paging next to a one-shot, requester-checked confirmation.
 
 ### Storage backends
 

@@ -6,6 +6,7 @@ import { Context } from "../../src/core/context.js";
 import {
   expectCallback,
   expectReply,
+  forgetCallback,
   forgetReply,
   matchCallback,
   matchReply,
@@ -157,14 +158,17 @@ describe("createSession()", () => {
     });
     assert.deepEqual(store.writes.at(-1), [
       "chat:42",
-      encoded({ data: { n: 1 }, ext: { reply: { awaiting: { 9: { ok: true } } } } }),
+      encoded({ data: { n: 1 }, ext: { reply: { replies: { 9: { marker: { ok: true } } }, presses: {} } } }),
     ]);
   });
 
   test("replaces an ext slot that fails its validity check", async () => {
     const store = fakeStore();
-    // A plain object, but not a well-formed reply table (no `awaiting`).
-    store.write("chat:42", JSON.stringify({ v: 1, data: {}, ext: { reply: {} }, createdAt: AT, updatedAt: AT }));
+    // A plain object, but not a well-formed pair of tables (no `presses`).
+    store.write(
+      "chat:42",
+      JSON.stringify({ v: 1, data: {}, ext: { reply: { replies: {} } }, createdAt: AT, updatedAt: AT }),
+    );
     const mw = createSession({ store, now });
     const ctx = new Context(msg("hi"), api);
     await mw(ctx, async () => {
@@ -172,7 +176,7 @@ describe("createSession()", () => {
     });
     assert.deepEqual(store.writes.at(-1), [
       "chat:42",
-      encoded({ data: {}, ext: { reply: { awaiting: { 7: { ok: true } } } } }),
+      encoded({ data: {}, ext: { reply: { replies: { 7: { marker: { ok: true } } }, presses: {} } } }),
     ]);
   });
 
@@ -856,20 +860,94 @@ describe("callback tracking", () => {
     });
   });
 
-  test("a reply marker and a press share one table, so either can claim it", async () => {
+  test("replies and presses are separate: neither matcher sees the other's marker", async () => {
     const mw = createSession({ store: new MemorySessionStorage() });
 
     const ask = new Context(msg("?"), api);
     await mw(ask, async () => {
       expectReply(ask, 111, { step: "name" });
+      expectCallback(ask, 222, { view: "page" });
     });
 
-    const tap = new Context(press(111), api);
-    let hit: unknown;
+    const tap = new Context(press(111), api); // a press on the reply prompt
     await mw(tap, async () => {
-      hit = matchCallback(tap);
+      assert.equal(matchCallback(tap), undefined);
     });
-    assert.deepEqual(hit, { step: "name" });
+
+    const quoted = new Context(msg("hi", 222), api); // a quoted reply to the keyboard
+    await mw(quoted, async () => {
+      assert.equal(matchReply(quoted), undefined);
+    });
+
+    // ...and neither of those consumed the other's marker: both still match.
+    const properTap = new Context(press(222), api);
+    await mw(properTap, async () => {
+      assert.deepEqual(matchCallback(properTap), { view: "page" });
+    });
+    const properReply = new Context(msg("Ada", 111), api);
+    await mw(properReply, async () => {
+      assert.deepEqual(matchReply(properReply), { step: "name" });
+    });
+  });
+
+  test("ttlSeconds expires an expectation, and no TTL keeps it pending", async () => {
+    const mw = createSession({ store: new MemorySessionStorage() });
+
+    const ask = new Context(msg("?"), api);
+    await mw(ask, async () => {
+      expectReply(ask, 111, { step: "stale" }, { ttlSeconds: -1 }); // already past
+      expectCallback(ask, 222, { view: "stale" }, { ttlSeconds: -1 });
+      expectReply(ask, 333, { step: "kept" }); // no TTL -> pending indefinitely
+    });
+
+    const expiredReply = new Context(msg("late", 111), api);
+    await mw(expiredReply, async () => {
+      assert.equal(matchReply(expiredReply), undefined);
+    });
+    const expiredPress = new Context(press(222), api);
+    await mw(expiredPress, async () => {
+      assert.equal(matchCallback(expiredPress), undefined);
+    });
+    const kept = new Context(msg("Ada", 333), api);
+    await mw(kept, async () => {
+      assert.deepEqual(matchReply(kept), { step: "kept" });
+    });
+  });
+
+  test("expired entries are pruned from the stored envelope", async () => {
+    const store = fakeStore();
+    const mw = createSession({ store });
+
+    const ask = new Context(msg("?"), api);
+    await mw(ask, async () => {
+      expectReply(ask, 111, { step: "stale" }, { ttlSeconds: -1 });
+    });
+    assert.match(store.writes.at(-1)?.[1] as string, /"111"/);
+
+    // Any later update touching this layer drops it - the envelope cannot grow
+    // without limit for a bot that sets a TTL.
+    const later = new Context(msg("anything"), api);
+    await mw(later, async () => {
+      expectReply(later, 999, { step: "fresh" });
+    });
+    const stored = store.writes.at(-1)?.[1] as string;
+    assert.doesNotMatch(stored, /"111"/);
+    assert.match(stored, /"999"/);
+  });
+
+  test("forgetCallback drops a pending press expectation", async () => {
+    const mw = createSession({ store: new MemorySessionStorage() });
+
+    const ask = new Context(msg("?"), api);
+    await mw(ask, async () => {
+      expectCallback(ask, 555, { view: "page" });
+      forgetCallback(ask, 555);
+    });
+
+    const tap = new Context(press(555), api);
+    await mw(tap, async () => {
+      assert.equal(matchCallback(tap), undefined);
+    });
   });
 
   test("taggedReplies boxes and unboxes a press tag", async () => {

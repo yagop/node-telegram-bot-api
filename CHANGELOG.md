@@ -34,19 +34,30 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Reply and callback tracking
 
-- Added `expectReply(ctx, messageId, marker?)`, `matchReply<M>(ctx)` and
-  `forgetReply(ctx, messageId)` - "awaiting a reply to this message" recorded as
-  persisted data (matched on `reply_to_message.message_id`), never a live
-  continuation, so it survives a restart and works on serverless.
-- Added the callback-query peers `expectCallback(ctx, messageId, marker?)` and
-  `matchCallback<M>(ctx, { once? })`, keyed on `callback_query.message.message_id`
-  and sharing the same table. Matching a press does not consume the marker by
-  default (a keyboard usually stays live for several presses); `{ once: true }`
-  opts into a one-shot button. Plain `callback_data` remains the idiomatic router -
-  these are for a marker over 64 bytes, one the client must not read, or a
-  one-shot press.
-- Added `taggedReplies<Tag>(ctx)` - `expect` / `match` / `expectPress` /
-  `matchPress` / `forget` for plain string tags, typing both ends with one union.
+- Added `expectReply(ctx, messageId, marker?, { ttlSeconds? })`,
+  `matchReply<M>(ctx)` and `forgetReply(ctx, messageId)` - "awaiting a reply to
+  this message" recorded as persisted data (matched on
+  `reply_to_message.message_id`), never a live continuation, so it survives a
+  restart and works on serverless.
+- Added the callback-query peers `expectCallback(ctx, messageId, marker?, { ttlSeconds? })`,
+  `matchCallback<M>(ctx, { once? })` and `forgetCallback(ctx, messageId)`, keyed on
+  `callback_query.message.message_id`. Matching a press does not consume the marker
+  by default (a keyboard usually stays live for several presses); `{ once: true }`
+  makes a button fire at most once - it consumes only that message's marker, and
+  consumption happens before the handler runs. Plain `callback_data` remains the
+  idiomatic router - these are for a marker over 64 bytes, one the client must not
+  read, or a one-shot press.
+- Replies and presses are kept in **separate** tables, so a quoted reply to a
+  message that also carries an inline keyboard cannot consume the button's marker.
+- Expectations never expire on their own (a prompt answered tomorrow is normal);
+  `ttlSeconds` bounds one, and expired entries are pruned the next time the layer
+  touches the session, so a bot that sets a TTL cannot grow its envelope without
+  limit. There is no cap and no default.
+- Added `taggedReplies<Tag>(ctx)` - `expect` / `match` / `forget` / `expectPress` /
+  `matchPress` / `forgetPress` for plain string tags, typing both ends with one union.
+- Note the default session key is per chat, so in a group any member's reply or
+  press matches a marker; carry the asker's id in the marker and check it when
+  that matters.
 
 ### Bot lifecycle
 

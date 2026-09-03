@@ -1,25 +1,33 @@
 /**
- * Reply tracking - "I am waiting for a reply to *this* message" - built as a
- * layer **on top of** the session, not baked into it.
+ * Reply and callback tracking - "I am waiting for an answer to *this* message" -
+ * built as a layer **on top of** the session, not baked into it.
  *
- * The state is a plain table (`message_id we sent -> marker`) kept in the
- * session envelope's `ext` under the `"reply"` namespace, so:
+ * The state is two plain tables (`message_id we sent -> marker`), one for
+ * replies and one for button presses, kept in the session envelope's `ext` under
+ * the `"reply"` namespace, so:
  *
- * - a bot that never tracks replies persists nothing extra;
- * - changing this table's shape never touches the session format;
- * - it is a persisted marker, never a live continuation, so it survives a
+ * - a bot that never tracks answers persists nothing extra;
+ * - changing these tables' shape never touches the session format;
+ * - a marker is persisted data, never a live continuation, so it survives a
  *   restart and works under one-invocation-per-update serverless (there is
  *   deliberately no awaitable `waitForReply`: a Promise cannot cross an
  *   invocation).
  *
- * The same table also backs **callback queries** ({@link expectCallback} /
- * {@link matchCallback}), keyed on the message the inline keyboard is attached
- * to. Note a callback query already carries your own `callback_data`, so reach
- * for those only when 64 bytes of client-visible text are not enough: a bigger
- * marker, one the client must not see (callback_data is plain text in the app),
- * or a button that must fire once. And unlike a reply, a keyboard is often
- * pressed repeatedly, so matching a callback does *not* consume the marker
- * unless you ask.
+ * Replies and presses are tracked **separately**, because they are consumed
+ * differently and would otherwise steal each other's markers: a quoted reply to
+ * a message that also carries an inline keyboard would consume the press marker
+ * and kill the button. Register both if a message can be answered either way.
+ *
+ * A callback query already carries your own `callback_data`, so reach for
+ * {@link expectCallback} only when 64 bytes of client-visible text are not
+ * enough: a bigger marker, one the client must not see (callback_data is plain
+ * text in the app), or a button that must fire at most once.
+ *
+ * Markers do not expire on their own - a prompt nobody answers stays pending, by
+ * design, since "the user replies tomorrow" is normal. Pass `ttlSeconds` when
+ * recording one to bound that; expired entries are dropped the next time this
+ * layer touches the session, so a bot that sets a TTL cannot grow its envelope
+ * without limit.
  *
  * Everything here reads the session off the context (`ctx.getSession()`), so it
  * needs the session middleware registered and an update with a session key -
@@ -28,7 +36,7 @@
  * ```ts
  * bot.command("start", async (ctx) => {
  *   const sent = await ctx.reply("Your name?", { reply_markup: { force_reply: true } });
- *   expectReply(ctx, sent.message_id, { step: "name" });
+ *   expectReply(ctx, sent.message_id, { step: "name" }, { ttlSeconds: 3600 });
  * });
  *
  * bot.on("message", async (ctx, next) => {
@@ -44,22 +52,59 @@ import type { Context } from "./context.js";
 /** Opaque, JSON-serializable tag a caller attaches to an awaited reply or button press. */
 export type ReplyMarker = Record<string, unknown>;
 
-/** The `ext` namespace this layer stores its table under. */
+/** The `ext` namespace this layer stores its tables under. */
 export const REPLY_NAMESPACE = "reply";
 
-type ReplyState = { awaiting: Record<number, ReplyMarker> };
+/** How long a recorded expectation stays live. Omitted: until matched or forgotten. */
+export type ExpectOptions = {
+  /**
+   * Drop this expectation after so many seconds. There is no default and no cap:
+   * a prompt waiting for tomorrow's reply is legitimate, so nothing expires
+   * unless you say so. Set it for prompts that go stale (a confirmation, a
+   * one-time code) to keep an unanswered chat's envelope from growing forever.
+   */
+  ttlSeconds?: number;
+};
+
+/** One recorded expectation: the caller's marker, plus its deadline if it has one. */
+type Entry = { marker: ReplyMarker; expiresAt?: number };
+
+/** The two tables, keyed by the id of the message we sent. */
+type ReplyState = {
+  replies: Record<number, Entry>;
+  presses: Record<number, Entry>;
+};
+
+function isTable(value: unknown): boolean {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
 
 /**
- * This key's reply table, created on first use inside the session envelope. The
- * stored slot is untrusted, so a slot whose `awaiting` is missing or not a plain
- * object is replaced by a fresh table rather than blowing up on the first write.
+ * This key's tables, created on first use inside the session envelope, with
+ * expired entries pruned. The stored slot is untrusted (a foreign writer, a hand
+ * edit, an older layout), so one missing either table is replaced by a fresh
+ * pair rather than blowing up on the first write.
  */
-function replyState(ctx: Context): ReplyState {
-  return ctx.getSession().ext<ReplyState>(
+function replyState(ctx: Context, now = Date.now()): ReplyState {
+  const state = ctx.getSession().ext<ReplyState>(
     REPLY_NAMESPACE,
-    () => ({ awaiting: {} }),
-    (slot) => typeof slot.awaiting === "object" && slot.awaiting !== null && !Array.isArray(slot.awaiting),
+    () => ({ replies: {}, presses: {} }),
+    (slot) => isTable(slot.replies) && isTable(slot.presses),
   );
+  // Pruned here rather than on a timer: this is the only moment the layer is
+  // guaranteed to be looking at the session, and the flush that follows persists
+  // the smaller table.
+  for (const table of [state.replies, state.presses]) {
+    for (const [id, entry] of Object.entries(table)) {
+      if (entry?.expiresAt !== undefined && entry.expiresAt <= now) delete table[Number(id)];
+    }
+  }
+  return state;
+}
+
+function record(table: Record<number, Entry>, messageId: number, marker: ReplyMarker, options?: ExpectOptions): void {
+  table[messageId] =
+    options?.ttlSeconds === undefined ? { marker } : { marker, expiresAt: Date.now() + options.ttlSeconds * 1000 };
 }
 
 /**
@@ -74,9 +119,13 @@ function replyState(ctx: Context): ReplyState {
  * Pure session write - safe on serverless. Pair the sent message with
  * `reply_markup: { force_reply: true }` so the client quotes it and the reply
  * carries `reply_to_message.message_id`.
+ *
+ * Note the default session key is per **chat**, so in a group the marker belongs
+ * to the group, and any member's reply matches it. Put the asker's id in the
+ * marker and check it, or key sessions per user, when that matters.
  */
-export function expectReply(ctx: Context, messageId: number, marker: ReplyMarker = {}): void {
-  replyState(ctx).awaiting[messageId] = marker;
+export function expectReply(ctx: Context, messageId: number, marker: ReplyMarker = {}, options?: ExpectOptions): void {
+  record(replyState(ctx).replies, messageId, marker, options);
 }
 
 /**
@@ -85,37 +134,48 @@ export function expectReply(ctx: Context, messageId: number, marker: ReplyMarker
  * consume and return that message's marker; otherwise `undefined` - so a handler
  * typically does `const hit = matchReply(ctx); if (!hit) return next();`.
  *
+ * Only reply expectations are considered: a quoted reply never consumes a marker
+ * left by {@link expectCallback}.
+ *
  * `M` is a type-only assertion for the marker you stored (like the `<T>` on
  * `ctx.getSession`): it types the return value and generates no runtime check.
  */
 export function matchReply<M extends ReplyMarker = ReplyMarker>(ctx: Context): M | undefined {
   const repliedTo = ctx.message?.reply_to_message?.message_id;
   if (repliedTo === undefined) return undefined;
-  const state = replyState(ctx);
-  const marker = state.awaiting[repliedTo];
-  if (marker === undefined) return undefined;
-  delete state.awaiting[repliedTo];
-  return marker as M;
+  const table = replyState(ctx).replies;
+  const entry = table[repliedTo];
+  if (entry === undefined) return undefined;
+  delete table[repliedTo];
+  return entry.marker as M;
 }
 
-/** Forget a pending expectation (a prompt that timed out, or was cancelled). */
+/** Forget a pending reply expectation (a prompt that timed out, or was cancelled). */
 export function forgetReply(ctx: Context, messageId: number): void {
-  delete replyState(ctx).awaiting[messageId];
+  delete replyState(ctx).replies[messageId];
 }
 
 /**
  * Record that a **button press** on the message you just sent (`messageId`) is
- * expected - the callback-query peer of {@link expectReply}, sharing one table,
- * so a message cannot be awaiting a reply and a press under different markers.
+ * expected - the callback-query peer of {@link expectReply}, in its own table.
  *
  * Prefer plain `callback_data` when it suffices: Telegram round-trips those 64
  * bytes for you, with no session and no store, and that is the idiomatic way to
  * route a button. This is for what `callback_data` cannot carry - a marker too
  * big for 64 bytes, one the client must not be able to read (callback_data is
- * plain text in the app), or a button that must work only once.
+ * plain text in the app), or a button that must work at most once.
+ *
+ * The per-chat caveat on {@link expectReply} applies here too, and more sharply:
+ * an inline keyboard in a group is pressable by every member, so a destructive
+ * button should carry the requester's id in its marker and check it.
  */
-export function expectCallback(ctx: Context, messageId: number, marker: ReplyMarker = {}): void {
-  replyState(ctx).awaiting[messageId] = marker;
+export function expectCallback(
+  ctx: Context,
+  messageId: number,
+  marker: ReplyMarker = {},
+  options?: ExpectOptions,
+): void {
+  record(replyState(ctx).presses, messageId, marker, options);
 }
 
 /**
@@ -125,9 +185,14 @@ export function expectCallback(ctx: Context, messageId: number, marker: ReplyMar
  *
  * Unlike {@link matchReply} this does **not** consume the marker by default: an
  * inline keyboard usually stays live for several presses (paging, a toggle), and
- * consuming would break every press after the first. Pass `{ once: true }` for a
- * one-shot button - a confirm/cancel pair, say - so a double tap or a press on a
- * stale message cannot fire it twice; {@link forgetReply} drops it explicitly.
+ * consuming would break every press after the first. Pass `{ once: true }` when a
+ * button must fire at most once, so a second tap on *that message* finds nothing.
+ * It says nothing about other messages: two confirmations sent by two commands
+ * hold two markers, and each can still be pressed once - {@link forgetCallback}
+ * the older one if only the newest may act.
+ *
+ * "At most once", not "exactly once": the marker is consumed before your handler
+ * does its work, and the session flush persists that even if the handler throws.
  */
 export function matchCallback<M extends ReplyMarker = ReplyMarker>(
   ctx: Context,
@@ -138,11 +203,16 @@ export function matchCallback<M extends ReplyMarker = ReplyMarker>(
   // there is nothing to key on - route those by `callback_data` instead.
   const pressed = ctx.callbackQuery?.message?.message_id;
   if (pressed === undefined) return undefined;
-  const state = replyState(ctx);
-  const marker = state.awaiting[pressed];
-  if (marker === undefined) return undefined;
-  if (options?.once === true) delete state.awaiting[pressed];
-  return marker as M;
+  const table = replyState(ctx).presses;
+  const entry = table[pressed];
+  if (entry === undefined) return undefined;
+  if (options?.once === true) delete table[pressed];
+  return entry.marker as M;
+}
+
+/** Forget a pending press expectation (a keyboard that is no longer live). */
+export function forgetCallback(ctx: Context, messageId: number): void {
+  delete replyState(ctx).presses[messageId];
 }
 
 /**
@@ -151,8 +221,8 @@ export function matchCallback<M extends ReplyMarker = ReplyMarker>(
  * and unboxes it on read. One `Tag` union types both ends, so the stored and
  * matched tags cannot drift apart.
  *
- * `expectPress` / `matchPress` are the callback-query peers of `expect` /
- * `match`, keeping the non-consuming default of {@link matchCallback}.
+ * `expectPress` / `matchPress` / `forgetPress` are the callback-query peers,
+ * keeping the non-consuming default of {@link matchCallback}.
  *
  * @example
  * taggedReplies<"NAME" | "EMAIL">(ctx).expect(sent.message_id, "EMAIL");
@@ -161,17 +231,19 @@ export function matchCallback<M extends ReplyMarker = ReplyMarker>(
 export function taggedReplies<Tag extends string>(
   ctx: Context,
 ): {
-  expect(messageId: number, tag: Tag): void;
+  expect(messageId: number, tag: Tag, options?: ExpectOptions): void;
   match(): Tag | undefined;
-  expectPress(messageId: number, tag: Tag): void;
-  matchPress(options?: { once?: boolean }): Tag | undefined;
   forget(messageId: number): void;
+  expectPress(messageId: number, tag: Tag, options?: ExpectOptions): void;
+  matchPress(options?: { once?: boolean }): Tag | undefined;
+  forgetPress(messageId: number): void;
 } {
   return {
-    expect: (messageId, tag) => expectReply(ctx, messageId, { tag }),
+    expect: (messageId, tag, options) => expectReply(ctx, messageId, { tag }, options),
     match: () => matchReply<{ tag: Tag }>(ctx)?.tag,
-    expectPress: (messageId, tag) => expectCallback(ctx, messageId, { tag }),
-    matchPress: (options) => matchCallback<{ tag: Tag }>(ctx, options)?.tag,
     forget: (messageId) => forgetReply(ctx, messageId),
+    expectPress: (messageId, tag, options) => expectCallback(ctx, messageId, { tag }, options),
+    matchPress: (options) => matchCallback<{ tag: Tag }>(ctx, options)?.tag,
+    forgetPress: (messageId) => forgetCallback(ctx, messageId),
   };
 }
