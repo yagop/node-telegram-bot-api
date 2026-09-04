@@ -103,7 +103,10 @@ export class Transport {
     options: TransportOptions = {},
   ) {
     if (!token) throw new TelegramBotError("A bot token is required", { code: "EPARAM" });
-    this.apiRoot = (options.apiRoot ?? DEFAULT_API_ROOT).replace(/\/+$/, "");
+    // Coalesce an empty/whitespace-only apiRoot (e.g. an unset-but-present env
+    // var) to the default; `??` alone would keep "" and build a relative URL.
+    const root = options.apiRoot?.trim();
+    this.apiRoot = (root ? root : DEFAULT_API_ROOT).replace(/\/+$/, "");
     const fetchImpl = options.fetch ?? globalThis.fetch;
     if (typeof fetchImpl !== "function") {
       throw new NetworkError("No fetch implementation available; pass options.fetch");
