@@ -78,8 +78,7 @@ const chatId: number | string = /^-?\d+$/.test(GROUP_ID) ? Number(GROUP_ID) : GR
 // limits. Against a local emulator (TEST_API_ROOT set) there are no such limits,
 // so cap per-chat instead (~1 send / 3s) - enough to stay under TDLib's own send
 // anti-flood while leaving reads at full speed. maxRetries:2 bounds 429 retries.
-// Derive the toggle and the option from one normalized value so they cannot
-// disagree: an empty/whitespace TEST_API_ROOT reads as unset (live API).
+// One normalized value so EMULATOR and apiRoot cannot disagree (empty -> live).
 const API_ROOT = process.env.TEST_API_ROOT?.trim() || undefined;
 const EMULATOR = Boolean(API_ROOT);
 const api = new Api(TOKEN ?? "0:placeholder", {
