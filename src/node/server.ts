@@ -53,13 +53,23 @@ export interface StartWebhookOptions extends WebhookServerOptions {
   port: number;
   /** Hostname / interface to bind. Default: all interfaces. */
   hostname?: string;
+  /** Grace period before in-flight connections are force-closed on shutdown, in ms. Default 10000. */
+  shutdownTimeoutMs?: number;
 }
+
+const DEFAULT_SHUTDOWN_TIMEOUT = 10_000; // 10s, then force-close whatever is left
 
 /**
  * Managed webhook runner: create a `node:http` webhook server, start listening,
  * and resolve when it shuts down. Installs `SIGINT`/`SIGTERM` handlers that close
  * the server for a graceful exit (cleaned up in a `finally`), mirroring `run()` for
  * long polling. Rejects if the server fails (e.g. the port is in use).
+ *
+ * Shutdown cannot hang: `server.close()` alone waits for every existing
+ * connection to end, so a single idle keep-alive socket would keep the `"close"`
+ * event (and this promise) pending forever - a stopped-but-never-exiting process.
+ * So we also drop idle connections immediately and force-close any still busy
+ * past `shutdownTimeoutMs`.
  *
  * You still register the webhook with Telegram yourself, pointing at this server's
  * public URL (terminate TLS at a proxy/tunnel in front of it):
@@ -71,8 +81,16 @@ export interface StartWebhookOptions extends WebhookServerOptions {
  */
 export async function startWebhook(bot: Bot, options: StartWebhookOptions): Promise<void> {
   const server = createWebhookServer(bot, options);
+  const shutdownTimeoutMs = options.shutdownTimeoutMs ?? DEFAULT_SHUTDOWN_TIMEOUT;
+  let forceTimer: ReturnType<typeof setTimeout> | undefined;
   const stop = (): void => {
-    server.close();
+    server.close(); // stop accepting; resolves once existing connections end
+    server.closeIdleConnections?.(); // drop idle keep-alive sockets now
+    // A connection still busy past the grace period is force-closed, so a stuck
+    // client cannot leave the process hanging. `unref` so the timer itself does
+    // not hold the loop open.
+    forceTimer = setTimeout(() => server.closeAllConnections?.(), shutdownTimeoutMs);
+    forceTimer.unref?.();
   };
   process.on("SIGINT", stop);
   process.on("SIGTERM", stop);
@@ -83,6 +101,7 @@ export async function startWebhook(bot: Bot, options: StartWebhookOptions): Prom
       server.listen(options.port, options.hostname);
     });
   } finally {
+    if (forceTimer) clearTimeout(forceTimer);
     process.off("SIGINT", stop);
     process.off("SIGTERM", stop);
   }
