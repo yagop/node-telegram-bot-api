@@ -133,4 +133,71 @@ describe("longPoll", () => {
     }
     assert.ok(caught instanceof NetworkError);
   });
+
+  test("resumes after a 409 conflict without advancing offset, then yields", async () => {
+    const controller = new AbortController();
+    const { api, offsets } = fakeApi([
+      () => {
+        throw new TelegramApiError(409, "Conflict: terminated by other getUpdates request");
+      },
+      () => [upd(100)],
+      () => {
+        controller.abort();
+        return [];
+      },
+    ]);
+
+    const seen: number[] = [];
+    for await (const update of longPoll(api, { conflictRetryDelayMs: 1 }, controller.signal)) {
+      seen.push(update.update_id);
+    }
+    assert.deepStrictEqual(seen, [100]);
+    // Poll 1 (409) and poll 2 both use the same (undefined) offset - no advance on conflict.
+    assert.deepStrictEqual(offsets.slice(0, 2), [undefined, undefined]);
+  });
+
+  test("throws after maxConflictRetries consecutive 409s", async () => {
+    const onError: unknown[] = [];
+    const { api } = fakeApi([
+      () => {
+        throw new TelegramApiError(409, "Conflict");
+      },
+    ]);
+
+    let caught: unknown;
+    try {
+      for await (const _ of longPoll(api, {
+        conflictRetryDelayMs: 1,
+        maxConflictRetries: 3,
+        onError: (e) => onError.push(e),
+      })) {
+        // no-op
+      }
+    } catch (err) {
+      caught = err;
+    }
+    assert.ok(caught instanceof TelegramApiError);
+    assert.strictEqual((caught as TelegramApiError).errorCode, 409);
+    // 3 conflicts were observed and waited on; the 4th throws without an onError call.
+    assert.strictEqual(onError.length, 3);
+  });
+
+  test("a 409 conflict is fatal when retry is disabled", async () => {
+    const { api } = fakeApi([
+      () => {
+        throw new TelegramApiError(409, "Conflict");
+      },
+    ]);
+
+    let caught: unknown;
+    try {
+      for await (const _ of longPoll(api, { retry: false })) {
+        // no-op
+      }
+    } catch (err) {
+      caught = err;
+    }
+    assert.ok(caught instanceof TelegramApiError);
+    assert.strictEqual((caught as TelegramApiError).errorCode, 409);
+  });
 });
