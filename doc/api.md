@@ -1212,7 +1212,9 @@ field name and attaches each part - it still stringifies nothing (ADR-011).
 | Property | Type |
 | --- | --- |
 | `allowedUpdates`? | string[] |
+| `conflictRetryDelayMs`? | number |
 | `limit`? | number |
+| `maxConflictRetries`? | number |
 | `offset`? | number |
 | `onError`? | (err: unknown) => void |
 | `retry`? | boolean |
