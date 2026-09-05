@@ -339,4 +339,20 @@ describe("Transport", () => {
     assert.strictEqual(calls[0]!.url, `https://api.telegram.org/bot${TOKEN}/getMe`);
     assert.strictEqual(calls[0]!.init?.method, "POST");
   });
+
+  test("empty/whitespace apiRoot falls back to the default instead of a relative URL", async () => {
+    for (const apiRoot of ["", "   "]) {
+      const { fetch, calls } = jsonFetch([{ ok: true, result: {} }]);
+      const tr = new Transport(TOKEN, { fetch, apiRoot });
+      await tr.request("getMe");
+      assert.strictEqual(calls[0]!.url, `https://api.telegram.org/bot${TOKEN}/getMe`);
+    }
+  });
+
+  test("a non-empty apiRoot is used verbatim (trailing slashes trimmed)", async () => {
+    const { fetch, calls } = jsonFetch([{ ok: true, result: {} }]);
+    const tr = new Transport(TOKEN, { fetch, apiRoot: "http://localhost:8081//" });
+    await tr.request("getMe");
+    assert.strictEqual(calls[0]!.url, `http://localhost:8081/bot${TOKEN}/getMe`);
+  });
 });
