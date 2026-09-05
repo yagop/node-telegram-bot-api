@@ -20,6 +20,13 @@ import type { LongPollOptions } from "../core/longpoll.js";
  * setup runs first (via `bot.startPolling` -> `bot.init()`), so a bad session
  * store fails before the first poll; teardown (`bot.close()`) runs on the way
  * out, whether the loop stopped or threw.
+ *
+ * A fatal poll-stop (the pump threw - a non-retriable error, or 409 conflicts
+ * past `maxConflictRetries`) is surfaced to stderr before it re-throws. As the
+ * managed lifecycle runner this is deliberate: a rejection alone can be dropped
+ * (fire-and-forget, or a `.catch` that swallows), and would then leave the
+ * process alive but no longer polling - the exact silent-hang #1350 describes.
+ * The error is still re-thrown unchanged, so an awaiting caller sees it too.
  */
 export async function run(bot: Bot, options?: LongPollOptions): Promise<void> {
   const stop = (): void => {
@@ -36,6 +43,10 @@ export async function run(bot: Bot, options?: LongPollOptions): Promise<void> {
   const owned = !bot.isRunning();
   try {
     return await bot.startPolling(undefined, options);
+  } catch (err) {
+    // Never let a fatal poll-stop be silent (see the doc comment above).
+    process.stderr.write(`node-telegram-bot-api: polling stopped on a fatal error: ${String(err)}\n`);
+    throw err;
   } finally {
     process.off("SIGINT", stop);
     process.off("SIGTERM", stop);
