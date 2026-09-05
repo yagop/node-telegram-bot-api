@@ -1079,6 +1079,13 @@ setup runs first (via `bot.startPolling` -> `bot.init()`), so a bad session
 store fails before the first poll; teardown (`bot.close()`) runs on the way
 out, whether the loop stopped or threw.
 
+A fatal poll-stop (the pump threw - a non-retriable error, or 409 conflicts
+past `maxConflictRetries`) is surfaced to stderr before it re-throws. As the
+managed lifecycle runner this is deliberate: a rejection alone can be dropped
+(fire-and-forget, or a `.catch` that swallows), and would then leave the
+process alive but no longer polling - the exact silent-hang #1350 describes.
+The error is still re-thrown unchanged, so an awaiting caller sees it too.
+
 | Param | Type |
 | --- | --- |
 | `bot` | [Bot](#bot) |
@@ -1107,6 +1114,12 @@ Managed webhook runner: create a `node:http` webhook server, start listening,
 and resolve when it shuts down. Installs `SIGINT`/`SIGTERM` handlers that close
 the server for a graceful exit (cleaned up in a `finally`), mirroring `run()` for
 long polling. Rejects if the server fails (e.g. the port is in use).
+
+Shutdown cannot hang: `server.close()` alone waits for every existing
+connection to end, so a single idle keep-alive socket would keep the `"close"`
+event (and this promise) pending forever - a stopped-but-never-exiting process.
+So we also drop idle connections immediately and force-close any still busy
+past `shutdownTimeoutMs`.
 
 You still register the webhook with Telegram yourself, pointing at this server's
 public URL (terminate TLS at a proxy/tunnel in front of it):
@@ -1291,6 +1304,7 @@ Options for a table block; `caption` is rich text.
 | `path`? | string |
 | `port` | number |
 | `secretToken`? | string |
+| `shutdownTimeoutMs`? | number |
 | `waitUntil`? | (promise: Promise<unknown>) => void |
 
 ### `TransportOptions`
