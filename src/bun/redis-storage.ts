@@ -13,12 +13,14 @@
  * `./node` (a CI guard enforces it).
  */
 
-import { redis, type RedisClient } from "bun";
+import { RedisClient, redis } from "bun";
 import type { SessionStore, SessionWriteOptions } from "../core/session.js";
 
 export type RedisSessionStorageOptions = {
   /** Bun `RedisClient` to use. Defaults to Bun's shared `redis` (REDIS_URL / VALKEY_URL). */
   client?: RedisClient;
+  /** Connect a client the store owns (and closes on teardown) to this URL, instead of the shared `redis`. Ignored when `client` is given. */
+  url?: string;
   /** Prefix prepended to every key. Default `"session:"`. */
   prefix?: string;
   /**
@@ -30,25 +32,57 @@ export type RedisSessionStorageOptions = {
 
 export class RedisSessionStorage implements SessionStore {
   private readonly client: RedisClient;
+  /** True when this store opened the client itself, so `close()` may close it. */
+  private readonly owned: boolean;
+  /** Set once `close()` closed a client this store owned - the store is then spent. */
+  private closed = false;
   private readonly prefix: string;
   private readonly ttlSeconds?: number;
 
   constructor(options: RedisSessionStorageOptions = {}) {
-    this.client = options.client ?? redis;
+    this.owned = options.client === undefined && options.url !== undefined;
+    this.client =
+      options.client ?? (options.url !== undefined ? this.createClient(options.url) : redis);
     this.prefix = options.prefix ?? "session:";
     this.ttlSeconds = options.ttlSeconds;
   }
 
+  /** Construct the owned client for a `url`. A seam so tests can supply a fake. */
+  protected createClient(url: string): RedisClient {
+    return new RedisClient(url);
+  }
+
+  private open(): RedisClient {
+    if (this.closed) {
+      throw new Error("RedisSessionStorage: this store was closed; construct a new one");
+    }
+    return this.client;
+  }
+
+  /**
+   * Close the client, but only if this store opened it (a passed-in `client` and
+   * the shared `redis` are the caller's / runtime's). Closing ends this store's
+   * life - a later use throws and you construct a new one. With a shared or
+   * caller-supplied client this is a no-op.
+   */
+  close(): void {
+    if (this.owned && !this.closed) {
+      this.closed = true;
+      this.client.close();
+    }
+  }
+
   async read(key: string): Promise<string | undefined> {
-    return (await this.client.get(this.prefix + key)) ?? undefined;
+    return (await this.open().get(this.prefix + key)) ?? undefined;
   }
 
   async write(key: string, value: string, options?: SessionWriteOptions): Promise<void> {
+    const client = this.open();
     const k = this.prefix + key;
-    await this.client.set(k, value);
+    await client.set(k, value);
     const ttl = options?.ttlSeconds ?? this.ttlSeconds;
     if (ttl !== undefined) {
-      await this.client.expire(k, ttl);
+      await client.expire(k, ttl);
     }
   }
 
@@ -57,10 +91,10 @@ export class RedisSessionStorage implements SessionStore {
    * an update changed nothing, so an active chat is not evicted mid-conversation.
    */
   async touch(key: string, ttlSeconds: number): Promise<void> {
-    await this.client.expire(this.prefix + key, ttlSeconds);
+    await this.open().expire(this.prefix + key, ttlSeconds);
   }
 
   async delete(key: string): Promise<void> {
-    await this.client.del(this.prefix + key);
+    await this.open().del(this.prefix + key);
   }
 }

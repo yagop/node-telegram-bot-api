@@ -160,4 +160,4 @@ bot.on("callback_query", async (ctx, next) => {
   await ctx.reply(`Ran ${pending.op} on ${pending.targets.join(", ")} (asked at ${pending.requestedAt}).`);
 });
 
-await run(bot);
+await run(bot, { exitOnError: true });

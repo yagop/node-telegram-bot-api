@@ -74,4 +74,4 @@ bot.on("message", (ctx) => {
   }
 });
 
-await run(bot);
+await run(bot, { exitOnError: true });

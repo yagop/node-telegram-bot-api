@@ -437,6 +437,7 @@ bound for long-lived bots that talk to many distinct chats.
 
 | Method | Params | Returns | Description |
 | --- | --- | --- | --- |
+| `close` | - | void | Close the client, but only if this store opened it (a passed-in `client` and the shared `redis` are the caller's / runtime's). Closing ends this store's life - a later use throws and you construct a new one. With a shared or caller-supplied client this is a no-op. |
 | `delete` | `key`: string | Promise<void> | - |
 | `read` | `key`: string | Promise<string \| undefined> | The stored string for `key`, or `undefined` when there is none. |
 | `touch` | `key`: string, `ttlSeconds`: number | Promise<void> | Refresh a key's expiry without rewriting it - what the middleware calls when an update changed nothing, so an active chat is not evicted mid-conversation. |
@@ -1109,12 +1110,13 @@ out, whether the loop stopped or threw.
 A fatal poll-stop is also written to stderr before being re-thrown: a bare
 rejection can be dropped (fire-and-forget, or a swallowing `.catch`), which
 would leave the process alive but no longer polling - the silent hang #1350
-describes.
+describes. Pass `exitOnError: true` to also exit the process non-zero after
+teardown, so a supervisor restarts the bot instead of relying on the caller.
 
 | Param | Type |
 | --- | --- |
 | `bot` | [Bot](#bot) |
-| `options?` | [LongPollOptions](#longpolloptions) |
+| `options` | [RunOptions](#runoptions) |
 
 **Returns:** Promise<void>
 
@@ -1136,9 +1138,10 @@ comparison always inspects every position, so it leaks no information about
 ### `startWebhook()`
 
 Managed webhook runner: create a `node:http` webhook server, start listening,
-and resolve when it shuts down. Installs `SIGINT`/`SIGTERM` handlers that close
-the server for a graceful exit (cleaned up in a `finally`), mirroring `run()` for
-long polling. Rejects if the server fails (e.g. the port is in use).
+and resolve when it shuts down. Once listening, installs `SIGINT`/`SIGTERM`
+handlers that close the server for a graceful exit (cleaned up in a `finally`),
+mirroring `run()` for long polling. Rejects if the server fails to start (e.g.
+the port is in use).
 
 Shutdown cannot hang: `server.close()` waits for existing connections to end,
 so we also drop idle keep-alive sockets at once and force-close anything still
@@ -6344,6 +6347,7 @@ type RedisSessionStorageOptions = {
   client?: RedisClient;
   prefix?: string;
   ttlSeconds?: number;
+  url?: string;
 };
 ```
 
@@ -7208,6 +7212,14 @@ type RichTextUrl = {
   text: [RichText](#richtext);
   type: string;
   url: string;
+};
+```
+
+### `RunOptions`
+
+```ts
+type RunOptions = [LongPollOptions](#longpolloptions) & {
+  exitOnError?: boolean;
 };
 ```
 
