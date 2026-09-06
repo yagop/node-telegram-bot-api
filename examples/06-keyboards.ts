@@ -53,4 +53,4 @@ bot.on("callback_query", async (ctx) => {
   if (data) await ctx.reply(`You pressed: ${data}`);
 });
 
-await run(bot);
+await run(bot, { exitOnError: true });

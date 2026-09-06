@@ -47,4 +47,7 @@ bot.catch((err, ctx) => {
 });
 
 // `run()` resolves when the process receives SIGINT/SIGTERM and the loop drains.
-await run(bot);
+// `exitOnError` makes a fatal poll-stop exit non-zero (after logging) so a
+// supervisor (systemd, Docker, pm2, ...) restarts the bot instead of leaving a
+// live-but-silent process.
+await run(bot, { exitOnError: true });

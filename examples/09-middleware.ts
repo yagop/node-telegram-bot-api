@@ -60,4 +60,4 @@ bot.on("message", (ctx) => {
   return ctx.reply(`You've sent ${session.count} message(s) this session.`);
 });
 
-await run(bot);
+await run(bot, { exitOnError: true });

@@ -84,4 +84,4 @@ bot.on("message", async (ctx, next) => {
   await ctx.reply(`Thanks ${data.name}! Saved ${data.email}. Send /me to see it, /start to redo.`);
 });
 
-await run(bot);
+await run(bot, { exitOnError: true });
