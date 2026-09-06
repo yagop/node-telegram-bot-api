@@ -41,9 +41,22 @@ export class RedisSessionStorage implements SessionStore {
 
   constructor(options: RedisSessionStorageOptions = {}) {
     this.owned = options.client === undefined && options.url !== undefined;
-    this.client = options.client ?? (options.url !== undefined ? new RedisClient(options.url) : redis);
+    this.client =
+      options.client ?? (options.url !== undefined ? this.createClient(options.url) : redis);
     this.prefix = options.prefix ?? "session:";
     this.ttlSeconds = options.ttlSeconds;
+  }
+
+  /** Construct the owned client for a `url`. A seam so tests can supply a fake. */
+  protected createClient(url: string): RedisClient {
+    return new RedisClient(url);
+  }
+
+  private open(): RedisClient {
+    if (this.closed) {
+      throw new Error("RedisSessionStorage: this store was closed; construct a new one");
+    }
+    return this.client;
   }
 
   /**
@@ -60,15 +73,16 @@ export class RedisSessionStorage implements SessionStore {
   }
 
   async read(key: string): Promise<string | undefined> {
-    return (await this.client.get(this.prefix + key)) ?? undefined;
+    return (await this.open().get(this.prefix + key)) ?? undefined;
   }
 
   async write(key: string, value: string, options?: SessionWriteOptions): Promise<void> {
+    const client = this.open();
     const k = this.prefix + key;
-    await this.client.set(k, value);
+    await client.set(k, value);
     const ttl = options?.ttlSeconds ?? this.ttlSeconds;
     if (ttl !== undefined) {
-      await this.client.expire(k, ttl);
+      await client.expire(k, ttl);
     }
   }
 
@@ -77,10 +91,10 @@ export class RedisSessionStorage implements SessionStore {
    * an update changed nothing, so an active chat is not evicted mid-conversation.
    */
   async touch(key: string, ttlSeconds: number): Promise<void> {
-    await this.client.expire(this.prefix + key, ttlSeconds);
+    await this.open().expire(this.prefix + key, ttlSeconds);
   }
 
   async delete(key: string): Promise<void> {
-    await this.client.del(this.prefix + key);
+    await this.open().del(this.prefix + key);
   }
 }

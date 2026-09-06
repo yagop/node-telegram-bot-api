@@ -38,6 +38,20 @@ function fakeRedis(): RedisClient & { store: Map<string, string>; expires: Map<s
 
 const envelope = JSON.stringify({ v: 1, data: { n: 1 } });
 
+/**
+ * A store that takes the `{ url }` (owned) path but whose owned client is `client`.
+ * `createClient` is overridden via a closure (not an instance field), so the fake
+ * is available during `super()` - a field initializer would run too late.
+ */
+function ownedStore(client: RedisClient): RedisSessionStorage {
+  class Owned extends RedisSessionStorage {
+    protected override createClient(): RedisClient {
+      return client;
+    }
+  }
+  return new Owned({ url: "redis://fake" });
+}
+
 describe("RedisSessionStorage", () => {
   test("prefixes keys and round-trips the encoded string", async () => {
     const client = fakeRedis();
@@ -90,5 +104,21 @@ describe("RedisSessionStorage", () => {
     assert.equal(client.closes, 0); // not ours to close
     await store.write("k", envelope); // still usable
     assert.equal(await store.read("k"), envelope);
+  });
+
+  test("a url-owned client is closed on close(), idempotently, and reuse throws", async () => {
+    const client = fakeRedis();
+    const store = ownedStore(client);
+
+    await store.write("k", envelope); // usable while open
+    assert.equal(await store.read("k"), envelope);
+
+    store.close();
+    assert.equal(client.closes, 1); // owned -> closed
+    store.close();
+    assert.equal(client.closes, 1); // idempotent, not double-closed
+
+    await assert.rejects(store.read("k"), /was closed/);
+    await assert.rejects(store.write("k", envelope), /was closed/);
   });
 });
