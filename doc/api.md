@@ -873,6 +873,21 @@ basename; pass `meta.filename` / `meta.contentType` to override.
 
 **Returns:** Promise<[InputFile](#inputfile)>
 
+### `gracefulClose()`
+
+Begin a non-hanging shutdown of `server`: stop accepting, drop idle keep-alive
+sockets at once (else `close` waits for them forever), and force-close anything
+still busy past `timeoutMs`. Returns the force-close timer so the caller can
+cancel it once `close` completes on its own. The connection helpers need Node
+18.2+ and are optional-chained so a non-Node runtime is a safe no-op.
+
+| Param | Type |
+| --- | --- |
+| `server` | Server |
+| `timeoutMs` | number |
+
+**Returns:** Timeout
+
 ### `isAbortError()`
 
 True for an `AbortController`/timeout abort, across runtimes. Matches both the
@@ -902,6 +917,18 @@ Cloudflare Workers), so the transport classifies our own client timeout as a
 | `value` | unknown |
 
 **Returns:** value is [InputFile](#inputfile)
+
+### `isPollConflict()`
+
+A 409 from `getUpdates` - another instance is polling the same token.
+Recoverable for polling (the competing poller usually exits), not for a plain
+request, so it is classified separately from `isTransientError`.
+
+| Param | Type |
+| --- | --- |
+| `err` | unknown |
+
+**Returns:** boolean
 
 ### `isTransientError()`
 
@@ -9681,6 +9708,14 @@ const EntityType: {
   readonly Underline: "underline";
   readonly Url: "url";
 };
+```
+
+### `HTTP_STATUS_CONFLICT`
+
+HTTP 409 "Conflict" - `getUpdates` reports another instance is polling the same token.
+
+```ts
+const HTTP_STATUS_CONFLICT: 409;
 ```
 
 ### `HTTP_STATUS_TOO_MANY_REQUESTS`

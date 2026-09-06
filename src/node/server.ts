@@ -60,6 +60,21 @@ export interface StartWebhookOptions extends WebhookServerOptions {
 const DEFAULT_SHUTDOWN_TIMEOUT = 10_000; // 10s, then force-close whatever is left
 
 /**
+ * Begin a non-hanging shutdown of `server`: stop accepting, drop idle keep-alive
+ * sockets at once (else `close` waits for them forever), and force-close anything
+ * still busy past `timeoutMs`. Returns the force-close timer so the caller can
+ * cancel it once `close` completes on its own. The connection helpers need Node
+ * 18.2+ and are optional-chained so a non-Node runtime is a safe no-op.
+ */
+export function gracefulClose(server: http.Server, timeoutMs: number): ReturnType<typeof setTimeout> {
+  server.close(); // stop accepting; resolves once existing connections end
+  server.closeIdleConnections?.(); // drop idle keep-alive sockets now
+  const forceTimer = setTimeout(() => server.closeAllConnections?.(), timeoutMs);
+  forceTimer.unref?.(); // don't let the timer itself hold the loop open
+  return forceTimer;
+}
+
+/**
  * Managed webhook runner: create a `node:http` webhook server, start listening,
  * and resolve when it shuts down. Installs `SIGINT`/`SIGTERM` handlers that close
  * the server for a graceful exit (cleaned up in a `finally`), mirroring `run()` for
@@ -85,13 +100,7 @@ export async function startWebhook(bot: Bot, options: StartWebhookOptions): Prom
   const stop = (): void => {
     if (shuttingDown) return; // idempotent: a repeat signal must not schedule a second timer
     shuttingDown = true;
-    server.close(); // stop accepting; resolves once existing connections end
-    // Node 18.2+ (the package minimum); optional-chained as a no-op elsewhere.
-    server.closeIdleConnections?.(); // drop idle keep-alive sockets now
-    // Force-close whatever is still busy past the grace period. `unref` so the
-    // timer itself does not hold the loop open.
-    forceTimer = setTimeout(() => server.closeAllConnections?.(), shutdownTimeoutMs);
-    forceTimer.unref?.();
+    forceTimer = gracefulClose(server, shutdownTimeoutMs);
   };
   try {
     await withShutdownSignals(

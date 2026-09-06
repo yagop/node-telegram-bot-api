@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import http from "node:http";
 import type { AddressInfo } from "node:net";
 import type { Bot } from "../../src/core/bot.js";
-import { createWebhookServer, startWebhook } from "../../src/node/server.js";
+import { createWebhookServer, gracefulClose, startWebhook } from "../../src/node/server.js";
 import type { Update } from "../../src/types/index.js";
 
 /** A fake Bot exposing only handleUpdate (all that the webhook path needs). */
@@ -43,9 +43,9 @@ function keepAliveGet(port: number, path: string, agent: http.Agent): Promise<vo
 describe("webhook server shutdown", () => {
   // The hang #1350's second half describes: `server.close()` alone waits for
   // every existing connection to end, so an idle keep-alive socket keeps the
-  // server (and a `startWebhook` promise) open forever. Dropping idle
-  // connections lets `close` complete.
-  test("close() completes despite an idle keep-alive connection once idle sockets are dropped", async (t) => {
+  // server (and a `startWebhook` promise) open forever. `gracefulClose` drops
+  // idle connections so `close` can complete.
+  test("gracefulClose completes despite an idle keep-alive connection", async (t) => {
     const server = createWebhookServer(fakeBot(), { path: "/", secretToken: "s" });
     if (typeof server.closeIdleConnections !== "function") {
       t.skip("runtime has no closeIdleConnections");
@@ -56,25 +56,18 @@ describe("webhook server shutdown", () => {
     // Make one request over a keep-alive agent (to a non-webhook path, so the
     // server 404s without invoking the handler), then leave the socket idle-open.
     const agent = new http.Agent({ keepAlive: true, maxSockets: 1 });
-    await new Promise<void>((resolve, reject) => {
-      const req = http.request({ host: "127.0.0.1", port, path: "/nope", method: "GET", agent }, (res) => {
-        res.on("data", () => {});
-        res.on("end", () => resolve());
-      });
-      req.on("error", reject);
-      req.end();
-    });
+    await keepAliveGet(port, "/nope", agent);
 
     let closed = false;
     server.on("close", () => {
       closed = true;
     });
 
-    server.close(); // would hang here alone: the keep-alive socket is still open
-    server.closeIdleConnections(); // ...so drop it, letting `close` fire
+    const forceTimer = gracefulClose(server, 10_000); // would hang without dropping the idle socket
 
     // Wait briefly for the close event (poll, no fixed sleep).
     for (let i = 0; i < 50 && !closed; i++) await new Promise((r) => setTimeout(r, 10));
+    clearTimeout(forceTimer);
     agent.destroy();
     assert.strictEqual(closed, true);
   });
