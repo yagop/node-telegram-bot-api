@@ -2,7 +2,7 @@ import type { Update } from "../types/index.js";
 import type { Api } from "./api.js";
 import { debug } from "./debug.js";
 import { delay } from "./delay.js";
-import { isTransientError, TelegramApiError } from "./errors.js";
+import { isPollConflict, isTransientError, TelegramApiError } from "./errors.js";
 
 export interface LongPollOptions {
   offset?: number;
@@ -26,14 +26,8 @@ const DEFAULT_POLL_TIMEOUT = 30; // 30 seconds
 const DEFAULT_RETRY_DELAY = 1000; // 1 second, when the error carries no retry_after
 const DEFAULT_CONFLICT_RETRY_DELAY = 5000; // 5 seconds; the other poller needs time to exit
 const DEFAULT_MAX_CONFLICT_RETRIES = 10;
-const HTTP_STATUS_CONFLICT = 409;
 
 const log = debug("polling");
-
-/** A 409 from `getUpdates` - another instance is polling the same token. Recoverable for polling, not for a plain request. */
-function isPollConflict(err: unknown): boolean {
-  return err instanceof TelegramApiError && err.errorCode === HTTP_STATUS_CONFLICT;
-}
 
 /** A transient error's `retry_after` in ms (only `TelegramApiError` carries one), or undefined. */
 function retryAfterMs(err: unknown): number | undefined {

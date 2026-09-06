@@ -20,6 +20,9 @@ export interface ApiErrorParameters {
  */
 export const HTTP_STATUS_TOO_MANY_REQUESTS = 429;
 
+/** HTTP 409 "Conflict" - `getUpdates` reports another instance is polling the same token. */
+export const HTTP_STATUS_CONFLICT = 409;
+
 export class TelegramBotError extends Error {
   /** Stable, machine-readable code (e.g. `ETELEGRAM`, `EFETCH`). */
   readonly code: string;
@@ -103,4 +106,13 @@ export function isTransientError(err: unknown): boolean {
   if (err instanceof NetworkError || err instanceof TimeoutError) return true;
   if (err instanceof TelegramApiError) return err.errorCode === HTTP_STATUS_TOO_MANY_REQUESTS || err.errorCode >= 500;
   return false;
+}
+
+/**
+ * A 409 from `getUpdates` - another instance is polling the same token.
+ * Recoverable for polling (the competing poller usually exits), not for a plain
+ * request, so it is classified separately from `isTransientError`.
+ */
+export function isPollConflict(err: unknown): boolean {
+  return err instanceof TelegramApiError && err.errorCode === HTTP_STATUS_CONFLICT;
 }
