@@ -240,4 +240,41 @@ describe("longPoll", () => {
     assert.strictEqual(caught, undefined);
     assert.deepStrictEqual(seen, [200]);
   });
+
+  test("a non-conflict transient error between 409s breaks the consecutive-conflict streak", async () => {
+    const controller = new AbortController();
+    // maxConflictRetries:1 -> two conflicts in a row would throw. A 5xx transient
+    // sits between them, so the streak resets and the second 409 stays in bounds.
+    const { api } = fakeApi([
+      () => {
+        throw new TelegramApiError(409, "Conflict"); // conflict 1
+      },
+      () => {
+        throw new TelegramApiError(500, "Internal Server Error"); // transient -> resets streak
+      },
+      () => {
+        throw new TelegramApiError(409, "Conflict"); // conflict 1 again (would be #2 without the reset)
+      },
+      () => {
+        controller.abort();
+        return [upd(300)];
+      },
+    ]);
+
+    const seen: number[] = [];
+    let caught: unknown;
+    try {
+      for await (const update of longPoll(
+        api,
+        { conflictRetryDelayMs: 1, retryDelayMs: 1, maxConflictRetries: 1 },
+        controller.signal,
+      )) {
+        seen.push(update.update_id);
+      }
+    } catch (err) {
+      caught = err;
+    }
+    assert.strictEqual(caught, undefined);
+    assert.deepStrictEqual(seen, [300]);
+  });
 });

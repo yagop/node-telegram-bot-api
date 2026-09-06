@@ -69,7 +69,11 @@ export async function* longPoll(api: Api, options: LongPollOptions = {}, signal?
       // deployment still surfaces. Everything else uses `isTransientError`.
       const pollConflict = isPollConflict(err);
       if (!retry || !(isTransientError(err) || pollConflict)) throw err;
-      if (pollConflict && ++conflicts > maxConflictRetries) throw err;
+      if (pollConflict) {
+        if (++conflicts > maxConflictRetries) throw err;
+      } else {
+        conflicts = 0; // a non-conflict transient breaks the *consecutive*-conflict streak
+      }
       onError?.(err);
       // A conflict waits its own longer delay; otherwise honor `retry_after`
       // (e.g. a 429 flood-wait) when present, else the default delay.
