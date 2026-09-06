@@ -65,11 +65,9 @@ const DEFAULT_SHUTDOWN_TIMEOUT = 10_000; // 10s, then force-close whatever is le
  * the server for a graceful exit (cleaned up in a `finally`), mirroring `run()` for
  * long polling. Rejects if the server fails (e.g. the port is in use).
  *
- * Shutdown cannot hang: `server.close()` alone waits for every existing
- * connection to end, so a single idle keep-alive socket would keep the `"close"`
- * event (and this promise) pending forever - a stopped-but-never-exiting process.
- * So we also drop idle connections immediately and force-close any still busy
- * past `shutdownTimeoutMs`.
+ * Shutdown cannot hang: `server.close()` waits for existing connections to end,
+ * so we also drop idle keep-alive sockets at once and force-close anything still
+ * busy past `shutdownTimeoutMs`.
  *
  * You still register the webhook with Telegram yourself, pointing at this server's
  * public URL (terminate TLS at a proxy/tunnel in front of it):
@@ -85,18 +83,13 @@ export async function startWebhook(bot: Bot, options: StartWebhookOptions): Prom
   let forceTimer: ReturnType<typeof setTimeout> | undefined;
   let shuttingDown = false;
   const stop = (): void => {
-    // Idempotent: a second signal (SIGINT then SIGTERM, or a repeat) must not
-    // schedule another force-timer - the earlier one would then be lost by the
-    // finally's single `clearTimeout` and fire after this promise resolved.
-    if (shuttingDown) return;
+    if (shuttingDown) return; // idempotent: a repeat signal must not schedule a second timer
     shuttingDown = true;
     server.close(); // stop accepting; resolves once existing connections end
-    // `closeIdleConnections` / `closeAllConnections` exist on Node 18.2+ (the
-    // package minimum); optional-chained so a non-Node runtime is a safe no-op.
+    // Node 18.2+ (the package minimum); optional-chained as a no-op elsewhere.
     server.closeIdleConnections?.(); // drop idle keep-alive sockets now
-    // A connection still busy past the grace period is force-closed, so a stuck
-    // client cannot leave the process hanging. `unref` so the timer itself does
-    // not hold the loop open.
+    // Force-close whatever is still busy past the grace period. `unref` so the
+    // timer itself does not hold the loop open.
     forceTimer = setTimeout(() => server.closeAllConnections?.(), shutdownTimeoutMs);
     forceTimer.unref?.();
   };

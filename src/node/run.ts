@@ -21,12 +21,10 @@ import type { LongPollOptions } from "../core/longpoll.js";
  * store fails before the first poll; teardown (`bot.close()`) runs on the way
  * out, whether the loop stopped or threw.
  *
- * A fatal poll-stop (the pump threw - a non-retriable error, or 409 conflicts
- * past `maxConflictRetries`) is surfaced to stderr before it re-throws. As the
- * managed lifecycle runner this is deliberate: a rejection alone can be dropped
- * (fire-and-forget, or a `.catch` that swallows), and would then leave the
- * process alive but no longer polling - the exact silent-hang #1350 describes.
- * The error is still re-thrown unchanged, so an awaiting caller sees it too.
+ * A fatal poll-stop is also written to stderr before being re-thrown: a bare
+ * rejection can be dropped (fire-and-forget, or a swallowing `.catch`), which
+ * would leave the process alive but no longer polling - the silent hang #1350
+ * describes.
  */
 export async function run(bot: Bot, options?: LongPollOptions): Promise<void> {
   const stop = (): void => {

@@ -70,19 +70,17 @@ export async function* longPoll(api: Api, options: LongPollOptions = {}, signal?
     } catch (err) {
       // cancelled - swallow the abort error
       if (signal?.aborted) return;
-      // A 409 means another instance is polling the same token: usually temporary
-      // (an overlapping redeploy), so back off and resume - but bound it, so a real
-      // two-instance deployment eventually surfaces instead of looping forever.
+      // A 409 (another instance polling the same token) is transient for polling
+      // but bounded, so an overlapping redeploy heals while a real two-instance
+      // deployment still surfaces. Everything else uses `isTransientError`.
       const pollConflict = isPollConflict(err);
-      // fatal - surface it
       if (!retry || !(isTransientError(err) || pollConflict)) throw err;
       if (pollConflict && ++conflicts > maxConflictRetries) throw err;
       onError?.(err);
-      // A conflict waits its own longer delay; otherwise honor the error's
-      // retry_after (e.g. a 429 flood-wait) when present, else the default delay.
+      // A conflict waits its own longer delay; otherwise honor `retry_after`
+      // (e.g. a 429 flood-wait) when present, else the default delay.
       const wait = pollConflict ? conflictRetryDelayMs : (retryAfterMs(err) ?? retryDelayMs);
-      if (pollConflict) log("getUpdates conflict (%d/%d); retry in %dms", conflicts, maxConflictRetries, Math.round(wait));
-      else log("getUpdates failed; retry in %dms", Math.round(wait));
+      log("getUpdates %s; retry in %dms", pollConflict ? `conflict ${conflicts}/${maxConflictRetries}` : "failed", Math.round(wait));
       try {
         await delay(wait, signal);
       } catch {
