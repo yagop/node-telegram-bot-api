@@ -16,7 +16,7 @@ export interface LongPollOptions {
   retryDelayMs?: number;
   /** Delay before re-polling after a 409 conflict, in ms - longer, since the competing poller needs time to exit. Default 5000. */
   conflictRetryDelayMs?: number;
-  /** Give up after this many consecutive 409 conflicts (a genuine two-instance deploy), then throw. Default 10. */
+  /** Retry on up to this many consecutive 409 conflicts; the next one (a genuine two-instance deploy) throws. Default 10. */
   maxConflictRetries?: number;
   /** Observe each transient error before the loop waits and resumes. */
   onError?: (err: unknown) => void;
