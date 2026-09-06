@@ -8,12 +8,13 @@ import { RedisSessionStorage } from "../../../src/bun/redis-storage.js";
 // Node runner skips it; `bun test test/unit` runs it.
 
 /** Minimal in-memory stand-in for the RedisClient methods the store uses. */
-function fakeRedis(): RedisClient & { store: Map<string, string>; expires: Map<string, number> } {
+function fakeRedis(): RedisClient & { store: Map<string, string>; expires: Map<string, number>; closes: number } {
   const store = new Map<string, string>();
   const expires = new Map<string, number>();
   const client = {
     store,
     expires,
+    closes: 0,
     async get(key: string): Promise<string | null> {
       return store.has(key) ? (store.get(key) as string) : null;
     },
@@ -28,8 +29,11 @@ function fakeRedis(): RedisClient & { store: Map<string, string>; expires: Map<s
       expires.set(key, seconds);
       return 1;
     },
+    close(): void {
+      client.closes += 1;
+    },
   };
-  return client as unknown as RedisClient & { store: Map<string, string>; expires: Map<string, number> };
+  return client as unknown as RedisClient & { store: Map<string, string>; expires: Map<string, number>; closes: number };
 }
 
 const envelope = JSON.stringify({ v: 1, data: { n: 1 } });
@@ -77,5 +81,14 @@ describe("RedisSessionStorage", () => {
     const client = fakeRedis();
     await new RedisSessionStorage({ client, ttlSeconds: 3600 }).write("k", envelope, { ttlSeconds: 60 });
     assert.equal(client.expires.get("session:k"), 60);
+  });
+
+  test("close() does not close an injected client (the caller owns it) and the store stays usable", async () => {
+    const client = fakeRedis();
+    const store = new RedisSessionStorage({ client });
+    store.close();
+    assert.equal(client.closes, 0); // not ours to close
+    await store.write("k", envelope); // still usable
+    assert.equal(await store.read("k"), envelope);
   });
 });

@@ -13,12 +13,14 @@
  * `./node` (a CI guard enforces it).
  */
 
-import { redis, type RedisClient } from "bun";
+import { RedisClient, redis } from "bun";
 import type { SessionStore, SessionWriteOptions } from "../core/session.js";
 
 export type RedisSessionStorageOptions = {
   /** Bun `RedisClient` to use. Defaults to Bun's shared `redis` (REDIS_URL / VALKEY_URL). */
   client?: RedisClient;
+  /** Connect a client the store owns (and closes on teardown) to this URL, instead of the shared `redis`. Ignored when `client` is given. */
+  url?: string;
   /** Prefix prepended to every key. Default `"session:"`. */
   prefix?: string;
   /**
@@ -30,13 +32,31 @@ export type RedisSessionStorageOptions = {
 
 export class RedisSessionStorage implements SessionStore {
   private readonly client: RedisClient;
+  /** True when this store opened the client itself, so `close()` may close it. */
+  private readonly owned: boolean;
+  /** Set once `close()` closed a client this store owned - the store is then spent. */
+  private closed = false;
   private readonly prefix: string;
   private readonly ttlSeconds?: number;
 
   constructor(options: RedisSessionStorageOptions = {}) {
-    this.client = options.client ?? redis;
+    this.owned = options.client === undefined && options.url !== undefined;
+    this.client = options.client ?? (options.url !== undefined ? new RedisClient(options.url) : redis);
     this.prefix = options.prefix ?? "session:";
     this.ttlSeconds = options.ttlSeconds;
+  }
+
+  /**
+   * Close the client, but only if this store opened it (a passed-in `client` and
+   * the shared `redis` are the caller's / runtime's). Closing ends this store's
+   * life - a later use throws and you construct a new one. With a shared or
+   * caller-supplied client this is a no-op.
+   */
+  close(): void {
+    if (this.owned && !this.closed) {
+      this.closed = true;
+      this.client.close();
+    }
   }
 
   async read(key: string): Promise<string | undefined> {

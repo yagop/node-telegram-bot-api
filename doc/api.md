@@ -437,6 +437,7 @@ bound for long-lived bots that talk to many distinct chats.
 
 | Method | Params | Returns | Description |
 | --- | --- | --- | --- |
+| `close` | - | void | Close the client, but only if this store opened it (a passed-in `client` and the shared `redis` are the caller's / runtime's). Closing ends this store's life - a later use throws and you construct a new one. With a shared or caller-supplied client this is a no-op. |
 | `delete` | `key`: string | Promise<void> | - |
 | `read` | `key`: string | Promise<string \| undefined> | The stored string for `key`, or `undefined` when there is none. |
 | `touch` | `key`: string, `ttlSeconds`: number | Promise<void> | Refresh a key's expiry without rewriting it - what the middleware calls when an update changed nothing, so an active chat is not evicted mid-conversation. |
@@ -6346,6 +6347,7 @@ type RedisSessionStorageOptions = {
   client?: RedisClient;
   prefix?: string;
   ttlSeconds?: number;
+  url?: string;
 };
 ```
 
