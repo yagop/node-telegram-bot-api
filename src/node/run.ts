@@ -14,6 +14,13 @@ import type { Bot } from "../core/bot.js";
 import type { LongPollOptions } from "../core/longpoll.js";
 import { withShutdownSignals } from "./signals.js";
 
+/** Write to stderr and resolve once the chunk is flushed - a following `process.exit()` would otherwise truncate it. */
+function writeStderr(line: string): Promise<void> {
+  return new Promise((resolve) => {
+    process.stderr.write(line, () => resolve());
+  });
+}
+
 export type RunOptions = LongPollOptions & {
   /**
    * On a fatal poll-stop, exit the process with a non-zero code (after teardown
@@ -51,13 +58,23 @@ export async function run(bot: Bot, options: RunOptions = {}): Promise<void> {
       () => bot.startPolling(undefined, pollOptions),
     );
   } catch (err) {
-    // Never let a fatal poll-stop be silent (see the doc comment above).
-    failed = true;
-    process.stderr.write(`node-telegram-bot-api: polling stopped on a fatal error: ${String(err)}\n`);
+    // Only the call that owns the pump reports and acts on the stop; a call that
+    // lost the "already running" race just re-throws to its own caller - it must
+    // not log a misleading "polling stopped" line or exit a healthy pump's process.
+    if (owned) {
+      failed = true;
+      // Await the flush so the exit below can't truncate this diagnostic.
+      await writeStderr(`node-telegram-bot-api: polling stopped on a fatal error: ${String(err)}\n`);
+    }
     throw err;
   } finally {
-    if (owned) await bot.close();
-    // Teardown is done; a supervisor can now restart a clean process.
-    if (failed && exitOnError) process.exit(1);
+    try {
+      if (owned) await bot.close();
+    } finally {
+      // Nested so it runs even when teardown throws: `exitOnError` must not be
+      // defeated by the very stuck resource it exists to escape. Gated on
+      // `failed` (which implies `owned`), so a losing double-run never exits.
+      if (failed && exitOnError) process.exit(1);
+    }
   }
 }
