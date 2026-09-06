@@ -93,9 +93,10 @@ export function gracefulClose(server: http.Server, timeoutMs: number): ReturnTyp
 
 /**
  * Managed webhook runner: create a `node:http` webhook server, start listening,
- * and resolve when it shuts down. Installs `SIGINT`/`SIGTERM` handlers that close
- * the server for a graceful exit (cleaned up in a `finally`), mirroring `run()` for
- * long polling. Rejects if the server fails (e.g. the port is in use).
+ * and resolve when it shuts down. Once listening, installs `SIGINT`/`SIGTERM`
+ * handlers that close the server for a graceful exit (cleaned up in a `finally`),
+ * mirroring `run()` for long polling. Rejects if the server fails to start (e.g.
+ * the port is in use).
  *
  * Shutdown cannot hang: `server.close()` waits for existing connections to end,
  * so we also drop idle keep-alive sockets at once and force-close anything still
@@ -112,6 +113,19 @@ export function gracefulClose(server: http.Server, timeoutMs: number): ReturnTyp
 export async function startWebhook(bot: Bot, options: StartWebhookOptions): Promise<void> {
   const server = createWebhookServer(bot, options);
   const shutdownTimeoutMs = options.shutdownTimeoutMs ?? DEFAULT_SHUTDOWN_TIMEOUT;
+
+  // 1) Listen first; reject on an early error (e.g. the port is in use). No
+  //    shutdown handlers yet - a signal during startup keeps Node's default
+  //    (exit), which is right: there is nothing listening to gracefully close.
+  //    This also means `stop` can never run `server.close()` on a server that
+  //    has not started (which would throw ERR_SERVER_NOT_RUNNING).
+  await new Promise<void>((resolve, reject) => {
+    server.once("error", reject);
+    server.once("listening", () => resolve());
+    server.listen(options.port, options.hostname);
+  });
+
+  // 2) Now that it is listening, wire graceful shutdown and wait for `close`.
   let forceTimer: ReturnType<typeof setTimeout> | undefined;
   let shuttingDown = false;
   const stop = (): void => {
@@ -124,9 +138,8 @@ export async function startWebhook(bot: Bot, options: StartWebhookOptions): Prom
       stop,
       () =>
         new Promise<void>((resolve, reject) => {
-          server.on("error", reject);
-          server.on("close", () => resolve());
-          server.listen(options.port, options.hostname);
+          server.once("error", reject);
+          server.once("close", () => resolve());
         }),
     );
   } finally {
