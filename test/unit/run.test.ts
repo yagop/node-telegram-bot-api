@@ -26,6 +26,22 @@ async function captureStderr(fn: () => Promise<void>): Promise<string> {
   return captured;
 }
 
+/** Run `fn` with `process.exit` stubbed, returning the exit codes it requested. */
+async function captureExit(fn: () => Promise<void>): Promise<number[]> {
+  const original = process.exit;
+  const codes: number[] = [];
+  process.exit = ((code?: number) => {
+    codes.push(code ?? 0);
+    // Do not actually exit; let `run` finish so the test can assert.
+  }) as typeof process.exit;
+  try {
+    await fn();
+  } finally {
+    process.exit = original;
+  }
+  return codes;
+}
+
 describe("run", () => {
   test("surfaces a fatal poll-stop to stderr and re-throws", async () => {
     // 401 is non-retriable; retry:false makes longPoll throw on the first poll.
@@ -63,5 +79,36 @@ describe("run", () => {
 
     assert.strictEqual(stderr, "");
     assert.strictEqual(bot.isRunning(), false);
+  });
+
+  test("exitOnError exits non-zero after a fatal poll-stop", async () => {
+    const bot = new Bot("123:abc", {
+      fetch: envelopeFetch({ ok: false, error_code: 401, description: "Unauthorized" }),
+    });
+
+    let codes: number[] = [];
+    // Suppress the stderr line so it doesn't clutter the test output.
+    await captureStderr(async () => {
+      codes = await captureExit(async () => {
+        // Still re-throws (exit is stubbed, so control returns to the caller).
+        await assert.rejects(run(bot, { retry: false, exitOnError: true }), TelegramApiError);
+      });
+    });
+
+    assert.deepStrictEqual(codes, [1]);
+  });
+
+  test("exitOnError does not exit on a clean stop", async () => {
+    const bot = new Bot("123:abc", {
+      fetch: envelopeFetch({ ok: true, result: [] }),
+    });
+
+    const codes = await captureExit(async () => {
+      const running = run(bot, { exitOnError: true });
+      bot.stop();
+      await running;
+    });
+
+    assert.deepStrictEqual(codes, []);
   });
 });
