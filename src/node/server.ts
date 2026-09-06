@@ -83,8 +83,16 @@ export async function startWebhook(bot: Bot, options: StartWebhookOptions): Prom
   const server = createWebhookServer(bot, options);
   const shutdownTimeoutMs = options.shutdownTimeoutMs ?? DEFAULT_SHUTDOWN_TIMEOUT;
   let forceTimer: ReturnType<typeof setTimeout> | undefined;
+  let shuttingDown = false;
   const stop = (): void => {
+    // Idempotent: a second signal (SIGINT then SIGTERM, or a repeat) must not
+    // schedule another force-timer - the earlier one would then be lost by the
+    // finally's single `clearTimeout` and fire after this promise resolved.
+    if (shuttingDown) return;
+    shuttingDown = true;
     server.close(); // stop accepting; resolves once existing connections end
+    // `closeIdleConnections` / `closeAllConnections` exist on Node 18.2+ (the
+    // package minimum); optional-chained so a non-Node runtime is a safe no-op.
     server.closeIdleConnections?.(); // drop idle keep-alive sockets now
     // A connection still busy past the grace period is force-closed, so a stuck
     // client cannot leave the process hanging. `unref` so the timer itself does
