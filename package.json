@@ -88,7 +88,7 @@
   "author": "Yago Pérez <yagoperezs@gmail.com>",
   "license": "MIT",
   "engines": {
-    "node": ">=18"
+    "node": ">=18.2.0"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.5.0",

@@ -5,7 +5,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## What this is
 
 `node-telegram-bot-api` v2: a from-scratch, runtime-agnostic TypeScript Telegram Bot API client.
-Node 18+, also runs on Bun, Deno, Cloudflare Workers, and Vercel/Deno Edge. The source is
+Node 18.2+, also runs on Bun, Deno, Cloudflare Workers, and Vercel/Deno Edge. The source is
 ESM/web-standard; the **published** package is dual-module - `zshy` emits both ESM (`*.js`/`*.d.ts`)
 and CJS (`*.cjs`/`*.d.cts`), exposed via the `exports` map's `import`/`require` conditions, so it can
 be `import`ed or `require`d. `src/core` stays Node-free, so the edge story is unchanged. There is
@@ -51,7 +51,7 @@ src/
           serializeParams + encodeForm, InputFile, the markup / entity / media builders
           (optional sugar), longPoll, webhookCallback, framework webhook adapters
           (Express / Next.js), errors. Web-standard APIs only.
-          -> zero node:* imports; runs on Node 18+ / Bun / Deno / Workers / edge.
+          -> zero node:* imports; runs on Node 18.2+ / Bun / Deno / Workers / edge.
   node/   the ONLY folder allowed to import node:*. Node-only sugar: fromPath() (fs
           uploads), createWebhookServer() (node:http -> delegates to core's
           webhookCallback), the managed run() polling runner, the DEBUG stderr sink.
