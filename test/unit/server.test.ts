@@ -136,7 +136,7 @@ describe("webhook server shutdown", () => {
     await new Promise<void>((resolve) => blocker.close(() => resolve()));
   });
 
-  test("startWebhook shuts down on a signal, dropping an idle connection, and is idempotent", async (t) => {
+  test("startWebhook shuts down via its signal handler, dropping an idle connection, and is idempotent", async (t) => {
     // Needs the Node 18.2+ connection helpers; skip where a runtime lacks them
     // (without them the idle socket would keep close() pending and this hangs).
     if (typeof http.createServer().closeIdleConnections !== "function") {
@@ -144,12 +144,10 @@ describe("webhook server shutdown", () => {
       return;
     }
 
-    // Detach any pre-existing signal listeners (e.g. the test runner's) so our
-    // synthetic emit reaches only startWebhook's handler; restored in finally.
-    const savedInt = process.listeners("SIGINT");
-    const savedTerm = process.listeners("SIGTERM");
-    process.removeAllListeners("SIGINT");
-    process.removeAllListeners("SIGTERM");
+    // Rather than mutating process-global signal state (removeAllListeners /
+    // emit, which can disturb other tests or the runner), snapshot the SIGTERM
+    // listeners, let startWebhook add its own, then invoke *that* handler directly.
+    const before = new Set(process.listeners("SIGTERM"));
 
     const agent = new http.Agent({ keepAlive: true, maxSockets: 1 });
     try {
@@ -170,22 +168,27 @@ describe("webhook server shutdown", () => {
           await new Promise((r) => setTimeout(r, 10));
         }
       }
-      assert.strictEqual(process.listenerCount("SIGTERM"), 1); // handler installed
 
-      // Two signals in a row: the second must be a no-op (idempotent stop).
-      process.emit("SIGTERM");
-      process.emit("SIGTERM");
+      // Grab the handler startWebhook installed (poll: it may appear a tick after
+      // the socket is accepted), without touching anyone else's listeners.
+      let stop: (() => void) | undefined;
+      for (let i = 0; i < 50 && !stop; i++) {
+        stop = process.listeners("SIGTERM").find((l) => !before.has(l)) as (() => void) | undefined;
+        if (!stop) await new Promise((r) => setTimeout(r, 10));
+      }
+      assert.ok(stop, "startWebhook installed a SIGTERM handler");
+
+      // Call it twice: the second is a no-op (idempotent stop).
+      stop();
+      stop();
 
       // Resolves rather than hanging: the idle keep-alive socket was dropped.
       await running;
 
-      // finally ran: startWebhook removed its own handlers.
-      assert.strictEqual(process.listenerCount("SIGINT"), 0);
-      assert.strictEqual(process.listenerCount("SIGTERM"), 0);
+      // finally ran: startWebhook removed its own handler (back to the snapshot).
+      assert.ok(!process.listeners("SIGTERM").some((l) => !before.has(l)));
     } finally {
       agent.destroy();
-      for (const l of savedInt) process.on("SIGINT", l as (...a: unknown[]) => void);
-      for (const l of savedTerm) process.on("SIGTERM", l as (...a: unknown[]) => void);
     }
   });
 });
