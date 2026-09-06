@@ -200,4 +200,44 @@ describe("longPoll", () => {
     assert.ok(caught instanceof TelegramApiError);
     assert.strictEqual((caught as TelegramApiError).errorCode, 409);
   });
+
+  test("a successful (empty) poll resets the consecutive-conflict counter", async () => {
+    const controller = new AbortController();
+    // With maxConflictRetries:2, three conflicts *in a row* would throw. Here an
+    // empty successful poll sits between two bursts, so the streak resets and the
+    // loop keeps going instead of throwing on the fourth conflict overall.
+    const { api } = fakeApi([
+      () => {
+        throw new TelegramApiError(409, "Conflict"); // burst 1: conflict 1
+      },
+      () => {
+        throw new TelegramApiError(409, "Conflict"); // burst 1: conflict 2
+      },
+      () => [], // success -> resets the counter
+      () => {
+        throw new TelegramApiError(409, "Conflict"); // burst 2: conflict 1 (would be #3 without the reset)
+      },
+      () => {
+        controller.abort(); // stop cleanly on the next poll
+        return [upd(200)];
+      },
+    ]);
+
+    const seen: number[] = [];
+    let caught: unknown;
+    try {
+      for await (const update of longPoll(
+        api,
+        { conflictRetryDelayMs: 1, maxConflictRetries: 2 },
+        controller.signal,
+      )) {
+        seen.push(update.update_id);
+      }
+    } catch (err) {
+      caught = err;
+    }
+    // Never threw (the reset kept burst 2 under the bound) and reached the yield.
+    assert.strictEqual(caught, undefined);
+    assert.deepStrictEqual(seen, [200]);
+  });
 });
