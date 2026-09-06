@@ -46,10 +46,13 @@ type RetryConfig = {
 /** How the loop should react to a getUpdates error: `wait` ms before re-polling, plus the updated conflict count. */
 type RetryPlan = { wait: number; conflicts: number };
 
+/** Arguments to `planRetry` / `recover`: the error, the current conflict streak, and the resolved config. */
+type RetryContext = { err: unknown; conflicts: number; cfg: RetryConfig; signal?: AbortSignal };
+
 /** Decide how to handle a getUpdates failure. Throws the error to stop the loop
  *  (non-retryable, or the conflict budget is exhausted); otherwise returns the
  *  wait before re-polling and the new consecutive-conflict count. */
-function planRetry(err: unknown, conflicts: number, cfg: RetryConfig): RetryPlan {
+function planRetry({ err, conflicts, cfg }: RetryContext): RetryPlan {
   const pollConflict = isPollConflict(err);
   if (!cfg.retry || !(isTransientError(err) || pollConflict)) throw err;
   // A conflict advances its own bounded counter; any other transient breaks the streak.
@@ -66,9 +69,10 @@ function planRetry(err: unknown, conflicts: number, cfg: RetryConfig): RetryPlan
 /** Recover from a getUpdates failure: wait `plan.wait` ms then resume with the new
  *  conflict count, or `"stop"` the loop (the signal aborted, before or during the
  *  wait). `planRetry` may throw here to stop the loop on a non-retryable error. */
-async function recover(err: unknown, conflicts: number, cfg: RetryConfig, signal?: AbortSignal): Promise<{ conflicts: number } | "stop"> {
+async function recover(ctx: RetryContext): Promise<{ conflicts: number } | "stop"> {
+  const { signal } = ctx;
   if (signal?.aborted) return "stop"; // cancelled - swallow the abort error
-  const plan = planRetry(err, conflicts, cfg);
+  const plan = planRetry(ctx);
   try {
     await delay(plan.wait, signal);
   } catch {
@@ -109,7 +113,7 @@ export async function* longPoll(api: Api, options: LongPollOptions = {}, signal?
       // A 409 (another instance polling the same token) is transient for polling
       // but bounded, so an overlapping redeploy heals while a real two-instance
       // deployment still surfaces. `recover` throws for anything non-retryable.
-      const outcome = await recover(err, conflicts, retryConfig, signal);
+      const outcome = await recover({ err, conflicts, cfg: retryConfig, signal });
       if (outcome === "stop") return;
       conflicts = outcome.conflicts;
       // retry WITHOUT advancing offset
