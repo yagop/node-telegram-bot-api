@@ -35,34 +35,35 @@ function retryAfterMs(err: unknown): number | undefined {
   return seconds === undefined ? undefined : seconds * 1000;
 }
 
-type RetryConfig = {
+/** How the loop should react to a getUpdates error: `wait` ms before re-polling, plus the updated conflict count. */
+type RetryPlan = { wait: number; conflicts: number };
+
+/** Arguments to `planRetry` / `recover`: the error, the current conflict streak, the resolved retry options, and the signal. */
+type RetryContext = {
+  err: unknown;
+  conflicts: number;
   retry: boolean;
   retryDelayMs: number;
   conflictRetryDelayMs: number;
   maxConflictRetries: number;
   onError?: (err: unknown) => void;
+  signal?: AbortSignal;
 };
-
-/** How the loop should react to a getUpdates error: `wait` ms before re-polling, plus the updated conflict count. */
-type RetryPlan = { wait: number; conflicts: number };
-
-/** Arguments to `planRetry` / `recover`: the error, the current conflict streak, and the resolved config. */
-type RetryContext = { err: unknown; conflicts: number; cfg: RetryConfig; signal?: AbortSignal };
 
 /** Decide how to handle a getUpdates failure. Throws the error to stop the loop
  *  (non-retryable, or the conflict budget is exhausted); otherwise returns the
  *  wait before re-polling and the new consecutive-conflict count. */
-function planRetry({ err, conflicts, cfg }: RetryContext): RetryPlan {
+function planRetry({ err, conflicts, retry, retryDelayMs, conflictRetryDelayMs, maxConflictRetries, onError }: RetryContext): RetryPlan {
   const pollConflict = isPollConflict(err);
-  if (!cfg.retry || !(isTransientError(err) || pollConflict)) throw err;
+  if (!retry || !(isTransientError(err) || pollConflict)) throw err;
   // A conflict advances its own bounded counter; any other transient breaks the streak.
   const next = pollConflict ? conflicts + 1 : 0;
-  if (pollConflict && next > cfg.maxConflictRetries) throw err;
-  cfg.onError?.(err);
+  if (pollConflict && next > maxConflictRetries) throw err;
+  onError?.(err);
   // A conflict waits its own longer delay; otherwise honor `retry_after`
   // (e.g. a 429 flood-wait) when present, else the default delay.
-  const wait = pollConflict ? cfg.conflictRetryDelayMs : (retryAfterMs(err) ?? cfg.retryDelayMs);
-  log("getUpdates %s; retry in %dms", pollConflict ? `conflict ${next}/${cfg.maxConflictRetries}` : "failed", Math.round(wait));
+  const wait = pollConflict ? conflictRetryDelayMs : (retryAfterMs(err) ?? retryDelayMs);
+  log("getUpdates %s; retry in %dms", pollConflict ? `conflict ${next}/${maxConflictRetries}` : "failed", Math.round(wait));
   return { wait, conflicts: next };
 }
 
@@ -87,13 +88,11 @@ export async function* longPoll(api: Api, options: LongPollOptions = {}, signal?
   const timeout = options.timeout ?? DEFAULT_POLL_TIMEOUT;
   const limit = options.limit;
   const allowed = options.allowedUpdates;
-  const retryConfig: RetryConfig = {
-    retry: options.retry ?? true,
-    retryDelayMs: options.retryDelayMs ?? DEFAULT_RETRY_DELAY,
-    conflictRetryDelayMs: options.conflictRetryDelayMs ?? DEFAULT_CONFLICT_RETRY_DELAY,
-    maxConflictRetries: options.maxConflictRetries ?? DEFAULT_MAX_CONFLICT_RETRIES,
-    onError: options.onError,
-  };
+  const retry = options.retry ?? true;
+  const retryDelayMs = options.retryDelayMs ?? DEFAULT_RETRY_DELAY;
+  const conflictRetryDelayMs = options.conflictRetryDelayMs ?? DEFAULT_CONFLICT_RETRY_DELAY;
+  const maxConflictRetries = options.maxConflictRetries ?? DEFAULT_MAX_CONFLICT_RETRIES;
+  const onError = options.onError;
   let conflicts = 0; // consecutive 409s; reset on any successful poll
 
   log("started (timeout=%ds)", timeout);
@@ -113,7 +112,7 @@ export async function* longPoll(api: Api, options: LongPollOptions = {}, signal?
       // A 409 (another instance polling the same token) is transient for polling
       // but bounded, so an overlapping redeploy heals while a real two-instance
       // deployment still surfaces. `recover` throws for anything non-retryable.
-      const outcome = await recover({ err, conflicts, cfg: retryConfig, signal });
+      const outcome = await recover({ err, conflicts, retry, retryDelayMs, conflictRetryDelayMs, maxConflictRetries, onError, signal });
       if (outcome === "stop") return;
       conflicts = outcome.conflicts;
       // retry WITHOUT advancing offset
