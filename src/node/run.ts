@@ -12,6 +12,7 @@
 import process from "node:process";
 import type { Bot } from "../core/bot.js";
 import type { LongPollOptions } from "../core/longpoll.js";
+import { withShutdownSignals } from "./signals.js";
 
 /**
  * Start the bot's long-poll loop and resolve when it stops. Installs
@@ -27,27 +28,21 @@ import type { LongPollOptions } from "../core/longpoll.js";
  * describes.
  */
 export async function run(bot: Bot, options?: LongPollOptions): Promise<void> {
-  const stop = (): void => {
-    bot.stop();
-  };
-
-  process.on("SIGINT", stop);
-  process.on("SIGTERM", stop);
-
   // Only a call that actually owns the pump may close. `startPolling` refuses
   // when another run is already active (as a rejection - it is async - so the
   // loser cannot be told apart after the fact); checking first is what keeps this
   // call from closing stores under the run that is still using them.
   const owned = !bot.isRunning();
   try {
-    return await bot.startPolling(undefined, options);
+    return await withShutdownSignals(
+      () => bot.stop(),
+      () => bot.startPolling(undefined, options),
+    );
   } catch (err) {
     // Never let a fatal poll-stop be silent (see the doc comment above).
     process.stderr.write(`node-telegram-bot-api: polling stopped on a fatal error: ${String(err)}\n`);
     throw err;
   } finally {
-    process.off("SIGINT", stop);
-    process.off("SIGTERM", stop);
     if (owned) await bot.close();
   }
 }

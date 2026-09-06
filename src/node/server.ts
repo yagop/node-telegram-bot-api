@@ -10,10 +10,10 @@
  */
 
 import http from "node:http";
-import process from "node:process";
 import { type NodeLikeRequest, type NodeLikeResponse, nodeFrameworkWebhook } from "../core/adapters.js";
 import type { Bot } from "../core/bot.js";
 import type { WebhookOptions } from "../core/webhook.js";
+import { withShutdownSignals } from "./signals.js";
 
 export interface WebhookServerOptions extends WebhookOptions {
   /** Only requests to this path are handled; others get 404. Default `/`. */
@@ -93,17 +93,17 @@ export async function startWebhook(bot: Bot, options: StartWebhookOptions): Prom
     forceTimer = setTimeout(() => server.closeAllConnections?.(), shutdownTimeoutMs);
     forceTimer.unref?.();
   };
-  process.on("SIGINT", stop);
-  process.on("SIGTERM", stop);
   try {
-    await new Promise<void>((resolve, reject) => {
-      server.on("error", reject);
-      server.on("close", () => resolve());
-      server.listen(options.port, options.hostname);
-    });
+    await withShutdownSignals(
+      stop,
+      () =>
+        new Promise<void>((resolve, reject) => {
+          server.on("error", reject);
+          server.on("close", () => resolve());
+          server.listen(options.port, options.hostname);
+        }),
+    );
   } finally {
     if (forceTimer) clearTimeout(forceTimer);
-    process.off("SIGINT", stop);
-    process.off("SIGTERM", stop);
   }
 }
