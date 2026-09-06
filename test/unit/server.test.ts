@@ -1,7 +1,7 @@
 import { describe, test } from "node:test";
 import assert from "node:assert/strict";
 import http from "node:http";
-import type { AddressInfo } from "node:net";
+import net, { type AddressInfo } from "node:net";
 import type { Bot } from "../../src/core/bot.js";
 import { createWebhookServer, gracefulClose, startWebhook } from "../../src/node/server.js";
 import type { Update } from "../../src/types/index.js";
@@ -70,6 +70,47 @@ describe("webhook server shutdown", () => {
     clearTimeout(forceTimer);
     agent.destroy();
     assert.strictEqual(closed, true);
+  });
+
+  test("force-closing a socket mid-body does not raise an unhandled rejection", async (t) => {
+    const server = createWebhookServer(fakeBot(), { path: "/", secretToken: "s" });
+    if (typeof server.closeAllConnections !== "function") {
+      t.skip("runtime has no closeAllConnections");
+      return;
+    }
+    const port = await listen(server);
+
+    const rejections: unknown[] = [];
+    const onRejection = (err: unknown): void => {
+      rejections.push(err);
+    };
+    process.on("unhandledRejection", onRejection);
+
+    // Open a raw POST that promises 100 bytes but sends only a few, so the
+    // server's readBody() is still awaiting the body when we tear the socket down.
+    const sock = net.connect(port, "127.0.0.1");
+    await new Promise<void>((resolve) => sock.on("connect", () => resolve()));
+    sock.write(
+      "POST / HTTP/1.1\r\nHost: x\r\nx-telegram-bot-api-secret-token: s\r\n" +
+        'Content-Type: application/json\r\nContent-Length: 100\r\n\r\n{"partial":',
+    );
+    sock.on("error", () => {}); // ignore the reset our own force-close causes
+
+    // Let the request reach the server, then force-close: destroys the socket
+    // after ~1ms, making readBody reject with ECONNRESET on the discarded handler
+    // promise. Without the `.catch` that would surface as an unhandled rejection.
+    await new Promise((r) => setTimeout(r, 30));
+    const forceTimer = gracefulClose(server, 1);
+
+    // Give the force-close and any pending rejection time to surface.
+    await new Promise((r) => setTimeout(r, 80));
+
+    clearTimeout(forceTimer);
+    sock.destroy();
+    server.closeAllConnections?.();
+    process.off("unhandledRejection", onRejection);
+
+    assert.deepStrictEqual(rejections, []);
   });
 
   test("startWebhook rejects on a listen error and removes its signal handlers", async () => {

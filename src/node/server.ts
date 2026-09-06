@@ -12,8 +12,11 @@
 import http from "node:http";
 import { type NodeLikeRequest, type NodeLikeResponse, nodeFrameworkWebhook } from "../core/adapters.js";
 import type { Bot } from "../core/bot.js";
+import { debug } from "../core/debug.js";
 import type { WebhookOptions } from "../core/webhook.js";
 import { withShutdownSignals } from "./signals.js";
+
+const log = debug("webhook");
 
 export interface WebhookServerOptions extends WebhookOptions {
   /** Only requests to this path are handled; others get 404. Default `/`. */
@@ -44,7 +47,21 @@ export function createWebhookServer(bot: Bot, options: WebhookServerOptions = {}
     }
     // node:http's IncomingMessage / ServerResponse structurally satisfy the
     // core's NodeLike shapes.
-    void handler(req as unknown as NodeLikeRequest, res as unknown as NodeLikeResponse);
+    handler(req as unknown as NodeLikeRequest, res as unknown as NodeLikeResponse).catch((err: unknown) => {
+      // Expected during a forced shutdown: `closeAllConnections()` destroys a
+      // socket whose request body was still arriving, so `readBody` rejects
+      // (ECONNRESET). Swallow it - an unhandled rejection here could crash the
+      // process mid-shutdown - and try a 500 while the socket is still writable.
+      log("handler error: %s", String(err));
+      if (!res.headersSent && res.writable) {
+        try {
+          res.statusCode = 500;
+          res.end();
+        } catch {
+          // socket already gone - nothing to send
+        }
+      }
+    });
   });
 }
 
