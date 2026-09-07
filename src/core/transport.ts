@@ -214,10 +214,15 @@ export class Transport {
   private async attempt<R>(ctx: RequestContext, attempt: number): Promise<AttemptOutcome<R>> {
     const timeoutSignal = ctx.timeoutMs > 0 ? AbortSignal.timeout(ctx.timeoutMs) : undefined;
     const { signal: composed, cleanup } = combineSignals([ctx.signal, timeoutSignal]);
+    // Build the body/init BEFORE the try: a synchronous failure while creating
+    // the body (e.g. re-streaming a multipart source) must surface raw and
+    // unretried, exactly as it did before this was extracted - not get caught
+    // and reclassified as a transient transport error.
+    const init = buildInit(ctx.makeBody(), ctx.headers, composed);
     let response: Response;
     let text: string;
     try {
-      response = await this.fetchImpl(ctx.url, buildInit(ctx.makeBody(), ctx.headers, composed));
+      response = await this.fetchImpl(ctx.url, init);
       // Read the body inside the try so a mid-stream read failure (connection
       // dropped after the headers) is classified and retried like any other
       // transient transport error, not thrown raw past the error hierarchy.

@@ -145,7 +145,9 @@ export class RateLimiter {
 
   /** Drop the least-recently-used chat bucket when the cache is at capacity. */
   private evictIfFull(): void {
-    if (this.chats.size < this.maxChatBuckets) {
+    // Negated `>=` (not `<`) so a NaN budget never evicts, matching the original
+    // `size >= max` guard: `NaN >= x` is false, whereas `NaN < x` is also false.
+    if (!(this.chats.size >= this.maxChatBuckets)) {
       return;
     }
     const oldest = this.chats.keys().next().value;

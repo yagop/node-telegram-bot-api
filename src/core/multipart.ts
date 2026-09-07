@@ -99,9 +99,13 @@ export function multipartBody(
 
 /** Resolve a non-inline piece to a readable stream for this build (a factory
  *  opens a fresh stream; a Blob streams from its store; a stream is itself). */
-async function resolvePieceStream(
+// Not async on purpose: only a factory piece yields a promise (awaited by the
+// caller). A Blob or a plain stream resolves synchronously, so the reader is
+// acquired in the same tick - inserting an extra microtask here would let a
+// stream that errors on a queued microtask drop an already-enqueued chunk.
+function resolvePieceStream(
   piece: Exclude<BodyPiece, Uint8Array>
-): Promise<ReadableStream<Uint8Array>> {
+): ReadableStream<Uint8Array> | Promise<ReadableStream<Uint8Array>> {
   if (typeof piece === "function") {
     return piece();
   }
@@ -145,7 +149,8 @@ async function* pieceChunks(
       yield piece;
       continue;
     }
-    yield* drainStream(await resolvePieceStream(piece));
+    const resolved = resolvePieceStream(piece);
+    yield* drainStream(resolved instanceof ReadableStream ? resolved : await resolved);
   }
 }
 
