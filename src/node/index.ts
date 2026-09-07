@@ -9,7 +9,7 @@
 export * from "../core/index.js";
 // Side effect: reads `DEBUG` and enables stderr tracing (debug-pkg convention).
 export * from "./debug.js";
+export * from "./file-session-storage.js";
 export * from "./from-path.js";
 export * from "./run.js";
 export * from "./server.js";
-export * from "./file-session-storage.js";

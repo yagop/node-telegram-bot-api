@@ -29,14 +29,14 @@ export * from "./files.js";
 export * from "./keyboard.js";
 export * from "./longpoll.js";
 export * from "./media.js";
-// Opt-in rate limiting (ADR-004 §10, M3)
-export * from "./ratelimiter.js";
 // Opt-in session middleware + its core store and the reply-tracking layer
 export * from "./memory-session-storage.js";
+// Opt-in rate limiting (ADR-004 §10, M3)
+export * from "./ratelimiter.js";
 export * from "./reply-tracking.js";
-export * from "./session.js";
 export * from "./richmessage.js";
 export * from "./richtext.js";
+export * from "./session.js";
 // Transport (ADR-005, ADR-008)
 export * from "./transport.js";
 // Webhooks (ADR-005, §6.7)

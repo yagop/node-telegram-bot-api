@@ -292,7 +292,8 @@ export function createSession<T = Record<string, unknown>>(options: SessionOptio
           makeInitial: () => E,
           isValid?: (slot: Record<string, unknown>) => boolean,
         ): E {
-          const ext = (envelope.ext ??= {});
+          if (envelope.ext === undefined) envelope.ext = {};
+          const ext = envelope.ext;
           const current = ext[namespace];
           if (!isPlainObject(current) || (isValid !== undefined && !isValid(current))) {
             const fresh = makeInitial();

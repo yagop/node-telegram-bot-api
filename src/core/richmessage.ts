@@ -60,9 +60,7 @@ function resolveBlocks(content: BlockContent): InputRichBlock[] {
 
 /** A block caption (`text`, optional `credit`) with rich `text`. */
 export function richCaption(text: RichTextContent, credit?: RichTextContent): RichBlockCaption {
-  return credit === undefined
-    ? { text: asRichText(text) }
-    : { text: asRichText(text), credit: asRichText(credit) };
+  return credit === undefined ? { text: asRichText(text) } : { text: asRichText(text), credit: asRichText(credit) };
 }
 
 /** A table cell; `align` defaults to `"left"`, `valign` to `"top"`. */
@@ -165,7 +163,11 @@ export class RichMessageBuilder {
 
   /** A slideshow of nested media blocks. */
   slideshow(blocks: BlockContent, caption?: RichBlockCaption): this {
-    return this.push({ type: "slideshow", blocks: resolveBlocks(blocks), ...(caption !== undefined ? { caption } : {}) });
+    return this.push({
+      type: "slideshow",
+      blocks: resolveBlocks(blocks),
+      ...(caption !== undefined ? { caption } : {}),
+    });
   }
 
   /** A table; `cells` is a rows-of-cells grid (see `richTableCell`). */

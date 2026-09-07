@@ -11,13 +11,7 @@
  * `RichTextBuilder`) so trees nest without hand-writing `type`/`text`. `.build()`
  * returns the plain `RichText`, ready for a `text`/caption/button field.
  */
-import type {
-  LoginUrl,
-  RichMessageButton,
-  RichText,
-  SwitchInlineQueryChosenChat,
-  User,
-} from "../types/index.js";
+import type { LoginUrl, RichMessageButton, RichText, SwitchInlineQueryChosenChat, User } from "../types/index.js";
 
 /** Anything a rich-text `content` parameter accepts. */
 export type RichTextContent = RichText | RichTextBuilder;
