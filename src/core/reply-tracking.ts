@@ -118,7 +118,7 @@ export type ReplyTrackingOptions = {
 
 /**
  * One recorded expectation: the caller's marker, its deadline if it has one,
- * `lastUsedAt` for LRU ordering (stamped only when a budget/TTL is configured),
+ * `lastUsedAt` for LRU ordering (stamped only when a size budget is configured),
  * and `ttlMs` (the window to re-arm on use) only when `slidingTtl` is on.
  */
 type Entry = { marker: ReplyMarker; expiresAt?: number; lastUsedAt?: number; ttlMs?: number };
@@ -177,16 +177,22 @@ function record(
     entry.expiresAt = now + ttlSeconds * 1000;
     if (config?.slidingTtl === true) entry.ttlMs = ttlSeconds * 1000;
   }
-  // Recency is only worth its bytes when a budget or sliding TTL can consult it.
-  if (config !== undefined) entry.lastUsedAt = now;
+  // Recency is only worth its bytes when a size budget (the only reader of
+  // `lastUsedAt`) is set; sliding TTL rides on `ttlMs` / `expiresAt` instead.
+  if (hasBudget(config)) entry.lastUsedAt = now;
   table[messageId] = entry;
 }
 
-/** Mark a kept marker as just used: bump recency, and slide its TTL if it has one. */
+/** Whether an LRU size budget is configured - the only thing that reads `lastUsedAt`. */
+function hasBudget(config: ReplyTrackingOptions | undefined): boolean {
+  return config !== undefined && (config.maxEntries !== undefined || config.maxBytes !== undefined);
+}
+
+/** Mark a kept marker as just used: slide its TTL if it has one, and bump recency for the LRU. */
 function used(entry: Entry, config: ReplyTrackingOptions | undefined, now: number): void {
   if (config === undefined) return;
-  entry.lastUsedAt = now;
   if (entry.ttlMs !== undefined) entry.expiresAt = now + entry.ttlMs;
+  if (hasBudget(config)) entry.lastUsedAt = now;
 }
 
 function byteLength(state: ReplyState): number {
@@ -224,7 +230,9 @@ function evict(state: ReplyState, config: ReplyTrackingOptions | undefined): voi
     delete ref.table[ref.id];
   };
 
-  while (maxEntries !== undefined && victims.length - i > maxEntries) dropNext();
+  // `i < victims.length` also guards a negative/NaN `maxEntries` from underflowing
+  // past the last victim (which would deref `undefined`); it just evicts down to empty.
+  while (maxEntries !== undefined && i < victims.length && victims.length - i > maxEntries) dropNext();
   while (maxBytes !== undefined && i < victims.length && byteLength(state) > maxBytes) dropNext();
 }
 

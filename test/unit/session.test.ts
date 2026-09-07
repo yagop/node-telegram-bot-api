@@ -846,6 +846,31 @@ describe("reply-tracking LRU budgets", () => {
     assert.match(stored, /"1"/);
     assert.match(stored, /"2"/);
   });
+
+  test("a TTL-only config (no size budget) stamps no recency bytes", async () => {
+    const store = fakeStore();
+    const mw = createSession({ store, replyTracking: { defaultTtlSeconds: 3600, slidingTtl: true } });
+
+    const ask = new Context(msg("q"), api);
+    await mw(ask, async () => expectCallback(ask, 1, { n: 1 }));
+
+    const stored = store.writes.at(-1)?.[1] as string;
+    assert.doesNotMatch(stored, /lastUsedAt/, "lastUsedAt is dead weight with no maxEntries/maxBytes");
+    assert.match(stored, /expiresAt/, "the TTL is still applied");
+  });
+
+  test("a negative maxEntries evicts everything instead of throwing", async () => {
+    const mw = createSession({ store: new MemorySessionStorage(), replyTracking: { maxEntries: -1 } });
+
+    const ask = new Context(msg("q"), api);
+    await mw(ask, async () => {
+      expectReply(ask, 1, { n: 1 });
+      expectReply(ask, 2, { n: 2 }); // must not deref past the last victim
+    });
+
+    const r2 = new Context(msg("late", 2), api);
+    await mw(r2, async () => assert.equal(matchReply(r2), undefined, "evicted down to empty"));
+  });
 });
 
 describe("taggedReplies", () => {

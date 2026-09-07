@@ -40,8 +40,9 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   refreshes recency, not just a record. `defaultTtlSeconds` gives every expectation
   a TTL, and `slidingTtl` re-arms it on use.
 - All fields are optional; with no `replyTracking` the tables stay unbounded, as
-  before. The recency/sliding metadata is written only when `replyTracking` is set
-  (any field), so bots that omit it keep byte-identical envelopes.
+  before. Recency metadata (`lastUsedAt`) is written only when a size budget
+  (`maxEntries` / `maxBytes`) is set, so configs without one keep byte-identical
+  envelopes.
 - Added the example `examples/18-reply-tracking-lru.ts`.
 
 ### Sessions
