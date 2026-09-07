@@ -309,7 +309,7 @@ bot.use(session);
 bot.command("count", (ctx) => ctx.reply(`Seen ${++session.get(ctx).data.count} times`));
 ```
 
-Both return the same handle, which is also where the non-bag members live: `.createdAt` / `.updatedAt`, `.ext()` for layers built on sessions, and `.delete()`, which evicts the whole key on flush - an explicit end-of-conversation / `/forget` / erasure hook. `ctx.getSession()` and `session.get(ctx)` throw when the middleware did not run for this update (not registered, or no derivable key).
+Both return the same handle, which is also where the non-bag members live: `.ext()` for layers built on sessions, and `.delete()`, which evicts the whole key on flush - an explicit end-of-conversation / `/forget` / erasure hook. `ctx.getSession()` and `session.get(ctx)` throw when the middleware did not run for this update (not registered, or no derivable key).
 
 ### Reply tracking
 
@@ -345,6 +345,22 @@ bot.on("message", async (ctx, next) => {
 `taggedReplies` is sugar over the primitives `expectReply(ctx, id, marker?, { ttlSeconds? })` (stores any JSON marker object), `matchReply<M>(ctx)` (returns it typed as `M`) and `forgetReply(ctx, id)` (cancels a pending expectation). With a single prompt in flight you can drop the marker entirely - its presence alone is the signal.
 
 Nothing expires on its own: a prompt answered tomorrow is normal, so a marker stays pending until it matches or you forget it. Pass `ttlSeconds` for prompts that go stale (a confirmation, a one-time code) - expired entries are pruned the next time the layer touches the session, which is what keeps a chat that ignores every prompt from growing its envelope forever.
+
+TTL bounds a marker's *age*, not the table's *size* - a chat that fires many short-lived keyboards can still balloon between prunes. For a hard per-chat cap, pass `replyTracking` to `createSession`:
+
+```ts
+createSession<Session>({
+  store: new MemorySessionStorage(),
+  replyTracking: {
+    maxEntries: 50, // cap the live markers per chat...
+    maxBytes: 8192, // ...and their serialized size
+    defaultTtlSeconds: 3600, // a TTL for every expectation that sets none
+    slidingTtl: true, // ...refreshed each time the marker is used
+  },
+});
+```
+
+Over budget, the **least-recently-used** markers are evicted - recency, not age, so an actively-pressed old keyboard outlives an idle newer one (a match stamps recency too, not just a record). All four fields are optional; with no `replyTracking` the tables stay unbounded, as before.
 
 The default session key is per **chat**, so in a group the marker belongs to the group and any member's reply or press matches it. Put the asker's id in the marker and check it when that matters.
 

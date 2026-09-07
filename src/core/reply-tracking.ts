@@ -29,6 +29,13 @@
  * layer touches the session, so a bot that sets a TTL cannot grow its envelope
  * without limit.
  *
+ * TTL bounds a marker's age, not the table's size. For a hard per-chat cap pass
+ * {@link ReplyTrackingOptions} to `createSession({ store, replyTracking })`:
+ * `maxEntries` / `maxBytes` evict the least-recently-used markers once a budget
+ * is exceeded (recency, not age, so an active old keyboard outlives an idle newer
+ * one), `defaultTtlSeconds` gives every expectation a TTL, and `slidingTtl`
+ * re-arms it on use. All opt-in; with no `replyTracking` the tables are unbounded.
+ *
  * Everything here reads the session off the context (`ctx.getSession()`), so it
  * needs the session middleware registered and an update with a session key -
  * otherwise it throws, like `ctx.getSession()` itself.
@@ -58,16 +65,63 @@ export const REPLY_NAMESPACE = "reply";
 /** How long a recorded expectation stays live. Omitted: until matched or forgotten. */
 export type ExpectOptions = {
   /**
-   * Drop this expectation after so many seconds. There is no default and no cap:
-   * a prompt waiting for tomorrow's reply is legitimate, so nothing expires
-   * unless you say so. Set it for prompts that go stale (a confirmation, a
-   * one-time code) to keep an unanswered chat's envelope from growing forever.
+   * Drop this expectation after so many seconds. Overrides
+   * {@link ReplyTrackingOptions.defaultTtlSeconds} for this one call. There is no
+   * cap: a prompt waiting for tomorrow's reply is legitimate, so nothing expires
+   * unless you (or a default) say so. Set it for prompts that go stale (a
+   * confirmation, a one-time code) to keep an unanswered chat's envelope from
+   * growing forever.
    */
   ttlSeconds?: number;
 };
 
-/** One recorded expectation: the caller's marker, plus its deadline if it has one. */
-type Entry = { marker: ReplyMarker; expiresAt?: number };
+/**
+ * Per-chat bounds for the reply/press tables, passed to `createSession()` and
+ * read off the session by this layer. All optional; with none set the tables are
+ * unbounded (the historic behavior) and grow until entries are matched, forgotten,
+ * or expire.
+ *
+ * TTL caps a marker's *age* but not the table's *size*: a chat that fires many
+ * short-lived keyboards can still balloon between prunes. `maxEntries` /
+ * `maxBytes` bound the size, evicting the least-recently-used markers once a
+ * budget is exceeded - "least-recently-used", not "oldest", because an active old
+ * keyboard must outlive an idle newer one. Recency (`lastUsedAt`) is stamped on
+ * both record and match, so a matched-but-kept press marker (a live inline
+ * keyboard) counts as fresh.
+ */
+export type ReplyTrackingOptions = {
+  /**
+   * Cap on the total number of live markers across both tables for one key. When
+   * a record pushes past it, the least-recently-used markers are evicted down to
+   * the cap.
+   */
+  maxEntries?: number;
+  /**
+   * Cap on the serialized (UTF-8) byte size of this key's reply namespace. After
+   * a record, least-recently-used markers are evicted until the namespace fits.
+   */
+  maxBytes?: number;
+  /** TTL (seconds) applied to any expectation recorded without its own `ttlSeconds`. */
+  defaultTtlSeconds?: number;
+  /**
+   * Refresh a marker's TTL from "now" each time it is used (recorded or matched),
+   * so an actively-used expectation does not expire mid-conversation. Only markers
+   * that carry a TTL are affected.
+   */
+  slidingTtl?: boolean;
+  /**
+   * Clock in epoch milliseconds, for the TTL and recency stamps. Defaults to
+   * `Date.now`; inject one to make eviction deterministic in tests.
+   */
+  now?: () => number;
+};
+
+/**
+ * One recorded expectation: the caller's marker, its deadline if it has one,
+ * `lastUsedAt` for LRU ordering (stamped only when a budget/TTL is configured),
+ * and `ttlMs` (the window to re-arm on use) only when `slidingTtl` is on.
+ */
+type Entry = { marker: ReplyMarker; expiresAt?: number; lastUsedAt?: number; ttlMs?: number };
 
 /** The two tables, keyed by the id of the message we sent. */
 type ReplyState = {
@@ -79,14 +133,21 @@ function isTable(value: unknown): boolean {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
+/** State + resolved config + a single "now" for one layer touch. */
+type Touched = { state: ReplyState; config: ReplyTrackingOptions | undefined; now: number };
+
 /**
  * This key's tables, created on first use inside the session envelope, with
- * expired entries pruned. The stored slot is untrusted (a foreign writer, a hand
- * edit, an older layout), so one missing either table is replaced by a fresh
- * pair rather than blowing up on the first write.
+ * expired entries pruned, plus the resolved config and a single `now`. The stored
+ * slot is untrusted (a foreign writer, a hand edit, an older layout), so one
+ * missing either table is replaced by a fresh pair rather than blowing up on the
+ * first write.
  */
-function replyState(ctx: Context, now = Date.now()): ReplyState {
-  const state = ctx.getSession().ext<ReplyState>(
+function touch(ctx: Context): Touched {
+  const handle = ctx.getSession();
+  const config = handle.replyTracking;
+  const now = (config?.now ?? Date.now)();
+  const state = handle.ext<ReplyState>(
     REPLY_NAMESPACE,
     () => ({ replies: {}, presses: {} }),
     (slot) => isTable(slot.replies) && isTable(slot.presses),
@@ -99,12 +160,72 @@ function replyState(ctx: Context, now = Date.now()): ReplyState {
       if (entry?.expiresAt !== undefined && entry.expiresAt <= now) delete table[Number(id)];
     }
   }
-  return state;
+  return { state, config, now };
 }
 
-function record(table: Record<number, Entry>, messageId: number, marker: ReplyMarker, options?: ExpectOptions): void {
-  table[messageId] =
-    options?.ttlSeconds === undefined ? { marker } : { marker, expiresAt: Date.now() + options.ttlSeconds * 1000 };
+function record(
+  table: Record<number, Entry>,
+  messageId: number,
+  marker: ReplyMarker,
+  options: ExpectOptions | undefined,
+  config: ReplyTrackingOptions | undefined,
+  now: number,
+): void {
+  const ttlSeconds = options?.ttlSeconds ?? config?.defaultTtlSeconds;
+  const entry: Entry = { marker };
+  if (ttlSeconds !== undefined) {
+    entry.expiresAt = now + ttlSeconds * 1000;
+    if (config?.slidingTtl === true) entry.ttlMs = ttlSeconds * 1000;
+  }
+  // Recency is only worth its bytes when a budget or sliding TTL can consult it.
+  if (config !== undefined) entry.lastUsedAt = now;
+  table[messageId] = entry;
+}
+
+/** Mark a kept marker as just used: bump recency, and slide its TTL if it has one. */
+function used(entry: Entry, config: ReplyTrackingOptions | undefined, now: number): void {
+  if (config === undefined) return;
+  entry.lastUsedAt = now;
+  if (entry.ttlMs !== undefined) entry.expiresAt = now + entry.ttlMs;
+}
+
+function byteLength(state: ReplyState): number {
+  return new TextEncoder().encode(JSON.stringify(state)).length;
+}
+
+/** One marker with the table and id it lives under, for eviction. */
+type Ref = { table: Record<number, Entry>; id: number; entry: Entry };
+
+/**
+ * Every marker across both tables, least-recently-used first. A missing recency
+ * stamp (legacy / foreign) sorts as oldest; ties break on message id, so eviction
+ * is deterministic without a fine-grained clock.
+ */
+function lruOrder(state: ReplyState): Ref[] {
+  const refs: Ref[] = [];
+  for (const table of [state.replies, state.presses]) {
+    for (const [id, entry] of Object.entries(table)) refs.push({ table, id: Number(id), entry });
+  }
+  return refs.sort((a, b) => (a.entry.lastUsedAt ?? 0) - (b.entry.lastUsedAt ?? 0) || a.id - b.id);
+}
+
+/**
+ * Evict the least-recently-used markers across both tables until the configured
+ * `maxEntries` and `maxBytes` budgets are met. A no-op when neither is set.
+ */
+function evict(state: ReplyState, config: ReplyTrackingOptions | undefined): void {
+  const { maxEntries, maxBytes } = config ?? {};
+  if (maxEntries === undefined && maxBytes === undefined) return;
+
+  const victims = lruOrder(state);
+  let i = 0;
+  const dropNext = (): void => {
+    const ref = victims[i++]!;
+    delete ref.table[ref.id];
+  };
+
+  while (maxEntries !== undefined && victims.length - i > maxEntries) dropNext();
+  while (maxBytes !== undefined && i < victims.length && byteLength(state) > maxBytes) dropNext();
 }
 
 /**
@@ -125,7 +246,9 @@ function record(table: Record<number, Entry>, messageId: number, marker: ReplyMa
  * marker and check it, or key sessions per user, when that matters.
  */
 export function expectReply(ctx: Context, messageId: number, marker: ReplyMarker = {}, options?: ExpectOptions): void {
-  record(replyState(ctx).replies, messageId, marker, options);
+  const { state, config, now } = touch(ctx);
+  record(state.replies, messageId, marker, options, config, now);
+  evict(state, config);
 }
 
 /**
@@ -143,7 +266,7 @@ export function expectReply(ctx: Context, messageId: number, marker: ReplyMarker
 export function matchReply<M extends ReplyMarker = ReplyMarker>(ctx: Context): M | undefined {
   const repliedTo = ctx.message?.reply_to_message?.message_id;
   if (repliedTo === undefined) return undefined;
-  const table = replyState(ctx).replies;
+  const table = touch(ctx).state.replies;
   const entry = table[repliedTo];
   if (entry === undefined) return undefined;
   delete table[repliedTo];
@@ -152,7 +275,7 @@ export function matchReply<M extends ReplyMarker = ReplyMarker>(ctx: Context): M
 
 /** Forget a pending reply expectation (a prompt that timed out, or was cancelled). */
 export function forgetReply(ctx: Context, messageId: number): void {
-  delete replyState(ctx).replies[messageId];
+  delete touch(ctx).state.replies[messageId];
 }
 
 /**
@@ -175,7 +298,9 @@ export function expectCallback(
   marker: ReplyMarker = {},
   options?: ExpectOptions,
 ): void {
-  record(replyState(ctx).presses, messageId, marker, options);
+  const { state, config, now } = touch(ctx);
+  record(state.presses, messageId, marker, options, config, now);
+  evict(state, config);
 }
 
 /**
@@ -203,16 +328,20 @@ export function matchCallback<M extends ReplyMarker = ReplyMarker>(
   // there is nothing to key on - route those by `callback_data` instead.
   const pressed = ctx.callbackQuery?.message?.message_id;
   if (pressed === undefined) return undefined;
-  const table = replyState(ctx).presses;
+  const { state, config, now } = touch(ctx);
+  const table = state.presses;
   const entry = table[pressed];
   if (entry === undefined) return undefined;
+  // A live keyboard is kept, so count this press as a use (recency + sliding TTL);
+  // a `once` press is consumed and needs neither.
   if (options?.once === true) delete table[pressed];
+  else used(entry, config, now);
   return entry.marker as M;
 }
 
 /** Forget a pending press expectation (a keyboard that is no longer live). */
 export function forgetCallback(ctx: Context, messageId: number): void {
-  delete replyState(ctx).presses[messageId];
+  delete touch(ctx).state.presses[messageId];
 }
 
 /**
