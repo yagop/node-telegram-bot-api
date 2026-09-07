@@ -5,6 +5,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased][Unreleased]
 
+## [2.2.0-rc2][2.2.0-rc2] - 2026-09-07
+
 ### Reply and callback tracking
 
 - Renamed the reply-tracking size budgets to denote their scope:
@@ -12,6 +14,13 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   `maxBytesPerChat` (each bounds one session key's tables, per chat with the
   default key). Breaking rename within the `2.2.0` prerelease line; the old names
   shipped only in `2.2.0-rc1`.
+
+### Maintenance
+
+- Simplified core functions and added Biome formatting and complexity checks to CI
+  (#1364, #1365).
+- Removed obsolete v2 migration references, corrected file attachment and
+  serialization comments, and regenerated the API reference (#1366).
 
 ## [2.2.0-rc1][2.2.0-rc1] - 2026-09-07
 
@@ -1255,4 +1264,5 @@ Fixed:
 [2.1.0]:https://github.com/yagop/node-telegram-bot-api/releases/tag/v2.1.0
 [2.2.0-rc0]:https://github.com/yagop/node-telegram-bot-api/releases/tag/v2.2.0-rc0
 [2.2.0-rc1]:https://github.com/yagop/node-telegram-bot-api/releases/tag/v2.2.0-rc1
-[Unreleased]:https://github.com/yagop/node-telegram-bot-api/compare/v2.2.0-rc1...master
+[2.2.0-rc2]:https://github.com/yagop/node-telegram-bot-api/releases/tag/v2.2.0-rc2
+[Unreleased]:https://github.com/yagop/node-telegram-bot-api/compare/v2.2.0-rc2...master
