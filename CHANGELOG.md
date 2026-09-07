@@ -5,6 +5,28 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased][Unreleased]
 
+### Long polling
+
+- A `409 Conflict` is now treated as a recoverable poll error instead of
+  permanently stopping the loop (#1350). Added `LongPollOptions.conflictRetryDelayMs`
+  (default 5000ms) and `maxConflictRetries` (default 10) - after that many
+  consecutive conflicts (a genuine two-instance deploy) the loop throws. The
+  existing `retry` toggle now also governs 409s. Added the public `isPollConflict()`
+  predicate and the `HTTP_STATUS_CONFLICT` constant.
+
+### Transport
+
+- An empty or whitespace-only `apiRoot` now falls back to the default API root
+  instead of being used verbatim (which produced malformed request URLs) (#1354).
+
+### Node helpers
+
+- `run()` gained an opt-in `exitOnError` (default `false`): when a polling pump
+  fails fatally, the process exits non-zero after teardown instead of staying
+  alive and silent, so a supervisor can restart it (#1351).
+- `RedisSessionStorage` now owns and closes a client it constructs from a `url`,
+  via a `createClient` seam (#1351).
+
 ### Reply and callback tracking
 
 - Added an opt-in per-chat **LRU bound** on the reply/press tables, configured on
@@ -18,8 +40,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   refreshes recency, not just a record. `defaultTtlSeconds` gives every expectation
   a TTL, and `slidingTtl` re-arms it on use.
 - All fields are optional; with no `replyTracking` the tables stay unbounded, as
-  before. The recency/sliding metadata is written only when a bound is configured,
-  so unbounded bots keep byte-identical envelopes.
+  before. The recency/sliding metadata is written only when `replyTracking` is set
+  (any field), so bots that omit it keep byte-identical envelopes.
 - Added the example `examples/18-reply-tracking-lru.ts`.
 
 ### Sessions
