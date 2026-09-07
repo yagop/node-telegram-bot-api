@@ -5,6 +5,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased][Unreleased]
 
+## [2.2.0-rc1][2.2.0-rc1] - 2026-09-07
+
 ### Long polling
 
 - A `409 Conflict` is now treated as a recoverable poll error instead of
@@ -1244,4 +1246,5 @@ Fixed:
 [2.0.0]:https://github.com/yagop/node-telegram-bot-api/releases/tag/v2.0.0
 [2.1.0]:https://github.com/yagop/node-telegram-bot-api/releases/tag/v2.1.0
 [2.2.0-rc0]:https://github.com/yagop/node-telegram-bot-api/releases/tag/v2.2.0-rc0
-[Unreleased]:https://github.com/yagop/node-telegram-bot-api/compare/v2.2.0-rc0...master
+[2.2.0-rc1]:https://github.com/yagop/node-telegram-bot-api/releases/tag/v2.2.0-rc1
+[Unreleased]:https://github.com/yagop/node-telegram-bot-api/compare/v2.2.0-rc1...master
