@@ -1,5 +1,5 @@
 /**
- * Param serialization (ADR-002 Option-D).
+ * Param serialization.
  *
  * `*Params` structured fields are plain typed objects/arrays; this is the single
  * `JSON.stringify` + `attach://` walk that turns them into the wire-ready record

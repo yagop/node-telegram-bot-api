@@ -1,10 +1,10 @@
 /**
- * Nested-file builders (§6.4).
+ * Nested-file builders.
  *
  * `sendMediaGroup` (InputMedia[]), `sendPaidMedia` (InputPaidMedia[]), the
  * sticker-set methods (InputSticker), `setMyProfilePhoto` (InputProfilePhoto) and
  * `postStory`/`editStory` (InputStoryContent) take a structured value whose file
- * fields can be an uploaded `InputFile`. Under ADR-002's Option-D these are PLAIN
+ * fields can be an uploaded `InputFile`. These are plain
  * typed objects/arrays - the pipeline's `serializeParams` walks them, hoists each
  * nested `InputFile` to `attach://media_<i>`, and serializes.
  *

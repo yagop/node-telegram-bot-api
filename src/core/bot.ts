@@ -1,5 +1,5 @@
 /**
- * Bot - the composition root (ADR-003, ADR-004, ADR-005).
+ * Bot - the composition root.
  *
  * Holds the single `Api`, an ordered middleware list, and an error boundary
  * (default: log and continue; see `catch`). `use`/`on`/`command`/`hears` all

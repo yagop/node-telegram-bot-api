@@ -10,7 +10,7 @@ The v2 split that makes this fast: **both the types AND the methods are generate
 **and** the entire `Api` client (`src/core/api.ts`) from the live docs in one command.
 So a new Bot API version is, in the common case, **`npm run generate:types` + tests +
 CHANGELOG** - there are no method bodies to hand-write and no per-field serialization
-to wire (ADR-001 generated `Api`, ADR-002 automatic `serializeParams`). It is
+to wire. `Api` is generated and `serializeParams` handles serialization. It is
 version-agnostic - use placeholders (`<method>`, `<Method>Params`, `<field>`) as the
 names for whatever the target changelog introduces.
 
@@ -40,7 +40,7 @@ Inventory the section into four buckets - this drives the rest of the work:
 | Changelog item | Where it lands | Hand-work? |
 | --- | --- | --- |
 | New **object / union type** | `src/types/schemas.ts` | **Generated** - none |
-| New **method** | `src/core/api.ts` (`Api` class) | **Generated** - none (see §3) |
+| New **method** | `src/core/api.ts` (`Api` class) | **Generated** - none (see section 2) |
 | New **field on a method** (a request parameter) | flows through `serializeParams` automatically | **none** |
 | New **field on an object** (a response/struct field) | `src/types/schemas.ts` | **Generated** - none |
 
@@ -99,7 +99,7 @@ those shapes, investigate before continuing.
 This is the big change from v1. Because methods are generated, the work that used to
 be "add the method to `src/telegram.ts` and serialize its fields" is now zero:
 
-- **New method** - already on `Api` after §2. No code to write.
+- **New method** - already on `Api` after section 2. No code to write.
 - **New optional field on an existing method** - the regenerated `<Method>Params`
   already carries it; callers can pass it. No code change.
 - **Serialization** - automatic and universal. `serializeParams` (in
@@ -113,9 +113,9 @@ The only hand-work that can come up, all rare and all in the **generator**, not 
 library source:
 
 - A new scalar type spelling the parser can't map -> extend `mapScalar`/`mapType`
-  (§2), then re-run.
+  (section 2), then re-run.
 - A method whose return type the parser can't infer -> add it to `RETURN_OVERRIDES`
-  (§2), then re-run.
+  (section 2), then re-run.
 
 ### Context shortcuts (only for ubiquitous per-update helpers)
 

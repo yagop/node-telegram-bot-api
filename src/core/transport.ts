@@ -1,5 +1,5 @@
 /**
- * Transport (ADR-005, ADR-008) - the only module that touches `fetch`.
+ * Transport - the only module that touches `fetch`.
  *
  * It is injectable (`options.fetch`) so tests pass a fake instead of
  * monkeypatching `globalThis.fetch`. It merges a per-request timeout with the

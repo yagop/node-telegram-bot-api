@@ -1,5 +1,5 @@
 /**
- * Files & the form-part contract (ADR-006, ADR-011).
+ * Files & the form-part contract.
  *
  * `InputFile` is the one value that cannot be JSON-serialized (you can't encode a
  * `Blob`), so it has its own path: a multipart part. It wraps
@@ -38,7 +38,7 @@ export interface InputFileMeta {
 }
 
 /** The `attach://` URI scheme the Bot API uses to reference a multipart part
- *  from inside a JSON structure (ADR-011). */
+ *  from inside a JSON structure. */
 export const ATTACH_PREFIX = "attach://";
 
 /** Explicit, web-standard wrapper for uploadable bytes. */
@@ -52,7 +52,7 @@ export class InputFile {
    * This file's wire reference when it occupies attach slot `index`:
    * `attach://media_<index>`. The matching multipart part is keyed `media_<index>`
    * (the ref without the scheme). `InputFile` owns the naming convention; the slot
-   * index is allocated by `AttachedMedia` during its build pass (ADR-011).
+   * index is allocated by `serializeParams` while it resolves nested files.
    */
   build(index: number): string {
     return `${ATTACH_PREFIX}media_${index}`;
@@ -67,7 +67,7 @@ export function isInputFile(value: unknown): value is InputFile {
  * A file-carrying composite produced by `serializeParams` for a structured field
  * that contained nested `InputFile`s: the already-serialized JSON (with `attach://`
  * refs) plus the keyed parts those refs point at. The encoder sets `json` under the
- * field name and attaches each part - it still stringifies nothing (ADR-011).
+ * field name and attaches each part - it still stringifies nothing.
  */
 export interface FormPart {
   readonly __formPart: true;

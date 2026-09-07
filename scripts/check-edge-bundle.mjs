@@ -1,7 +1,7 @@
 #!/usr/bin/env bun
 import { dirname, join } from "node:path";
 /**
- * CI edge-safety gate (ADR-009): the runtime-agnostic core (`src/core/**`) must
+ * CI edge-safety gate: the runtime-agnostic core (`src/core/**`) must
  * bundle for a browser/edge target with **zero** Node dependencies.
  *
  * Where `check-core-imports.mjs` reads the source statically, this check proves

@@ -28,7 +28,7 @@ export type ReplyMarkup =
 
 
 // ---------------------------------------------------------------------------
-// Update - discriminated union (ADR-007), one variant per payload key
+// Update - discriminated union, one variant per payload key
 // ---------------------------------------------------------------------------
 
 export type Update =

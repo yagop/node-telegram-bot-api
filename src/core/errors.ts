@@ -1,5 +1,5 @@
 /**
- * Error hierarchy (ADR-008).
+ * Error hierarchy.
  *
  * A single base, `TelegramBotError`, preserves `cause` and a stable `.code`
  * string (kept for muscle memory from v1). Subclasses expose structured fields

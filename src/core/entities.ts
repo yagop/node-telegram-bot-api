@@ -1,5 +1,5 @@
 /**
- * MessageEntity helpers (§6.3).
+ * MessageEntity helpers.
  *
  * `EntityBuilder` is a fluent builder that accumulates text and tracks UTF-16 offsets so
  * callers never hand-count them. A JS string's `.length` already counts UTF-16

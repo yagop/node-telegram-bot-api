@@ -1,5 +1,5 @@
 /**
- * Markup builders (§6.2).
+ * Markup builders.
  *
  * Each `.build()` returns the plain `*Markup` object - drop it straight into a
  * `reply_markup` field (the pipeline serializes it). These builders are fluent

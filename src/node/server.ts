@@ -1,6 +1,6 @@
 /**
  * `createWebhookServer` / `startWebhook` - a self-hosted `node:http` webhook
- * server (ADR-005, §6.7).
+ * server.
  *
  * `createWebhookServer` adapts incoming `node:http` requests and delegates to the
  * core `nodeFrameworkWebhook` handler - no request-handling logic is duplicated -

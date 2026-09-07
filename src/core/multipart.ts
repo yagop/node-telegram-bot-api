@@ -1,5 +1,5 @@
 /**
- * Streaming multipart/form-data encoder (ADR-002, ADR-011).
+ * Streaming multipart/form-data encoder.
  *
  * Hand-rolls the multipart body as a web `ReadableStream<Uint8Array>` so file
  * bytes flow chunk-by-chunk from their source (a disk-backed `Blob`, a
