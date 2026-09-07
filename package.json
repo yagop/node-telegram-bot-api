@@ -79,8 +79,8 @@
     "lint:core": "node scripts/check-core-imports.mjs",
     "lint:bun-isolation": "node scripts/check-bun-isolation.mjs",
     "check:edge": "bun scripts/check-edge-bundle.mjs",
-    "format": "biome check --write --indent-style=space --line-width=120 ./src",
-    "check": "npm run typecheck && npm run typecheck:bun && npm run typecheck:test && npm run typecheck:examples && npm run lint:core && npm run lint:bun-isolation && npm run check:edge && npm test",
+    "lint:format": "biome check --indent-style=space --line-width=100 --trailing-commas=es5 ./src",
+    "check": "npm run typecheck && npm run typecheck:bun && npm run typecheck:test && npm run typecheck:examples && npm run lint:core && npm run lint:bun-isolation && npm run check:edge && npm run lint:format && npm test",
     "generate:types": "bun scripts/api-parser.ts",
     "prepublishOnly": "npm run build",
     "generate:docs": "bun scripts/generate-docs.ts"

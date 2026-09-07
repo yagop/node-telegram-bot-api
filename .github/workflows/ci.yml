@@ -43,6 +43,8 @@ jobs:
         run: npm run lint:core
       - name: Core bundles edge-safe (check:edge)
         run: npm run check:edge
+      - name: Formatting is clean (lint:format)
+        run: npm run lint:format
 
   unit-bun:
     name: Unit tests (Bun)

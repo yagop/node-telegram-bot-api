@@ -84,7 +84,9 @@ export class SqlSessionStorage implements SessionStore {
    */
   init(): Promise<void> {
     if (this.closed) {
-      return Promise.reject(new Error("SqlSessionStorage: this store was closed; construct a new one"));
+      return Promise.reject(
+        new Error("SqlSessionStorage: this store was closed; construct a new one")
+      );
     }
     if (this.ensured === undefined) {
       this.ensured = (async () => {
@@ -119,14 +121,18 @@ export class SqlSessionStorage implements SessionStore {
 
   async read(key: string): Promise<string | undefined> {
     await this.init();
-    const [row] = (await this.sql`SELECT value FROM ${this.ref} WHERE key = ${key}`) as Array<{ value: unknown }>;
+    const [row] = (await this.sql`SELECT value FROM ${this.ref} WHERE key = ${key}`) as Array<{
+      value: unknown;
+    }>;
     if (row === undefined) return undefined;
     // `CREATE TABLE IF NOT EXISTS` adopts a pre-existing table of that name, so
     // the column may not be the TEXT we assume - a JSON/JSONB one comes back
     // already parsed. Say so here rather than letting a non-string reach the
     // codec and fail as a baffling JSON.parse error.
     if (typeof row.value !== "string") {
-      throw new TypeError(`SqlSessionStorage: ${this.table}.value must be TEXT, got ${typeof row.value}`);
+      throw new TypeError(
+        `SqlSessionStorage: ${this.table}.value must be TEXT, got ${typeof row.value}`
+      );
     }
     return row.value;
   }

@@ -40,7 +40,7 @@ export interface EncodedRequest {
 export async function encodeForm(
   fields: Record<string, WireValue>,
   // Test seam: force the buffered-Blob fallback a streaming runtime never takes.
-  streaming: boolean = supportsRequestStreams(),
+  streaming: boolean = supportsRequestStreams()
 ): Promise<EncodedRequest> {
   const strings: Array<[string, string]> = [];
   const files: Array<readonly [string, InputFile]> = [];

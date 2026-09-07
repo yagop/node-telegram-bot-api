@@ -100,7 +100,7 @@ export class Transport {
 
   constructor(
     private readonly token: string,
-    options: TransportOptions = {},
+    options: TransportOptions = {}
   ) {
     if (!token) throw new TelegramBotError("A bot token is required", { code: "EPARAM" });
     // Empty/whitespace apiRoot falls back to the default; `??` would keep "".
@@ -120,13 +120,22 @@ export class Transport {
 
   /** For long polling the client timeout must outlast the server-side wait. */
   private effectiveTimeout(method: string, params?: Record<string, WireValue>): number {
-    if (method === "getUpdates" && params && typeof params.timeout === "number" && params.timeout > 0) {
+    if (
+      method === "getUpdates" &&
+      params &&
+      typeof params.timeout === "number" &&
+      params.timeout > 0
+    ) {
       return params.timeout * 1000 + 10_000;
     }
     return this.timeoutMs;
   }
 
-  async request<R>(method: string, params?: Record<string, WireValue>, signal?: AbortSignal): Promise<R> {
+  async request<R>(
+    method: string,
+    params?: Record<string, WireValue>,
+    signal?: AbortSignal
+  ): Promise<R> {
     const url = `${this.apiRoot}/bot${this.token}/${method}`;
     const timeoutMs = this.effectiveTimeout(method, params);
     log("-> %s", method);
@@ -157,7 +166,12 @@ export class Transport {
       // The fetch spec (and undici) require `duplex: "half"` to send a stream
       // body; set it only then so runtimes that reject the member for ordinary
       // bodies are unaffected.
-      const init: RequestInit & { duplex?: "half" } = { method: "POST", body, headers, signal: composed };
+      const init: RequestInit & { duplex?: "half" } = {
+        method: "POST",
+        body,
+        headers,
+        signal: composed,
+      };
       if (body instanceof ReadableStream) init.duplex = "half";
 
       let response: Response;
@@ -177,7 +191,8 @@ export class Transport {
           await delay(wait, signal);
           continue;
         }
-        if (isAbortError(err)) throw new TimeoutError(`Request timed out: ${method}`, { cause: err });
+        if (isAbortError(err))
+          throw new TimeoutError(`Request timed out: ${method}`, { cause: err });
         throw new NetworkError(`Network request failed: ${method}`, { cause: err });
       } finally {
         cleanup();
@@ -187,14 +202,25 @@ export class Transport {
       if (response.status >= 500) {
         if (attempt < maxRetries) {
           const wait = backoff(attempt + 1, this.retryBackoffMs, MAX_BACKOFF);
-          log("%s HTTP %d; retry %d/%d in %dms", method, response.status, attempt + 1, maxRetries, wait);
+          log(
+            "%s HTTP %d; retry %d/%d in %dms",
+            method,
+            response.status,
+            attempt + 1,
+            maxRetries,
+            wait
+          );
           await delay(wait, signal);
           continue;
         }
         // Exhausted: prefer the `{ ok: false }` envelope when the body is one.
         const envelope = parseEnvelope<R>(text);
         if (envelope && !envelope.ok) {
-          throw new TelegramApiError(envelope.error_code, envelope.description, envelope.parameters);
+          throw new TelegramApiError(
+            envelope.error_code,
+            envelope.description,
+            envelope.parameters
+          );
         }
         throw new NetworkError(`Server error ${response.status} on ${method}`);
       }
@@ -228,7 +254,7 @@ export class Transport {
           "%s 429; retry_after %ds exceeds maxRetryAfterMs (%dms) - surfacing",
           method,
           retryAfter,
-          this.maxRetryAfterMs,
+          this.maxRetryAfterMs
         );
       }
 

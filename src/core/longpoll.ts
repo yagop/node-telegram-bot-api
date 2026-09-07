@@ -74,7 +74,7 @@ function planRetry({
   log(
     "getUpdates %s; retry in %dms",
     pollConflict ? `conflict ${next}/${maxConflictRetries}` : "failed",
-    Math.round(wait),
+    Math.round(wait)
   );
   return { wait, conflicts: next };
 }
@@ -95,7 +95,11 @@ async function recover(ctx: RetryContext): Promise<{ conflicts: number } | "stop
 }
 
 /** Async-generator update source (ADR-004): long-polls `getUpdates` and yields each update until the signal aborts. */
-export async function* longPoll(api: Api, options: LongPollOptions = {}, signal?: AbortSignal): AsyncGenerator<Update> {
+export async function* longPoll(
+  api: Api,
+  options: LongPollOptions = {},
+  signal?: AbortSignal
+): AsyncGenerator<Update> {
   let offset = options.offset;
   const timeout = options.timeout ?? DEFAULT_POLL_TIMEOUT;
   const limit = options.limit;
@@ -118,7 +122,7 @@ export async function* longPoll(api: Api, options: LongPollOptions = {}, signal?
           timeout,
           allowed_updates: allowed,
         },
-        signal,
+        signal
       );
     } catch (err) {
       // A 409 (another instance polling the same token) is transient for polling

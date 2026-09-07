@@ -97,7 +97,10 @@ export function safeEqual(a: string, b: string): boolean {
   return diff === 0;
 }
 
-export function webhookCallback(bot: Bot, options: WebhookOptions = {}): (request: Request) => Promise<Response> {
+export function webhookCallback(
+  bot: Bot,
+  options: WebhookOptions = {}
+): (request: Request) => Promise<Response> {
   const { secretToken, allowUnauthenticated, fastAck, waitUntil } = options;
 
   // Secure by default: a webhook callback requires a secret token. The only way
@@ -108,13 +111,13 @@ export function webhookCallback(bot: Bot, options: WebhookOptions = {}): (reques
       throw new TelegramBotError(
         "webhookCallback requires `secretToken` (matching setWebhook's secret_token). " +
           "Set it, or pass `allowUnauthenticated: true` if auth is enforced at another layer.",
-        { code: "EPARAM" },
+        { code: "EPARAM" }
       );
     }
   } else if (!SECRET_TOKEN_RE.test(secretToken)) {
     throw new TelegramBotError(
       "Invalid `secretToken`: must be 1-256 characters of A-Z, a-z, 0-9, _ or - (per setWebhook).",
-      { code: "EPARAM" },
+      { code: "EPARAM" }
     );
   }
 

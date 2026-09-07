@@ -128,7 +128,11 @@ export type SessionHandle<T> = {
    * layout), so pass `isValid` to have a slot that fails the check replaced by a
    * fresh `initial()` instead of reaching the layer half-formed.
    */
-  ext<E extends object>(namespace: string, initial: () => E, isValid?: (slot: Record<string, unknown>) => boolean): E;
+  ext<E extends object>(
+    namespace: string,
+    initial: () => E,
+    isValid?: (slot: Record<string, unknown>) => boolean
+  ): E;
   /**
    * Per-chat bounds for the reply-tracking layer, as passed to
    * {@link SessionOptions.replyTracking}. Read by `reply-tracking.ts` when it
@@ -245,7 +249,9 @@ function createKeyLock(): <R>(key: string, fn: () => Promise<R>) => Promise<R> {
  * The envelope is flushed after the handler even if it throws, so a marker
  * written before an error still persists - and only when it actually changed.
  */
-export function createSession<T = Record<string, unknown>>(options: SessionOptions<T>): SessionMiddleware<T> {
+export function createSession<T = Record<string, unknown>>(
+  options: SessionOptions<T>
+): SessionMiddleware<T> {
   const store = options.store;
   const getSessionKey = options.getSessionKey ?? defaultKey;
   const initial = options.initial ?? (() => ({}) as T);
@@ -263,7 +269,7 @@ export function createSession<T = Record<string, unknown>>(options: SessionOptio
         (err: unknown) => {
           setup = undefined; // a transient failure must not be cached forever
           throw err;
-        },
+        }
       );
     }
     return setup;
@@ -290,7 +296,7 @@ export function createSession<T = Record<string, unknown>>(options: SessionOptio
         ext<E extends object>(
           namespace: string,
           makeInitial: () => E,
-          isValid?: (slot: Record<string, unknown>) => boolean,
+          isValid?: (slot: Record<string, unknown>) => boolean
         ): E {
           if (envelope.ext === undefined) envelope.ext = {};
           const ext = envelope.ext;
@@ -355,7 +361,7 @@ export function createSession<T = Record<string, unknown>>(options: SessionOptio
     envelope: SessionEnvelope<T>,
     before: string,
     existed: boolean,
-    dropped: boolean,
+    dropped: boolean
   ): Promise<void> {
     if (dropped) return persistDrop(key, existed);
     // `handle.data` may have been reassigned to a fresh object; re-read it.
@@ -368,7 +374,9 @@ export function createSession<T = Record<string, unknown>>(options: SessionOptio
     get(ctx: Context): SessionHandle<T> {
       const handle = handles.get(ctx);
       if (handle === undefined) {
-        throw new Error("session.get: the session middleware did not run for this update (no key, or not registered)");
+        throw new Error(
+          "session.get: the session middleware did not run for this update (no key, or not registered)"
+        );
       }
       return handle;
     },

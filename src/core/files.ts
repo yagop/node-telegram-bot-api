@@ -28,7 +28,9 @@ export type InputFileData = Blob | Uint8Array | ReadableStream<Uint8Array> | Inp
  * A replayable stream source: return a fresh, unread stream on every call.
  * The upload stays retryable - each send attempt opens a new stream.
  */
-export type InputFileStreamFactory = () => ReadableStream<Uint8Array> | Promise<ReadableStream<Uint8Array>>;
+export type InputFileStreamFactory = () =>
+  | ReadableStream<Uint8Array>
+  | Promise<ReadableStream<Uint8Array>>;
 
 export interface InputFileMeta {
   filename?: string;
@@ -43,7 +45,7 @@ export const ATTACH_PREFIX = "attach://";
 export class InputFile {
   constructor(
     readonly data: InputFileData,
-    readonly meta?: InputFileMeta,
+    readonly meta?: InputFileMeta
   ) {}
 
   /**
@@ -76,10 +78,17 @@ export interface FormPart {
 }
 
 export function isFormPart(value: unknown): value is FormPart {
-  return typeof value === "object" && value !== null && (value as { __formPart?: unknown }).__formPart === true;
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    (value as { __formPart?: unknown }).__formPart === true
+  );
 }
 
 /** Build a `FormPart` from a serialized JSON string and the files its refs point at. */
-export function formPart(json: string, files: ReadonlyArray<readonly [string, InputFile]>): FormPart {
+export function formPart(
+  json: string,
+  files: ReadonlyArray<readonly [string, InputFile]>
+): FormPart {
   return { __formPart: true, json, files };
 }

@@ -104,7 +104,8 @@ export function isAbortError(err: unknown): boolean {
  */
 export function isTransientError(err: unknown): boolean {
   if (err instanceof NetworkError || err instanceof TimeoutError) return true;
-  if (err instanceof TelegramApiError) return err.errorCode === HTTP_STATUS_TOO_MANY_REQUESTS || err.errorCode >= 500;
+  if (err instanceof TelegramApiError)
+    return err.errorCode === HTTP_STATUS_TOO_MANY_REQUESTS || err.errorCode >= 500;
   return false;
 }
 

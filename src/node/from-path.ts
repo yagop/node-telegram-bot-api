@@ -23,7 +23,10 @@ import { InputFile } from "../core/files.js";
  * the file for each transport retry. The default filename is the path's
  * basename; pass `meta.filename` / `meta.contentType` to override.
  */
-export async function fromPath(path: string, meta?: { filename?: string; contentType?: string }): Promise<InputFile> {
+export async function fromPath(
+  path: string,
+  meta?: { filename?: string; contentType?: string }
+): Promise<InputFile> {
   await stat(path); // surface a missing/unreadable path here, not mid-request
   const open = () => Readable.toWeb(createReadStream(path)) as ReadableStream<Uint8Array>;
   return new InputFile(open, {

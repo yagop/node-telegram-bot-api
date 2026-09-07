@@ -205,7 +205,10 @@ export class Bot {
    * a RegExp matches when `text.match(re)` is non-null (sets `ctx.match` to the
    * `RegExpMatchArray`).
    */
-  hears(trigger: string | RegExp | Array<string | RegExp>, ...handlers: Middleware<Context>[]): this {
+  hears(
+    trigger: string | RegExp | Array<string | RegExp>,
+    ...handlers: Middleware<Context>[]
+  ): this {
     const triggers = Array.isArray(trigger) ? trigger : [trigger];
     this.register(handlers);
     const run = compose(handlers) satisfies Composed;
@@ -274,7 +277,9 @@ export class Bot {
    */
   async startPolling(source?: AsyncIterable<Update>, options?: LongPollOptions): Promise<void> {
     if (this.running) {
-      throw new Error("startPolling is already running; call stop() and await the previous run first");
+      throw new Error(
+        "startPolling is already running; call stop() and await the previous run first"
+      );
     }
     const controller = new AbortController();
     this.controller = controller;

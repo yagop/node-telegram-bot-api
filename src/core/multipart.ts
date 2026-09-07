@@ -58,7 +58,7 @@ function safeContentType(value: string): string {
  */
 export function multipartBody(
   strings: ReadonlyArray<readonly [string, string]>,
-  files: ReadonlyArray<readonly [string, InputFile]>,
+  files: ReadonlyArray<readonly [string, InputFile]>
 ): MultipartBody {
   const boundary = randomBoundary();
   const enc = new TextEncoder();
@@ -68,19 +68,21 @@ export function multipartBody(
   for (const [name, value] of strings) {
     pieces.push(
       enc.encode(
-        `--${boundary}\r\nContent-Disposition: form-data; name="${escapeHeaderValue(name)}"\r\n\r\n${value}\r\n`,
-      ),
+        `--${boundary}\r\nContent-Disposition: form-data; name="${escapeHeaderValue(name)}"\r\n\r\n${value}\r\n`
+      )
     );
   }
   for (const [name, file] of files) {
     const filename = escapeHeaderValue(file.meta?.filename ?? name);
     const blobType = file.data instanceof Blob ? file.data.type : "";
-    const contentType = safeContentType(file.meta?.contentType ?? (blobType || "application/octet-stream"));
+    const contentType = safeContentType(
+      file.meta?.contentType ?? (blobType || "application/octet-stream")
+    );
     pieces.push(
       enc.encode(
         `--${boundary}\r\nContent-Disposition: form-data; name="${escapeHeaderValue(name)}"; ` +
-          `filename="${filename}"\r\nContent-Type: ${contentType}\r\n\r\n`,
-      ),
+          `filename="${filename}"\r\nContent-Type: ${contentType}\r\n\r\n`
+      )
     );
     if (file.data instanceof ReadableStream) replayable = false;
     pieces.push(file.data);
@@ -93,13 +95,16 @@ export function multipartBody(
 
 /** Walk the pieces in order, yielding raw chunks (a Blob streams from its
  *  store; a factory opens a fresh stream for this build). */
-async function* pieceChunks(pieces: ReadonlyArray<BodyPiece>): AsyncGenerator<Uint8Array, void, undefined> {
+async function* pieceChunks(
+  pieces: ReadonlyArray<BodyPiece>
+): AsyncGenerator<Uint8Array, void, undefined> {
   for (const piece of pieces) {
     if (piece instanceof Uint8Array) {
       yield piece;
       continue;
     }
-    const stream = typeof piece === "function" ? await piece() : piece instanceof Blob ? piece.stream() : piece;
+    const stream =
+      typeof piece === "function" ? await piece() : piece instanceof Blob ? piece.stream() : piece;
     const reader = stream.getReader();
     let finished = false;
     try {
@@ -145,7 +150,12 @@ let requestStreamsSupported: boolean | undefined;
 function proxyConfigured(env: Record<string, string | undefined> | undefined): boolean {
   if (!env) return false;
   return Boolean(
-    env.HTTPS_PROXY ?? env.https_proxy ?? env.HTTP_PROXY ?? env.http_proxy ?? env.ALL_PROXY ?? env.all_proxy,
+    env.HTTPS_PROXY ??
+      env.https_proxy ??
+      env.HTTP_PROXY ??
+      env.http_proxy ??
+      env.ALL_PROXY ??
+      env.all_proxy
   );
 }
 
@@ -159,7 +169,10 @@ function proxyConfigured(env: Record<string, string | undefined> | undefined): b
  * 1.3.x fix would be buffered too - conservative, never wrong. Read via
  * `Bun.env`/`Bun.version` (not `process`) so core stays free of Node globals.
  */
-function bunStreamBodyBroken(bun: { version?: string; env?: Record<string, string | undefined> }): boolean {
+function bunStreamBodyBroken(bun: {
+  version?: string;
+  env?: Record<string, string | undefined>;
+}): boolean {
   const [major = 0, minor = 0] = (bun.version ?? "0.0.0").split(".").map(Number);
   if (major > 1 || (major === 1 && minor >= 4)) return false;
   return proxyConfigured(bun.env);
@@ -175,7 +188,9 @@ function bunStreamBodyBroken(bun: { version?: string; env?: Record<string, strin
  */
 export function supportsRequestStreams(): boolean {
   if (requestStreamsSupported === undefined) {
-    const bun = (globalThis as { Bun?: { version?: string; env?: Record<string, string | undefined> } }).Bun;
+    const bun = (
+      globalThis as { Bun?: { version?: string; env?: Record<string, string | undefined> } }
+    ).Bun;
     if (bun !== undefined && bunStreamBodyBroken(bun)) {
       requestStreamsSupported = false;
       return requestStreamsSupported;

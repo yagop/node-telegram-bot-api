@@ -10,7 +10,11 @@
  */
 
 import http from "node:http";
-import { type NodeLikeRequest, type NodeLikeResponse, nodeFrameworkWebhook } from "../core/adapters.js";
+import {
+  type NodeLikeRequest,
+  type NodeLikeResponse,
+  nodeFrameworkWebhook,
+} from "../core/adapters.js";
 import type { Bot } from "../core/bot.js";
 import { debug } from "../core/debug.js";
 import type { WebhookOptions } from "../core/webhook.js";
@@ -47,21 +51,23 @@ export function createWebhookServer(bot: Bot, options: WebhookServerOptions = {}
     }
     // node:http's IncomingMessage / ServerResponse structurally satisfy the
     // core's NodeLike shapes.
-    handler(req as unknown as NodeLikeRequest, res as unknown as NodeLikeResponse).catch((err: unknown) => {
-      // Expected during a forced shutdown: `closeAllConnections()` destroys a
-      // socket whose request body was still arriving, so `readBody` rejects
-      // (ECONNRESET). Swallow it - an unhandled rejection here could crash the
-      // process mid-shutdown - and try a 500 while the socket is still writable.
-      log("handler error: %s", String(err));
-      if (!res.headersSent && res.writable) {
-        try {
-          res.statusCode = 500;
-          res.end();
-        } catch {
-          // socket already gone - nothing to send
+    handler(req as unknown as NodeLikeRequest, res as unknown as NodeLikeResponse).catch(
+      (err: unknown) => {
+        // Expected during a forced shutdown: `closeAllConnections()` destroys a
+        // socket whose request body was still arriving, so `readBody` rejects
+        // (ECONNRESET). Swallow it - an unhandled rejection here could crash the
+        // process mid-shutdown - and try a 500 while the socket is still writable.
+        log("handler error: %s", String(err));
+        if (!res.headersSent && res.writable) {
+          try {
+            res.statusCode = 500;
+            res.end();
+          } catch {
+            // socket already gone - nothing to send
+          }
         }
       }
-    });
+    );
   });
 }
 
@@ -83,7 +89,10 @@ const DEFAULT_SHUTDOWN_TIMEOUT = 10_000; // 10s, then force-close whatever is le
  * cancel it once `close` completes on its own. The connection helpers need Node
  * 18.2+ and are optional-chained so a non-Node runtime is a safe no-op.
  */
-export function gracefulClose(server: http.Server, timeoutMs: number): ReturnType<typeof setTimeout> {
+export function gracefulClose(
+  server: http.Server,
+  timeoutMs: number
+): ReturnType<typeof setTimeout> {
   server.close(); // stop accepting; resolves once existing connections end
   server.closeIdleConnections?.(); // drop idle keep-alive sockets now
   const forceTimer = setTimeout(() => server.closeAllConnections?.(), timeoutMs);
@@ -140,7 +149,7 @@ export async function startWebhook(bot: Bot, options: StartWebhookOptions): Prom
         new Promise<void>((resolve, reject) => {
           server.once("error", reject);
           server.once("close", () => resolve());
-        }),
+        })
     );
   } finally {
     if (forceTimer) clearTimeout(forceTimer);

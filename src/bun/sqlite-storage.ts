@@ -51,19 +51,22 @@ export class SqliteSessionStorage implements SessionStore {
     }
     this.table = table;
     this.owned = typeof options.database !== "object";
-    this.db = typeof options.database === "object" ? options.database : new Database(options.database ?? ":memory:");
+    this.db =
+      typeof options.database === "object"
+        ? options.database
+        : new Database(options.database ?? ":memory:");
     this.db.run(
       `CREATE TABLE IF NOT EXISTS "${table}" (
          key TEXT PRIMARY KEY,
          value TEXT NOT NULL,
          created_at TEXT NOT NULL,
          updated_at TEXT NOT NULL
-       )`,
+       )`
     );
     this.getStmt = this.db.query(`SELECT value FROM "${table}" WHERE key = ?`);
     this.insertStmt = this.db.query(
       `INSERT INTO "${table}" (key, value, created_at, updated_at) VALUES (?, ?, ?, ?)
-       ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at`,
+       ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at`
     );
     this.delStmt = this.db.query(`DELETE FROM "${table}" WHERE key = ?`);
   }
@@ -83,7 +86,9 @@ export class SqliteSessionStorage implements SessionStore {
     // foreign writer bound). Say so here rather than letting a non-string reach
     // the codec and fail as a baffling JSON.parse error.
     if (typeof row.value !== "string") {
-      throw new TypeError(`SqliteSessionStorage: ${this.table}.value must be TEXT, got ${typeof row.value}`);
+      throw new TypeError(
+        `SqliteSessionStorage: ${this.table}.value must be TEXT, got ${typeof row.value}`
+      );
     }
     return row.value;
   }
