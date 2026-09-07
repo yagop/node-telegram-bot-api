@@ -42,7 +42,9 @@ export class TokenBucket {
 
   /** Milliseconds until at least one token is available. */
   private waitMs(): number {
-    if (this.tokens >= 1) return 0;
+    if (this.tokens >= 1) {
+      return 0;
+    }
     const missing = 1 - this.tokens;
     return Math.ceil((missing / this.ratePerSec) * 1000);
   }
@@ -112,7 +114,9 @@ export class RateLimiter {
   }
 
   async acquire(chatId: string | number | undefined, signal?: AbortSignal): Promise<void> {
-    if (this.global) await this.global.take(signal);
+    if (this.global) {
+      await this.global.take(signal);
+    }
     if (this.perChatRate !== undefined && chatId !== undefined) {
       await this.chatBucket(String(chatId)).take(signal);
     }
@@ -141,8 +145,12 @@ export class RateLimiter {
 
   /** Drop the least-recently-used chat bucket when the cache is at capacity. */
   private evictIfFull(): void {
-    if (this.chats.size < this.maxChatBuckets) return;
+    if (this.chats.size < this.maxChatBuckets) {
+      return;
+    }
     const oldest = this.chats.keys().next().value;
-    if (oldest !== undefined) this.chats.delete(oldest);
+    if (oldest !== undefined) {
+      this.chats.delete(oldest);
+    }
   }
 }

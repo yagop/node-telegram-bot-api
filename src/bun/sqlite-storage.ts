@@ -80,7 +80,9 @@ export class SqliteSessionStorage implements SessionStore {
   read(key: string): string | undefined {
     this.assertUsable();
     const row = this.getStmt.get(key) as { value: unknown } | null;
-    if (row === null) return undefined;
+    if (row === null) {
+      return undefined;
+    }
     // `CREATE TABLE IF NOT EXISTS` adopts a pre-existing table of that name, so
     // the column may not hold the TEXT we assume (SQLite stores whatever a
     // foreign writer bound). Say so here rather than letting a non-string reach

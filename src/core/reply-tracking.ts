@@ -157,7 +157,9 @@ function touch(ctx: Context): Touched {
   // the smaller table.
   for (const table of [state.replies, state.presses]) {
     for (const [id, entry] of Object.entries(table)) {
-      if (entry?.expiresAt !== undefined && entry.expiresAt <= now) delete table[Number(id)];
+      if (entry?.expiresAt !== undefined && entry.expiresAt <= now) {
+        delete table[Number(id)];
+      }
     }
   }
   return { state, config, now };
@@ -175,11 +177,15 @@ function record(
   const entry: Entry = { marker };
   if (ttlSeconds !== undefined) {
     entry.expiresAt = now + ttlSeconds * 1000;
-    if (config?.slidingTtl === true) entry.ttlMs = ttlSeconds * 1000;
+    if (config?.slidingTtl === true) {
+      entry.ttlMs = ttlSeconds * 1000;
+    }
   }
   // Recency is only worth its bytes when a size budget (the only reader of
   // `lastUsedAt`) is set; sliding TTL rides on `ttlMs` / `expiresAt` instead.
-  if (hasBudget(config)) entry.lastUsedAt = now;
+  if (hasBudget(config)) {
+    entry.lastUsedAt = now;
+  }
   table[messageId] = entry;
 }
 
@@ -193,9 +199,15 @@ function hasBudget(config: ReplyTrackingOptions | undefined): boolean {
 
 /** Mark a kept marker as just used: slide its TTL if it has one, and bump recency for the LRU. */
 function used(entry: Entry, config: ReplyTrackingOptions | undefined, now: number): void {
-  if (config === undefined) return;
-  if (entry.ttlMs !== undefined) entry.expiresAt = now + entry.ttlMs;
-  if (hasBudget(config)) entry.lastUsedAt = now;
+  if (config === undefined) {
+    return;
+  }
+  if (entry.ttlMs !== undefined) {
+    entry.expiresAt = now + entry.ttlMs;
+  }
+  if (hasBudget(config)) {
+    entry.lastUsedAt = now;
+  }
 }
 
 function byteLength(state: ReplyState): number {
@@ -213,7 +225,9 @@ type Ref = { table: Record<number, Entry>; id: number; entry: Entry };
 function lruOrder(state: ReplyState): Ref[] {
   const refs: Ref[] = [];
   for (const table of [state.replies, state.presses]) {
-    for (const [id, entry] of Object.entries(table)) refs.push({ table, id: Number(id), entry });
+    for (const [id, entry] of Object.entries(table)) {
+      refs.push({ table, id: Number(id), entry });
+    }
   }
   return refs.sort((a, b) => (a.entry.lastUsedAt ?? 0) - (b.entry.lastUsedAt ?? 0) || a.id - b.id);
 }
@@ -224,13 +238,17 @@ function lruOrder(state: ReplyState): Ref[] {
  */
 function evict(state: ReplyState, config: ReplyTrackingOptions | undefined): void {
   const { maxEntriesPerChat, maxBytesPerChat } = config ?? {};
-  if (maxEntriesPerChat === undefined && maxBytesPerChat === undefined) return;
+  if (maxEntriesPerChat === undefined && maxBytesPerChat === undefined) {
+    return;
+  }
 
   const victims = lruOrder(state);
   let i = 0;
   const dropNext = (): void => {
     const ref = victims[i++];
-    if (ref !== undefined) delete ref.table[ref.id];
+    if (ref !== undefined) {
+      delete ref.table[ref.id];
+    }
   };
 
   // `i < victims.length` also guards a negative/NaN `maxEntriesPerChat` from underflowing
@@ -239,10 +257,16 @@ function evict(state: ReplyState, config: ReplyTrackingOptions | undefined): voi
     maxEntriesPerChat !== undefined &&
     i < victims.length &&
     victims.length - i > maxEntriesPerChat
-  )
+  ) {
     dropNext();
-  while (maxBytesPerChat !== undefined && i < victims.length && byteLength(state) > maxBytesPerChat)
+  }
+  while (
+    maxBytesPerChat !== undefined &&
+    i < victims.length &&
+    byteLength(state) > maxBytesPerChat
+  ) {
     dropNext();
+  }
 }
 
 /**
@@ -287,10 +311,14 @@ export function expectReply(
  */
 export function matchReply<M extends ReplyMarker = ReplyMarker>(ctx: Context): M | undefined {
   const repliedTo = ctx.message?.reply_to_message?.message_id;
-  if (repliedTo === undefined) return undefined;
+  if (repliedTo === undefined) {
+    return undefined;
+  }
   const table = touch(ctx).state.replies;
   const entry = table[repliedTo];
-  if (entry === undefined) return undefined;
+  if (entry === undefined) {
+    return undefined;
+  }
   delete table[repliedTo];
   return entry.marker as M;
 }
@@ -349,15 +377,22 @@ export function matchCallback<M extends ReplyMarker = ReplyMarker>(
   // too old for Telegram to send along (only `inline_message_id` arrives), so
   // there is nothing to key on - route those by `callback_data` instead.
   const pressed = ctx.callbackQuery?.message?.message_id;
-  if (pressed === undefined) return undefined;
+  if (pressed === undefined) {
+    return undefined;
+  }
   const { state, config, now } = touch(ctx);
   const table = state.presses;
   const entry = table[pressed];
-  if (entry === undefined) return undefined;
+  if (entry === undefined) {
+    return undefined;
+  }
   // A live keyboard is kept, so count this press as a use (recency + sliding TTL);
   // a `once` press is consumed and needs neither.
-  if (options?.once === true) delete table[pressed];
-  else used(entry, config, now);
+  if (options?.once === true) {
+    delete table[pressed];
+  } else {
+    used(entry, config, now);
+  }
   return entry.marker as M;
 }
 

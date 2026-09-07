@@ -138,7 +138,9 @@ export async function startWebhook(bot: Bot, options: StartWebhookOptions): Prom
   let forceTimer: ReturnType<typeof setTimeout> | undefined;
   let shuttingDown = false;
   const stop = (): void => {
-    if (shuttingDown) return; // idempotent: a repeat signal must not schedule a second timer
+    if (shuttingDown) {
+      return; // idempotent: a repeat signal must not schedule a second timer
+    }
     shuttingDown = true;
     forceTimer = gracefulClose(server, shutdownTimeoutMs);
   };
@@ -152,6 +154,8 @@ export async function startWebhook(bot: Bot, options: StartWebhookOptions): Prom
         })
     );
   } finally {
-    if (forceTimer) clearTimeout(forceTimer);
+    if (forceTimer) {
+      clearTimeout(forceTimer);
+    }
   }
 }

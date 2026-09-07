@@ -52,7 +52,9 @@ export interface RichTableOptions {
 }
 
 function resolveBlocks(content: BlockContent): InputRichBlock[] {
-  if (content instanceof RichMessageBuilder) return content.buildBlocks();
+  if (content instanceof RichMessageBuilder) {
+    return content.buildBlocks();
+  }
   if (typeof content === "function") {
     const builder = new RichMessageBuilder();
     content(builder);
@@ -281,7 +283,9 @@ export class RichMessageBuilder {
   /** The plain `InputRichMessage` (blocks form) ready for `rich_message`. */
   build(options?: RichMessageBuildOptions): InputRichMessage {
     const message: InputRichMessage = { blocks: this.blocks.slice(), ...options };
-    if (this.mediaItems.length > 0) message.media = this.mediaItems.slice();
+    if (this.mediaItems.length > 0) {
+      message.media = this.mediaItems.slice();
+    }
     return message;
   }
 }

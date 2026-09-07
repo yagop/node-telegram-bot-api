@@ -226,7 +226,9 @@ function createKeyLock(): <R>(key: string, fn: () => Promise<R>) => Promise<R> {
       // Nothing queued behind us (the map still holds our tail) -> drop the entry
       // so the map does not grow with every key ever seen. Runs synchronously
       // with `release()`, so no waiter can slip in between.
-      if (tails.get(key) === tail) tails.delete(key);
+      if (tails.get(key) === tail) {
+        tails.delete(key);
+      }
     }
   };
 }
@@ -298,7 +300,9 @@ export function createSession<T = Record<string, unknown>>(
           makeInitial: () => E,
           isValid?: (slot: Record<string, unknown>) => boolean
         ): E {
-          if (envelope.ext === undefined) envelope.ext = {};
+          if (envelope.ext === undefined) {
+            envelope.ext = {};
+          }
           const ext = envelope.ext;
           const current = ext[namespace];
           if (!isPlainObject(current) || (isValid !== undefined && !isValid(current))) {
@@ -344,7 +348,9 @@ export function createSession<T = Record<string, unknown>>(
   /** Write back the envelope - only if it changed, and only if not dropped. */
   /** Drop the key when the handler evicted the session (no-op if it was never stored). */
   async function persistDrop(key: string, existed: boolean): Promise<void> {
-    if (existed) await store.delete(key);
+    if (existed) {
+      await store.delete(key);
+    }
   }
 
   /**
@@ -352,7 +358,9 @@ export function createSession<T = Record<string, unknown>>(
    * lapse just because this update changed nothing, so refresh it in place.
    */
   async function refreshTtl(key: string, existed: boolean): Promise<void> {
-    if (existed && ttlSeconds !== undefined) await store.touch?.(key, ttlSeconds);
+    if (existed && ttlSeconds !== undefined) {
+      await store.touch?.(key, ttlSeconds);
+    }
   }
 
   async function flush(
@@ -363,10 +371,14 @@ export function createSession<T = Record<string, unknown>>(
     existed: boolean,
     dropped: boolean
   ): Promise<void> {
-    if (dropped) return persistDrop(key, existed);
+    if (dropped) {
+      return persistDrop(key, existed);
+    }
     // `handle.data` may have been reassigned to a fresh object; re-read it.
     envelope.data = handle.data;
-    if (codec.encode(envelope) === before) return refreshTtl(key, existed);
+    if (codec.encode(envelope) === before) {
+      return refreshTtl(key, existed);
+    }
     await store.write(key, codec.encode(envelope), { ttlSeconds });
   }
 

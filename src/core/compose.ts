@@ -33,7 +33,9 @@ export function compose<C>(
       lastIndex = i;
 
       const fn: Middleware<C> | undefined = i === middleware.length ? next : middleware[i];
-      if (!fn) return Promise.resolve();
+      if (!fn) {
+        return Promise.resolve();
+      }
 
       try {
         return Promise.resolve(fn(ctx, () => dispatch(i + 1))).then(() => undefined);

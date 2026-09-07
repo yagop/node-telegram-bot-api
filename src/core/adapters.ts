@@ -68,8 +68,12 @@ export function nextAppWebhook(
 async function readBody(req: NodeLikeRequest): Promise<string> {
   const pre = req.body;
   if (pre !== undefined && pre !== null) {
-    if (typeof pre === "string") return pre;
-    if (pre instanceof Uint8Array) return new TextDecoder().decode(pre);
+    if (typeof pre === "string") {
+      return pre;
+    }
+    if (pre instanceof Uint8Array) {
+      return new TextDecoder().decode(pre);
+    }
     return JSON.stringify(pre);
   }
 
@@ -105,7 +109,9 @@ export function nodeFrameworkWebhook(
     // (rare for webhook requests) are joined per the HTTP convention.
     const headers = new Headers();
     for (const [name, value] of Object.entries(req.headers)) {
-      if (value === undefined) continue;
+      if (value === undefined) {
+        continue;
+      }
       headers.set(name, Array.isArray(value) ? value.join(", ") : value);
     }
 

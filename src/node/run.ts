@@ -71,12 +71,16 @@ export async function run(bot: Bot, options: RunOptions = {}): Promise<void> {
     throw err;
   } finally {
     try {
-      if (owned) await bot.close();
+      if (owned) {
+        await bot.close();
+      }
     } finally {
       // Nested so it runs even when teardown throws: `exitOnError` must not be
       // defeated by the very stuck resource it exists to escape. Gated on
       // `failed` (which implies `owned`), so a losing double-run never exits.
-      if (failed && exitOnError) process.exit(1);
+      if (failed && exitOnError) {
+        process.exit(1);
+      }
     }
   }
 }

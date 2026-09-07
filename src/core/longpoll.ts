@@ -63,10 +63,14 @@ function planRetry({
   onError,
 }: RetryContext): RetryPlan {
   const pollConflict = isPollConflict(err);
-  if (!retry || !(isTransientError(err) || pollConflict)) throw err;
+  if (!retry || !(isTransientError(err) || pollConflict)) {
+    throw err;
+  }
   // A conflict advances its own bounded counter; any other transient breaks the streak.
   const next = pollConflict ? conflicts + 1 : 0;
-  if (pollConflict && next > maxConflictRetries) throw err;
+  if (pollConflict && next > maxConflictRetries) {
+    throw err;
+  }
   onError?.(err);
   // A conflict waits its own longer delay; otherwise honor `retry_after`
   // (e.g. a 429 flood-wait) when present, else the default delay.
@@ -84,7 +88,9 @@ function planRetry({
  *  wait). `planRetry` may throw here to stop the loop on a non-retryable error. */
 async function recover(ctx: RetryContext): Promise<{ conflicts: number } | "stop"> {
   const { signal } = ctx;
-  if (signal?.aborted) return "stop"; // cancelled - swallow the abort error
+  if (signal?.aborted) {
+    return "stop"; // cancelled - swallow the abort error
+  }
   const plan = planRetry(ctx);
   try {
     await delay(plan.wait, signal);
@@ -138,14 +144,18 @@ export async function* longPoll(
         onError,
         signal,
       });
-      if (outcome === "stop") return;
+      if (outcome === "stop") {
+        return;
+      }
       conflicts = outcome.conflicts;
       // retry WITHOUT advancing offset
       continue;
     }
 
     conflicts = 0; // a successful poll clears the conflict streak
-    if (updates.length > 0) log("%d update(s)", updates.length);
+    if (updates.length > 0) {
+      log("%d update(s)", updates.length);
+    }
     for (const update of updates) {
       yield update;
       offset = update.update_id + 1;

@@ -36,7 +36,9 @@ function randomBoundary(): string {
   const bytes = new Uint8Array(16);
   crypto.getRandomValues(bytes);
   let hex = "";
-  for (const b of bytes) hex += b.toString(16).padStart(2, "0");
+  for (const b of bytes) {
+    hex += b.toString(16).padStart(2, "0");
+  }
   return `----NodeTelegramBotApi${hex}`;
 }
 
@@ -84,7 +86,9 @@ export function multipartBody(
           `filename="${filename}"\r\nContent-Type: ${contentType}\r\n\r\n`
       )
     );
-    if (file.data instanceof ReadableStream) replayable = false;
+    if (file.data instanceof ReadableStream) {
+      replayable = false;
+    }
     pieces.push(file.data);
     pieces.push(CRLF);
   }
@@ -98,8 +102,12 @@ export function multipartBody(
 async function resolvePieceStream(
   piece: Exclude<BodyPiece, Uint8Array>
 ): Promise<ReadableStream<Uint8Array>> {
-  if (typeof piece === "function") return piece();
-  if (piece instanceof Blob) return piece.stream();
+  if (typeof piece === "function") {
+    return piece();
+  }
+  if (piece instanceof Blob) {
+    return piece.stream();
+  }
   return piece;
 }
 
@@ -120,7 +128,9 @@ async function* drainStream(
       yield value;
     }
   } finally {
-    if (!finished) await reader.cancel().catch(() => {});
+    if (!finished) {
+      await reader.cancel().catch(() => {});
+    }
     reader.releaseLock();
   }
 }
@@ -145,8 +155,11 @@ export function streamBody(pieces: ReadonlyArray<BodyPiece>): ReadableStream<Uin
   return new ReadableStream<Uint8Array>({
     async pull(controller) {
       const { done, value } = await chunks.next();
-      if (done) controller.close();
-      else controller.enqueue(value);
+      if (done) {
+        controller.close();
+      } else {
+        controller.enqueue(value);
+      }
     },
     async cancel() {
       await chunks.return();
@@ -163,7 +176,9 @@ let requestStreamsSupported: boolean | undefined;
 
 /** The proxy env vars Bun's `fetch` honors automatically. */
 function proxyConfigured(env: Record<string, string | undefined> | undefined): boolean {
-  if (!env) return false;
+  if (!env) {
+    return false;
+  }
   return Boolean(
     env.HTTPS_PROXY ??
       env.https_proxy ??
@@ -189,7 +204,9 @@ function bunStreamBodyBroken(bun: {
   env?: Record<string, string | undefined>;
 }): boolean {
   const [major = 0, minor = 0] = (bun.version ?? "0.0.0").split(".").map(Number);
-  if (major > 1 || (major === 1 && minor >= 4)) return false;
+  if (major > 1 || (major === 1 && minor >= 4)) {
+    return false;
+  }
   return proxyConfigured(bun.env);
 }
 

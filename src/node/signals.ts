@@ -15,10 +15,14 @@ const SHUTDOWN_SIGNALS = ["SIGINT", "SIGTERM"] as const;
  * whether `body` resolves or throws.
  */
 export async function withShutdownSignals<T>(stop: () => void, body: () => Promise<T>): Promise<T> {
-  for (const sig of SHUTDOWN_SIGNALS) process.on(sig, stop);
+  for (const sig of SHUTDOWN_SIGNALS) {
+    process.on(sig, stop);
+  }
   try {
     return await body();
   } finally {
-    for (const sig of SHUTDOWN_SIGNALS) process.off(sig, stop);
+    for (const sig of SHUTDOWN_SIGNALS) {
+      process.off(sig, stop);
+    }
   }
 }

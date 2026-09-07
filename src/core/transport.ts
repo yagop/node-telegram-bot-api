@@ -86,8 +86,12 @@ function combineSignals(signals: Array<AbortSignal | undefined>): {
   cleanup: () => void;
 } {
   const list = signals.filter((s): s is AbortSignal => s != null);
-  if (list.length === 0) return { signal: undefined, cleanup: () => {} };
-  if (list.length === 1) return { signal: list[0], cleanup: () => {} };
+  if (list.length === 0) {
+    return { signal: undefined, cleanup: () => {} };
+  }
+  if (list.length === 1) {
+    return { signal: list[0], cleanup: () => {} };
+  }
 
   const controller = new AbortController();
   const cleanups: Array<() => void> = [];
@@ -103,7 +107,9 @@ function combineSignals(signals: Array<AbortSignal | undefined>): {
   return {
     signal: controller.signal,
     cleanup: () => {
-      for (const fn of cleanups) fn();
+      for (const fn of cleanups) {
+        fn();
+      }
     },
   };
 }
@@ -121,7 +127,9 @@ export class Transport {
     private readonly token: string,
     options: TransportOptions = {}
   ) {
-    if (!token) throw new TelegramBotError("A bot token is required", { code: "EPARAM" });
+    if (!token) {
+      throw new TelegramBotError("A bot token is required", { code: "EPARAM" });
+    }
     // Empty/whitespace apiRoot falls back to the default; `??` would keep "".
     const root = options.apiRoot?.trim();
     this.apiRoot = (root ? root : DEFAULT_API_ROOT).replace(/\/+$/, "");
@@ -134,7 +142,9 @@ export class Transport {
     this.maxRetries = options.maxRetries ?? DEFAULT_MAX_RETRIES;
     this.retryBackoffMs = options.retryBackoffMs ?? DEFAULT_RETRY_BACKOFF;
     this.maxRetryAfterMs = options.maxRetryAfterMs ?? DEFAULT_MAX_RETRY_AFTER;
-    if (options.rateLimit) this.limiter = new RateLimiter(options.rateLimit);
+    if (options.rateLimit) {
+      this.limiter = new RateLimiter(options.rateLimit);
+    }
   }
 
   /** For long polling the client timeout must outlast the server-side wait. */
@@ -188,7 +198,9 @@ export class Transport {
     // termination condition.
     for (let attempt = 0; attempt <= ctx.maxRetries; attempt++) {
       const outcome = await this.attempt<R>(ctx, attempt);
-      if (!outcome.retry) return outcome.result;
+      if (!outcome.retry) {
+        return outcome.result;
+      }
       await delay(outcome.waitMs, signal);
     }
 
@@ -224,14 +236,17 @@ export class Transport {
     ctx: RequestContext,
     attempt: number
   ): AttemptOutcome<R> {
-    if (ctx.signal?.aborted) throw err; // caller cancelled - propagate verbatim
+    if (ctx.signal?.aborted) {
+      throw err; // caller cancelled - propagate verbatim
+    }
     if (attempt < ctx.maxRetries) {
       const wait = backoff(attempt + 1, this.retryBackoffMs, MAX_BACKOFF);
       log("%s transient error; retry %d/%d in %dms", ctx.method, attempt + 1, ctx.maxRetries, wait);
       return { retry: true, waitMs: wait };
     }
-    if (isAbortError(err))
+    if (isAbortError(err)) {
       throw new TimeoutError(`Request timed out: ${ctx.method}`, { cause: err });
+    }
     throw new NetworkError(`Network request failed: ${ctx.method}`, { cause: err });
   }
 
@@ -243,7 +258,9 @@ export class Transport {
     text: string
   ): AttemptOutcome<R> {
     // Server-side 5xx is transient: retry without parsing the body.
-    if (response.status >= 500) return this.onServerError<R>(ctx, attempt, response, text);
+    if (response.status >= 500) {
+      return this.onServerError<R>(ctx, attempt, response, text);
+    }
 
     const json = parseJson<R>(text, ctx.method);
     if (json.ok) {
@@ -319,7 +336,9 @@ function buildInit(
   // The fetch spec (and undici) require `duplex: "half"` to send a stream body;
   // set it only then so runtimes that reject the member for ordinary bodies are
   // unaffected.
-  if (body instanceof ReadableStream) init.duplex = "half";
+  if (body instanceof ReadableStream) {
+    init.duplex = "half";
+  }
   return init;
 }
 

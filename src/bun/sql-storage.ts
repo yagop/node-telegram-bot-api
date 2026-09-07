@@ -124,7 +124,9 @@ export class SqlSessionStorage implements SessionStore {
     const [row] = (await this.sql`SELECT value FROM ${this.ref} WHERE key = ${key}`) as Array<{
       value: unknown;
     }>;
-    if (row === undefined) return undefined;
+    if (row === undefined) {
+      return undefined;
+    }
     // `CREATE TABLE IF NOT EXISTS` adopts a pre-existing table of that name, so
     // the column may not be the TEXT we assume - a JSON/JSONB one comes back
     // already parsed. Say so here rather than letting a non-string reach the

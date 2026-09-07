@@ -20,6 +20,9 @@
             "maxAllowedComplexity": 15
           }
         }
+      },
+      "style": {
+        "useBlockStatements": "error"
       }
     }
   },

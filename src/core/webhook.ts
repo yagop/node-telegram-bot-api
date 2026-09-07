@@ -124,9 +124,13 @@ function rejectBadMethod(request: Request): Response | null {
  * (compare against ""), to avoid an early-out path that leaks header presence.
  */
 function rejectBadSecret(request: Request, secretToken: string | undefined): Response | null {
-  if (secretToken === undefined) return null;
+  if (secretToken === undefined) {
+    return null;
+  }
   const got = request.headers.get("X-Telegram-Bot-Api-Secret-Token") ?? "";
-  if (safeEqual(got, secretToken)) return null;
+  if (safeEqual(got, secretToken)) {
+    return null;
+  }
   log("rejected POST: bad secret token");
   return new Response("Unauthorized", { status: 401 });
 }
@@ -160,7 +164,9 @@ function dispatchInBackground(
   const work = Promise.resolve(bot.handleUpdate(update)).catch((err: unknown) => {
     log("background handleUpdate failed for update %d: %s", update.update_id, formatError(err));
   });
-  if (waitUntil !== undefined) waitUntil(work);
+  if (waitUntil !== undefined) {
+    waitUntil(work);
+  }
   log("update %d: acked 200, handling in background", update.update_id);
   return new Response(null, { status: 200 });
 }
@@ -212,10 +218,14 @@ export function webhookCallback(
 
   return async function handle(request: Request): Promise<Response> {
     const rejected = rejectBadMethod(request) ?? rejectBadSecret(request, secretToken);
-    if (rejected !== null) return rejected;
+    if (rejected !== null) {
+      return rejected;
+    }
 
     const update = await readUpdate(request);
-    if (update === null) return new Response("Bad Request", { status: 400 });
+    if (update === null) {
+      return new Response("Bad Request", { status: 400 });
+    }
     log("update %d", update.update_id);
 
     return earlyAck ? dispatchInBackground(bot, update, waitUntil) : dispatchAwaiting(bot, update);

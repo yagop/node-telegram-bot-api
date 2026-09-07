@@ -21,8 +21,11 @@ export function compileDebugFilter(env: string): (namespace: string) => boolean 
   const names: RegExp[] = [];
   const skips: RegExp[] = [];
   for (const token of env.split(/[\s,]+/).filter(Boolean)) {
-    if (token.startsWith("-")) skips.push(toRegExp(token.slice(1)));
-    else names.push(toRegExp(token));
+    if (token.startsWith("-")) {
+      skips.push(toRegExp(token.slice(1)));
+    } else {
+      names.push(toRegExp(token));
+    }
   }
   return (namespace) =>
     names.some((re) => re.test(namespace)) && !skips.some((re) => re.test(namespace));
