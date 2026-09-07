@@ -74,17 +74,19 @@ const USER_ID = Number(process.env.TEST_USER_ID ?? "0");
 const chatId: number | string = /^-?\d+$/.test(GROUP_ID) ? Number(GROUP_ID) : GROUP_ID;
 
 // ONE shared client constructed at module scope (no shared setup hook).
-// Against the live API, throttle globally (~1 req/s) to respect Telegram's flood
-// limits. Against a local emulator (TEST_API_ROOT set) there are no such limits,
-// so cap per-chat instead (~1 send / 3s) - enough to stay under TDLib's own send
-// anti-flood while leaving reads at full speed. maxRetries:2 bounds 429 retries.
+// Live: throttle globally (~1 req/s) for Telegram's flood limits. Emulator
+// (TEST_API_ROOT set): no such limits, but the bundled bot-api's TDLib caps
+// ~20 group msgs/min; pace per-chat (~1 send / 3s) to keep most sends flowing.
+// A few group-heavy tests still exhaust that budget and bot-api parks the query
+// in a long flood-wait we can't shorten - so keep timeout/retries low to fail
+// those in seconds instead of stalling the whole run on them.
 // One normalized value so EMULATOR and apiRoot cannot disagree (empty -> live).
 const API_ROOT = process.env.TEST_API_ROOT?.trim() || undefined;
 const EMULATOR = Boolean(API_ROOT);
 const api = new Api(TOKEN ?? "0:placeholder", {
   rateLimit: EMULATOR ? { perChat: 1 / 3 } : { global: 1 },
-  maxRetries: 2,
-  timeoutMs: 30_000,
+  maxRetries: EMULATOR ? 1 : 2,
+  timeoutMs: EMULATOR ? 6_000 : 30_000,
   apiRoot: API_ROOT, // local telegram-bot-api when set, else the default
 });
 
