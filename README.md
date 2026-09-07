@@ -412,15 +412,25 @@ Every backend implements the same `SessionStore`: a **string** key/value contrac
 | `SqlSessionStorage` | `node-telegram-bot-api/bun` | Bun | ✅ | Bun `SQL` (Postgres); cross-instance |
 | `RedisSessionStorage` | `node-telegram-bot-api/bun` | Bun | ✅ | Bun `redis`; cross-instance; optional TTL |
 
+Use a separate storage name for each bot when bots share a database, Redis database, or parent directory. The default session key is `chat:<id>`, so two bots in the same chat would otherwise use the same key. The examples use `great_bot`; replace it with a stable name for your bot. These names are explicit configuration, not values fetched from Telegram.
+
 ```ts
 // durable on Node (e.g. a webhook on one host)
 import { createSession } from "node-telegram-bot-api";
 import { FileSessionStorage } from "node-telegram-bot-api/node";
-bot.use(createSession<Session>({ store: new FileSessionStorage({ path: "./.sessions" }) }));
+bot.use(createSession<Session>({ store: new FileSessionStorage({ path: "./.great_bot_sessions" }) }));
 
 // durable on Bun, shared across instances, idle sessions expiring after a day
 import { RedisSessionStorage } from "node-telegram-bot-api/bun";
-bot.use(createSession<Session>({ store: new RedisSessionStorage(), ttlSeconds: 86400 }));
+bot.use(createSession<Session>({
+  store: new RedisSessionStorage({ prefix: "great_bot:sessions:" }),
+  ttlSeconds: 86400,
+}));
+
+// SQL alternatives on Bun: a separate table or database file for this bot
+import { SqlSessionStorage, SqliteSessionStorage } from "node-telegram-bot-api/bun";
+const sqlStore = new SqlSessionStorage({ table: "great_bot_sessions" });
+const sqliteStore = new SqliteSessionStorage({ database: "./great_bot_sessions.db" });
 ```
 
 Any other backend (ioredis, `pg`, a KV service) is ~10 lines implementing the three methods. The `node-telegram-bot-api/bun` stores import Bun built-ins and are isolated behind that subpath - a Node or edge install never resolves them.
@@ -430,7 +440,7 @@ Any other backend (ioredis, `pg`, a KV service) is ~10 lines implementing the th
 A middleware may carry `init` / `close`; `bot.use` picks those up, `bot.init()` runs them once in registration order and `bot.close()` in reverse. Session middleware forwards both to its store, so setup (create the directory / table, open the pool) happens **at startup**, not lazily on update #1:
 
 ```ts
-bot.use(createSession<Session>({ store: new FileSessionStorage({ path: "./.sessions" }) }));
+bot.use(createSession<Session>({ store: new FileSessionStorage({ path: "./.great_bot_sessions" }) }));
 await bot.init(); // optional: a bad path / unreachable backend fails here, at boot
 ```
 
