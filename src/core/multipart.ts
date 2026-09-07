@@ -97,24 +97,6 @@ export function multipartBody(
   return { boundary, pieces, replayable };
 }
 
-/** Resolve a non-inline piece to a readable stream for this build (a factory
- *  opens a fresh stream; a Blob streams from its store; a stream is itself). */
-// Not async on purpose: only a factory piece yields a promise (awaited by the
-// caller). A Blob or a plain stream resolves synchronously, so the reader is
-// acquired in the same tick - inserting an extra microtask here would let a
-// stream that errors on a queued microtask drop an already-enqueued chunk.
-function resolvePieceStream(
-  piece: Exclude<BodyPiece, Uint8Array>
-): ReadableStream<Uint8Array> | Promise<ReadableStream<Uint8Array>> {
-  if (typeof piece === "function") {
-    return piece();
-  }
-  if (piece instanceof Blob) {
-    return piece.stream();
-  }
-  return piece;
-}
-
 /** Drain a stream to completion, cancelling the source if the consumer tears
  *  us down mid-piece (via a `return()` propagated through the `yield*`). */
 async function* drainStream(
@@ -149,8 +131,15 @@ async function* pieceChunks(
       yield piece;
       continue;
     }
-    const resolved = resolvePieceStream(piece);
-    yield* drainStream(resolved instanceof ReadableStream ? resolved : await resolved);
+    // A factory result is always awaited (as before), even when it returns a
+    // stream synchronously - that await is an observable microtask hop. A Blob
+    // or plain stream resolves synchronously so the reader is acquired in the
+    // same tick, so a stream erroring on a queued microtask keeps its chunks.
+    if (typeof piece === "function") {
+      yield* drainStream(await piece());
+      continue;
+    }
+    yield* drainStream(piece instanceof Blob ? piece.stream() : piece);
   }
 }
 
