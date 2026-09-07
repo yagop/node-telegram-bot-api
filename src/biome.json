@@ -22,7 +22,8 @@
         }
       },
       "style": {
-        "useBlockStatements": "error"
+        "useBlockStatements": "error",
+        "useAtIndex": "error"
       }
     }
   },
