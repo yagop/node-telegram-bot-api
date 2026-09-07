@@ -215,21 +215,10 @@ export class Bot {
     return this.use((ctx, next) => {
       const text = ctx.message?.text;
       if (text === undefined) return next();
-      for (const t of triggers) {
-        if (typeof t === "string") {
-          if (text === t) {
-            ctx.match = text;
-            return run(ctx, next);
-          }
-        } else {
-          const m = text.match(t);
-          if (m) {
-            ctx.match = m;
-            return run(ctx, next);
-          }
-        }
-      }
-      return next();
+      const m = matchTriggers(text, triggers);
+      if (m === null) return next();
+      ctx.match = m;
+      return run(ctx, next);
     });
   }
 
@@ -310,4 +299,25 @@ export class Bot {
 
 function escapeRegExp(s: string): string {
   return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+/**
+ * The `ctx.match` value for the first `hears` trigger that matches `text`, or
+ * `null` when none do. A string trigger matches exactly (match value = the
+ * text); a RegExp matches via `text.match(re)` (match value = the
+ * `RegExpMatchArray`).
+ */
+function matchTriggers(
+  text: string,
+  triggers: ReadonlyArray<string | RegExp>
+): string | RegExpMatchArray | null {
+  for (const t of triggers) {
+    if (typeof t === "string") {
+      if (text === t) return text;
+    } else {
+      const m = text.match(t);
+      if (m) return m;
+    }
+  }
+  return null;
 }

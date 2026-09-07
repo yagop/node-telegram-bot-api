@@ -93,6 +93,38 @@ export function multipartBody(
   return { boundary, pieces, replayable };
 }
 
+/** Resolve a non-inline piece to a readable stream for this build (a factory
+ *  opens a fresh stream; a Blob streams from its store; a stream is itself). */
+async function resolvePieceStream(
+  piece: Exclude<BodyPiece, Uint8Array>
+): Promise<ReadableStream<Uint8Array>> {
+  if (typeof piece === "function") return piece();
+  if (piece instanceof Blob) return piece.stream();
+  return piece;
+}
+
+/** Drain a stream to completion, cancelling the source if the consumer tears
+ *  us down mid-piece (via a `return()` propagated through the `yield*`). */
+async function* drainStream(
+  stream: ReadableStream<Uint8Array>
+): AsyncGenerator<Uint8Array, void, undefined> {
+  const reader = stream.getReader();
+  let finished = false;
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) {
+        finished = true;
+        break;
+      }
+      yield value;
+    }
+  } finally {
+    if (!finished) await reader.cancel().catch(() => {});
+    reader.releaseLock();
+  }
+}
+
 /** Walk the pieces in order, yielding raw chunks (a Blob streams from its
  *  store; a factory opens a fresh stream for this build). */
 async function* pieceChunks(
@@ -103,24 +135,7 @@ async function* pieceChunks(
       yield piece;
       continue;
     }
-    const stream =
-      typeof piece === "function" ? await piece() : piece instanceof Blob ? piece.stream() : piece;
-    const reader = stream.getReader();
-    let finished = false;
-    try {
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) {
-          finished = true;
-          break;
-        }
-        yield value;
-      }
-    } finally {
-      // Torn down mid-piece (the consumer cancelled): stop the source too.
-      if (!finished) await reader.cancel().catch(() => {});
-      reader.releaseLock();
-    }
+    yield* drainStream(await resolvePieceStream(piece));
   }
 }
 
