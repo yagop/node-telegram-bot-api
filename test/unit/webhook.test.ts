@@ -79,6 +79,23 @@ describe("webhookCallback", () => {
     assert.strictEqual(received.length, 0);
   });
 
+  test("valid JSON `null` body -> 400, handleUpdate not invoked", async () => {
+    const { bot, received } = fakeBot();
+    const handle = webhookCallback(bot, { secretToken: "s" });
+    const res = await handle(
+      new Request("https://h/hook", {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          "x-telegram-bot-api-secret-token": "s",
+        },
+        body: "null",
+      }),
+    );
+    assert.strictEqual(res.status, 400);
+    assert.strictEqual(received.length, 0);
+  });
+
   test("rejecting handleUpdate (a bot.catch() rethrow) -> explicit 500", async () => {
     // handleUpdate rejects only when the user's boundary rethrows (fail-loud
     // opt-in); the callback must answer 500 itself - Telegram then redelivers -
