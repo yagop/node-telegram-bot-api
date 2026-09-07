@@ -226,8 +226,8 @@ function evict(state: ReplyState, config: ReplyTrackingOptions | undefined): voi
   const victims = lruOrder(state);
   let i = 0;
   const dropNext = (): void => {
-    const ref = victims[i++]!;
-    delete ref.table[ref.id];
+    const ref = victims[i++];
+    if (ref !== undefined) delete ref.table[ref.id];
   };
 
   // `i < victims.length` also guards a negative/NaN `maxEntries` from underflowing
