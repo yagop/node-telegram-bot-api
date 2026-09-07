@@ -43,13 +43,9 @@ function fakeStore(): SessionStore & { reads: string[]; writes: Array<[string, s
 
 const api = {} as Api;
 
-/** A frozen clock, so envelope timestamps are byte-comparable in assertions. */
-const AT = "2030-01-01T00:00:00.000Z";
-const now = (): number => Date.parse(AT);
-
-/** The exact string the middleware persists for `{ data, ext? }` at `AT`. */
+/** The exact string the middleware persists for `{ data, ext? }`. */
 function encoded(rest: { data: unknown; ext?: unknown }): string {
-  return JSON.stringify({ v: 1, ...rest, createdAt: AT, updatedAt: AT });
+  return JSON.stringify({ v: 1, ...rest });
 }
 
 /** A message update, optionally a reply to `replyTo`, in a fixed chat. */
@@ -70,7 +66,7 @@ function msg(text: string, replyTo?: number): Update {
 describe("createSession()", () => {
   test("keys per chat and exposes a typed handle through .get(ctx)", async () => {
     const store = fakeStore();
-    const mw = createSession<{ n: number }>({ store, initial: () => ({ n: 0 }), now });
+    const mw = createSession<{ n: number }>({ store, initial: () => ({ n: 0 }) });
     const ctx = new Context(msg("hi"), api);
 
     await mw(ctx, async () => {
@@ -138,7 +134,7 @@ describe("createSession()", () => {
     const store = fakeStore();
     store.write("chat:42", JSON.stringify("not-an-envelope"));
     store.writes.length = 0;
-    const mw = createSession<{ n: number }>({ store, initial: () => ({ n: 7 }), now });
+    const mw = createSession<{ n: number }>({ store, initial: () => ({ n: 7 }) });
     const ctx = new Context(msg("hi"), api);
     await mw(ctx, async () => {
       assert.equal(mw.get(ctx).data.n, 7);
@@ -149,8 +145,8 @@ describe("createSession()", () => {
 
   test("ignores a malformed ext namespace instead of throwing", async () => {
     const store = fakeStore();
-    store.write("chat:42", JSON.stringify({ v: 1, data: { n: 1 }, ext: { reply: "corrupt" }, createdAt: AT, updatedAt: AT }));
-    const mw = createSession<{ n: number }>({ store, now });
+    store.write("chat:42", JSON.stringify({ v: 1, data: { n: 1 }, ext: { reply: "corrupt" } }));
+    const mw = createSession<{ n: number }>({ store });
     const ctx = new Context(msg("hi"), api);
     await mw(ctx, async () => {
       assert.equal(mw.get(ctx).data.n, 1); // data preserved
@@ -165,11 +161,8 @@ describe("createSession()", () => {
   test("replaces an ext slot that fails its validity check", async () => {
     const store = fakeStore();
     // A plain object, but not a well-formed pair of tables (no `presses`).
-    store.write(
-      "chat:42",
-      JSON.stringify({ v: 1, data: {}, ext: { reply: { replies: {} } }, createdAt: AT, updatedAt: AT }),
-    );
-    const mw = createSession({ store, now });
+    store.write("chat:42", JSON.stringify({ v: 1, data: {}, ext: { reply: { replies: {} } } }));
+    const mw = createSession({ store });
     const ctx = new Context(msg("hi"), api);
     await mw(ctx, async () => {
       expectReply(ctx, 7, { ok: true }); // would throw on `undefined[7] = ...`
@@ -207,7 +200,7 @@ describe("createSession()", () => {
 
   test("flushes even when the handler throws", async () => {
     const store = fakeStore();
-    const mw = createSession<{ n: number }>({ store, initial: () => ({ n: 0 }), now });
+    const mw = createSession<{ n: number }>({ store, initial: () => ({ n: 0 }) });
     const ctx = new Context(msg("boom"), api);
     await assert.rejects(async () => {
       await mw(ctx, async () => {
@@ -242,61 +235,32 @@ describe("createSession()", () => {
     assert.equal(seen, 0); // back to initial
   });
 
-  test("stamps createdAt once and bumps updatedAt on each persisted write", async () => {
+  test("does not rewrite an untouched session", async () => {
     const store = fakeStore();
-    let clock = Date.parse("2030-01-01T00:00:00.000Z");
-    const mw = createSession<{ n: number }>({ store, initial: () => ({ n: 0 }), now: () => clock });
-
-    const first = new Context(msg("a"), api);
-    await mw(first, async () => {
-      assert.deepEqual(mw.get(first).createdAt, new Date(clock)); // never written -> now
-      mw.get(first).data.n = 1;
-    });
-
-    clock += 60_000;
-    const second = new Context(msg("b"), api);
-    await mw(second, async () => {
-      const handle = mw.get(second);
-      assert.equal(handle.createdAt.toISOString(), "2030-01-01T00:00:00.000Z", "createdAt is carried through");
-      assert.equal(handle.updatedAt.toISOString(), "2030-01-01T00:00:00.000Z", "as loaded: the previous write");
-      handle.data.n = 2;
-    });
-
-    const stored = JSON.parse(store.writes.at(-1)?.[1] as string) as { createdAt: string; updatedAt: string };
-    assert.equal(stored.createdAt, "2030-01-01T00:00:00.000Z");
-    assert.equal(stored.updatedAt, "2030-01-01T00:01:00.000Z");
-  });
-
-  test("a skipped flush leaves updatedAt alone", async () => {
-    const store = fakeStore();
-    let clock = Date.parse("2030-01-01T00:00:00.000Z");
-    const mw = createSession<{ n: number }>({ store, initial: () => ({ n: 0 }), now: () => clock });
+    const mw = createSession<{ n: number }>({ store, initial: () => ({ n: 0 }) });
 
     const first = new Context(msg("a"), api);
     await mw(first, async () => {
       mw.get(first).data.n = 1;
     });
 
-    clock += 60_000;
     const second = new Context(msg("b"), api); // reads, changes nothing
     await mw(second, async () => {});
 
     assert.equal(store.writes.length, 1, "an untouched session must not be rewritten");
-    const stored = JSON.parse(store.writes.at(-1)?.[1] as string) as { updatedAt: string };
-    assert.equal(stored.updatedAt, "2030-01-01T00:00:00.000Z");
   });
 
-  test("adopts timestamps for a record written before they existed", async () => {
+  test("preserves data from a record written with an older shape", async () => {
     const store = fakeStore();
-    store.write("chat:42", JSON.stringify({ v: 1, data: { n: 1 } })); // legacy shape
-    const mw = createSession<{ n: number }>({ store, now });
+    store.write("chat:42", JSON.stringify({ v: 1, data: { n: 1 }, createdAt: "old", updatedAt: "old" }));
+    const mw = createSession<{ n: number }>({ store });
     const ctx = new Context(msg("hi"), api);
     await mw(ctx, async () => {
-      const handle = mw.get(ctx);
-      assert.equal(handle.data.n, 1); // data preserved
-      assert.equal(handle.createdAt.toISOString(), AT); // first sighting, not an invented past
-      assert.equal(handle.updatedAt.toISOString(), AT);
+      assert.equal(mw.get(ctx).data.n, 1); // data preserved
+      mw.get(ctx).data.n = 2;
     });
+    // The rewrite drops the stale timestamp fields.
+    assert.deepEqual(store.writes.at(-1), ["chat:42", encoded({ data: { n: 2 } })]);
   });
 
   test("`session` is an alias of `createSession`", () => {
@@ -358,7 +322,7 @@ describe("session TTL", () => {
 describe("ctx.getSession", () => {
   test("reads and writes the bag through the handle", async () => {
     const store = fakeStore();
-    const mw = createSession<{ n: number }>({ store, initial: () => ({ n: 0 }), now });
+    const mw = createSession<{ n: number }>({ store, initial: () => ({ n: 0 }) });
 
     const first = new Context(msg("a"), api);
     await mw(first, async () => {
@@ -746,12 +710,166 @@ describe("reply tracking", () => {
 
   test("stores nothing in the envelope until a reply is expected", async () => {
     const store = fakeStore();
-    const mw = createSession<{ n: number }>({ store, initial: () => ({ n: 0 }), now });
+    const mw = createSession<{ n: number }>({ store, initial: () => ({ n: 0 }) });
     const ctx = new Context(msg("hi"), api);
     await mw(ctx, async () => {
       mw.get(ctx).data.n = 1;
     });
     assert.deepEqual(store.writes.at(-1)?.[1], encoded({ data: { n: 1 } }));
+  });
+});
+
+describe("reply-tracking LRU budgets", () => {
+  /** A callback-query update whose keyboard sits on message `onMessage`, in chat 42. */
+  function press(onMessage: number): Update {
+    return {
+      update_id: 3,
+      callback_query: {
+        id: "cq",
+        from: { id: 7, is_bot: false, first_name: "Ada" },
+        chat_instance: "ci",
+        data: "x",
+        message: { message_id: onMessage, date: 0, chat: { id: 42, type: "private" } },
+      },
+    } as unknown as Update;
+  }
+
+  test("maxEntries evicts the least-recently-used marker across both tables", async () => {
+    let clock = 1000;
+    const mw = createSession({ store: new MemorySessionStorage(), replyTracking: { maxEntries: 2, now: () => clock } });
+
+    const ask = new Context(msg("q"), api);
+    await mw(ask, async () => {
+      expectReply(ask, 1, { n: 1 }); // oldest
+      clock += 10;
+      expectCallback(ask, 2, { n: 2 });
+      clock += 10;
+      expectReply(ask, 3, { n: 3 }); // count -> 3, evicts the LRU (id 1)
+    });
+
+    const r1 = new Context(msg("late", 1), api);
+    await mw(r1, async () => assert.equal(matchReply(r1), undefined, "id 1 evicted"));
+    const p2 = new Context(press(2), api);
+    await mw(p2, async () => assert.deepEqual(matchCallback(p2), { n: 2 }));
+    const r3 = new Context(msg("late", 3), api);
+    await mw(r3, async () => assert.deepEqual(matchReply(r3), { n: 3 }));
+  });
+
+  test("a recently-used keeper outlives an idle newer marker (recency, not age)", async () => {
+    let clock = 1000;
+    const mw = createSession({ store: new MemorySessionStorage(), replyTracking: { maxEntries: 2, now: () => clock } });
+
+    const setup = new Context(msg("q"), api);
+    await mw(setup, async () => {
+      expectCallback(setup, 1, { n: 1 }); // oldest by insertion
+      clock += 10;
+      expectCallback(setup, 2, { n: 2 });
+    });
+
+    // Pressing id 1 (a non-consuming match) refreshes its recency past id 2's.
+    clock += 100;
+    const tap = new Context(press(1), api);
+    await mw(tap, async () => assert.deepEqual(matchCallback(tap), { n: 1 }));
+
+    // A third expectation now evicts the idle id 2, not the freshly used id 1.
+    clock += 10;
+    const add = new Context(msg("q2"), api);
+    await mw(add, async () => expectCallback(add, 3, { n: 3 }));
+
+    const p1 = new Context(press(1), api);
+    await mw(p1, async () => assert.deepEqual(matchCallback(p1), { n: 1 }, "used marker survived"));
+    const p2 = new Context(press(2), api);
+    await mw(p2, async () => assert.equal(matchCallback(p2), undefined, "idle marker evicted"));
+  });
+
+  test("maxBytes evicts LRU markers until the namespace fits", async () => {
+    let clock = 1000;
+    const big = "x".repeat(200);
+    const mw = createSession({ store: new MemorySessionStorage(), replyTracking: { maxBytes: 300, now: () => clock } });
+
+    const ask = new Context(msg("q"), api);
+    await mw(ask, async () => {
+      expectReply(ask, 1, { d: big }); // ~250 bytes alone
+      clock += 10;
+      expectReply(ask, 2, { d: big }); // now over 300 -> evict the older id 1
+    });
+
+    const r1 = new Context(msg("late", 1), api);
+    await mw(r1, async () => assert.equal(matchReply(r1), undefined, "id 1 evicted for size"));
+    const r2 = new Context(msg("late", 2), api);
+    await mw(r2, async () => assert.deepEqual(matchReply(r2), { d: big }));
+  });
+
+  test("defaultTtlSeconds applies to a call that sets no ttl", async () => {
+    let clock = 10_000;
+    const mw = createSession({ store: new MemorySessionStorage(), replyTracking: { defaultTtlSeconds: 1, now: () => clock } });
+
+    const ask = new Context(msg("q"), api);
+    await mw(ask, async () => expectReply(ask, 1, { n: 1 })); // expires at clock + 1s
+
+    clock += 2000;
+    const late = new Context(msg("x", 1), api);
+    await mw(late, async () => assert.equal(matchReply(late), undefined));
+  });
+
+  test("slidingTtl re-arms a kept press marker on each match", async () => {
+    let clock = 0;
+    const mw = createSession({
+      store: new MemorySessionStorage(),
+      replyTracking: { defaultTtlSeconds: 10, slidingTtl: true, now: () => clock },
+    });
+
+    const ask = new Context(msg("q"), api);
+    await mw(ask, async () => expectCallback(ask, 1, { n: 1 })); // expires at 10s
+
+    clock = 8000; // press before expiry -> slides to 18s
+    const t1 = new Context(press(1), api);
+    await mw(t1, async () => assert.deepEqual(matchCallback(t1), { n: 1 }));
+
+    clock = 15_000; // past the original 10s, but within the slid 18s
+    const t2 = new Context(press(1), api);
+    await mw(t2, async () => assert.deepEqual(matchCallback(t2), { n: 1 }, "still alive after sliding"));
+  });
+
+  test("without replyTracking, nothing is evicted and no recency is stamped", async () => {
+    const store = fakeStore();
+    const mw = createSession({ store });
+
+    const ask = new Context(msg("q"), api);
+    await mw(ask, async () => {
+      expectReply(ask, 1, { n: 1 });
+      expectReply(ask, 2, { n: 2 });
+    });
+
+    const stored = store.writes.at(-1)?.[1] as string;
+    assert.doesNotMatch(stored, /lastUsedAt/, "no recency bytes when unbounded");
+    assert.match(stored, /"1"/);
+    assert.match(stored, /"2"/);
+  });
+
+  test("a TTL-only config (no size budget) stamps no recency bytes", async () => {
+    const store = fakeStore();
+    const mw = createSession({ store, replyTracking: { defaultTtlSeconds: 3600, slidingTtl: true } });
+
+    const ask = new Context(msg("q"), api);
+    await mw(ask, async () => expectCallback(ask, 1, { n: 1 }));
+
+    const stored = store.writes.at(-1)?.[1] as string;
+    assert.doesNotMatch(stored, /lastUsedAt/, "lastUsedAt is dead weight with no maxEntries/maxBytes");
+    assert.match(stored, /expiresAt/, "the TTL is still applied");
+  });
+
+  test("a negative maxEntries evicts everything instead of throwing", async () => {
+    const mw = createSession({ store: new MemorySessionStorage(), replyTracking: { maxEntries: -1 } });
+
+    const ask = new Context(msg("q"), api);
+    await mw(ask, async () => {
+      expectReply(ask, 1, { n: 1 });
+      expectReply(ask, 2, { n: 2 }); // must not deref past the last victim
+    });
+
+    const r2 = new Context(msg("late", 2), api);
+    await mw(r2, async () => assert.equal(matchReply(r2), undefined, "evicted down to empty"));
   });
 });
 

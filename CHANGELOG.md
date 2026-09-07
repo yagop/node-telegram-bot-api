@@ -5,6 +5,53 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased][Unreleased]
 
+### Long polling
+
+- A `409 Conflict` is now treated as a recoverable poll error instead of
+  permanently stopping the loop (#1350). Added `LongPollOptions.conflictRetryDelayMs`
+  (default 5000ms) and `maxConflictRetries` (default 10) - after that many
+  consecutive conflicts (a genuine two-instance deploy) the loop throws. The
+  existing `retry` toggle now also governs 409s. Added the public `isPollConflict()`
+  predicate and the `HTTP_STATUS_CONFLICT` constant.
+
+### Transport
+
+- An empty or whitespace-only `apiRoot` now falls back to the default API root
+  instead of being used verbatim (which produced malformed request URLs) (#1354).
+
+### Node helpers
+
+- `run()` gained an opt-in `exitOnError` (default `false`): when a polling pump
+  fails fatally, the process exits non-zero after teardown instead of staying
+  alive and silent, so a supervisor can restart it (#1351).
+- `RedisSessionStorage` now owns and closes a client it constructs from a `url`,
+  via a `createClient` seam (#1351).
+
+### Reply and callback tracking
+
+- Added an opt-in per-chat **LRU bound** on the reply/press tables, configured on
+  the session: `createSession({ store, replyTracking: { maxEntries, maxBytes,
+  defaultTtlSeconds, slidingTtl } })`. `ttlSeconds` caps a marker's age but not the
+  table's size, so a chat that fires many short-lived keyboards could still grow
+  its envelope between prunes (#1357).
+- `maxEntries` / `maxBytes` cap the tables (combined across replies and presses),
+  evicting the **least-recently-used** markers once a budget is exceeded - recency,
+  not age, so an actively-pressed old keyboard outlives an idle newer one; a match
+  refreshes recency, not just a record. `defaultTtlSeconds` gives every expectation
+  a TTL, and `slidingTtl` re-arms it on use.
+- All fields are optional; with no `replyTracking` the tables stay unbounded, as
+  before. Recency metadata (`lastUsedAt`) is written only when a size budget
+  (`maxEntries` / `maxBytes`) is set, so configs without one keep byte-identical
+  envelopes.
+- Added the example `examples/18-reply-tracking-lru.ts`.
+
+### Sessions
+
+- Dropped the `createdAt` / `updatedAt` envelope timestamps (and the `now` clock
+  option that fed them): nothing read them, and slimming the envelope directly
+  serves the growth the LRU bound targets. Stale timestamp fields on already-stored
+  rows fall out on the next write. (These shipped only in `2.2.0-rc0`.)
+
 ## [2.2.0-rc0][2.2.0-rc0] - 2026-09-03
 
 ### Sessions

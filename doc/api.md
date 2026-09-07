@@ -246,7 +246,7 @@ An animated profile photo (a video); `main_frame_timestamp` picks the still fram
 | Method | Params | Returns | Description |
 | --- | --- | --- | --- |
 | `answerCallbackQuery` | `other?`: Omit<[AnswerCallbackQueryParams](#answercallbackqueryparams), "callback_query_id"> | Promise<boolean> | Answer the callback query that triggered this update. Throws if the update is not a callback query. |
-| `getSession` | - | [SessionHandle](#sessionhandle)<T> | The session handle for this update: `.data` (the persistent bag - mutate it in place or reassign it, it flushes after the handler), `.createdAt` / `.updatedAt`, `.ext()` for layers built on sessions, and `.delete()` to evict the key. `<T>` is the caller's asserted `data` shape, defaulting to `Record<string, unknown>` like `createSession()` itself; to fix it once instead of per call site, use the middleware's own `.get(ctx)`. Throws if the session middleware has not run for this update (not registered, or no derivable session key). |
+| `getSession` | - | [SessionHandle](#sessionhandle)<T> | The session handle for this update: `.data` (the persistent bag - mutate it in place or reassign it, it flushes after the handler), `.ext()` for layers built on sessions, and `.delete()` to evict the key. `<T>` is the caller's asserted `data` shape, defaulting to `Record<string, unknown>` like `createSession()` itself; to fix it once instead of per call site, use the middleware's own `.get(ctx)`. Throws if the session middleware has not run for this update (not registered, or no derivable session key). |
 | `reply` | `text`: string, `other?`: Omit<[SendMessageParams](#sendmessageparams), "chat_id" \| "text"> | Promise<[Message](#message)> | Send a message to the inferred chat. Throws if no chat id can be derived from the update (e.g. an inline query carries no chat). |
 
 #### Properties
@@ -6549,6 +6549,31 @@ type ReplyParameters = {
 };
 ```
 
+### `ReplyTrackingOptions`
+
+Per-chat bounds for the reply/press tables, passed to `createSession()` and
+read off the session by this layer. All optional; with none set the tables are
+unbounded (the historic behavior) and grow until entries are matched, forgotten,
+or expire.
+
+TTL caps a marker's *age* but not the table's *size*: a chat that fires many
+short-lived keyboards can still balloon between prunes. `maxEntries` /
+`maxBytes` bound the size, evicting the least-recently-used markers once a
+budget is exceeded - "least-recently-used", not "oldest", because an active old
+keyboard must outlive an idle newer one. Recency (`lastUsedAt`) is stamped on
+both record and match, so a matched-but-kept press marker (a live inline
+keyboard) counts as fresh.
+
+```ts
+type ReplyTrackingOptions = {
+  defaultTtlSeconds?: number;
+  maxBytes?: number;
+  maxEntries?: number;
+  now?: () => number;
+  slidingTtl?: boolean;
+};
+```
+
 ### `RepostStoryParams`
 
 ```ts
@@ -8032,10 +8057,8 @@ all of them.
 
 ```ts
 type SessionEnvelope<T> = {
-  createdAt: string;
   data: T;
   ext?: Record<string, unknown>;
-  updatedAt: string;
   v: number;
 };
 ```
@@ -8048,9 +8071,8 @@ layer claims its own namespace; `delete()` drops the whole key on flush.
 
 ```ts
 type SessionHandle<T> = {
-  readonly createdAt: Date;
   data: T;
-  readonly updatedAt: Date;
+  readonly replyTracking?: [ReplyTrackingOptions](#replytrackingoptions);
   delete: () => void;
   ext: <E extends object>(namespace: string, initial: () => E, isValid?: (slot: Record<string, unknown>) => boolean) => E;
 };
@@ -8077,7 +8099,7 @@ type SessionOptions<T> = {
   codec?: [SessionCodec](#sessioncodec);
   getSessionKey?: (ctx: [Context](#context)) => string | undefined;
   initial?: (ctx: [Context](#context)) => T;
-  now?: () => number;
+  replyTracking?: [ReplyTrackingOptions](#replytrackingoptions);
   store: [SessionStore](#sessionstore);
   ttlSeconds?: number;
 };

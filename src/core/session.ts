@@ -10,11 +10,10 @@
  *   once, here in the middleware's codec - never inside a store - so an
  *   in-memory store is a faithful simulation of a durable one: a `Date` in the
  *   bag comes back a string everywhere, not only on Redis.
- * - The persisted value is a **versioned envelope**: `{ v, data, ext, createdAt,
- *   updatedAt }`. `data` is the caller's bag; `ext` is a namespace map that
- *   layers built on sessions (see `reply-tracking.ts`) claim a slot in, so a
- *   feature can be added or changed without touching the session format; the two
- *   ISO-8601 timestamps are first-seen / last-active, readable on the handle.
+ * - The persisted value is a **versioned envelope**: `{ v, data, ext }`. `data`
+ *   is the caller's bag; `ext` is a namespace map that layers built on sessions
+ *   (see `reply-tracking.ts`) claim a slot in, so a feature can be added or
+ *   changed without touching the session format.
  * - Handlers reach the session through `ctx.getSession<T>()`, which reads the
  *   handle the middleware installs in `ctx.state` under
  *   {@link SESSION_STATE_KEY}. The middleware also carries `.get(ctx)` - the
@@ -38,6 +37,7 @@
 
 import type { Middleware } from "./compose.js";
 import type { Context } from "./context.js";
+import type { ReplyTrackingOptions } from "./reply-tracking.js";
 
 /** Per-write hints. A store ignores what it cannot honor. */
 export type SessionWriteOptions = {
@@ -101,17 +101,6 @@ export type SessionEnvelope<T> = {
   data: T;
   /** Per-layer state, keyed by namespace. Absent until a layer writes. */
   ext?: Record<string, unknown>;
-  /**
-   * ISO-8601 UTC timestamp of the first write for this key ("first seen"),
-   * carried unchanged through every later write.
-   */
-  createdAt: string;
-  /**
-   * ISO-8601 UTC timestamp of the most recent write ("last active"). Bumped
-   * only when the flush actually persists something, so an untouched chat does
-   * not churn the row.
-   */
-  updatedAt: string;
 };
 
 /**
@@ -130,16 +119,6 @@ export type SessionHandle<T> = {
   /** The persistent, per-key bag. */
   data: T;
   /**
-   * When this session was first persisted ("first seen"). For a session that
-   * has never been written, this update's timestamp.
-   */
-  readonly createdAt: Date;
-  /**
-   * When this session was last persisted ("last active") - as loaded, i.e. the
-   * *previous* write, not this update's pending one.
-   */
-  readonly updatedAt: Date;
-  /**
    * State slot for a layer built on top of sessions, created from `initial` on
    * first use. Persisted inside the same envelope under `namespace`, so the
    * layer costs no extra round-trip and no change to the session format. Use a
@@ -150,6 +129,12 @@ export type SessionHandle<T> = {
    * fresh `initial()` instead of reaching the layer half-formed.
    */
   ext<E extends object>(namespace: string, initial: () => E, isValid?: (slot: Record<string, unknown>) => boolean): E;
+  /**
+   * Per-chat bounds for the reply-tracking layer, as passed to
+   * {@link SessionOptions.replyTracking}. Read by `reply-tracking.ts` when it
+   * touches this key's tables; `undefined` leaves them unbounded.
+   */
+  readonly replyTracking?: ReplyTrackingOptions;
   /**
    * Drop this key from the store when the handler finishes (an explicit
    * eviction: end-of-conversation, a `/forget` command, GDPR erasure). Later
@@ -175,10 +160,12 @@ export type SessionOptions<T> = {
   /** Expire idle sessions after this many seconds, on stores that support TTL. */
   ttlSeconds?: number;
   /**
-   * Clock for `createdAt` / `updatedAt`, in epoch milliseconds. Defaults to
-   * `Date.now`; inject one to make timestamps deterministic in tests.
+   * Per-chat bounds for the reply-tracking layer (`expectReply` / `expectCallback`
+   * and friends): `maxEntries` / `maxBytes` cap the tables with LRU eviction,
+   * `defaultTtlSeconds` / `slidingTtl` control expiry. Omit to leave the tables
+   * unbounded. Surfaced unchanged on the handle as `.replyTracking`.
    */
-  now?: () => number;
+  replyTracking?: ReplyTrackingOptions;
 };
 
 /**
@@ -264,7 +251,7 @@ export function createSession<T = Record<string, unknown>>(options: SessionOptio
   const initial = options.initial ?? (() => ({}) as T);
   const codec = options.codec ?? jsonCodec;
   const ttlSeconds = options.ttlSeconds;
-  const now = options.now ?? Date.now;
+  const replyTracking = options.replyTracking;
   const handles = new WeakMap<Context, SessionHandle<T>>();
   const runExclusive = createKeyLock();
 
@@ -299,8 +286,7 @@ export function createSession<T = Record<string, unknown>>(options: SessionOptio
 
       const handle: SessionHandle<T> = {
         data: envelope.data,
-        createdAt: new Date(envelope.createdAt),
-        updatedAt: new Date(envelope.updatedAt),
+        ...(replyTracking !== undefined ? { replyTracking } : {}),
         ext<E extends object>(
           namespace: string,
           makeInitial: () => E,
@@ -338,22 +324,30 @@ export function createSession<T = Record<string, unknown>>(options: SessionOptio
     // writer, and silently resetting would look like data loss. A *parsed* value
     // that is not a well-formed envelope (schema change, hand edit) starts fresh.
     const stored = raw === undefined ? undefined : codec.decode(raw);
-    const timestamp = new Date(now()).toISOString();
     if (!isPlainObject(stored)) {
-      return { v: SESSION_VERSION, data: initial(ctx), createdAt: timestamp, updatedAt: timestamp };
+      return { v: SESSION_VERSION, data: initial(ctx) };
     }
-    // A record written before timestamps existed (or by a foreign writer) has
-    // none: treat now as its first sighting rather than inventing a past.
     return {
       v: SESSION_VERSION,
       data: (stored.data ?? initial(ctx)) as T,
       ...(isPlainObject(stored.ext) ? { ext: stored.ext } : {}),
-      createdAt: typeof stored.createdAt === "string" ? stored.createdAt : timestamp,
-      updatedAt: typeof stored.updatedAt === "string" ? stored.updatedAt : timestamp,
     };
   }
 
   /** Write back the envelope - only if it changed, and only if not dropped. */
+  /** Drop the key when the handler evicted the session (no-op if it was never stored). */
+  async function persistDrop(key: string, existed: boolean): Promise<void> {
+    if (existed) await store.delete(key);
+  }
+
+  /**
+   * Nothing changed, so nothing is persisted - but an existing row's TTL must not
+   * lapse just because this update changed nothing, so refresh it in place.
+   */
+  async function refreshTtl(key: string, existed: boolean): Promise<void> {
+    if (existed && ttlSeconds !== undefined) await store.touch?.(key, ttlSeconds);
+  }
+
   async function flush(
     key: string,
     handle: SessionHandle<T>,
@@ -362,24 +356,10 @@ export function createSession<T = Record<string, unknown>>(options: SessionOptio
     existed: boolean,
     dropped: boolean,
   ): Promise<void> {
-    if (dropped) {
-      if (existed) await store.delete(key);
-      return;
-    }
+    if (dropped) return persistDrop(key, existed);
     // `handle.data` may have been reassigned to a fresh object; re-read it.
     envelope.data = handle.data;
-    // Compare with `updatedAt` still at its loaded value, so "did anything
-    // change?" is about the content - stamping the clock first would make every
-    // update look dirty and defeat the skip.
-    if (codec.encode(envelope) === before) {
-      // Untouched (or a brand-new, still-empty session). Nothing to persist -
-      // but an existing row's TTL must not lapse just because this update
-      // changed nothing, so refresh it in place.
-      if (existed && ttlSeconds !== undefined) await store.touch?.(key, ttlSeconds);
-      return;
-    }
-
-    envelope.updatedAt = new Date(now()).toISOString();
+    if (codec.encode(envelope) === before) return refreshTtl(key, existed);
     await store.write(key, codec.encode(envelope), { ttlSeconds });
   }
 

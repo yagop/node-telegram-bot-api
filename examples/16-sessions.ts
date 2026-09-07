@@ -2,7 +2,7 @@
  * 16 - Sessions: durable per-chat state + reply tracking.
  *
  * Handlers reach the state through `ctx.getSession<Session>()`: `.data` is the
- * bag, and the handle also carries `createdAt` / `updatedAt` / `delete()`. The
+ * bag, and the handle also carries `.ext()` / `delete()`. The
  * `<Session>` is a plain call-site generic - no global type augmentation; to fix
  * it once instead, keep the `createSession()` result and call its
  * `.get(ctx)`. The `store` is

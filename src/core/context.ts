@@ -217,8 +217,8 @@ export class Context {
 
   /**
    * The session handle for this update: `.data` (the persistent bag - mutate it
-   * in place or reassign it, it flushes after the handler), `.createdAt` /
-   * `.updatedAt`, `.ext()` for layers built on sessions, and `.delete()` to
+   * in place or reassign it, it flushes after the handler), `.ext()` for layers
+   * built on sessions, and `.delete()` to
    * evict the key. `<T>` is the caller's asserted `data` shape, defaulting to
    * `Record<string, unknown>` like `createSession()` itself; to fix it once
    * instead of per call site, use the middleware's own `.get(ctx)`.
