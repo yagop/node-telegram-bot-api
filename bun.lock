@@ -11,8 +11,8 @@
         "bun": "^1.4.0",
         "tsx": "^4.22.3",
         "typedoc": "^0.28.19",
-        "typescript": "^5.9.3",
-        "zshy": "^0.7.3",
+        "typescript": "^6.0.3",
+        "zshy": "^0.8.0",
       },
     },
   },
@@ -235,7 +235,7 @@
 
     "typedoc": ["typedoc@0.28.19", "", { "dependencies": { "@gerrit0/mini-shiki": "^3.23.0", "lunr": "^2.3.9", "markdown-it": "^14.1.1", "minimatch": "^10.2.5", "yaml": "^2.8.3" }, "peerDependencies": { "typescript": "5.0.x || 5.1.x || 5.2.x || 5.3.x || 5.4.x || 5.5.x || 5.6.x || 5.7.x || 5.8.x || 5.9.x || 6.0.x" }, "bin": { "typedoc": "bin/typedoc" } }, "sha512-wKh+lhdmMFivMlc6vRRcMGXeGEHGU2g8a2CkPTJjJlwRf1iXbimWIPcFolCqe4E0d/FRtGszpIrsp3WLpDB8Pw=="],
 
-    "typescript": ["typescript@5.9.3", "", { "bin": { "tsc": "bin/tsc", "tsserver": "bin/tsserver" } }, "sha512-jl1vZzPDinLr9eUt3J/t7V6FgNEw9QjvBPdysz9KfQDD41fQrC2Y4vKQdiaUpFT4bXlb1RHhLpp8wtm6M5TgSw=="],
+    "typescript": ["typescript@6.0.3", "", { "bin": { "tsc": "bin/tsc", "tsserver": "bin/tsserver" } }, "sha512-y2TvuxSZPDyQakkFRPZHKFm+KKVqIisdg9/CZwm9ftvKXLP8NRWj38/ODjNbr43SsoXqNuAisEf1GdCxqWcdBw=="],
 
     "uc.micro": ["uc.micro@2.1.0", "", {}, "sha512-ARDJmphmdvUk6Glw7y9DQ2bFkKBHwQHLi2lsaH6PPmz/Ka9sFOBsBluozhDltWmnv9u/cF6Rt87znRTPV+yp/A=="],
 
@@ -243,6 +243,6 @@
 
     "yaml": ["yaml@2.9.0", "", { "bin": { "yaml": "bin.mjs" } }, "sha512-2AvhNX3mb8zd6Zy7INTtSpl1F15HW6Wnqj0srWlkKLcpYl/gMIMJiyuGq2KeI2YFxUPjdlB+3Lc10seMLtL4cA=="],
 
-    "zshy": ["zshy@0.7.3", "", { "dependencies": { "arg": "^5.0.2", "fast-glob": "^3.3.2", "table": "^6.9.0" }, "peerDependencies": { "typescript": ">5.5.0" }, "bin": { "zshy": "dist/index.cjs" } }, "sha512-MLCAh1mwonX25z58SJEAvHGY8j4xSMsNGM1XCgYwYZgBWEO/4YeH1u+EejJlUbHbz21N2YQ0Dgg8WznKMEU26w=="],
+    "zshy": ["zshy@0.8.0", "", { "dependencies": { "arg": "^5.0.2", "fast-glob": "^3.3.2", "table": "^6.9.0" }, "peerDependencies": { "typescript": ">5.5.0" }, "bin": { "zshy": "dist/index.cjs" } }, "sha512-KV0vW7y98w0spcIE08NgeIQtNT0TwaMYLNWn6WcS0QBO+j7DgDONLPjwivUEnSM8DzIPM5e6OAK4BezWqcYneA=="],
   }
 }

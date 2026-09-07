@@ -97,8 +97,8 @@
     "bun": "^1.4.0",
     "tsx": "^4.22.3",
     "typedoc": "^0.28.19",
-    "typescript": "^5.9.3",
-    "zshy": "^0.7.3"
+    "typescript": "^6.0.3",
+    "zshy": "^0.8.0"
   },
   "zshy": {
     "exports": {
