@@ -1,5 +1,5 @@
 /**
- * Typed koa-compose (ADR-003).
+ * Typed koa-compose.
  *
  * Folds an ordered list of middleware into a single function. Each middleware
  * receives the shared context and a `next` it may `await` to run everything

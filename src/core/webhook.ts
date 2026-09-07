@@ -1,5 +1,5 @@
 /**
- * Web-standard webhook callback (ADR-005, §6.7).
+ * Web-standard webhook callback.
  *
  * A pure `(Request) => Promise<Response>`: verify the secret-token header, parse
  * one `Update`, run `bot.handleUpdate`, return a `Response`. The same function

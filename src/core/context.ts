@@ -1,10 +1,10 @@
 /**
- * Per-update Context (ADR-003).
+ * Per-update Context.
  *
  * Bundles the raw discriminated `update`, the shared `Api`, a mutable `state`
  * bag, and ergonomic shortcuts (`reply`, `answerCallbackQuery`) that infer the
  * chat/callback from the update. Typed accessors read each payload via
- * `"key" in update`, mirroring the discriminated-union shape (ADR-007), so they
+ * `"key" in update`, mirroring the discriminated-union shape, so they
  * return `T | undefined` without unsafe casts.
  */
 

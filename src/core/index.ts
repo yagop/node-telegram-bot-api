@@ -8,36 +8,36 @@
  * subpath.
  */
 
-// The generated schema is re-exported by core (§5).
+// The generated schema is re-exported by core.
 export * from "../types/index.js";
-// Framework webhook adapters (ADR-005, §6.7)
+// Framework webhook adapters
 export * from "./adapters.js";
-// The single generated client class (ADR-001)
+// The single generated client class
 export * from "./api.js";
 export * from "./bot.js";
-// Dispatch (ADR-003, ADR-004)
+// Dispatch
 export * from "./compose.js";
 export * from "./context.js";
-// Request encoding (ADR-002, ADR-010)
+// Request encoding
 export * from "./encode.js";
 export * from "./entities.js";
-// Errors (ADR-008)
+// Errors
 export * from "./errors.js";
-// Files & the form-part contract (ADR-006, ADR-011)
+// Files & the form-part contract
 export * from "./files.js";
-// Builders (§6.2-6.4) - optional fluent sugar over plain param shapes
+// Builders - optional fluent sugar over plain param shapes
 export * from "./keyboard.js";
 export * from "./longpoll.js";
 export * from "./media.js";
 // Opt-in session middleware + its core store and the reply-tracking layer
 export * from "./memory-session-storage.js";
-// Opt-in rate limiting (ADR-004 §10, M3)
+// Opt-in rate limiting
 export * from "./ratelimiter.js";
 export * from "./reply-tracking.js";
 export * from "./richmessage.js";
 export * from "./richtext.js";
 export * from "./session.js";
-// Transport (ADR-005, ADR-008)
+// Transport
 export * from "./transport.js";
-// Webhooks (ADR-005, §6.7)
+// Webhooks
 export * from "./webhook.js";

@@ -329,7 +329,7 @@ Explicit, web-standard wrapper for uploadable bytes.
 
 | Method | Params | Returns | Description |
 | --- | --- | --- | --- |
-| `build` | `index`: number | string | This file's wire reference when it occupies attach slot `index`: `attach://media_<index>`. The matching multipart part is keyed `media_<index>` (the ref without the scheme). `InputFile` owns the naming convention; the slot index is allocated by `AttachedMedia` during its build pass (ADR-011). |
+| `build` | `index`: number | string | This file's wire reference when it occupies attach slot `index`: `attach://media_<index>`. The matching multipart part is keyed `media_<index>` (the ref without the scheme). `InputFile` owns the naming convention; the slot index is allocated by `serializeParams` while it resolves nested files. |
 
 #### Properties
 
@@ -948,7 +948,7 @@ default delay.
 
 ### `longPoll()`
 
-Async-generator update source (ADR-004): long-polls `getUpdates` and yields each update until the signal aborts.
+Async-generator update source: long-polls `getUpdates` and yields each update until the signal aborts.
 
 | Param | Type |
 | --- | --- |
@@ -1231,7 +1231,7 @@ Subset of Telegram's `ResponseParameters` carried on API errors.
 A file-carrying composite produced by `serializeParams` for a structured field
 that contained nested `InputFile`s: the already-serialized JSON (with `attach://`
 refs) plus the keyed parts those refs point at. The encoder sets `json` under the
-field name and attaches each part - it still stringifies nothing (ADR-011).
+field name and attaches each part - it still stringifies nothing.
 
 | Property | Type |
 | --- | --- |
@@ -9710,7 +9710,7 @@ type WriteAccessAllowed = {
 ### `ATTACH_PREFIX`
 
 The `attach://` URI scheme the Bot API uses to reference a multipart part
- from inside a JSON structure (ADR-011).
+ from inside a JSON structure.
 
 ```ts
 const ATTACH_PREFIX: "attach://";

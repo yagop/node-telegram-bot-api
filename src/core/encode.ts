@@ -1,5 +1,5 @@
 /**
- * Request encoding (ADR-002, ADR-010, ADR-011) - the library serializes nothing.
+ * Request encoding - consumes parameters already serialized by `serializeParams`.
  *
  * `encodeForm` consumes the wire-ready record `serializeParams` produced (every
  * value is a `WireValue`) and splits it per field: collect an `InputFile` as a

@@ -1,5 +1,5 @@
 /**
- * `fromPath` - wrap a local file as an `InputFile` (ADR-006, §6.4).
+ * `fromPath` - wrap a local file as an `InputFile`.
  *
  * The sole Node-only file-input helper. The core `InputFile` wraps web-standard
  * data only (no `fs`, no path-guessing), so reading from disk lives here, under

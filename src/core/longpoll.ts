@@ -100,7 +100,7 @@ async function recover(ctx: RetryContext): Promise<{ conflicts: number } | "stop
   return { conflicts: plan.conflicts };
 }
 
-/** Async-generator update source (ADR-004): long-polls `getUpdates` and yields each update until the signal aborts. */
+/** Async-generator update source: long-polls `getUpdates` and yields each update until the signal aborts. */
 export async function* longPoll(
   api: Api,
   options: LongPollOptions = {},

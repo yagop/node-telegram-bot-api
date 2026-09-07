@@ -18,7 +18,7 @@ export class Api {
     params?: Record<string, unknown>,
     signal?: AbortSignal,
   ): Promise<R> {
-    // ADR-002 (Option-D): structured params are plain objects; serialize once here
+    // Structured params are plain objects; serialize once here
     // (before the transport retry loop) into the wire-ready record encodeForm takes.
     return this.transport.request<R>(method, params ? serializeParams(params) : params, signal);
   }

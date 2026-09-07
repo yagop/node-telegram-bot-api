@@ -154,8 +154,7 @@ function mapScalar(s: string): string {
   if (/^String$/.test(s)) return "string";
   if (/^Boolean$/.test(s)) return "boolean";
   if (/^True$/.test(s)) return "true";
-  // A bare `InputFile` always also accepts a file_id / URL string (ADR-006). This
-  // is the one surviving param construct after ADR-002's reversal to plain params.
+  // A bare `InputFile` also accepts a file_id / URL string.
   if (/^InputFile$/.test(s)) return "InputFile | string";
   if (/^[A-Z][A-Za-z0-9]*$/.test(s)) return s; // reference to another type
   unmapped.add(s);
@@ -190,14 +189,12 @@ function proseUnionMembers(descRaw: string): string[] {
 }
 
 // ---------------------------------------------------------------------------
-// File-target fields on `Input*` types (ADR-006)
+// File-target fields on `Input*` types
 // ---------------------------------------------------------------------------
 //
-// Under ADR-002's reversal (plain params, serialize in the pipeline) there is no
-// param-only type transform: a param field is the SAME plain mapped type as a
-// response field (one mapping path). The one exception is upload ergonomics: the
+// Params and response fields use the same type mapping. The exception is uploads: the
 // nested file-target fields on the `Input*` types are documented "String" but also
-// accept an uploaded `InputFile` (the encoder resolves it to `attach://`). Widen
+// accept an uploaded `InputFile` (`serializeParams` resolves it to `attach://`). Widen
 // only those field NAMES, and only on `Input*` types - never `*.url`, venue/
 // location coords, `photo_url`, or any response type.
 
@@ -327,10 +324,10 @@ function fieldsFromRows(rec: Rec, isMethod: boolean): Field[] {
   return rec.rows.map((row) => {
     const fname = (row[c.name] ?? "").trim();
     // One mapping path for params AND response objects: plain mapped types. Params
-    // are serialized in the pipeline (ADR-002 -> Option-D), not pre-branded.
+    // are serialized by `serializeParams`.
     let type = mapType(row[c.type] ?? "");
     // Upload ergonomics: a documented-"String" file-target field on an `Input*` type
-    // also accepts an `InputFile` (resolved to attach:// in the encoder).
+    // also accepts an `InputFile` (resolved to attach:// by serializeParams).
     if (rec.name.startsWith("Input") && FILE_FIELDS.has(fname) && type === "string") {
       type = "InputFile | string";
     }
@@ -439,7 +436,7 @@ import type { InputFile } from "../core/files.js";
 `);
 out.push(PRELUDE);
 
-// `Update` is emitted as a DISCRIMINATED UNION (ADR-007): one variant per
+// `Update` is emitted as a DISCRIMINATED UNION: one variant per
 // payload key, each `{ update_id: number } & { <key>: <Type> }`. This lets
 // `if ('message' in u)` narrow `u.message` to `Message`, instead of the v1
 // all-optional object where every field was `T | undefined`.
@@ -449,7 +446,7 @@ const updateVariants = updateDef.fields.filter((f) => f.name !== "update_id");
 const updateKeys = updateVariants.map((f) => f.name);
 
 out.push(`\n// ---------------------------------------------------------------------------
-// Update - discriminated union (ADR-007), one variant per payload key
+// Update - discriminated union, one variant per payload key
 // ---------------------------------------------------------------------------\n`);
 out.push(
   `export type Update =\n` +
@@ -511,7 +508,7 @@ for (const m of methods) {
 await Bun.write(OUT, ascii(out.join("\n")));
 
 // ---------------------------------------------------------------------------
-// Emit the single generated `Api` class (ADR-001) → src/core/api.ts
+// Emit the single generated `Api` class -> src/core/api.ts
 // ---------------------------------------------------------------------------
 //
 // One concrete method per Bot API method, each a one-liner over the shared
@@ -541,7 +538,7 @@ export class Api {
     params?: Record<string, unknown>,
     signal?: AbortSignal,
   ): Promise<R> {
-    // ADR-002 (Option-D): structured params are plain objects; serialize once here
+    // Structured params are plain objects; serialize once here
     // (before the transport retry loop) into the wire-ready record encodeForm takes.
     return this.transport.request<R>(method, params ? serializeParams(params) : params, signal);
   }

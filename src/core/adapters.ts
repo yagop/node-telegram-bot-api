@@ -1,5 +1,5 @@
 /**
- * Framework webhook adapters (ADR-005, §6.7).
+ * Framework webhook adapters.
  *
  * These live in core because they bridge the pure `(Request) => Promise<Response>`
  * webhook callback onto the shapes popular frameworks expose - without dragging in
