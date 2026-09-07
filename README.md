@@ -311,6 +311,8 @@ bot.command("count", (ctx) => ctx.reply(`Seen ${++session.get(ctx).data.count} t
 
 Both return the same handle, which is also where the non-bag members live: `.ext()` for layers built on sessions, and `.delete()`, which evicts the whole key on flush - an explicit end-of-conversation / `/forget` / erasure hook. `ctx.getSession()` and `session.get(ctx)` throw when the middleware did not run for this update (not registered, or no derivable key).
 
+For a conversation with several steps, use a discriminated union as the session type. Each step can require different data: picking a destination requires a ship name, and launch requires both. See [`examples/12-conversation.ts`](examples/12-conversation.ts) to name a spaceship, pick a planet, and launch, with `/start` and `/cancel`.
+
 ### Reply tracking
 
 Reply tracking is a layer **on top of** the session (it stores its table in the envelope's `ext.reply`, so a bot that never uses it persists nothing extra). It records "awaiting a reply to a specific message" as plain data matched on `reply_to_message.message_id` - never a live promise - so it survives a restart and works on serverless.
