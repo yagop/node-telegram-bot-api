@@ -6557,8 +6557,8 @@ unbounded (the historic behavior) and grow until entries are matched, forgotten,
 or expire.
 
 TTL caps a marker's *age* but not the table's *size*: a chat that fires many
-short-lived keyboards can still balloon between prunes. `maxEntries` /
-`maxBytes` bound the size, evicting the least-recently-used markers once a
+short-lived keyboards can still balloon between prunes. `maxEntriesPerChat` /
+`maxBytesPerChat` bound the size, evicting the least-recently-used markers once a
 budget is exceeded - "least-recently-used", not "oldest", because an active old
 keyboard must outlive an idle newer one. Recency (`lastUsedAt`) is stamped on
 both record and match, so a matched-but-kept press marker (a live inline
@@ -6567,8 +6567,8 @@ keyboard) counts as fresh.
 ```ts
 type ReplyTrackingOptions = {
   defaultTtlSeconds?: number;
-  maxBytes?: number;
-  maxEntries?: number;
+  maxBytesPerChat?: number;
+  maxEntriesPerChat?: number;
   now?: () => number;
   slidingTtl?: boolean;
 };

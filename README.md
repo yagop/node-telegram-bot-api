@@ -352,8 +352,8 @@ TTL bounds a marker's *age*, not the table's *size* - a chat that fires many sho
 createSession<Session>({
   store: new MemorySessionStorage(),
   replyTracking: {
-    maxEntries: 50, // cap the live markers per chat...
-    maxBytes: 8192, // ...and their serialized size
+    maxEntriesPerChat: 50, // cap the live markers per chat...
+    maxBytesPerChat: 8192, // ...and their serialized size
     defaultTtlSeconds: 3600, // a TTL for every expectation that sets none
     slidingTtl: true, // ...refreshed each time the marker is used
   },

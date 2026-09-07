@@ -161,7 +161,7 @@ export type SessionOptions<T> = {
   ttlSeconds?: number;
   /**
    * Per-chat bounds for the reply-tracking layer (`expectReply` / `expectCallback`
-   * and friends): `maxEntries` / `maxBytes` cap the tables with LRU eviction,
+   * and friends): `maxEntriesPerChat` / `maxBytesPerChat` cap the tables with LRU eviction,
    * `defaultTtlSeconds` / `slidingTtl` control expiry. Omit to leave the tables
    * unbounded. Surfaced unchanged on the handle as `.replyTracking`.
    */

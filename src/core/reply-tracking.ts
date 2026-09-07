@@ -31,7 +31,7 @@
  *
  * TTL bounds a marker's age, not the table's size. For a hard per-chat cap pass
  * {@link ReplyTrackingOptions} to `createSession({ store, replyTracking })`:
- * `maxEntries` / `maxBytes` evict the least-recently-used markers once a budget
+ * `maxEntriesPerChat` / `maxBytesPerChat` evict the least-recently-used markers once a budget
  * is exceeded (recency, not age, so an active old keyboard outlives an idle newer
  * one), `defaultTtlSeconds` gives every expectation a TTL, and `slidingTtl`
  * re-arms it on use. All opt-in; with no `replyTracking` the tables are unbounded.
@@ -82,8 +82,8 @@ export type ExpectOptions = {
  * or expire.
  *
  * TTL caps a marker's *age* but not the table's *size*: a chat that fires many
- * short-lived keyboards can still balloon between prunes. `maxEntries` /
- * `maxBytes` bound the size, evicting the least-recently-used markers once a
+ * short-lived keyboards can still balloon between prunes. `maxEntriesPerChat` /
+ * `maxBytesPerChat` bound the size, evicting the least-recently-used markers once a
  * budget is exceeded - "least-recently-used", not "oldest", because an active old
  * keyboard must outlive an idle newer one. Recency (`lastUsedAt`) is stamped on
  * both record and match, so a matched-but-kept press marker (a live inline
@@ -95,12 +95,12 @@ export type ReplyTrackingOptions = {
    * a record pushes past it, the least-recently-used markers are evicted down to
    * the cap.
    */
-  maxEntries?: number;
+  maxEntriesPerChat?: number;
   /**
    * Cap on the serialized (UTF-8) byte size of this key's reply namespace. After
    * a record, least-recently-used markers are evicted until the namespace fits.
    */
-  maxBytes?: number;
+  maxBytesPerChat?: number;
   /** TTL (seconds) applied to any expectation recorded without its own `ttlSeconds`. */
   defaultTtlSeconds?: number;
   /**
@@ -185,7 +185,7 @@ function record(
 
 /** Whether an LRU size budget is configured - the only thing that reads `lastUsedAt`. */
 function hasBudget(config: ReplyTrackingOptions | undefined): boolean {
-  return config !== undefined && (config.maxEntries !== undefined || config.maxBytes !== undefined);
+  return config !== undefined && (config.maxEntriesPerChat !== undefined || config.maxBytesPerChat !== undefined);
 }
 
 /** Mark a kept marker as just used: slide its TTL if it has one, and bump recency for the LRU. */
@@ -217,11 +217,11 @@ function lruOrder(state: ReplyState): Ref[] {
 
 /**
  * Evict the least-recently-used markers across both tables until the configured
- * `maxEntries` and `maxBytes` budgets are met. A no-op when neither is set.
+ * `maxEntriesPerChat` and `maxBytesPerChat` budgets are met. A no-op when neither is set.
  */
 function evict(state: ReplyState, config: ReplyTrackingOptions | undefined): void {
-  const { maxEntries, maxBytes } = config ?? {};
-  if (maxEntries === undefined && maxBytes === undefined) return;
+  const { maxEntriesPerChat, maxBytesPerChat } = config ?? {};
+  if (maxEntriesPerChat === undefined && maxBytesPerChat === undefined) return;
 
   const victims = lruOrder(state);
   let i = 0;
@@ -230,10 +230,10 @@ function evict(state: ReplyState, config: ReplyTrackingOptions | undefined): voi
     if (ref !== undefined) delete ref.table[ref.id];
   };
 
-  // `i < victims.length` also guards a negative/NaN `maxEntries` from underflowing
+  // `i < victims.length` also guards a negative/NaN `maxEntriesPerChat` from underflowing
   // past the last victim (which would deref `undefined`); it just evicts down to empty.
-  while (maxEntries !== undefined && i < victims.length && victims.length - i > maxEntries) dropNext();
-  while (maxBytes !== undefined && i < victims.length && byteLength(state) > maxBytes) dropNext();
+  while (maxEntriesPerChat !== undefined && i < victims.length && victims.length - i > maxEntriesPerChat) dropNext();
+  while (maxBytesPerChat !== undefined && i < victims.length && byteLength(state) > maxBytesPerChat) dropNext();
 }
 
 /**

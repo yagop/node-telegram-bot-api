@@ -11,7 +11,7 @@
  * one with a marker `callback_data` could not hold (a private, oversized payload).
  * Nobody presses most of them, so without a bound the markers pile up. With it:
  *
- * - `maxEntries` / `maxBytes` cap the tables; over budget, the
+ * - `maxEntriesPerChat` / `maxBytesPerChat` cap the tables; over budget, the
  *   **least-recently-used** markers are evicted - recency, not age, so a keyboard
  *   the user is still pressing outlives an older idle one. Pressing a keyboard is
  *   a "use" too (it refreshes recency), not only sending it.
@@ -43,8 +43,8 @@ bot.use(
     store: new MemorySessionStorage(),
     // The whole point of this example: a hard per-chat bound on the press table.
     replyTracking: {
-      maxEntries: 5, // at most 5 live markers per chat...
-      maxBytes: 4096, // ...and never more than 4 KB serialized, whichever bites first
+      maxEntriesPerChat: 5, // at most 5 live markers per chat...
+      maxBytesPerChat: 4096, // ...and never more than 4 KB serialized, whichever bites first
       defaultTtlSeconds: 3600, // every marker expires after an idle hour...
       slidingTtl: true, // ...but each press pushes that hour out again
     },
