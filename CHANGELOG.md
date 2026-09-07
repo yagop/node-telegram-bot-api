@@ -5,6 +5,30 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased][Unreleased]
 
+### Reply and callback tracking
+
+- Added an opt-in per-chat **LRU bound** on the reply/press tables, configured on
+  the session: `createSession({ store, replyTracking: { maxEntries, maxBytes,
+  defaultTtlSeconds, slidingTtl } })`. `ttlSeconds` caps a marker's age but not the
+  table's size, so a chat that fires many short-lived keyboards could still grow
+  its envelope between prunes (#1357).
+- `maxEntries` / `maxBytes` cap the tables (combined across replies and presses),
+  evicting the **least-recently-used** markers once a budget is exceeded - recency,
+  not age, so an actively-pressed old keyboard outlives an idle newer one; a match
+  refreshes recency, not just a record. `defaultTtlSeconds` gives every expectation
+  a TTL, and `slidingTtl` re-arms it on use.
+- All fields are optional; with no `replyTracking` the tables stay unbounded, as
+  before. The recency/sliding metadata is written only when a bound is configured,
+  so unbounded bots keep byte-identical envelopes.
+- Added the example `examples/18-reply-tracking-lru.ts`.
+
+### Sessions
+
+- Dropped the `createdAt` / `updatedAt` envelope timestamps (and the `now` clock
+  option that fed them): nothing read them, and slimming the envelope directly
+  serves the growth the LRU bound targets. Stale timestamp fields on already-stored
+  rows fall out on the next write. (These shipped only in `2.2.0-rc0`.)
+
 ## [2.2.0-rc0][2.2.0-rc0] - 2026-09-03
 
 ### Sessions
