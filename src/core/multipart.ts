@@ -131,10 +131,8 @@ async function* pieceChunks(
       yield piece;
       continue;
     }
-    // A factory result is always awaited (as before), even when it returns a
-    // stream synchronously - that await is an observable microtask hop. A Blob
-    // or plain stream resolves synchronously so the reader is acquired in the
-    // same tick, so a stream erroring on a queued microtask keeps its chunks.
+    // Always await a factory result (an observable microtask hop the original
+    // kept); resolve a Blob or plain stream synchronously.
     if (typeof piece === "function") {
       yield* drainStream(await piece());
       continue;

@@ -214,10 +214,8 @@ export class Transport {
   private async attempt<R>(ctx: RequestContext, attempt: number): Promise<AttemptOutcome<R>> {
     const timeoutSignal = ctx.timeoutMs > 0 ? AbortSignal.timeout(ctx.timeoutMs) : undefined;
     const { signal: composed, cleanup } = combineSignals([ctx.signal, timeoutSignal]);
-    // Build the body/init BEFORE the try: a synchronous failure while creating
-    // the body (e.g. re-streaming a multipart source) must surface raw and
-    // unretried, exactly as it did before this was extracted - not get caught
-    // and reclassified as a transient transport error.
+    // Build body/init outside the try so a synchronous body-build failure
+    // surfaces raw and unretried, not caught and retried as a transport error.
     const init = buildInit(ctx.makeBody(), ctx.headers, composed);
     let response: Response;
     let text: string;
