@@ -134,8 +134,7 @@ async function* pieceChunks(
       yield piece;
       continue;
     }
-    // Always await a factory result (an observable microtask hop the original
-    // kept); resolve a Blob or plain stream synchronously.
+    // Await a factory (as before); a Blob or plain stream resolves synchronously.
     if (typeof piece === "function") {
       yield* drainStream(await piece());
       continue;
