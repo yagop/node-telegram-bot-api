@@ -734,9 +734,9 @@ describe("reply-tracking LRU budgets", () => {
     } as unknown as Update;
   }
 
-  test("maxEntries evicts the least-recently-used marker across both tables", async () => {
+  test("maxEntriesPerChat evicts the least-recently-used marker across both tables", async () => {
     let clock = 1000;
-    const mw = createSession({ store: new MemorySessionStorage(), replyTracking: { maxEntries: 2, now: () => clock } });
+    const mw = createSession({ store: new MemorySessionStorage(), replyTracking: { maxEntriesPerChat: 2, now: () => clock } });
 
     const ask = new Context(msg("q"), api);
     await mw(ask, async () => {
@@ -757,7 +757,7 @@ describe("reply-tracking LRU budgets", () => {
 
   test("a recently-used keeper outlives an idle newer marker (recency, not age)", async () => {
     let clock = 1000;
-    const mw = createSession({ store: new MemorySessionStorage(), replyTracking: { maxEntries: 2, now: () => clock } });
+    const mw = createSession({ store: new MemorySessionStorage(), replyTracking: { maxEntriesPerChat: 2, now: () => clock } });
 
     const setup = new Context(msg("q"), api);
     await mw(setup, async () => {
@@ -782,10 +782,10 @@ describe("reply-tracking LRU budgets", () => {
     await mw(p2, async () => assert.equal(matchCallback(p2), undefined, "idle marker evicted"));
   });
 
-  test("maxBytes evicts LRU markers until the namespace fits", async () => {
+  test("maxBytesPerChat evicts LRU markers until the namespace fits", async () => {
     let clock = 1000;
     const big = "x".repeat(200);
-    const mw = createSession({ store: new MemorySessionStorage(), replyTracking: { maxBytes: 300, now: () => clock } });
+    const mw = createSession({ store: new MemorySessionStorage(), replyTracking: { maxBytesPerChat: 300, now: () => clock } });
 
     const ask = new Context(msg("q"), api);
     await mw(ask, async () => {
@@ -855,12 +855,12 @@ describe("reply-tracking LRU budgets", () => {
     await mw(ask, async () => expectCallback(ask, 1, { n: 1 }));
 
     const stored = store.writes.at(-1)?.[1] as string;
-    assert.doesNotMatch(stored, /lastUsedAt/, "lastUsedAt is dead weight with no maxEntries/maxBytes");
+    assert.doesNotMatch(stored, /lastUsedAt/, "lastUsedAt is dead weight with no maxEntriesPerChat/maxBytesPerChat");
     assert.match(stored, /expiresAt/, "the TTL is still applied");
   });
 
-  test("a negative maxEntries evicts everything instead of throwing", async () => {
-    const mw = createSession({ store: new MemorySessionStorage(), replyTracking: { maxEntries: -1 } });
+  test("a negative maxEntriesPerChat evicts everything instead of throwing", async () => {
+    const mw = createSession({ store: new MemorySessionStorage(), replyTracking: { maxEntriesPerChat: -1 } });
 
     const ask = new Context(msg("q"), api);
     await mw(ask, async () => {

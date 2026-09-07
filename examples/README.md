@@ -24,7 +24,7 @@ relative `../src` paths.
 | [`15-rich-message.ts`](./15-rich-message.ts) | `RichMessageBuilder`, `RichTextBuilder`, `richMessageButton`/`richListItem`, `sendRichMessage` (blocks + `html` mode) | `BOT_TOKEN=... CHAT_ID=... bun examples/15-rich-message.ts` |
 | [`16-sessions.ts`](./16-sessions.ts) | `createSession()` + `session.get(ctx)`, durable `FileSessionStorage` (`/node`), `taggedReplies` for a name->email reply flow | `BOT_TOKEN=... bun examples/16-sessions.ts` |
 | [`17-callback-tracking.ts`](./17-callback-tracking.ts) | Routing button presses two ways: stateless `callback_data` paging, vs. `expectCallback`/`matchCallback(ctx, { once: true })` for an oversized, private, one-shot confirmation | `BOT_TOKEN=... bun examples/17-callback-tracking.ts` |
-| [`18-reply-tracking-lru.ts`](./18-reply-tracking-lru.ts) | Bounding the reply/press tables with a per-chat LRU: `createSession({ replyTracking: { maxEntries, maxBytes, defaultTtlSeconds, slidingTtl } })`, evicting least-recently-used markers | `BOT_TOKEN=... bun examples/18-reply-tracking-lru.ts` |
+| [`18-reply-tracking-lru.ts`](./18-reply-tracking-lru.ts) | Bounding the reply/press tables with a per-chat LRU: `createSession({ replyTracking: { maxEntriesPerChat, maxBytesPerChat, defaultTtlSeconds, slidingTtl } })`, evicting least-recently-used markers | `BOT_TOKEN=... bun examples/18-reply-tracking-lru.ts` |
 
 The framework webhook examples (03-05) target serverless/framework platforms and
 aren't standalone-runnable here, but they typecheck and show the exact wiring.

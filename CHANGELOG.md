@@ -5,6 +5,14 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased][Unreleased]
 
+### Reply and callback tracking
+
+- Renamed the reply-tracking size budgets to denote their scope:
+  `replyTracking.maxEntries` -> `maxEntriesPerChat` and `maxBytes` ->
+  `maxBytesPerChat` (each bounds one session key's tables, per chat with the
+  default key). Breaking rename within the `2.2.0` prerelease line; the old names
+  shipped only in `2.2.0-rc1`.
+
 ## [2.2.0-rc1][2.2.0-rc1] - 2026-09-07
 
 ### Long polling
