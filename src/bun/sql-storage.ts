@@ -31,7 +31,7 @@
  * `./node` (a CI guard enforces it).
  */
 
-import { SQL, sql as bunSql } from "bun";
+import { sql as bunSql, SQL } from "bun";
 import type { SessionStore } from "../core/session.js";
 
 export type SqlSessionStorageOptions = {

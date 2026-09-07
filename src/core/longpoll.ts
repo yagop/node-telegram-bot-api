@@ -53,7 +53,15 @@ type RetryContext = {
 /** Decide how to handle a getUpdates failure. Throws the error to stop the loop
  *  (non-retryable, or the conflict budget is exhausted); otherwise returns the
  *  wait before re-polling and the new consecutive-conflict count. */
-function planRetry({ err, conflicts, retry, retryDelayMs, conflictRetryDelayMs, maxConflictRetries, onError }: RetryContext): RetryPlan {
+function planRetry({
+  err,
+  conflicts,
+  retry,
+  retryDelayMs,
+  conflictRetryDelayMs,
+  maxConflictRetries,
+  onError,
+}: RetryContext): RetryPlan {
   const pollConflict = isPollConflict(err);
   if (!retry || !(isTransientError(err) || pollConflict)) throw err;
   // A conflict advances its own bounded counter; any other transient breaks the streak.
@@ -63,7 +71,11 @@ function planRetry({ err, conflicts, retry, retryDelayMs, conflictRetryDelayMs, 
   // A conflict waits its own longer delay; otherwise honor `retry_after`
   // (e.g. a 429 flood-wait) when present, else the default delay.
   const wait = pollConflict ? conflictRetryDelayMs : (retryAfterMs(err) ?? retryDelayMs);
-  log("getUpdates %s; retry in %dms", pollConflict ? `conflict ${next}/${maxConflictRetries}` : "failed", Math.round(wait));
+  log(
+    "getUpdates %s; retry in %dms",
+    pollConflict ? `conflict ${next}/${maxConflictRetries}` : "failed",
+    Math.round(wait),
+  );
   return { wait, conflicts: next };
 }
 
@@ -112,7 +124,16 @@ export async function* longPoll(api: Api, options: LongPollOptions = {}, signal?
       // A 409 (another instance polling the same token) is transient for polling
       // but bounded, so an overlapping redeploy heals while a real two-instance
       // deployment still surfaces. `recover` throws for anything non-retryable.
-      const outcome = await recover({ err, conflicts, retry, retryDelayMs, conflictRetryDelayMs, maxConflictRetries, onError, signal });
+      const outcome = await recover({
+        err,
+        conflicts,
+        retry,
+        retryDelayMs,
+        conflictRetryDelayMs,
+        maxConflictRetries,
+        onError,
+        signal,
+      });
       if (outcome === "stop") return;
       conflicts = outcome.conflicts;
       // retry WITHOUT advancing offset

@@ -41,8 +41,7 @@ export class RedisSessionStorage implements SessionStore {
 
   constructor(options: RedisSessionStorageOptions = {}) {
     this.owned = options.client === undefined && options.url !== undefined;
-    this.client =
-      options.client ?? (options.url !== undefined ? this.createClient(options.url) : redis);
+    this.client = options.client ?? (options.url !== undefined ? this.createClient(options.url) : redis);
     this.prefix = options.prefix ?? "session:";
     this.ttlSeconds = options.ttlSeconds;
   }
