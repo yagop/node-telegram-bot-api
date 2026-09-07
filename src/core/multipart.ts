@@ -134,7 +134,7 @@ async function* pieceChunks(
       yield piece;
       continue;
     }
-    // Await a factory (as before); a Blob or plain stream resolves synchronously.
+    // Await a factory; a Blob or plain stream resolves synchronously.
     if (typeof piece === "function") {
       yield* drainStream(await piece());
       continue;
