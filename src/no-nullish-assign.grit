@@ -1,0 +1,10 @@
+language js
+
+// Ban the logical-nullish-assignment operator (??=). Prefer an explicit
+// `if (x === undefined) x = y;` which is clearer and easier to step through.
+// Matches the assignment node's source text, so `??=` inside a string literal
+// on the right-hand side is a (rare) false positive.
+assignment_expression() as $a where {
+  $a <: r".*\?\?=.*",
+  register_diagnostic(span=$a, message="Avoid ??=; use an explicit `if (x === undefined) x = y;` instead.", severity="error")
+}
