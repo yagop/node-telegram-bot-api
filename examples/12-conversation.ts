@@ -1,77 +1,74 @@
 /**
- * 12 - A minimal multi-step conversation.
+ * 12 - Mission control: name your spaceship, pick a destination, and launch.
  *
- * Walks a user through "ask name → ask age → done" by tracking a per-chat step in
- * a `Map`. There's no built-in conversation engine - just middleware + your own
- * state - which keeps the model transparent. `ctx.state` is used to stash the
- * current step for the handler within a single update; the `Map` persists it
- * across updates.
+ * Each union member defines the data available at that step. Picking a
+ * destination requires a ship name; launch requires both. Switching
+ * on `step` narrows the type, so handlers need no casts or optional fields.
+ * These are compile-time checks, not validation of user input or stored data.
+ *
+ * Sessions save each transition after the handler. MemorySessionStorage loses
+ * state on restart; see 16-sessions.ts for durable storage. The default key is
+ * per chat, so group members share one conversation. Try this in a private chat.
  *
  * Run: BOT_TOKEN=123:abc bun examples/12-conversation.ts
  */
-import { Bot } from "node-telegram-bot-api";
+import { Bot, createSession, MemorySessionStorage } from "node-telegram-bot-api";
 import { run } from "node-telegram-bot-api/node";
 
 const bot = new Bot(process.env.BOT_TOKEN!);
 
-type Step = "idle" | "awaiting_name" | "awaiting_age";
+type Mission =
+  | { step: "idle" }
+  | { step: "ship_name" }
+  | { step: "destination"; ship: string }
+  | { step: "launched"; ship: string; destination: string };
 
-interface Convo {
-  step: Step;
-  name?: string;
-}
-
-// Per-chat conversation state, persisted across updates.
-const convos = new Map<number, Convo>();
-
-// Load the conversation for this chat onto `ctx.state` before handlers run.
-bot.use((ctx, next) => {
-  const id = ctx.chatId;
-  if (id === undefined) return next();
-  const convo = convos.get(id) ?? { step: "idle" };
-  convos.set(id, convo);
-  ctx.state.convo = convo;
-  return next();
+const session = createSession<Mission>({
+  store: new MemorySessionStorage(),
+  initial: () => ({ step: "idle" }),
 });
+bot.use(session);
 
 // `/start` kicks off the flow.
 bot.command("start", (ctx) => {
-  const convo = ctx.state.convo as Convo;
-  convo.step = "awaiting_name";
-  return ctx.reply("👋 What's your name?");
+  session.get(ctx).data = { step: "ship_name" };
+  return ctx.reply("🧑‍🚀 Welcome to mission control, Captain. Your spaceship needs a name!");
 });
 
 // `/cancel` resets at any point.
 bot.command("cancel", (ctx) => {
-  const convo = ctx.state.convo as Convo;
-  convo.step = "idle";
-  convo.name = undefined;
-  return ctx.reply("Cancelled.");
+  session.get(ctx).delete();
+  return ctx.reply("🍕 Mission cancelled. The crew has gone for pizza. Send /start for a new mission.");
 });
 
 // Drive the steps from plain text messages (skip slash-commands, handled above).
 bot.on("message", (ctx) => {
-  const convo = ctx.state.convo as Convo;
-  const text = ctx.message?.text;
-  if (text === undefined || text.startsWith("/")) return;
+  const text = ctx.message?.text?.trim();
+  if (!text || text.startsWith("/")) return;
 
-  switch (convo.step) {
-    case "awaiting_name": {
-      convo.name = text.trim();
-      convo.step = "awaiting_age";
-      return ctx.reply(`Nice to meet you, ${convo.name}! How old are you?`);
-    }
-    case "awaiting_age": {
-      const age = Number(text.trim());
-      if (!Number.isInteger(age) || age <= 0) {
-        return ctx.reply("That doesn't look like an age - try a whole number.");
-      }
-      convo.step = "idle";
-      return ctx.reply(`Got it: ${convo.name}, ${age}. Thanks! Send /start to go again.`);
-    }
-    default:
-      return ctx.reply("Send /start to begin.");
+  const handle = session.get(ctx);
+  const state = handle.data;
+
+  switch (state.step) {
+    case "ship_name":
+      handle.data = { step: "destination", ship: text };
+      return ctx.reply(`🍿 ${text} is fuelled and stocked with snacks. Where are we going? 🪐 Pick any planet, real or invented.`);
+    case "destination":
+      // TypeScript knows state.ship exists here.
+      handle.data = { step: "launched", ship: state.ship, destination: text };
+      return ctx.reply(`🚀 3... 2... 1... Liftoff! ${state.ship} is headed for ${text}. 🐈 The ship's cat has claimed the captain's chair.`);
+    case "launched":
+      return ctx.reply(`🌌 ${state.ship} is cruising toward ${state.destination}. Send /start for a new mission.`);
+    case "idle":
+      return ctx.reply("🛰️ The launchpad is empty. Send /start to build your mission.");
   }
+});
+
+await bot.api.setMyCommands({
+  commands: [
+    { command: "start", description: "Start a mission 🚀" },
+    { command: "cancel", description: "Cancel the mission 🍕" },
+  ],
 });
 
 await run(bot, { exitOnError: true });
