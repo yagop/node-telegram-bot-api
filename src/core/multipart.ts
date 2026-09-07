@@ -98,7 +98,10 @@ export function multipartBody(
 }
 
 /** Drain a stream to completion, cancelling the source if the consumer tears
- *  us down mid-piece (via a `return()` propagated through the `yield*`). */
+ *  us down mid-piece (via a `return()` propagated through the `yield*`). The
+ *  `yield*` adds one microtask when a piece's stream starts; only a stream that
+ *  errors on an exactly-timed microtask sees it - real Blob/file/caller streams
+ *  do not. */
 async function* drainStream(
   stream: ReadableStream<Uint8Array>
 ): AsyncGenerator<Uint8Array, void, undefined> {
