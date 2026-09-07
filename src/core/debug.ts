@@ -54,7 +54,9 @@ export function debug(area: string): Debugger {
 
 /** JSON-stringify a value for a trace, never throwing (falls back to `String`). */
 function stringify(value: unknown): string {
-  if (typeof value === "string") return value;
+  if (typeof value === "string") {
+    return value;
+  }
   try {
     return JSON.stringify(value) ?? String(value);
   } catch {
@@ -67,11 +69,17 @@ function stringify(value: unknown): string {
  * `%j`/`%o`/`%O` (JSON), `%%` (literal `%`). Unconsumed args are appended.
  */
 function format(message: string, args: unknown[]): string {
-  if (args.length === 0) return message;
+  if (args.length === 0) {
+    return message;
+  }
   let i = 0;
   let out = message.replace(/%([sdijoO%])/g, (match, spec: string) => {
-    if (spec === "%") return "%";
-    if (i >= args.length) return match;
+    if (spec === "%") {
+      return "%";
+    }
+    if (i >= args.length) {
+      return match;
+    }
     const arg = args[i++];
     switch (spec) {
       case "s":
@@ -83,6 +91,8 @@ function format(message: string, args: unknown[]): string {
         return stringify(arg);
     }
   });
-  for (; i < args.length; i++) out += ` ${stringify(args[i])}`;
+  for (; i < args.length; i++) {
+    out += ` ${stringify(args[i])}`;
+  }
   return out;
 }

@@ -22,7 +22,9 @@ export class MemorySessionStorage implements SessionStore {
 
   read(key: string): string | undefined {
     const row = this.map.get(key);
-    if (row === undefined) return undefined;
+    if (row === undefined) {
+      return undefined;
+    }
     if (row.expiresAt !== undefined && row.expiresAt <= Date.now()) {
       this.map.delete(key);
       return undefined;
@@ -40,7 +42,9 @@ export class MemorySessionStorage implements SessionStore {
     // read again - so sweep here, where the cost is bounded by how often a TTL
     // bot writes at all.
     for (const [k, row] of this.map) {
-      if (row.expiresAt !== undefined && row.expiresAt <= nowMs) this.map.delete(k);
+      if (row.expiresAt !== undefined && row.expiresAt <= nowMs) {
+        this.map.delete(k);
+      }
     }
     this.map.set(key, { value, expiresAt: nowMs + options.ttlSeconds * 1000 });
   }
@@ -48,7 +52,9 @@ export class MemorySessionStorage implements SessionStore {
   /** Refresh an existing key's expiry without rewriting its value. */
   touch(key: string, ttlSeconds: number): void {
     const row = this.map.get(key);
-    if (row === undefined) return;
+    if (row === undefined) {
+      return;
+    }
     row.expiresAt = Date.now() + ttlSeconds * 1000;
   }
 

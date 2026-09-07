@@ -19,7 +19,9 @@ export type Middleware<C> = (ctx: C, next: NextFn) => unknown | Promise<unknown>
  * The composed function resolves when the whole chain (including the optional
  * trailing `next`) has settled.
  */
-export function compose<C>(middleware: ReadonlyArray<Middleware<C>>): (ctx: C, next?: NextFn) => Promise<void> {
+export function compose<C>(
+  middleware: ReadonlyArray<Middleware<C>>
+): (ctx: C, next?: NextFn) => Promise<void> {
   return function composed(ctx: C, next?: NextFn): Promise<void> {
     // `index` is the last middleware that was invoked; guards double `next()`.
     let lastIndex = -1;
@@ -31,7 +33,9 @@ export function compose<C>(middleware: ReadonlyArray<Middleware<C>>): (ctx: C, n
       lastIndex = i;
 
       const fn: Middleware<C> | undefined = i === middleware.length ? next : middleware[i];
-      if (!fn) return Promise.resolve();
+      if (!fn) {
+        return Promise.resolve();
+      }
 
       try {
         return Promise.resolve(fn(ctx, () => dispatch(i + 1))).then(() => undefined);

@@ -97,7 +97,102 @@ export function safeEqual(a: string, b: string): boolean {
   return diff === 0;
 }
 
-export function webhookCallback(bot: Bot, options: WebhookOptions = {}): (request: Request) => Promise<Response> {
+/**
+ * Render an error for a log line. Done explicitly because `%o` would
+ * JSON-stringify an `Error` to `{}` (Errors carry their fields on non-enumerable
+ * properties); prefer the stack, falling back to the message or a `String()`.
+ */
+function formatError(err: unknown): string {
+  return err instanceof Error ? (err.stack ?? err.message) : String(err);
+}
+
+/**
+ * Reject anything but POST. Returns the short-circuit `Response`, or `null` when
+ * the method is allowed and the callback should continue.
+ */
+function rejectBadMethod(request: Request): Response | null {
+  if (request.method !== "POST") {
+    return new Response("Method Not Allowed", { status: 405 });
+  }
+  return null;
+}
+
+/**
+ * Verify the secret-token header when a `secretToken` is configured. Returns the
+ * 401 `Response` on mismatch, or `null` to continue (no token configured, or a
+ * match). Always runs the constant-time compare, even when the header is missing
+ * (compare against ""), to avoid an early-out path that leaks header presence.
+ */
+function rejectBadSecret(request: Request, secretToken: string | undefined): Response | null {
+  if (secretToken === undefined) {
+    return null;
+  }
+  const got = request.headers.get("X-Telegram-Bot-Api-Secret-Token") ?? "";
+  if (safeEqual(got, secretToken)) {
+    return null;
+  }
+  log("rejected POST: bad secret token");
+  return new Response("Unauthorized", { status: 401 });
+}
+
+/**
+ * Parse the request body as an `Update`. Returns `null` (and logs) on invalid
+ * JSON so the caller can respond 400.
+ */
+async function readUpdate(request: Request): Promise<Update | null> {
+  try {
+    return (await request.json()) as Update;
+  } catch {
+    log("rejected POST: invalid JSON body");
+    return null;
+  }
+}
+
+/**
+ * Early-ACK dispatch: kick off `handleUpdate` and return 200 now. `handleUpdate`
+ * rejects only when a user-installed `bot.catch()` boundary throws (the default
+ * boundary logs and consumes); the 200 is already sent, so that rejection can
+ * never reach the caller - `.catch` keeps it from surfacing as an unhandled
+ * rejection, and logs it (message + stack) so the fail-loud opt-in stays
+ * debuggable in fastAck mode.
+ */
+function dispatchInBackground(
+  bot: Bot,
+  update: Update,
+  waitUntil: WebhookOptions["waitUntil"]
+): Response {
+  const work = Promise.resolve(bot.handleUpdate(update)).catch((err: unknown) => {
+    log("background handleUpdate failed for update %d: %s", update.update_id, formatError(err));
+  });
+  if (waitUntil !== undefined) {
+    waitUntil(work);
+  }
+  log("update %d: acked 200, handling in background", update.update_id);
+  return new Response(null, { status: 200 });
+}
+
+/**
+ * Awaiting dispatch: run `handleUpdate` and respond 200. `handleUpdate` rejects
+ * only when a user-installed `bot.catch()` boundary throws (the default boundary
+ * logs and consumes the update). Honor that fail-loud opt-in with an explicit
+ * 500 - deterministic across runtimes, where an escaping rejection is handled
+ * differently by each (Bun.serve, Workers, the node:http adapters) - so Telegram
+ * redelivers the update.
+ */
+async function dispatchAwaiting(bot: Bot, update: Update): Promise<Response> {
+  try {
+    await bot.handleUpdate(update);
+  } catch (err) {
+    log("handleUpdate failed for update %d: %s", update.update_id, formatError(err));
+    return new Response("Internal Server Error", { status: 500 });
+  }
+  return new Response(null, { status: 200 });
+}
+
+export function webhookCallback(
+  bot: Bot,
+  options: WebhookOptions = {}
+): (request: Request) => Promise<Response> {
   const { secretToken, allowUnauthenticated, fastAck, waitUntil } = options;
 
   // Secure by default: a webhook callback requires a secret token. The only way
@@ -108,13 +203,13 @@ export function webhookCallback(bot: Bot, options: WebhookOptions = {}): (reques
       throw new TelegramBotError(
         "webhookCallback requires `secretToken` (matching setWebhook's secret_token). " +
           "Set it, or pass `allowUnauthenticated: true` if auth is enforced at another layer.",
-        { code: "EPARAM" },
+        { code: "EPARAM" }
       );
     }
   } else if (!SECRET_TOKEN_RE.test(secretToken)) {
     throw new TelegramBotError(
       "Invalid `secretToken`: must be 1-256 characters of A-Z, a-z, 0-9, _ or - (per setWebhook).",
-      { code: "EPARAM" },
+      { code: "EPARAM" }
     );
   }
 
@@ -122,59 +217,17 @@ export function webhookCallback(bot: Bot, options: WebhookOptions = {}): (reques
   const earlyAck = fastAck === true || waitUntil !== undefined;
 
   return async function handle(request: Request): Promise<Response> {
-    if (request.method !== "POST") {
-      return new Response("Method Not Allowed", { status: 405 });
+    const rejected = rejectBadMethod(request) ?? rejectBadSecret(request, secretToken);
+    if (rejected !== null) {
+      return rejected;
     }
 
-    if (secretToken !== undefined) {
-      // Always run the constant-time compare, even when the header is missing
-      // (compare against ""), to avoid an early-out path that leaks header presence.
-      const got = request.headers.get("X-Telegram-Bot-Api-Secret-Token") ?? "";
-      if (!safeEqual(got, secretToken)) {
-        log("rejected POST: bad secret token");
-        return new Response("Unauthorized", { status: 401 });
-      }
-    }
-
-    let update: Update;
-    try {
-      update = (await request.json()) as Update;
-    } catch {
-      log("rejected POST: invalid JSON body");
+    const update = await readUpdate(request);
+    if (update === null) {
       return new Response("Bad Request", { status: 400 });
     }
     log("update %d", update.update_id);
 
-    if (earlyAck) {
-      // Validate, kick off the handler, and ACK now. `handleUpdate` rejects only
-      // when a user-installed `bot.catch()` boundary throws (the default boundary
-      // logs and consumes); the 200 is already sent, so that rejection can never
-      // reach the caller - `.catch` keeps it from surfacing as an unhandled
-      // rejection, and logs it (message + stack) so the fail-loud opt-in stays
-      // debuggable in fastAck mode. The error is rendered explicitly because
-      // `%o` would JSON-stringify an `Error` to `{}` (Errors carry their fields
-      // on non-enumerable properties).
-      const work = Promise.resolve(bot.handleUpdate(update)).catch((err: unknown) => {
-        const detail = err instanceof Error ? (err.stack ?? err.message) : String(err);
-        log("background handleUpdate failed for update %d: %s", update.update_id, detail);
-      });
-      if (waitUntil !== undefined) waitUntil(work);
-      log("update %d: acked 200, handling in background", update.update_id);
-      return new Response(null, { status: 200 });
-    }
-
-    // `handleUpdate` rejects only when a user-installed `bot.catch()` boundary
-    // throws (the default boundary logs and consumes the update). Honor that
-    // fail-loud opt-in with an explicit 500 - deterministic across runtimes,
-    // where an escaping rejection is handled differently by each (Bun.serve,
-    // Workers, the node:http adapters) - so Telegram redelivers the update.
-    try {
-      await bot.handleUpdate(update);
-    } catch (err) {
-      const detail = err instanceof Error ? (err.stack ?? err.message) : String(err);
-      log("handleUpdate failed for update %d: %s", update.update_id, detail);
-      return new Response("Internal Server Error", { status: 500 });
-    }
-    return new Response(null, { status: 200 });
+    return earlyAck ? dispatchInBackground(bot, update, waitUntil) : dispatchAwaiting(bot, update);
   };
 }

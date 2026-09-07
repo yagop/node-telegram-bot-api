@@ -75,7 +75,9 @@ export class InlineKeyboardBuilder {
   /** The keyboard as a plain `InlineKeyboardMarkup`, dropping trailing empty rows. */
   build(): InlineKeyboardMarkup {
     const rows = this.rows.slice();
-    while (rows.at(-1)?.length === 0) rows.pop();
+    while (rows.at(-1)?.length === 0) {
+      rows.pop();
+    }
     return { inline_keyboard: rows };
   }
 }
@@ -131,7 +133,9 @@ export class ReplyKeyboardBuilder {
   /** The keyboard as a plain `ReplyKeyboardMarkup`, dropping trailing empty rows. */
   build(options?: ReplyKeyboardBuildOptions): ReplyKeyboardMarkup {
     const keyboard = this.rows.slice();
-    while (keyboard.at(-1)?.length === 0) keyboard.pop();
+    while (keyboard.at(-1)?.length === 0) {
+      keyboard.pop();
+    }
     return { keyboard, ...options };
   }
 }

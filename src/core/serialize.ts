@@ -36,14 +36,20 @@ export function serializeParams(params: Record<string, unknown>): Record<string,
   const slots = { next: 0 };
   const out: Record<string, WireValue> = {};
   for (const [key, value] of Object.entries(params)) {
-    if (value == null) continue;
+    if (value == null) {
+      continue;
+    }
     if (isInputFile(value)) {
       out[key] = value; // top-level file: the encoder attaches it under the field name
     } else if (typeof value === "object") {
       const files: Array<[string, InputFile]> = [];
       const json = JSON.stringify(resolve(value, slots, files, 0));
       out[key] = files.length ? formPart(json, files) : json;
-    } else if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") {
+    } else if (
+      typeof value === "string" ||
+      typeof value === "number" ||
+      typeof value === "boolean"
+    ) {
       out[key] = value; // scalar, statically narrowed - no cast
     } else {
       // The generated param types only ever yield scalars/objects/arrays/InputFile,
@@ -56,16 +62,27 @@ export function serializeParams(params: Record<string, unknown>): Record<string,
 }
 
 /** Replace every nested `InputFile` with its `attach://` ref (collecting the part). */
-function resolve(node: unknown, slots: { next: number }, files: Array<[string, InputFile]>, depth: number): unknown {
-  if (depth > MAX_DEPTH) throw new TypeError("serializeParams: structure too deep (cyclic?)");
+function resolve(
+  node: unknown,
+  slots: { next: number },
+  files: Array<[string, InputFile]>,
+  depth: number
+): unknown {
+  if (depth > MAX_DEPTH) {
+    throw new TypeError("serializeParams: structure too deep (cyclic?)");
+  }
   if (isInputFile(node)) {
     const ref = node.build(slots.next++);
     files.push([ref.slice(ATTACH_PREFIX.length), node]);
     return ref;
   }
-  if (Array.isArray(node)) return node.map((child) => resolve(child, slots, files, depth + 1));
+  if (Array.isArray(node)) {
+    return node.map((child) => resolve(child, slots, files, depth + 1));
+  }
   if (node !== null && typeof node === "object") {
-    return Object.fromEntries(Object.entries(node).map(([k, v]) => [k, resolve(v, slots, files, depth + 1)]));
+    return Object.fromEntries(
+      Object.entries(node).map(([k, v]) => [k, resolve(v, slots, files, depth + 1)])
+    );
   }
   return node;
 }

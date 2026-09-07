@@ -42,7 +42,9 @@ export class TokenBucket {
 
   /** Milliseconds until at least one token is available. */
   private waitMs(): number {
-    if (this.tokens >= 1) return 0;
+    if (this.tokens >= 1) {
+      return 0;
+    }
     const missing = 1 - this.tokens;
     return Math.ceil((missing / this.ratePerSec) * 1000);
   }
@@ -112,26 +114,44 @@ export class RateLimiter {
   }
 
   async acquire(chatId: string | number | undefined, signal?: AbortSignal): Promise<void> {
-    if (this.global) await this.global.take(signal);
+    if (this.global) {
+      await this.global.take(signal);
+    }
     if (this.perChatRate !== undefined && chatId !== undefined) {
-      const key = String(chatId);
-      let bucket = this.chats.get(key);
-      if (bucket) {
-        // LRU touch: Map preserves insertion order, so delete + re-set moves this
-        // chat to the most-recently-used end. Without this a hot chat could be
-        // evicted while cold chats lingered.
-        this.chats.delete(key);
-        this.chats.set(key, bucket);
-      } else {
-        if (this.chats.size >= this.maxChatBuckets) {
-          // Evict the oldest (least-recently-used) bucket to bound memory.
-          const oldest = this.chats.keys().next().value;
-          if (oldest !== undefined) this.chats.delete(oldest);
-        }
-        bucket = new TokenBucket(this.perChatRate, this.now ? { now: this.now } : {});
-        this.chats.set(key, bucket);
-      }
-      await bucket.take(signal);
+      await this.chatBucket(String(chatId)).take(signal);
+    }
+  }
+
+  /**
+   * The per-chat bucket for `key`, created on first use. Existing buckets are
+   * touched to most-recently-used; when the cache is full a new bucket evicts
+   * the least-recently-used one. `perChatRate` is guaranteed set by the caller.
+   */
+  private chatBucket(key: string): TokenBucket {
+    const existing = this.chats.get(key);
+    if (existing) {
+      // LRU touch: Map preserves insertion order, so delete + re-set moves this
+      // chat to the most-recently-used end. Without this a hot chat could be
+      // evicted while cold chats lingered.
+      this.chats.delete(key);
+      this.chats.set(key, existing);
+      return existing;
+    }
+    this.evictIfFull();
+    const bucket = new TokenBucket(this.perChatRate as number, this.now ? { now: this.now } : {});
+    this.chats.set(key, bucket);
+    return bucket;
+  }
+
+  /** Drop the least-recently-used chat bucket when the cache is at capacity. */
+  private evictIfFull(): void {
+    // Negated `>=` (not `<`) so a NaN budget never evicts (`NaN >= x` is false).
+    if (!(this.chats.size >= this.maxChatBuckets)) {
+      return;
+    }
+    const oldest = this.chats.keys().next().value;
+    if (oldest !== undefined) {
+      this.chats.delete(oldest);
     }
   }
 }

@@ -88,10 +88,14 @@ export class Bot {
   private register(mw: ReadonlyArray<Middleware<Context>>): void {
     for (const fn of mw) {
       const plugin = fn as Middleware<Context> & MiddlewarePlugin;
-      if (typeof plugin.init !== "function" && typeof plugin.close !== "function") continue;
+      if (typeof plugin.init !== "function" && typeof plugin.close !== "function") {
+        continue;
+      }
       // The same middleware can reach us twice (`bot.use(session)` and then
       // `bot.on(..., session)`); it is one resource, so it gets one lifecycle.
-      if (!this.plugins.includes(plugin)) this.plugins.push(plugin);
+      if (!this.plugins.includes(plugin)) {
+        this.plugins.push(plugin);
+      }
     }
   }
 
@@ -110,7 +114,9 @@ export class Bot {
     if (this.started === undefined) {
       this.started = (async () => {
         for (const plugin of this.plugins) {
-          if (this.initialized.has(plugin)) continue;
+          if (this.initialized.has(plugin)) {
+            continue;
+          }
           await plugin.init?.();
           // Marked only on success: a plugin that threw never finished opening,
           // so `close()` must not try to close it.
@@ -147,7 +153,9 @@ export class Bot {
         // Skip what never initialized; unmark before closing, so that even a
         // failed teardown leaves the plugin eligible for a later init() rather
         // than stranded as "open" forever.
-        if (!this.initialized.delete(plugin)) continue;
+        if (!this.initialized.delete(plugin)) {
+          continue;
+        }
         try {
           await plugin.close?.();
         } catch (err) {
@@ -161,7 +169,9 @@ export class Bot {
       // init() from ever running setup again.
       this.started = undefined;
     }
-    if (failures.length === 1) throw failures[0];
+    if (failures.length === 1) {
+      throw failures[0];
+    }
     if (failures.length > 1) {
       throw new AggregateError(failures, "Bot.close: some middleware failed to close");
     }
@@ -192,9 +202,13 @@ export class Bot {
     const run = compose(handlers) satisfies Composed;
     return this.use((ctx, next) => {
       const text = ctx.message?.text ?? ctx.channelPost?.text;
-      if (text === undefined) return next();
+      if (text === undefined) {
+        return next();
+      }
       const m = re.exec(text);
-      if (!m) return next();
+      if (!m) {
+        return next();
+      }
       ctx.match = m[3] ?? "";
       return run(ctx, next);
     });
@@ -205,28 +219,24 @@ export class Bot {
    * a RegExp matches when `text.match(re)` is non-null (sets `ctx.match` to the
    * `RegExpMatchArray`).
    */
-  hears(trigger: string | RegExp | Array<string | RegExp>, ...handlers: Middleware<Context>[]): this {
+  hears(
+    trigger: string | RegExp | Array<string | RegExp>,
+    ...handlers: Middleware<Context>[]
+  ): this {
     const triggers = Array.isArray(trigger) ? trigger : [trigger];
     this.register(handlers);
     const run = compose(handlers) satisfies Composed;
     return this.use((ctx, next) => {
       const text = ctx.message?.text;
-      if (text === undefined) return next();
-      for (const t of triggers) {
-        if (typeof t === "string") {
-          if (text === t) {
-            ctx.match = text;
-            return run(ctx, next);
-          }
-        } else {
-          const m = text.match(t);
-          if (m) {
-            ctx.match = m;
-            return run(ctx, next);
-          }
-        }
+      if (text === undefined) {
+        return next();
       }
-      return next();
+      const m = matchTriggers(text, triggers);
+      if (m === null) {
+        return next();
+      }
+      ctx.match = m;
+      return run(ctx, next);
     });
   }
 
@@ -274,7 +284,9 @@ export class Bot {
    */
   async startPolling(source?: AsyncIterable<Update>, options?: LongPollOptions): Promise<void> {
     if (this.running) {
-      throw new Error("startPolling is already running; call stop() and await the previous run first");
+      throw new Error(
+        "startPolling is already running; call stop() and await the previous run first"
+      );
     }
     const controller = new AbortController();
     this.controller = controller;
@@ -285,7 +297,9 @@ export class Bot {
       await this.init(); // fail fast on a bad store/plugin before the first poll
       const iterable = source ?? longPoll(this.api, options, controller.signal);
       for await (const update of iterable) {
-        if (controller.signal.aborted) break;
+        if (controller.signal.aborted) {
+          break;
+        }
         await this.handleUpdate(update);
       }
     } finally {
@@ -305,4 +319,29 @@ export class Bot {
 
 function escapeRegExp(s: string): string {
   return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+/**
+ * The `ctx.match` value for the first `hears` trigger that matches `text`, or
+ * `null` when none do. A string trigger matches exactly (match value = the
+ * text); a RegExp matches via `text.match(re)` (match value = the
+ * `RegExpMatchArray`).
+ */
+function matchTriggers(
+  text: string,
+  triggers: ReadonlyArray<string | RegExp>
+): string | RegExpMatchArray | null {
+  for (const t of triggers) {
+    if (typeof t === "string") {
+      if (text === t) {
+        return text;
+      }
+    } else {
+      const m = text.match(t);
+      if (m) {
+        return m;
+      }
+    }
+  }
+  return null;
 }

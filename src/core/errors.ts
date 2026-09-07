@@ -89,7 +89,9 @@ export class TelegramApiError extends TelegramBotError {
  * `TimeoutError` rather than falling through to `NetworkError`.
  */
 export function isAbortError(err: unknown): boolean {
-  if (typeof err !== "object" || err === null || !("name" in err)) return false;
+  if (typeof err !== "object" || err === null || !("name" in err)) {
+    return false;
+  }
   const name = (err as { name?: unknown }).name;
   return name === "AbortError" || name === "TimeoutError";
 }
@@ -103,8 +105,12 @@ export function isAbortError(err: unknown): boolean {
  * default delay.
  */
 export function isTransientError(err: unknown): boolean {
-  if (err instanceof NetworkError || err instanceof TimeoutError) return true;
-  if (err instanceof TelegramApiError) return err.errorCode === HTTP_STATUS_TOO_MANY_REQUESTS || err.errorCode >= 500;
+  if (err instanceof NetworkError || err instanceof TimeoutError) {
+    return true;
+  }
+  if (err instanceof TelegramApiError) {
+    return err.errorCode === HTTP_STATUS_TOO_MANY_REQUESTS || err.errorCode >= 500;
+  }
   return false;
 }
 

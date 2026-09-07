@@ -46,9 +46,28 @@ export interface TransportOptions {
   rateLimit?: RateLimitOptions;
 }
 
-type ApiResponse<R> =
-  | { ok: true; result: R }
-  | { ok: false; error_code: number; description: string; parameters?: ApiErrorParameters };
+type ApiError = {
+  ok: false;
+  error_code: number;
+  description: string;
+  parameters?: ApiErrorParameters;
+};
+type ApiResponse<R> = { ok: true; result: R } | ApiError;
+
+/** The wire-ready body factory + headers `encodeForm` produced, plus per-request context. */
+type RequestBody = URLSearchParams | ReadableStream<Uint8Array> | Blob;
+type RequestContext = {
+  url: string;
+  method: string;
+  makeBody: () => RequestBody;
+  headers: Record<string, string>;
+  timeoutMs: number;
+  signal: AbortSignal | undefined;
+  maxRetries: number;
+};
+
+/** The outcome of one send attempt: a bounded backoff-and-retry, or a final result. */
+type AttemptOutcome<R> = { retry: true; waitMs: number } | { retry: false; result: R };
 
 const DEFAULT_API_ROOT = "https://api.telegram.org";
 // Generous enough that a large upload on a slow link is not cut off mid-stream;
@@ -67,8 +86,12 @@ function combineSignals(signals: Array<AbortSignal | undefined>): {
   cleanup: () => void;
 } {
   const list = signals.filter((s): s is AbortSignal => s != null);
-  if (list.length === 0) return { signal: undefined, cleanup: () => {} };
-  if (list.length === 1) return { signal: list[0], cleanup: () => {} };
+  if (list.length === 0) {
+    return { signal: undefined, cleanup: () => {} };
+  }
+  if (list.length === 1) {
+    return { signal: list[0], cleanup: () => {} };
+  }
 
   const controller = new AbortController();
   const cleanups: Array<() => void> = [];
@@ -84,7 +107,9 @@ function combineSignals(signals: Array<AbortSignal | undefined>): {
   return {
     signal: controller.signal,
     cleanup: () => {
-      for (const fn of cleanups) fn();
+      for (const fn of cleanups) {
+        fn();
+      }
     },
   };
 }
@@ -100,9 +125,11 @@ export class Transport {
 
   constructor(
     private readonly token: string,
-    options: TransportOptions = {},
+    options: TransportOptions = {}
   ) {
-    if (!token) throw new TelegramBotError("A bot token is required", { code: "EPARAM" });
+    if (!token) {
+      throw new TelegramBotError("A bot token is required", { code: "EPARAM" });
+    }
     // Empty/whitespace apiRoot falls back to the default; `??` would keep "".
     const root = options.apiRoot?.trim();
     this.apiRoot = (root ? root : DEFAULT_API_ROOT).replace(/\/+$/, "");
@@ -115,18 +142,29 @@ export class Transport {
     this.maxRetries = options.maxRetries ?? DEFAULT_MAX_RETRIES;
     this.retryBackoffMs = options.retryBackoffMs ?? DEFAULT_RETRY_BACKOFF;
     this.maxRetryAfterMs = options.maxRetryAfterMs ?? DEFAULT_MAX_RETRY_AFTER;
-    if (options.rateLimit) this.limiter = new RateLimiter(options.rateLimit);
+    if (options.rateLimit) {
+      this.limiter = new RateLimiter(options.rateLimit);
+    }
   }
 
   /** For long polling the client timeout must outlast the server-side wait. */
   private effectiveTimeout(method: string, params?: Record<string, WireValue>): number {
-    if (method === "getUpdates" && params && typeof params.timeout === "number" && params.timeout > 0) {
+    if (
+      method === "getUpdates" &&
+      params &&
+      typeof params.timeout === "number" &&
+      params.timeout > 0
+    ) {
       return params.timeout * 1000 + 10_000;
     }
     return this.timeoutMs;
   }
 
-  async request<R>(method: string, params?: Record<string, WireValue>, signal?: AbortSignal): Promise<R> {
+  async request<R>(
+    method: string,
+    params?: Record<string, WireValue>,
+    signal?: AbortSignal
+  ): Promise<R> {
     const url = `${this.apiRoot}/bot${this.token}/${method}`;
     const timeoutMs = this.effectiveTimeout(method, params);
     log("-> %s", method);
@@ -143,103 +181,179 @@ export class Transport {
     // caller-provided one-shot `ReadableStream` `InputFile`), retrying is
     // impossible - the first failure surfaces immediately.
     const { body: makeBody, headers, replayable } = await encodeForm(params ?? {});
-    const maxRetries = replayable ? this.maxRetries : 0;
+    const ctx: RequestContext = {
+      url,
+      method,
+      makeBody,
+      headers,
+      timeoutMs,
+      signal,
+      maxRetries: replayable ? this.maxRetries : 0,
+    };
 
     // Bounded: at most `maxRetries + 1` attempts (the first send plus one retry
     // per allowed retry). `attempt` doubles as the loop counter and the retry
-    // count; every error path either retries via `continue` or throws, so the
-    // bound is a hard ceiling rather than the termination condition.
-    for (let attempt = 0; attempt <= maxRetries; attempt++) {
-      const timeoutSignal = timeoutMs > 0 ? AbortSignal.timeout(timeoutMs) : undefined;
-      const { signal: composed, cleanup } = combineSignals([signal, timeoutSignal]);
-
-      const body = makeBody();
-      // The fetch spec (and undici) require `duplex: "half"` to send a stream
-      // body; set it only then so runtimes that reject the member for ordinary
-      // bodies are unaffected.
-      const init: RequestInit & { duplex?: "half" } = { method: "POST", body, headers, signal: composed };
-      if (body instanceof ReadableStream) init.duplex = "half";
-
-      let response: Response;
-      let text: string;
-      try {
-        response = await this.fetchImpl(url, init);
-        // Read the body inside the try so a mid-stream read failure (connection
-        // dropped after the headers) is classified and retried like any other
-        // transient transport error, not thrown raw past the error hierarchy.
-        text = await response.text();
-      } catch (err) {
-        if (signal?.aborted) throw err; // caller cancelled - propagate verbatim
-        // Transient throws (fetch reject / body-read failure / our timeout): retry.
-        if (attempt < maxRetries) {
-          const wait = backoff(attempt + 1, this.retryBackoffMs, MAX_BACKOFF);
-          log("%s transient error; retry %d/%d in %dms", method, attempt + 1, maxRetries, wait);
-          await delay(wait, signal);
-          continue;
-        }
-        if (isAbortError(err)) throw new TimeoutError(`Request timed out: ${method}`, { cause: err });
-        throw new NetworkError(`Network request failed: ${method}`, { cause: err });
-      } finally {
-        cleanup();
+    // count; every attempt returns a result, throws, or asks for a bounded
+    // backoff and loops, so the bound is a hard ceiling rather than the
+    // termination condition.
+    for (let attempt = 0; attempt <= ctx.maxRetries; attempt++) {
+      const outcome = await this.attempt<R>(ctx, attempt);
+      if (!outcome.retry) {
+        return outcome.result;
       }
-
-      // Server-side 5xx is transient: retry without parsing the body.
-      if (response.status >= 500) {
-        if (attempt < maxRetries) {
-          const wait = backoff(attempt + 1, this.retryBackoffMs, MAX_BACKOFF);
-          log("%s HTTP %d; retry %d/%d in %dms", method, response.status, attempt + 1, maxRetries, wait);
-          await delay(wait, signal);
-          continue;
-        }
-        // Exhausted: prefer the `{ ok: false }` envelope when the body is one.
-        const envelope = parseEnvelope<R>(text);
-        if (envelope && !envelope.ok) {
-          throw new TelegramApiError(envelope.error_code, envelope.description, envelope.parameters);
-        }
-        throw new NetworkError(`Server error ${response.status} on ${method}`);
-      }
-
-      let json: ApiResponse<R>;
-      try {
-        json = JSON.parse(text) as ApiResponse<R>;
-      } catch (err) {
-        throw new ParseError(`Invalid JSON in response to ${method}`, {
-          cause: err,
-          responseText: text,
-        });
-      }
-
-      if (json.ok) {
-        log("<- %s ok", method);
-        return json.result;
-      }
-
-      if (json.error_code === HTTP_STATUS_TOO_MANY_REQUESTS && attempt < maxRetries) {
-        const retryAfter = json.parameters?.retry_after ?? 1;
-        // Honor `retry_after` only up to the cap (0 = no cap). A longer flood-wait is
-        // surfaced immediately (caller reads err.retryAfter) rather than hanging the
-        // request for minutes; the per-request timeout does not bound this sleep.
-        if (this.maxRetryAfterMs === 0 || retryAfter * 1000 <= this.maxRetryAfterMs) {
-          log("%s 429; retry %d/%d after %ds", method, attempt + 1, maxRetries, retryAfter);
-          await delay(retryAfter * 1000, signal);
-          continue;
-        }
-        log(
-          "%s 429; retry_after %ds exceeds maxRetryAfterMs (%dms) - surfacing",
-          method,
-          retryAfter,
-          this.maxRetryAfterMs,
-        );
-      }
-
-      log("<- %s error %d %s", method, json.error_code, json.description);
-      throw new TelegramApiError(json.error_code, json.description, json.parameters);
+      await delay(outcome.waitMs, signal);
     }
 
-    // Unreachable: the final iteration (attempt === maxRetries) takes a throwing
-    // branch on every error path, so the loop never falls through here. Present
-    // only to satisfy control-flow analysis now that the loop is bounded.
+    // Unreachable: the final iteration (attempt === maxRetries) never yields a
+    // `retry` outcome, so the loop never falls through here. Present only to
+    // satisfy control-flow analysis now that the loop is bounded.
     throw new TelegramBotError(`Retry loop exited without a result: ${method}`);
+  }
+
+  /** One send attempt: run the transport, then classify the response. */
+  private async attempt<R>(ctx: RequestContext, attempt: number): Promise<AttemptOutcome<R>> {
+    const timeoutSignal = ctx.timeoutMs > 0 ? AbortSignal.timeout(ctx.timeoutMs) : undefined;
+    const { signal: composed, cleanup } = combineSignals([ctx.signal, timeoutSignal]);
+    // Build body/init outside the try so a synchronous body-build failure
+    // surfaces raw and unretried, not caught and retried as a transport error.
+    const init = buildInit(ctx.makeBody(), ctx.headers, composed);
+    let response: Response;
+    let text: string;
+    try {
+      response = await this.fetchImpl(ctx.url, init);
+      // Read the body inside the try so a mid-stream read failure (connection
+      // dropped after the headers) is classified and retried like any other
+      // transient transport error, not thrown raw past the error hierarchy.
+      text = await response.text();
+    } catch (err) {
+      return this.onTransportError<R>(err, ctx, attempt);
+    } finally {
+      cleanup();
+    }
+    return this.classify<R>(ctx, attempt, response, text);
+  }
+
+  /** Transient throw (fetch reject / body-read failure / our timeout): retry or surface. */
+  private onTransportError<R>(
+    err: unknown,
+    ctx: RequestContext,
+    attempt: number
+  ): AttemptOutcome<R> {
+    if (ctx.signal?.aborted) {
+      throw err; // caller cancelled - propagate verbatim
+    }
+    if (attempt < ctx.maxRetries) {
+      const wait = backoff(attempt + 1, this.retryBackoffMs, MAX_BACKOFF);
+      log("%s transient error; retry %d/%d in %dms", ctx.method, attempt + 1, ctx.maxRetries, wait);
+      return { retry: true, waitMs: wait };
+    }
+    if (isAbortError(err)) {
+      throw new TimeoutError(`Request timed out: ${ctx.method}`, { cause: err });
+    }
+    throw new NetworkError(`Network request failed: ${ctx.method}`, { cause: err });
+  }
+
+  /** Map a completed HTTP response to a result, a bounded retry, or a thrown error. */
+  private classify<R>(
+    ctx: RequestContext,
+    attempt: number,
+    response: Response,
+    text: string
+  ): AttemptOutcome<R> {
+    // Server-side 5xx is transient: retry without parsing the body.
+    if (response.status >= 500) {
+      return this.onServerError<R>(ctx, attempt, response, text);
+    }
+
+    const json = parseJson<R>(text, ctx.method);
+    if (json.ok) {
+      log("<- %s ok", ctx.method);
+      return { retry: false, result: json.result };
+    }
+    return this.onApiError(ctx, attempt, json);
+  }
+
+  /** Handle a 5xx: retry while attempts remain, else surface an envelope/network error. */
+  private onServerError<R>(
+    ctx: RequestContext,
+    attempt: number,
+    response: Response,
+    text: string
+  ): AttemptOutcome<R> {
+    if (attempt < ctx.maxRetries) {
+      const wait = backoff(attempt + 1, this.retryBackoffMs, MAX_BACKOFF);
+      log(
+        "%s HTTP %d; retry %d/%d in %dms",
+        ctx.method,
+        response.status,
+        attempt + 1,
+        ctx.maxRetries,
+        wait
+      );
+      return { retry: true, waitMs: wait };
+    }
+    // Exhausted: prefer the `{ ok: false }` envelope when the body is one.
+    const envelope = parseEnvelope<R>(text);
+    if (envelope && !envelope.ok) {
+      throw new TelegramApiError(envelope.error_code, envelope.description, envelope.parameters);
+    }
+    throw new NetworkError(`Server error ${response.status} on ${ctx.method}`);
+  }
+
+  /** Handle an `{ ok: false }` envelope: honor a capped 429 retry_after, else throw. */
+  private onApiError<R>(ctx: RequestContext, attempt: number, json: ApiError): AttemptOutcome<R> {
+    if (json.error_code === HTTP_STATUS_TOO_MANY_REQUESTS && attempt < ctx.maxRetries) {
+      const retryAfter = json.parameters?.retry_after ?? 1;
+      // Honor `retry_after` only up to the cap (0 = no cap). A longer flood-wait is
+      // surfaced immediately (caller reads err.retryAfter) rather than hanging the
+      // request for minutes; the per-request timeout does not bound this sleep.
+      if (this.maxRetryAfterMs === 0 || retryAfter * 1000 <= this.maxRetryAfterMs) {
+        log("%s 429; retry %d/%d after %ds", ctx.method, attempt + 1, ctx.maxRetries, retryAfter);
+        return { retry: true, waitMs: retryAfter * 1000 };
+      }
+      log(
+        "%s 429; retry_after %ds exceeds maxRetryAfterMs (%dms) - surfacing",
+        ctx.method,
+        retryAfter,
+        this.maxRetryAfterMs
+      );
+    }
+
+    log("<- %s error %d %s", ctx.method, json.error_code, json.description);
+    throw new TelegramApiError(json.error_code, json.description, json.parameters);
+  }
+}
+
+/** Build a POST init, tagging a stream body with `duplex: "half"` as the fetch spec requires. */
+function buildInit(
+  body: RequestBody,
+  headers: Record<string, string>,
+  signal: AbortSignal | undefined
+): RequestInit & { duplex?: "half" } {
+  const init: RequestInit & { duplex?: "half" } = {
+    method: "POST",
+    body,
+    headers,
+    signal,
+  };
+  // The fetch spec (and undici) require `duplex: "half"` to send a stream body;
+  // set it only then so runtimes that reject the member for ordinary bodies are
+  // unaffected.
+  if (body instanceof ReadableStream) {
+    init.duplex = "half";
+  }
+  return init;
+}
+
+/** Parse the `{ ok, result }` envelope, or throw a `ParseError` when the body is not JSON. */
+function parseJson<R>(text: string, method: string): ApiResponse<R> {
+  try {
+    return JSON.parse(text) as ApiResponse<R>;
+  } catch (err) {
+    throw new ParseError(`Invalid JSON in response to ${method}`, {
+      cause: err,
+      responseText: text,
+    });
   }
 }
 

@@ -32,7 +32,10 @@ import type {
 import { asRichText, type RichTextContent } from "./richtext.js";
 
 /** A nested-blocks argument: a plain array, a nested builder, or a callback. */
-export type BlockContent = InputRichBlock[] | RichMessageBuilder | ((builder: RichMessageBuilder) => void);
+export type BlockContent =
+  | InputRichBlock[]
+  | RichMessageBuilder
+  | ((builder: RichMessageBuilder) => void);
 
 /** Options shared by `RichMessageBuilder.build()` beyond the blocks. */
 export interface RichMessageBuildOptions {
@@ -49,7 +52,9 @@ export interface RichTableOptions {
 }
 
 function resolveBlocks(content: BlockContent): InputRichBlock[] {
-  if (content instanceof RichMessageBuilder) return content.buildBlocks();
+  if (content instanceof RichMessageBuilder) {
+    return content.buildBlocks();
+  }
   if (typeof content === "function") {
     const builder = new RichMessageBuilder();
     content(builder);
@@ -60,13 +65,15 @@ function resolveBlocks(content: BlockContent): InputRichBlock[] {
 
 /** A block caption (`text`, optional `credit`) with rich `text`. */
 export function richCaption(text: RichTextContent, credit?: RichTextContent): RichBlockCaption {
-  return credit === undefined ? { text: asRichText(text) } : { text: asRichText(text), credit: asRichText(credit) };
+  return credit === undefined
+    ? { text: asRichText(text) }
+    : { text: asRichText(text), credit: asRichText(credit) };
 }
 
 /** A table cell; `align` defaults to `"left"`, `valign` to `"top"`. */
 export function richTableCell(
   text?: RichTextContent,
-  options: Omit<RichBlockTableCell, "text"> = { align: "left", valign: "top" },
+  options: Omit<RichBlockTableCell, "text"> = { align: "left", valign: "top" }
 ): RichBlockTableCell {
   return text === undefined ? { ...options } : { text: asRichText(text), ...options };
 }
@@ -74,7 +81,7 @@ export function richTableCell(
 /** A list item; `blocks` accept a nested builder or callback. */
 export function richListItem(
   blocks: BlockContent,
-  options: Omit<InputRichBlockListItem, "blocks"> = {},
+  options: Omit<InputRichBlockListItem, "blocks"> = {}
 ): InputRichBlockListItem {
   return { blocks: resolveBlocks(blocks), ...options };
 }
@@ -101,7 +108,11 @@ export class RichMessageBuilder {
 
   /** A preformatted (code) block, optionally tagged with a `language`. */
   preformatted(text: RichTextContent, language?: string): this {
-    return this.push({ type: "pre", text: asRichText(text), ...(language !== undefined ? { language } : {}) });
+    return this.push({
+      type: "pre",
+      text: asRichText(text),
+      ...(language !== undefined ? { language } : {}),
+    });
   }
 
   /** A footer block. */
@@ -134,7 +145,7 @@ export class RichMessageBuilder {
     return this.push(
       credit === undefined
         ? { type: "blockquote", blocks: resolveBlocks(blocks) }
-        : { type: "blockquote", blocks: resolveBlocks(blocks), credit: asRichText(credit) },
+        : { type: "blockquote", blocks: resolveBlocks(blocks), credit: asRichText(credit) }
     );
   }
 
@@ -143,7 +154,7 @@ export class RichMessageBuilder {
     return this.push(
       credit === undefined
         ? { type: "expandable_blockquote", text: asRichText(text) }
-        : { type: "expandable_blockquote", text: asRichText(text), credit: asRichText(credit) },
+        : { type: "expandable_blockquote", text: asRichText(text), credit: asRichText(credit) }
     );
   }
 
@@ -152,13 +163,17 @@ export class RichMessageBuilder {
     return this.push(
       credit === undefined
         ? { type: "pullquote", text: asRichText(text) }
-        : { type: "pullquote", text: asRichText(text), credit: asRichText(credit) },
+        : { type: "pullquote", text: asRichText(text), credit: asRichText(credit) }
     );
   }
 
   /** A collage of nested media blocks. */
   collage(blocks: BlockContent, caption?: RichBlockCaption): this {
-    return this.push({ type: "collage", blocks: resolveBlocks(blocks), ...(caption !== undefined ? { caption } : {}) });
+    return this.push({
+      type: "collage",
+      blocks: resolveBlocks(blocks),
+      ...(caption !== undefined ? { caption } : {}),
+    });
   }
 
   /** A slideshow of nested media blocks. */
@@ -176,7 +191,7 @@ export class RichMessageBuilder {
     return this.push(
       caption === undefined
         ? { type: "table", cells, ...flags }
-        : { type: "table", cells, ...flags, caption: asRichText(caption) },
+        : { type: "table", cells, ...flags, caption: asRichText(caption) }
     );
   }
 
@@ -185,14 +200,19 @@ export class RichMessageBuilder {
     return this.push(
       isOpen === undefined
         ? { type: "details", summary: asRichText(summary), blocks: resolveBlocks(blocks) }
-        : { type: "details", summary: asRichText(summary), blocks: resolveBlocks(blocks), is_open: isOpen },
+        : {
+            type: "details",
+            summary: asRichText(summary),
+            blocks: resolveBlocks(blocks),
+            is_open: isOpen,
+          }
     );
   }
 
   /** A map centered on `location`. */
   map(
     location: Location,
-    options: { zoom?: number; width?: number; height?: number; caption?: RichBlockCaption } = {},
+    options: { zoom?: number; width?: number; height?: number; caption?: RichBlockCaption } = {}
   ): this {
     return this.push({ type: "map", location, ...options });
   }
@@ -204,7 +224,11 @@ export class RichMessageBuilder {
 
   /** An animation block. Its caption is ignored - use the `caption` argument. */
   animation(animation: InputMediaAnimation, caption?: RichBlockCaption): this {
-    return this.push({ type: "animation", animation, ...(caption !== undefined ? { caption } : {}) });
+    return this.push({
+      type: "animation",
+      animation,
+      ...(caption !== undefined ? { caption } : {}),
+    });
   }
 
   /** An audio block. */
@@ -229,7 +253,11 @@ export class RichMessageBuilder {
 
   /** A voice-note block. */
   voiceNote(voiceNote: InputMediaVoiceNote, caption?: RichBlockCaption): this {
-    return this.push({ type: "voice_note", voice_note: voiceNote, ...(caption !== undefined ? { caption } : {}) });
+    return this.push({
+      type: "voice_note",
+      voice_note: voiceNote,
+      ...(caption !== undefined ? { caption } : {}),
+    });
   }
 
   /** A "Thinking..." placeholder (only valid in `sendRichMessageDraft`). */
@@ -255,7 +283,9 @@ export class RichMessageBuilder {
   /** The plain `InputRichMessage` (blocks form) ready for `rich_message`. */
   build(options?: RichMessageBuildOptions): InputRichMessage {
     const message: InputRichMessage = { blocks: this.blocks.slice(), ...options };
-    if (this.mediaItems.length > 0) message.media = this.mediaItems.slice();
+    if (this.mediaItems.length > 0) {
+      message.media = this.mediaItems.slice();
+    }
     return message;
   }
 }

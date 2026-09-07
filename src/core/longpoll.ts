@@ -63,10 +63,14 @@ function planRetry({
   onError,
 }: RetryContext): RetryPlan {
   const pollConflict = isPollConflict(err);
-  if (!retry || !(isTransientError(err) || pollConflict)) throw err;
+  if (!retry || !(isTransientError(err) || pollConflict)) {
+    throw err;
+  }
   // A conflict advances its own bounded counter; any other transient breaks the streak.
   const next = pollConflict ? conflicts + 1 : 0;
-  if (pollConflict && next > maxConflictRetries) throw err;
+  if (pollConflict && next > maxConflictRetries) {
+    throw err;
+  }
   onError?.(err);
   // A conflict waits its own longer delay; otherwise honor `retry_after`
   // (e.g. a 429 flood-wait) when present, else the default delay.
@@ -74,7 +78,7 @@ function planRetry({
   log(
     "getUpdates %s; retry in %dms",
     pollConflict ? `conflict ${next}/${maxConflictRetries}` : "failed",
-    Math.round(wait),
+    Math.round(wait)
   );
   return { wait, conflicts: next };
 }
@@ -84,7 +88,9 @@ function planRetry({
  *  wait). `planRetry` may throw here to stop the loop on a non-retryable error. */
 async function recover(ctx: RetryContext): Promise<{ conflicts: number } | "stop"> {
   const { signal } = ctx;
-  if (signal?.aborted) return "stop"; // cancelled - swallow the abort error
+  if (signal?.aborted) {
+    return "stop"; // cancelled - swallow the abort error
+  }
   const plan = planRetry(ctx);
   try {
     await delay(plan.wait, signal);
@@ -95,7 +101,11 @@ async function recover(ctx: RetryContext): Promise<{ conflicts: number } | "stop
 }
 
 /** Async-generator update source (ADR-004): long-polls `getUpdates` and yields each update until the signal aborts. */
-export async function* longPoll(api: Api, options: LongPollOptions = {}, signal?: AbortSignal): AsyncGenerator<Update> {
+export async function* longPoll(
+  api: Api,
+  options: LongPollOptions = {},
+  signal?: AbortSignal
+): AsyncGenerator<Update> {
   let offset = options.offset;
   const timeout = options.timeout ?? DEFAULT_POLL_TIMEOUT;
   const limit = options.limit;
@@ -118,7 +128,7 @@ export async function* longPoll(api: Api, options: LongPollOptions = {}, signal?
           timeout,
           allowed_updates: allowed,
         },
-        signal,
+        signal
       );
     } catch (err) {
       // A 409 (another instance polling the same token) is transient for polling
@@ -134,14 +144,18 @@ export async function* longPoll(api: Api, options: LongPollOptions = {}, signal?
         onError,
         signal,
       });
-      if (outcome === "stop") return;
+      if (outcome === "stop") {
+        return;
+      }
       conflicts = outcome.conflicts;
       // retry WITHOUT advancing offset
       continue;
     }
 
     conflicts = 0; // a successful poll clears the conflict streak
-    if (updates.length > 0) log("%d update(s)", updates.length);
+    if (updates.length > 0) {
+      log("%d update(s)", updates.length);
+    }
     for (const update of updates) {
       yield update;
       offset = update.update_id + 1;

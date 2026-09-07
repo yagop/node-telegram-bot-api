@@ -49,7 +49,10 @@ export interface NodeLikeResponse {
  * export const POST = nextAppWebhook(bot);
  * ```
  */
-export function nextAppWebhook(bot: Bot, options?: WebhookOptions): (request: Request) => Promise<Response> {
+export function nextAppWebhook(
+  bot: Bot,
+  options?: WebhookOptions
+): (request: Request) => Promise<Response> {
   return webhookCallback(bot, options);
 }
 
@@ -65,8 +68,12 @@ export function nextAppWebhook(bot: Bot, options?: WebhookOptions): (request: Re
 async function readBody(req: NodeLikeRequest): Promise<string> {
   const pre = req.body;
   if (pre !== undefined && pre !== null) {
-    if (typeof pre === "string") return pre;
-    if (pre instanceof Uint8Array) return new TextDecoder().decode(pre);
+    if (typeof pre === "string") {
+      return pre;
+    }
+    if (pre instanceof Uint8Array) {
+      return new TextDecoder().decode(pre);
+    }
     return JSON.stringify(pre);
   }
 
@@ -91,7 +98,7 @@ async function readBody(req: NodeLikeRequest): Promise<string> {
  */
 export function nodeFrameworkWebhook(
   bot: Bot,
-  options?: WebhookOptions,
+  options?: WebhookOptions
 ): (req: NodeLikeRequest, res: NodeLikeResponse) => Promise<void> {
   const handle = webhookCallback(bot, options);
 
@@ -102,7 +109,9 @@ export function nodeFrameworkWebhook(
     // (rare for webhook requests) are joined per the HTTP convention.
     const headers = new Headers();
     for (const [name, value] of Object.entries(req.headers)) {
-      if (value === undefined) continue;
+      if (value === undefined) {
+        continue;
+      }
       headers.set(name, Array.isArray(value) ? value.join(", ") : value);
     }
 
@@ -128,8 +137,10 @@ export function nodeFrameworkWebhook(
  */
 export function registerExpressWebhook(
   bot: Bot,
-  app: { post(path: string, handler: (req: NodeLikeRequest, res: NodeLikeResponse) => unknown): unknown },
-  options: WebhookOptions & { path: string },
+  app: {
+    post(path: string, handler: (req: NodeLikeRequest, res: NodeLikeResponse) => unknown): unknown;
+  },
+  options: WebhookOptions & { path: string }
 ): void {
   app.post(options.path, nodeFrameworkWebhook(bot, options));
 }

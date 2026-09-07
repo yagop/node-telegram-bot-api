@@ -11,7 +11,13 @@
  * `RichTextBuilder`) so trees nest without hand-writing `type`/`text`. `.build()`
  * returns the plain `RichText`, ready for a `text`/caption/button field.
  */
-import type { LoginUrl, RichMessageButton, RichText, SwitchInlineQueryChosenChat, User } from "../types/index.js";
+import type {
+  LoginUrl,
+  RichMessageButton,
+  RichText,
+  SwitchInlineQueryChosenChat,
+  User,
+} from "../types/index.js";
 
 /** Anything a rich-text `content` parameter accepts. */
 export type RichTextContent = RichText | RichTextBuilder;
@@ -99,15 +105,27 @@ export class RichTextBuilder {
   }
 
   email(content: RichTextContent, emailAddress: string): this {
-    return this.push({ type: "email_address", text: asRichText(content), email_address: emailAddress });
+    return this.push({
+      type: "email_address",
+      text: asRichText(content),
+      email_address: emailAddress,
+    });
   }
 
   phone(content: RichTextContent, phoneNumber: string): this {
-    return this.push({ type: "phone_number", text: asRichText(content), phone_number: phoneNumber });
+    return this.push({
+      type: "phone_number",
+      text: asRichText(content),
+      phone_number: phoneNumber,
+    });
   }
 
   bankCard(content: RichTextContent, bankCardNumber: string): this {
-    return this.push({ type: "bank_card_number", text: asRichText(content), bank_card_number: bankCardNumber });
+    return this.push({
+      type: "bank_card_number",
+      text: asRichText(content),
+      bank_card_number: bankCardNumber,
+    });
   }
 
   /** A mention by username (the `@handle` form). */
@@ -139,12 +157,20 @@ export class RichTextBuilder {
 
   /** A link to a reference by name. */
   referenceLink(content: RichTextContent, referenceName: string): this {
-    return this.push({ type: "reference_link", text: asRichText(content), reference_name: referenceName });
+    return this.push({
+      type: "reference_link",
+      text: asRichText(content),
+      reference_name: referenceName,
+    });
   }
 
   /** A custom emoji; `alternativeText` is the fallback emoji. */
   customEmoji(customEmojiId: string, alternativeText: string): this {
-    return this.push({ type: "custom_emoji", custom_emoji_id: customEmojiId, alternative_text: alternativeText });
+    return this.push({
+      type: "custom_emoji",
+      custom_emoji_id: customEmojiId,
+      alternative_text: alternativeText,
+    });
   }
 
   /** A mathematical expression in LaTeX format. */
@@ -175,7 +201,7 @@ export class RichTextBuilder {
  */
 export function richMessageButton(
   text: RichTextContent,
-  options: Omit<RichMessageButton, "text"> = {},
+  options: Omit<RichMessageButton, "text"> = {}
 ): RichMessageButton {
   return { text: asRichText(text), ...options };
 }

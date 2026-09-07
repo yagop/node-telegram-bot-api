@@ -55,7 +55,7 @@ export async function run(bot: Bot, options: RunOptions = {}): Promise<void> {
   try {
     return await withShutdownSignals(
       () => bot.stop(),
-      () => bot.startPolling(undefined, pollOptions),
+      () => bot.startPolling(undefined, pollOptions)
     );
   } catch (err) {
     // Only the call that owns the pump reports and acts on the stop; a call that
@@ -64,17 +64,23 @@ export async function run(bot: Bot, options: RunOptions = {}): Promise<void> {
     if (owned) {
       failed = true;
       // Await the flush so the exit below can't truncate this diagnostic.
-      await writeStderr(`node-telegram-bot-api: polling stopped on a fatal error: ${String(err)}\n`);
+      await writeStderr(
+        `node-telegram-bot-api: polling stopped on a fatal error: ${String(err)}\n`
+      );
     }
     throw err;
   } finally {
     try {
-      if (owned) await bot.close();
+      if (owned) {
+        await bot.close();
+      }
     } finally {
       // Nested so it runs even when teardown throws: `exitOnError` must not be
       // defeated by the very stuck resource it exists to escape. Gated on
       // `failed` (which implies `owned`), so a losing double-run never exits.
-      if (failed && exitOnError) process.exit(1);
+      if (failed && exitOnError) {
+        process.exit(1);
+      }
     }
   }
 }

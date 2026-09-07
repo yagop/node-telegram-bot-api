@@ -57,7 +57,9 @@ export class FileSessionStorage implements SessionStore {
     try {
       return await readFile(this.fileFor(key), "utf8");
     } catch (err) {
-      if ((err as { code?: string }).code === "ENOENT") return undefined;
+      if ((err as { code?: string }).code === "ENOENT") {
+        return undefined;
+      }
       throw err;
     }
   }
@@ -74,7 +76,9 @@ export class FileSessionStorage implements SessionStore {
     try {
       await unlink(this.fileFor(key));
     } catch (err) {
-      if ((err as { code?: string }).code !== "ENOENT") throw err;
+      if ((err as { code?: string }).code !== "ENOENT") {
+        throw err;
+      }
     }
   }
 }

@@ -116,7 +116,10 @@ const fromOf: { [K in UpdateType]: (u: Variant<K>) => User | undefined } = {
  * is the single controlled bridge from the per-row narrowed type to a uniform
  * `(u: Update) => R` (TS can't track the narrowing through the loop variable).
  */
-function resolve<K extends UpdateType, R>(update: Update, table: { [P in K]: (u: Variant<P>) => R }): R | undefined {
+function resolve<K extends UpdateType, R>(
+  update: Update,
+  table: { [P in K]: (u: Variant<P>) => R }
+): R | undefined {
   for (const k of UPDATE_TYPES) {
     if (k in update) {
       return (table as Record<UpdateType, (u: Update) => R>)[k](update);
@@ -193,7 +196,10 @@ export class Context {
    * Send a message to the inferred chat. Throws if no chat id can be derived
    * from the update (e.g. an inline query carries no chat).
    */
-  reply(text: string, other?: Omit<SendMessageParams, "chat_id" | "text">): Promise<SendMessageResult> {
+  reply(
+    text: string,
+    other?: Omit<SendMessageParams, "chat_id" | "text">
+  ): Promise<SendMessageResult> {
     const chatId = this.chatId;
     if (chatId === undefined) {
       throw new Error("ctx.reply: cannot infer a chat id from this update");
@@ -206,7 +212,7 @@ export class Context {
    * is not a callback query.
    */
   answerCallbackQuery(
-    other?: Omit<AnswerCallbackQueryParams, "callback_query_id">,
+    other?: Omit<AnswerCallbackQueryParams, "callback_query_id">
   ): Promise<AnswerCallbackQueryResult> {
     const cq = this.callbackQuery;
     if (!cq) {
@@ -228,7 +234,9 @@ export class Context {
   getSession<T = Record<string, unknown>>(): SessionHandle<T> {
     const handle = this.state[SESSION_STATE_KEY];
     if (handle === undefined) {
-      throw new Error("ctx.getSession: no session for this update (session middleware not installed, or no key)");
+      throw new Error(
+        "ctx.getSession: no session for this update (session middleware not installed, or no key)"
+      );
     }
     return handle as SessionHandle<T>;
   }
