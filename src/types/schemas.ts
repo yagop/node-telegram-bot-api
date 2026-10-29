@@ -26,12 +26,7 @@ type _Exclusive<U, T = U> = T extends unknown ? T & { [K in Exclude<_KeysOfUnion
  * One of the four reply-markup objects. Telegram uses only one per message, so
  * mixing them (e.g. `inline_keyboard` + `keyboard`) is a type error.
  */
-export type ReplyMarkup = _Exclusive<
-  | InlineKeyboardMarkup
-  | ReplyKeyboardMarkup
-  | ReplyKeyboardRemove
-  | ForceReply
->;
+export type ReplyMarkup = _Exclusive<InlineKeyboardMarkup | ReplyKeyboardMarkup | ReplyKeyboardRemove | ForceReply>;
 
 
 // ---------------------------------------------------------------------------

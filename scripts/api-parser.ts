@@ -200,7 +200,7 @@ function proseUnionMembers(descRaw: string): string[] {
 
 const FILE_FIELDS = new Set(["media", "thumbnail", "photo", "cover", "animation", "video", "sticker"]);
 
-/** The documented `reply_markup` union, as `mapType` emits it. Emitted as `ReplyMarkup` (see PRELUDE). */
+/** The documented `reply_markup` union, as `mapType` emits it. The only list of `ReplyMarkup` members (see PRELUDE). */
 const REPLY_MARKUP_UNION = "InlineKeyboardMarkup | ReplyKeyboardMarkup | ReplyKeyboardRemove | ForceReply";
 
 // ---------------------------------------------------------------------------
@@ -337,8 +337,11 @@ function fieldsFromRows(rec: Rec, isMethod: boolean): Field[] {
     // Telegram uses one reply markup per message: point the four-way union at the
     // exclusive `ReplyMarkup` alias so a mixed object is a type error. Any other
     // `reply_markup` shape fails the run instead of silently losing that check.
-    if (type === REPLY_MARKUP_UNION) type = "ReplyMarkup";
-    else if (fname === "reply_markup" && type !== "InlineKeyboardMarkup") unmapped.add(row[c.type] ?? "");
+    if (type === REPLY_MARKUP_UNION) {
+      type = "ReplyMarkup";
+    } else if (fname === "reply_markup" && type !== "InlineKeyboardMarkup") {
+      unmapped.add(row[c.type] ?? "");
+    }
     const optional = isMethod
       ? (row[c.required] ?? "").trim() !== "Yes"
       : /^Optional\b/.test((row[c.desc] ?? "").trim());
@@ -397,12 +400,7 @@ type _Exclusive<U, T = U> = T extends unknown ? T & { [K in Exclude<_KeysOfUnion
  * One of the four reply-markup objects. Telegram uses only one per message, so
  * mixing them (e.g. \`inline_keyboard\` + \`keyboard\`) is a type error.
  */
-export type ReplyMarkup = _Exclusive<
-  | InlineKeyboardMarkup
-  | ReplyKeyboardMarkup
-  | ReplyKeyboardRemove
-  | ForceReply
->;
+export type ReplyMarkup = _Exclusive<${REPLY_MARKUP_UNION}>;
 `;
 
 function emitFields(fields: Field[]): string {
