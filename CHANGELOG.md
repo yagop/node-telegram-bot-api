@@ -5,12 +5,28 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased][Unreleased]
 
+## [2.2.0][2.2.0] - 2026-11-02
+
+Stable release of the `2.2.0` line. It includes everything from
+`2.2.0-rc0`, `2.2.0-rc1` and `2.2.0-rc2` (see below), plus the following changes.
+
 ### Types
 
 - `reply_markup` now takes exactly one reply-markup object: an object that mixes
   them (e.g. `inline_keyboard` + `keyboard`) is a type error, because Telegram uses
   only one per message. The 18 methods that accept all four objects now use the
-  exported `ReplyMarkup` type. Type-only change; the wire format is unchanged.
+  exported `ReplyMarkup` type. Type-only change; the wire format is unchanged (#1374).
+
+### Dispatch
+
+- `bot.hears()` now resets `lastIndex` on a sticky (`/y`) RegExp trigger before
+  matching, so the trigger no longer fails on every other message (#1375).
+
+### Maintenance
+
+- e2e: fail fast against a local Bot API emulator to speed up the suite (#1371).
+- Examples: added a typed-sessions example with a spaceship launch flow (#1369).
+- Docs: used bot-specific storage names in the session examples (#1368).
 
 ## [2.2.0-rc2][2.2.0-rc2] - 2026-09-07
 
@@ -1272,4 +1288,5 @@ Fixed:
 [2.2.0-rc0]:https://github.com/yagop/node-telegram-bot-api/releases/tag/v2.2.0-rc0
 [2.2.0-rc1]:https://github.com/yagop/node-telegram-bot-api/releases/tag/v2.2.0-rc1
 [2.2.0-rc2]:https://github.com/yagop/node-telegram-bot-api/releases/tag/v2.2.0-rc2
-[Unreleased]:https://github.com/yagop/node-telegram-bot-api/compare/v2.2.0-rc2...master
+[2.2.0]:https://github.com/yagop/node-telegram-bot-api/releases/tag/v2.2.0
+[Unreleased]:https://github.com/yagop/node-telegram-bot-api/compare/v2.2.0...master
