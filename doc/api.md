@@ -558,6 +558,16 @@ own data. `.build()` returns the plain `RichText` (its accumulated sequence).
 | `underline` | `content`: [RichTextContent](#richtextcontent) | this | - |
 | `url` | `content`: [RichTextContent](#richtextcontent), `url`: string | this | A hyperlink to `url`. |
 
+### `S3SessionStorage`
+
+#### Methods
+
+| Method | Params | Returns | Description |
+| --- | --- | --- | --- |
+| `delete` | `key`: string | Promise<void> | - |
+| `read` | `key`: string | Promise<string \| undefined> | The stored string for `key`, or `undefined` when there is none. |
+| `write` | `key`: string, `value`: string | Promise<void> | Persist `value` verbatim under `key`. |
+
 ### `SqlSessionStorage`
 
 #### Methods
@@ -1134,6 +1144,25 @@ comparison always inspects every position, so it leaks no information about
 | `b` | string |
 
 **Returns:** boolean
+
+### `signAwsV4()`
+
+Compute the AWS Signature V4 headers for a request. Returns the headers to
+send (lowercased names): `authorization`, `x-amz-date`, `x-amz-content-sha256`,
+`host`, and `x-amz-security-token` when the credentials are temporary, merged
+with the caller's `headers`.
+
+Signs the URL's path and query exactly as `fetch` will send them, so the
+signed and sent requests match by construction. The canonical query is built
+per SigV4 (each name/value URI-encoded, then sorted by the encoded name). Query
+values are read via `URLSearchParams`, which decodes `+` as a space - fine for
+the object operations this store makes (none carry a query).
+
+| Param | Type |
+| --- | --- |
+| `params` | [SignAwsV4Params](#signawsv4params) |
+
+**Returns:** Promise<Record<string, string>>
 
 ### `startWebhook()`
 
@@ -7249,6 +7278,42 @@ type RunOptions = [LongPollOptions](#longpolloptions) & {
 };
 ```
 
+### `S3Credentials`
+
+Static S3 credentials. `sessionToken` is required for temporary (STS / role) credentials.
+
+```ts
+type S3Credentials = {
+  accessKeyId: string;
+  secretAccessKey: string;
+  sessionToken?: string;
+};
+```
+
+### `S3CredentialsProvider`
+
+Supplies credentials per request, so rotating / STS credentials stay fresh.
+
+```ts
+type S3CredentialsProvider = () => [S3Credentials](#s3credentials) | Promise<[S3Credentials](#s3credentials)>;
+```
+
+### `S3SessionStorageOptions`
+
+```ts
+type S3SessionStorageOptions = {
+  bucket: string;
+  credentials: [S3Credentials](#s3credentials) | [S3CredentialsProvider](#s3credentialsprovider);
+  crypto?: Crypto;
+  endpoint?: string;
+  fetch?: typeof fetch;
+  forcePathStyle?: boolean;
+  now?: () => Date;
+  prefix?: string;
+  region: string;
+};
+```
+
 ### `SavePreparedInlineMessageParams`
 
 ```ts
@@ -8679,6 +8744,25 @@ type ShippingQuery = {
   id: string;
   invoice_payload: string;
   shipping_address: [ShippingAddress](#shippingaddress);
+};
+```
+
+### `SignAwsV4Params`
+
+Inputs for one signed request. Separated from the store so it can be tested against AWS's published vectors.
+
+```ts
+type SignAwsV4Params = {
+  body?: Uint8Array;
+  credentials: [S3Credentials](#s3credentials);
+  crypto: Crypto;
+  date: Date;
+  headers?: Record<string, string>;
+  method: string;
+  payloadSha256?: string;
+  region: string;
+  service: string;
+  url: string;
 };
 ```
 
