@@ -19,12 +19,14 @@ export type ChatId = number | string;
 /** Text formatting mode accepted by `parse_mode` fields. */
 export type ParseMode = "Markdown" | "MarkdownV2" | "HTML";
 
-/** Union of the four reply-markup objects. */
-export type ReplyMarkup =
-  | InlineKeyboardMarkup
-  | ReplyKeyboardMarkup
-  | ReplyKeyboardRemove
-  | ForceReply;
+/** One member of the union `U`: each member forbids the keys only other members have. */
+type _Exclusive<U, T = U> = T extends unknown ? T & { [K in Exclude<_KeysOfUnion<U>, keyof T>]?: never } : never;
+
+/**
+ * One of the four reply-markup objects. Telegram uses only one per message, so
+ * mixing them (e.g. `inline_keyboard` + `keyboard`) is a type error.
+ */
+export type ReplyMarkup = _Exclusive<InlineKeyboardMarkup | ReplyKeyboardMarkup | ReplyKeyboardRemove | ForceReply>;
 
 
 // ---------------------------------------------------------------------------
@@ -3195,7 +3197,7 @@ export type SendMessageParams = {
   message_effect_id?: string;
   suggested_post_parameters?: SuggestedPostParameters;
   reply_parameters?: ReplyParameters;
-  reply_markup?: InlineKeyboardMarkup | ReplyKeyboardMarkup | ReplyKeyboardRemove | ForceReply;
+  reply_markup?: ReplyMarkup;
 };
 export type SendMessageResult = Message;
 
@@ -3241,7 +3243,7 @@ export type CopyMessageParams = {
   message_effect_id?: string;
   suggested_post_parameters?: SuggestedPostParameters;
   reply_parameters?: ReplyParameters;
-  reply_markup?: InlineKeyboardMarkup | ReplyKeyboardMarkup | ReplyKeyboardRemove | ForceReply;
+  reply_markup?: ReplyMarkup;
 };
 export type CopyMessageResult = MessageId;
 
@@ -3275,7 +3277,7 @@ export type SendPhotoParams = {
   message_effect_id?: string;
   suggested_post_parameters?: SuggestedPostParameters;
   reply_parameters?: ReplyParameters;
-  reply_markup?: InlineKeyboardMarkup | ReplyKeyboardMarkup | ReplyKeyboardRemove | ForceReply;
+  reply_markup?: ReplyMarkup;
 };
 export type SendPhotoResult = Message;
 
@@ -3298,7 +3300,7 @@ export type SendLivePhotoParams = {
   message_effect_id?: string;
   suggested_post_parameters?: SuggestedPostParameters;
   reply_parameters?: ReplyParameters;
-  reply_markup?: InlineKeyboardMarkup | ReplyKeyboardMarkup | ReplyKeyboardRemove | ForceReply;
+  reply_markup?: ReplyMarkup;
 };
 export type SendLivePhotoResult = Message;
 
@@ -3322,7 +3324,7 @@ export type SendAudioParams = {
   message_effect_id?: string;
   suggested_post_parameters?: SuggestedPostParameters;
   reply_parameters?: ReplyParameters;
-  reply_markup?: InlineKeyboardMarkup | ReplyKeyboardMarkup | ReplyKeyboardRemove | ForceReply;
+  reply_markup?: ReplyMarkup;
 };
 export type SendAudioResult = Message;
 
@@ -3344,7 +3346,7 @@ export type SendDocumentParams = {
   message_effect_id?: string;
   suggested_post_parameters?: SuggestedPostParameters;
   reply_parameters?: ReplyParameters;
-  reply_markup?: InlineKeyboardMarkup | ReplyKeyboardMarkup | ReplyKeyboardRemove | ForceReply;
+  reply_markup?: ReplyMarkup;
 };
 export type SendDocumentResult = Message;
 
@@ -3373,7 +3375,7 @@ export type SendVideoParams = {
   message_effect_id?: string;
   suggested_post_parameters?: SuggestedPostParameters;
   reply_parameters?: ReplyParameters;
-  reply_markup?: InlineKeyboardMarkup | ReplyKeyboardMarkup | ReplyKeyboardRemove | ForceReply;
+  reply_markup?: ReplyMarkup;
 };
 export type SendVideoResult = Message;
 
@@ -3399,7 +3401,7 @@ export type SendAnimationParams = {
   message_effect_id?: string;
   suggested_post_parameters?: SuggestedPostParameters;
   reply_parameters?: ReplyParameters;
-  reply_markup?: InlineKeyboardMarkup | ReplyKeyboardMarkup | ReplyKeyboardRemove | ForceReply;
+  reply_markup?: ReplyMarkup;
 };
 export type SendAnimationResult = Message;
 
@@ -3420,7 +3422,7 @@ export type SendVoiceParams = {
   message_effect_id?: string;
   suggested_post_parameters?: SuggestedPostParameters;
   reply_parameters?: ReplyParameters;
-  reply_markup?: InlineKeyboardMarkup | ReplyKeyboardMarkup | ReplyKeyboardRemove | ForceReply;
+  reply_markup?: ReplyMarkup;
 };
 export type SendVoiceResult = Message;
 
@@ -3440,7 +3442,7 @@ export type SendVideoNoteParams = {
   message_effect_id?: string;
   suggested_post_parameters?: SuggestedPostParameters;
   reply_parameters?: ReplyParameters;
-  reply_markup?: InlineKeyboardMarkup | ReplyKeyboardMarkup | ReplyKeyboardRemove | ForceReply;
+  reply_markup?: ReplyMarkup;
 };
 export type SendVideoNoteResult = Message;
 
@@ -3461,7 +3463,7 @@ export type SendPaidMediaParams = {
   allow_paid_broadcast?: boolean;
   suggested_post_parameters?: SuggestedPostParameters;
   reply_parameters?: ReplyParameters;
-  reply_markup?: InlineKeyboardMarkup | ReplyKeyboardMarkup | ReplyKeyboardRemove | ForceReply;
+  reply_markup?: ReplyMarkup;
 };
 export type SendPaidMediaResult = Message;
 
@@ -3497,7 +3499,7 @@ export type SendLocationParams = {
   message_effect_id?: string;
   suggested_post_parameters?: SuggestedPostParameters;
   reply_parameters?: ReplyParameters;
-  reply_markup?: InlineKeyboardMarkup | ReplyKeyboardMarkup | ReplyKeyboardRemove | ForceReply;
+  reply_markup?: ReplyMarkup;
 };
 export type SendLocationResult = Message;
 
@@ -3521,7 +3523,7 @@ export type SendVenueParams = {
   message_effect_id?: string;
   suggested_post_parameters?: SuggestedPostParameters;
   reply_parameters?: ReplyParameters;
-  reply_markup?: InlineKeyboardMarkup | ReplyKeyboardMarkup | ReplyKeyboardRemove | ForceReply;
+  reply_markup?: ReplyMarkup;
 };
 export type SendVenueResult = Message;
 
@@ -3541,7 +3543,7 @@ export type SendContactParams = {
   message_effect_id?: string;
   suggested_post_parameters?: SuggestedPostParameters;
   reply_parameters?: ReplyParameters;
-  reply_markup?: InlineKeyboardMarkup | ReplyKeyboardMarkup | ReplyKeyboardRemove | ForceReply;
+  reply_markup?: ReplyMarkup;
 };
 export type SendContactResult = Message;
 
@@ -3579,7 +3581,7 @@ export type SendPollParams = {
   allow_paid_broadcast?: boolean;
   message_effect_id?: string;
   reply_parameters?: ReplyParameters;
-  reply_markup?: InlineKeyboardMarkup | ReplyKeyboardMarkup | ReplyKeyboardRemove | ForceReply;
+  reply_markup?: ReplyMarkup;
 };
 export type SendPollResult = Message;
 
@@ -3607,7 +3609,7 @@ export type SendDiceParams = {
   message_effect_id?: string;
   suggested_post_parameters?: SuggestedPostParameters;
   reply_parameters?: ReplyParameters;
-  reply_markup?: InlineKeyboardMarkup | ReplyKeyboardMarkup | ReplyKeyboardRemove | ForceReply;
+  reply_markup?: ReplyMarkup;
 };
 export type SendDiceResult = Message;
 
@@ -4533,7 +4535,7 @@ export type SendStickerParams = {
   message_effect_id?: string;
   suggested_post_parameters?: SuggestedPostParameters;
   reply_parameters?: ReplyParameters;
-  reply_markup?: InlineKeyboardMarkup | ReplyKeyboardMarkup | ReplyKeyboardRemove | ForceReply;
+  reply_markup?: ReplyMarkup;
 };
 export type SendStickerResult = Message;
 
@@ -4646,7 +4648,7 @@ export type SendRichMessageParams = {
   message_effect_id?: string;
   suggested_post_parameters?: SuggestedPostParameters;
   reply_parameters?: ReplyParameters;
-  reply_markup?: InlineKeyboardMarkup | ReplyKeyboardMarkup | ReplyKeyboardRemove | ForceReply;
+  reply_markup?: ReplyMarkup;
 };
 export type SendRichMessageResult = Message;
 

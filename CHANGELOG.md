@@ -5,6 +5,13 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased][Unreleased]
 
+### Types
+
+- `reply_markup` now takes exactly one reply-markup object: an object that mixes
+  them (e.g. `inline_keyboard` + `keyboard`) is a type error, because Telegram uses
+  only one per message. The 18 methods that accept all four objects now use the
+  exported `ReplyMarkup` type. Type-only change; the wire format is unchanged.
+
 ## [2.2.0-rc2][2.2.0-rc2] - 2026-09-07
 
 ### Reply and callback tracking

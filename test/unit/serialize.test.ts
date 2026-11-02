@@ -4,6 +4,7 @@ import { type EncodedRequest, encodeForm } from "../../src/core/encode.js";
 import { InputFile } from "../../src/core/files.js";
 import { MediaGroupBuilder } from "../../src/core/media.js";
 import { serializeParams } from "../../src/core/serialize.js";
+import type { SendMessageParams } from "../../src/types/index.js";
 
 /** Plain params -> serializeParams -> encodeForm. */
 const enc = (p: Record<string, unknown>) => encodeForm(serializeParams(p));
@@ -122,5 +123,37 @@ describe("serializeParams", () => {
     );
     const fromLiteral = await parts(await enc({ chat_id: 1, media: [{ type: "photo", media: fileA(), caption: "A" }] }));
     assert.deepStrictEqual(JSON.parse(fromBuilder.get("media")!.value), JSON.parse(fromLiteral.get("media")!.value));
+  });
+});
+
+describe("reply_markup", () => {
+  const inline_keyboard = [[{ text: "A", callback_data: "a" }]];
+  const keyboard = [[{ text: "B" }]];
+
+  test("each ReplyMarkup shape is serialized as given", async () => {
+    const valid: SendMessageParams["reply_markup"][] = [
+      { inline_keyboard },
+      { inline_keyboard, force_reply: true },
+      { keyboard, is_persistent: true, force_reply: true },
+      { remove_keyboard: true, selective: true },
+      { force_reply: true, input_field_placeholder: "x" },
+    ];
+    for (const reply_markup of valid) {
+      const p = (await enc({ chat_id: 1, text: "hi", reply_markup })).body() as URLSearchParams;
+      assert.deepStrictEqual(JSON.parse(p.get("reply_markup")!), reply_markup);
+    }
+  });
+
+  // Checked by `npm run typecheck:test`: Telegram uses one reply markup per message (#1078).
+  test("mixing reply-markup objects is a type error", () => {
+    const mixed: SendMessageParams["reply_markup"][] = [
+      // @ts-expect-error inline keyboard + reply keyboard
+      { inline_keyboard, keyboard },
+      // @ts-expect-error inline keyboard + remove
+      { inline_keyboard, remove_keyboard: true },
+      // @ts-expect-error reply keyboard + remove
+      { keyboard, remove_keyboard: true },
+    ];
+    assert.strictEqual(mixed.length, 3);
   });
 });

@@ -2523,7 +2523,7 @@ type CopyMessageParams = {
   message_thread_id?: number;
   parse_mode?: string;
   protect_content?: boolean;
-  reply_markup?: [InlineKeyboardMarkup](#inlinekeyboardmarkup) | [ReplyKeyboardMarkup](#replykeyboardmarkup) | [ReplyKeyboardRemove](#replykeyboardremove) | [ForceReply](#forcereply);
+  reply_markup?: [ReplyMarkup](#replymarkup);
   reply_parameters?: [ReplyParameters](#replyparameters);
   show_caption_above_media?: boolean;
   suggested_post_parameters?: [SuggestedPostParameters](#suggestedpostparameters);
@@ -6526,10 +6526,11 @@ type ReplyMarker = Record<string, unknown>;
 
 ### `ReplyMarkup`
 
-Union of the four reply-markup objects.
+One of the four reply-markup objects. Telegram uses only one per message, so
+mixing them (e.g. `inline_keyboard` + `keyboard`) is a type error.
 
 ```ts
-type ReplyMarkup = [InlineKeyboardMarkup](#inlinekeyboardmarkup) | [ReplyKeyboardMarkup](#replykeyboardmarkup) | [ReplyKeyboardRemove](#replykeyboardremove) | [ForceReply](#forcereply);
+type ReplyMarkup = _Exclusive<[InlineKeyboardMarkup](#inlinekeyboardmarkup) | [ReplyKeyboardMarkup](#replykeyboardmarkup) | [ReplyKeyboardRemove](#replykeyboardremove) | [ForceReply](#forcereply)>;
 ```
 
 ### `ReplyParameters`
@@ -7302,7 +7303,7 @@ type SendAnimationParams = {
   message_thread_id?: number;
   parse_mode?: string;
   protect_content?: boolean;
-  reply_markup?: [InlineKeyboardMarkup](#inlinekeyboardmarkup) | [ReplyKeyboardMarkup](#replykeyboardmarkup) | [ReplyKeyboardRemove](#replykeyboardremove) | [ForceReply](#forcereply);
+  reply_markup?: [ReplyMarkup](#replymarkup);
   reply_parameters?: [ReplyParameters](#replyparameters);
   show_caption_above_media?: boolean;
   suggested_post_parameters?: [SuggestedPostParameters](#suggestedpostparameters);
@@ -7336,7 +7337,7 @@ type SendAudioParams = {
   parse_mode?: string;
   performer?: string;
   protect_content?: boolean;
-  reply_markup?: [InlineKeyboardMarkup](#inlinekeyboardmarkup) | [ReplyKeyboardMarkup](#replykeyboardmarkup) | [ReplyKeyboardRemove](#replykeyboardremove) | [ForceReply](#forcereply);
+  reply_markup?: [ReplyMarkup](#replymarkup);
   reply_parameters?: [ReplyParameters](#replyparameters);
   suggested_post_parameters?: [SuggestedPostParameters](#suggestedpostparameters);
   thumbnail?: [InputFile](#inputfile) | string;
@@ -7419,7 +7420,7 @@ type SendContactParams = {
   message_thread_id?: number;
   phone_number: string;
   protect_content?: boolean;
-  reply_markup?: [InlineKeyboardMarkup](#inlinekeyboardmarkup) | [ReplyKeyboardMarkup](#replykeyboardmarkup) | [ReplyKeyboardRemove](#replykeyboardremove) | [ForceReply](#forcereply);
+  reply_markup?: [ReplyMarkup](#replymarkup);
   reply_parameters?: [ReplyParameters](#replyparameters);
   suggested_post_parameters?: [SuggestedPostParameters](#suggestedpostparameters);
   vcard?: string;
@@ -7445,7 +7446,7 @@ type SendDiceParams = {
   message_effect_id?: string;
   message_thread_id?: number;
   protect_content?: boolean;
-  reply_markup?: [InlineKeyboardMarkup](#inlinekeyboardmarkup) | [ReplyKeyboardMarkup](#replykeyboardmarkup) | [ReplyKeyboardRemove](#replykeyboardremove) | [ForceReply](#forcereply);
+  reply_markup?: [ReplyMarkup](#replymarkup);
   reply_parameters?: [ReplyParameters](#replyparameters);
   suggested_post_parameters?: [SuggestedPostParameters](#suggestedpostparameters);
 };
@@ -7475,7 +7476,7 @@ type SendDocumentParams = {
   message_thread_id?: number;
   parse_mode?: string;
   protect_content?: boolean;
-  reply_markup?: [InlineKeyboardMarkup](#inlinekeyboardmarkup) | [ReplyKeyboardMarkup](#replykeyboardmarkup) | [ReplyKeyboardRemove](#replykeyboardremove) | [ForceReply](#forcereply);
+  reply_markup?: [ReplyMarkup](#replymarkup);
   reply_parameters?: [ReplyParameters](#replyparameters);
   suggested_post_parameters?: [SuggestedPostParameters](#suggestedpostparameters);
   thumbnail?: [InputFile](#inputfile) | string;
@@ -7594,7 +7595,7 @@ type SendLivePhotoParams = {
   parse_mode?: string;
   photo: [InputFile](#inputfile) | string;
   protect_content?: boolean;
-  reply_markup?: [InlineKeyboardMarkup](#inlinekeyboardmarkup) | [ReplyKeyboardMarkup](#replykeyboardmarkup) | [ReplyKeyboardRemove](#replykeyboardremove) | [ForceReply](#forcereply);
+  reply_markup?: [ReplyMarkup](#replymarkup);
   reply_parameters?: [ReplyParameters](#replyparameters);
   show_caption_above_media?: boolean;
   suggested_post_parameters?: [SuggestedPostParameters](#suggestedpostparameters);
@@ -7626,7 +7627,7 @@ type SendLocationParams = {
   message_thread_id?: number;
   protect_content?: boolean;
   proximity_alert_radius?: number;
-  reply_markup?: [InlineKeyboardMarkup](#inlinekeyboardmarkup) | [ReplyKeyboardMarkup](#replykeyboardmarkup) | [ReplyKeyboardRemove](#replykeyboardremove) | [ForceReply](#forcereply);
+  reply_markup?: [ReplyMarkup](#replymarkup);
   reply_parameters?: [ReplyParameters](#replyparameters);
   suggested_post_parameters?: [SuggestedPostParameters](#suggestedpostparameters);
 };
@@ -7698,7 +7699,7 @@ type SendMessageParams = {
   message_thread_id?: number;
   parse_mode?: string;
   protect_content?: boolean;
-  reply_markup?: [InlineKeyboardMarkup](#inlinekeyboardmarkup) | [ReplyKeyboardMarkup](#replykeyboardmarkup) | [ReplyKeyboardRemove](#replykeyboardremove) | [ForceReply](#forcereply);
+  reply_markup?: [ReplyMarkup](#replymarkup);
   reply_parameters?: [ReplyParameters](#replyparameters);
   suggested_post_parameters?: [SuggestedPostParameters](#suggestedpostparameters);
   text: string;
@@ -7727,7 +7728,7 @@ type SendPaidMediaParams = {
   parse_mode?: string;
   payload?: string;
   protect_content?: boolean;
-  reply_markup?: [InlineKeyboardMarkup](#inlinekeyboardmarkup) | [ReplyKeyboardMarkup](#replykeyboardmarkup) | [ReplyKeyboardRemove](#replykeyboardremove) | [ForceReply](#forcereply);
+  reply_markup?: [ReplyMarkup](#replymarkup);
   reply_parameters?: [ReplyParameters](#replyparameters);
   show_caption_above_media?: boolean;
   star_count: number;
@@ -7759,7 +7760,7 @@ type SendPhotoParams = {
   parse_mode?: string;
   photo: [InputFile](#inputfile) | string;
   protect_content?: boolean;
-  reply_markup?: [InlineKeyboardMarkup](#inlinekeyboardmarkup) | [ReplyKeyboardMarkup](#replykeyboardmarkup) | [ReplyKeyboardRemove](#replykeyboardremove) | [ForceReply](#forcereply);
+  reply_markup?: [ReplyMarkup](#replymarkup);
   reply_parameters?: [ReplyParameters](#replyparameters);
   show_caption_above_media?: boolean;
   suggested_post_parameters?: [SuggestedPostParameters](#suggestedpostparameters);
@@ -7806,7 +7807,7 @@ type SendPollParams = {
   question: string;
   question_entities?: [MessageEntity](#messageentity)[];
   question_parse_mode?: string;
-  reply_markup?: [InlineKeyboardMarkup](#inlinekeyboardmarkup) | [ReplyKeyboardMarkup](#replykeyboardmarkup) | [ReplyKeyboardRemove](#replykeyboardremove) | [ForceReply](#forcereply);
+  reply_markup?: [ReplyMarkup](#replymarkup);
   reply_parameters?: [ReplyParameters](#replyparameters);
   shuffle_options?: boolean;
   type?: string;
@@ -7851,7 +7852,7 @@ type SendRichMessageParams = {
   message_effect_id?: string;
   message_thread_id?: number;
   protect_content?: boolean;
-  reply_markup?: [InlineKeyboardMarkup](#inlinekeyboardmarkup) | [ReplyKeyboardMarkup](#replykeyboardmarkup) | [ReplyKeyboardRemove](#replykeyboardremove) | [ForceReply](#forcereply);
+  reply_markup?: [ReplyMarkup](#replymarkup);
   reply_parameters?: [ReplyParameters](#replyparameters);
   rich_message: [InputRichMessage](#inputrichmessage);
   suggested_post_parameters?: [SuggestedPostParameters](#suggestedpostparameters);
@@ -7878,7 +7879,7 @@ type SendStickerParams = {
   message_effect_id?: string;
   message_thread_id?: number;
   protect_content?: boolean;
-  reply_markup?: [InlineKeyboardMarkup](#inlinekeyboardmarkup) | [ReplyKeyboardMarkup](#replykeyboardmarkup) | [ReplyKeyboardRemove](#replykeyboardremove) | [ForceReply](#forcereply);
+  reply_markup?: [ReplyMarkup](#replymarkup);
   reply_parameters?: [ReplyParameters](#replyparameters);
   sticker: [InputFile](#inputfile) | string;
   suggested_post_parameters?: [SuggestedPostParameters](#suggestedpostparameters);
@@ -7911,7 +7912,7 @@ type SendVenueParams = {
   message_effect_id?: string;
   message_thread_id?: number;
   protect_content?: boolean;
-  reply_markup?: [InlineKeyboardMarkup](#inlinekeyboardmarkup) | [ReplyKeyboardMarkup](#replykeyboardmarkup) | [ReplyKeyboardRemove](#replykeyboardremove) | [ForceReply](#forcereply);
+  reply_markup?: [ReplyMarkup](#replymarkup);
   reply_parameters?: [ReplyParameters](#replyparameters);
   suggested_post_parameters?: [SuggestedPostParameters](#suggestedpostparameters);
   title: string;
@@ -7939,7 +7940,7 @@ type SendVideoNoteParams = {
   message_effect_id?: string;
   message_thread_id?: number;
   protect_content?: boolean;
-  reply_markup?: [InlineKeyboardMarkup](#inlinekeyboardmarkup) | [ReplyKeyboardMarkup](#replykeyboardmarkup) | [ReplyKeyboardRemove](#replykeyboardremove) | [ForceReply](#forcereply);
+  reply_markup?: [ReplyMarkup](#replymarkup);
   reply_parameters?: [ReplyParameters](#replyparameters);
   suggested_post_parameters?: [SuggestedPostParameters](#suggestedpostparameters);
   thumbnail?: [InputFile](#inputfile) | string;
@@ -7973,7 +7974,7 @@ type SendVideoParams = {
   message_thread_id?: number;
   parse_mode?: string;
   protect_content?: boolean;
-  reply_markup?: [InlineKeyboardMarkup](#inlinekeyboardmarkup) | [ReplyKeyboardMarkup](#replykeyboardmarkup) | [ReplyKeyboardRemove](#replykeyboardremove) | [ForceReply](#forcereply);
+  reply_markup?: [ReplyMarkup](#replymarkup);
   reply_parameters?: [ReplyParameters](#replyparameters);
   show_caption_above_media?: boolean;
   start_timestamp?: number;
@@ -8008,7 +8009,7 @@ type SendVoiceParams = {
   message_thread_id?: number;
   parse_mode?: string;
   protect_content?: boolean;
-  reply_markup?: [InlineKeyboardMarkup](#inlinekeyboardmarkup) | [ReplyKeyboardMarkup](#replykeyboardmarkup) | [ReplyKeyboardRemove](#replykeyboardremove) | [ForceReply](#forcereply);
+  reply_markup?: [ReplyMarkup](#replymarkup);
   reply_parameters?: [ReplyParameters](#replyparameters);
   suggested_post_parameters?: [SuggestedPostParameters](#suggestedpostparameters);
   voice: [InputFile](#inputfile) | string;
