@@ -1153,10 +1153,10 @@ send (lowercased names): `authorization`, `x-amz-date`, `x-amz-content-sha256`,
 with the caller's `headers`.
 
 Signs the URL's path and query exactly as `fetch` will send them, so the
-signed and sent requests match by construction. The canonical query is derived
-from `URLSearchParams`, which is correct for the object operations this store
-makes (none carry a query); a query with form-encoded `+` or exotic key
-ordering is outside what is exercised here.
+signed and sent requests match by construction. The canonical query is built
+per SigV4 (each name/value URI-encoded, then sorted by the encoded name). Query
+values are read via `URLSearchParams`, which decodes `+` as a space - fine for
+the object operations this store makes (none carry a query).
 
 | Param | Type |
 | --- | --- |

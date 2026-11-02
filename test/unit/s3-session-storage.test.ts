@@ -61,6 +61,52 @@ describe("signAwsV4 (AWS published vector)", () => {
 			/SignedHeaders=host;x-amz-content-sha256;x-amz-date;x-amz-security-token/,
 		);
 	});
+
+	test("internal whitespace in a header value is collapsed before signing", async () => {
+		// SigV4 canonicalizes "two  spaces" to "two spaces", so the two must sign
+		// identically; otherwise S3 recomputes over the collapsed form and 403s.
+		const base = {
+			method: "GET",
+			url: "https://b.s3.us-east-1.amazonaws.com/k",
+			region: "us-east-1",
+			service: "s3",
+			credentials: AWS_EXAMPLE_CREDS,
+			date: new Date(Date.UTC(2024, 0, 1, 0, 0, 0)),
+			crypto,
+		} as const;
+		const doubled = await signAwsV4({
+			...base,
+			headers: { "x-amz-meta-note": "two  spaces" },
+		});
+		const single = await signAwsV4({
+			...base,
+			headers: { "x-amz-meta-note": "two spaces" },
+		});
+		assert.strictEqual(doubled.authorization, single.authorization);
+	});
+
+	test("canonical query is order-independent and deterministic", async () => {
+		// Parameters are sorted into canonical order, so declaration order cannot
+		// change the signature - and the signer handles a query at all.
+		const base = {
+			method: "GET",
+			region: "us-east-1",
+			service: "s3",
+			credentials: AWS_EXAMPLE_CREDS,
+			date: new Date(Date.UTC(2024, 0, 1, 0, 0, 0)),
+			crypto,
+		} as const;
+		const a = await signAwsV4({
+			...base,
+			url: "https://b.s3.us-east-1.amazonaws.com/k?a-=1&a%2F=2",
+		});
+		const b = await signAwsV4({
+			...base,
+			url: "https://b.s3.us-east-1.amazonaws.com/k?a%2F=2&a-=1",
+		});
+		assert.strictEqual(a.authorization, b.authorization);
+		assert.match(a.authorization ?? "", /Signature=[0-9a-f]{64}$/);
+	});
 });
 
 /** A fetch fake that records the last request and replays a queued response. */
@@ -177,8 +223,14 @@ describe("S3SessionStorage", () => {
 	test("a key with a path-traversal segment is rejected (cannot escape the prefix)", async () => {
 		const { fn } = fakeFetch(() => new Response("x", { status: 200 }));
 		const s = store(fn);
-		await assert.rejects(s.read("../secret"), /path segment, which would escape/);
-		await assert.rejects(s.write("a/../../b", "v"), /path segment, which would escape/);
+		await assert.rejects(
+			s.read("../secret"),
+			/path segment, which would escape/,
+		);
+		await assert.rejects(
+			s.write("a/../../b", "v"),
+			/path segment, which would escape/,
+		);
 		// A literal dot inside a segment is fine - only "." / ".." whole segments are blocked.
 		await assert.doesNotReject(s.read("chat.1"));
 	});

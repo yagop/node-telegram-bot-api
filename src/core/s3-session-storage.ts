@@ -166,10 +166,10 @@ export type SignAwsV4Params = {
  * with the caller's `headers`.
  *
  * Signs the URL's path and query exactly as `fetch` will send them, so the
- * signed and sent requests match by construction. The canonical query is derived
- * from `URLSearchParams`, which is correct for the object operations this store
- * makes (none carry a query); a query with form-encoded `+` or exotic key
- * ordering is outside what is exercised here.
+ * signed and sent requests match by construction. The canonical query is built
+ * per SigV4 (each name/value URI-encoded, then sorted by the encoded name). Query
+ * values are read via `URLSearchParams`, which decodes `+` as a space - fine for
+ * the object operations this store makes (none carry a query).
  */
 export async function signAwsV4(params: SignAwsV4Params): Promise<Record<string, string>> {
   const { method, url, body, region, service, credentials, date, crypto } = params;
@@ -180,10 +180,12 @@ export async function signAwsV4(params: SignAwsV4Params): Promise<Record<string,
   const payloadHash =
     params.payloadSha256 ?? (body === undefined ? EMPTY_SHA256 : await sha256Hex(subtle, body));
 
-  // Header set to sign: caller headers (lowercased) plus the signer's own.
+  // Header set to sign: caller headers (lowercased) plus the signer's own. SigV4
+  // canonicalizes a value by trimming the ends AND collapsing internal runs of
+  // whitespace to a single space, so a value with double spaces still verifies.
   const signed: Record<string, string> = {};
   for (const [name, value] of Object.entries(params.headers ?? {})) {
-    signed[name.toLowerCase()] = value.trim();
+    signed[name.toLowerCase()] = value.trim().replace(/\s+/g, " ");
   }
   signed.host = parsed.host;
   signed["x-amz-date"] = amzDate;
@@ -196,13 +198,17 @@ export async function signAwsV4(params: SignAwsV4Params): Promise<Record<string,
   const canonicalHeaders = sortedNames.map((n) => `${n}:${signed[n]}\n`).join("");
   const signedHeaders = sortedNames.join(";");
 
-  // Canonical query string: params sorted by key, each name/value URI-encoded.
-  const queryPairs: Array<[string, string]> = [];
-  for (const [k, v] of parsed.searchParams) {
-    queryPairs.push([k, v]);
-  }
-  queryPairs.sort((a, b) => (a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : a[1] < b[1] ? -1 : 1));
-  const canonicalQuery = queryPairs.map(([k, v]) => `${uriEncode(k)}=${uriEncode(v)}`).join("&");
+  // Canonical query string: URI-encode each name/value FIRST, then sort by the
+  // encoded name (encoded value breaks ties), as SigV4 requires - sorting the
+  // decoded strings would order e.g. `a%2F` and `a-` wrongly.
+  const queryPairs = Array.from(parsed.searchParams, ([k, v]): [string, string] => [
+    uriEncode(k),
+    uriEncode(v),
+  ]);
+  queryPairs.sort((a, b) =>
+    a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : a[1] < b[1] ? -1 : a[1] > b[1] ? 1 : 0
+  );
+  const canonicalQuery = queryPairs.map(([k, v]) => `${k}=${v}`).join("&");
 
   const canonicalRequest = [
     method,
@@ -360,6 +366,19 @@ export class S3SessionStorage implements SessionStore {
     }
   }
 
+  /**
+   * Release a response body we will not read, so a repeated miss (every new
+   * chat's first read is a 404) does not retain a connection while the runtime
+   * waits for the body to be consumed. Never throws.
+   */
+  private async discard(response: Response): Promise<void> {
+    try {
+      await response.body?.cancel();
+    } catch {
+      // nothing to release, or already released
+    }
+  }
+
   private async fail(response: Response, method: string): Promise<never> {
     let detail = "";
     try {
@@ -376,6 +395,7 @@ export class S3SessionStorage implements SessionStore {
   async read(key: string): Promise<string | undefined> {
     const response = await this.send("GET", this.urlFor(key));
     if (response.status === 404) {
+      await this.discard(response);
       return undefined;
     }
     if (!response.ok) {
@@ -389,6 +409,7 @@ export class S3SessionStorage implements SessionStore {
     if (!response.ok) {
       return this.fail(response, "PUT");
     }
+    await this.discard(response);
   }
 
   async delete(key: string): Promise<void> {
@@ -397,5 +418,6 @@ export class S3SessionStorage implements SessionStore {
     if (!response.ok && response.status !== 404) {
       return this.fail(response, "DELETE");
     }
+    await this.discard(response);
   }
 }
