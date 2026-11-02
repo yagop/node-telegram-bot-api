@@ -174,6 +174,15 @@ describe("S3SessionStorage", () => {
 		);
 	});
 
+	test("a key with a path-traversal segment is rejected (cannot escape the prefix)", async () => {
+		const { fn } = fakeFetch(() => new Response("x", { status: 200 }));
+		const s = store(fn);
+		await assert.rejects(s.read("../secret"), /path segment, which would escape/);
+		await assert.rejects(s.write("a/../../b", "v"), /path segment, which would escape/);
+		// A literal dot inside a segment is fine - only "." / ".." whole segments are blocked.
+		await assert.doesNotReject(s.read("chat.1"));
+	});
+
 	test("a custom prefix is applied to the object key", async () => {
 		const { fn, calls } = fakeFetch(() => new Response("x", { status: 200 }));
 		await store(fn, { prefix: "bots/42/" }).read("chat:1");

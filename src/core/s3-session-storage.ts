@@ -56,7 +56,8 @@ export type S3SessionStorageOptions = {
   /**
    * Custom endpoint for an S3-compatible service (R2, MinIO, Spaces). Omit for
    * AWS S3, which is derived from `region`. When set, path-style addressing is
-   * used unless `forcePathStyle` is explicitly `false`.
+   * used unless `forcePathStyle` is explicitly `false`. Only the origin (scheme +
+   * host[:port]) is used; any path in the endpoint is ignored.
    */
   endpoint?: string;
   /**
@@ -82,12 +83,11 @@ const encoder = new TextEncoder();
 /** SHA-256 of an empty body, the payload hash for GET / DELETE. */
 const EMPTY_SHA256 = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855";
 
+/** Byte -> 2-hex-digit lookup, built once so hex encoding does no per-byte formatting. */
+const HEX = Array.from({ length: 256 }, (_, i) => i.toString(16).padStart(2, "0"));
+
 function toHex(bytes: Uint8Array): string {
-  let out = "";
-  for (const b of bytes) {
-    out += b.toString(16).padStart(2, "0");
-  }
-  return out;
+  return Array.from(bytes, (b) => HEX[b]).join("");
 }
 
 /**
@@ -102,9 +102,26 @@ function uriEncode(value: string): string {
   );
 }
 
-/** Encode an object key into a URL path, preserving `/` as the segment separator. */
+/**
+ * Encode an object key into a URL path, preserving `/` as the segment separator.
+ * A `.` / `..` segment is rejected: `new URL()` (and `fetch`) would normalize it
+ * away, rewriting both the signed and the sent path and letting a crafted key
+ * reach a different object or escape the prefix. The default `chat:<id>` key is
+ * always safe; this guards a custom `getSessionKey`.
+ */
 function encodeKeyPath(key: string): string {
-  return key.split("/").map(uriEncode).join("/");
+  return key
+    .split("/")
+    .map((segment) => {
+      if (segment === "." || segment === "..") {
+        throw new TelegramBotError(
+          `S3 session key has a "${segment}" path segment, which would escape the object prefix`,
+          { code: "ES3" }
+        );
+      }
+      return uriEncode(segment);
+    })
+    .join("/");
 }
 
 /** Two-digit zero-pad for the SigV4 date stamps. */
@@ -147,6 +164,12 @@ export type SignAwsV4Params = {
  * send (lowercased names): `authorization`, `x-amz-date`, `x-amz-content-sha256`,
  * `host`, and `x-amz-security-token` when the credentials are temporary, merged
  * with the caller's `headers`.
+ *
+ * Signs the URL's path and query exactly as `fetch` will send them, so the
+ * signed and sent requests match by construction. The canonical query is derived
+ * from `URLSearchParams`, which is correct for the object operations this store
+ * makes (none carry a query); a query with form-encoded `+` or exotic key
+ * ordering is outside what is exercised here.
  */
 export async function signAwsV4(params: SignAwsV4Params): Promise<Record<string, string>> {
   const { method, url, body, region, service, credentials, date, crypto } = params;

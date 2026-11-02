@@ -1152,6 +1152,12 @@ send (lowercased names): `authorization`, `x-amz-date`, `x-amz-content-sha256`,
 `host`, and `x-amz-security-token` when the credentials are temporary, merged
 with the caller's `headers`.
 
+Signs the URL's path and query exactly as `fetch` will send them, so the
+signed and sent requests match by construction. The canonical query is derived
+from `URLSearchParams`, which is correct for the object operations this store
+makes (none carry a query); a query with form-encoded `+` or exotic key
+ordering is outside what is exercised here.
+
 | Param | Type |
 | --- | --- |
 | `params` | [SignAwsV4Params](#signawsv4params) |
