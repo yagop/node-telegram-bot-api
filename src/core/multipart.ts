@@ -40,14 +40,19 @@ let boundaryCounter = 0;
  * counter rather than a CSPRNG. That deliberately avoids the global `crypto`,
  * which Node exposes unflagged only from v19 (on Node 18, in `engines`, it needs
  * `--experimental-global-webcrypto`), keeping core runtime-agnostic and Node-free.
- * All characters stay in `[0-9a-z]` (base-36), as the wire format requires.
+ * All characters stay in `[0-9a-z]` (base-36), as the wire format requires. Each
+ * random run is capped at 10 chars: a tiny `Math.random()` (down to `2 ** -53`)
+ * has a base-36 fraction of ~21 chars, and two uncapped runs plus the prefix,
+ * timestamp and counter could cross the 70-char limit - the cap keeps the whole
+ * boundary within it deterministically, with the counter still guaranteeing
+ * distinctness.
  */
 function randomBoundary(): string {
   const parts = [
     Date.now().toString(36),
     (boundaryCounter++).toString(36),
-    Math.random().toString(36).slice(2),
-    Math.random().toString(36).slice(2),
+    Math.random().toString(36).slice(2, 12),
+    Math.random().toString(36).slice(2, 12),
   ];
   return `----NodeTelegramBotApi${parts.join("")}`;
 }
