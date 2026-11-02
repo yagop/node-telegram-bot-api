@@ -5,8 +5,8 @@
  * bytes flow chunk-by-chunk from their source (a disk-backed `Blob`, a
  * `Uint8Array`, a caller-provided stream) straight into `fetch` - no part is
  * ever materialized, so upload memory stays flat regardless of file size.
- * Web-standard APIs only (`TextEncoder`, `crypto.getRandomValues`,
- * `ReadableStream`), keeping this edge-safe.
+ * Web-standard APIs only (`TextEncoder`, `ReadableStream`), keeping this
+ * edge-safe.
  *
  * The body is built once as an ordered list of `pieces`; each send attempt
  * streams the same pieces again, which is what makes retries possible without
@@ -31,15 +31,25 @@ export interface MultipartBody {
 
 const CRLF = new TextEncoder().encode("\r\n");
 
-/** Random, spec-sized (< 70 chars) boundary; `crypto` is a web global on every target. */
+let boundaryCounter = 0;
+
+/**
+ * A spec-sized (< 70 chars) multipart boundary, unique per body. A boundary is
+ * not security-sensitive - it only has to avoid colliding with the body bytes -
+ * so it is built from `Math.random` + a wall-clock timestamp + a process-lifetime
+ * counter rather than a CSPRNG. That deliberately avoids the global `crypto`,
+ * which Node exposes unflagged only from v19 (on Node 18, in `engines`, it needs
+ * `--experimental-global-webcrypto`), keeping core runtime-agnostic and Node-free.
+ * All characters stay in `[0-9a-z]` (base-36), as the wire format requires.
+ */
 function randomBoundary(): string {
-  const bytes = new Uint8Array(16);
-  crypto.getRandomValues(bytes);
-  let hex = "";
-  for (const b of bytes) {
-    hex += b.toString(16).padStart(2, "0");
-  }
-  return `----NodeTelegramBotApi${hex}`;
+  const parts = [
+    Date.now().toString(36),
+    (boundaryCounter++).toString(36),
+    Math.random().toString(36).slice(2),
+    Math.random().toString(36).slice(2),
+  ];
+  return `----NodeTelegramBotApi${parts.join("")}`;
 }
 
 /** Escape a part name / filename per the WHATWG multipart serialization rules. */

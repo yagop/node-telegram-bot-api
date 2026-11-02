@@ -48,6 +48,19 @@ describe("multipart", () => {
     );
   });
 
+  test("boundary is unique per body and does not rely on a global crypto", () => {
+    // The boundary is built from Math.random + timestamp + a counter (no CSPRNG,
+    // so core needs no global `crypto`, which Node exposes unflagged only from
+    // v19). Distinctness across builds is what keeps parts from colliding.
+    const make = () => multipartBody([["a", "1"]], []).boundary;
+    const boundaries = new Set(Array.from({ length: 100 }, make));
+    assert.strictEqual(boundaries.size, 100, "every boundary must be distinct");
+    for (const b of boundaries) {
+      assert.ok(b.length <= 70, "RFC 2046 caps the boundary at 70 chars");
+      assert.ok(/^[0-9A-Za-z-]+$/.test(b));
+    }
+  });
+
   test("a Blob part streams its bytes and contributes its own content type", async () => {
     const blob = new Blob(["hello"], { type: "text/plain" });
     const { pieces } = multipartBody([], [["document", new InputFile(blob, { filename: "h.txt" })]]);
