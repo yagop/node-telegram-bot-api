@@ -11,7 +11,9 @@ and CJS (`*.cjs`/`*.d.cts`), exposed via the `exports` map's `import`/`require` 
 be `import`ed or `require`d. `src/core` stays Node-free, so the edge story is unchanged. There is
 **no v1 compatibility**; the v1->v2 migration cheatsheet lives in `CHANGELOG.md`.
 
-Current development happens on `feat/v2-core`; the base/release branch is `master`.
+Development happens on `master`, which is also the base/release branch. (The v2
+rewrite was built on a `feat/v2-core` integration branch, now fully merged into
+`master` and no longer used.)
 
 ## Commands
 
