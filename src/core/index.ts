@@ -36,6 +36,7 @@ export * from "./ratelimiter.js";
 export * from "./reply-tracking.js";
 export * from "./richmessage.js";
 export * from "./richtext.js";
+export * from "./s3-session-storage.js";
 export * from "./session.js";
 // Transport
 export * from "./transport.js";

@@ -413,6 +413,9 @@ Every backend implements the same `SessionStore`: a **string** key/value contrac
 | `SqliteSessionStorage` | `node-telegram-bot-api/bun` | Bun | ✅ | `bun:sqlite`; sync; single host |
 | `SqlSessionStorage` | `node-telegram-bot-api/bun` | Bun | ✅ | Bun `SQL` (Postgres); cross-instance |
 | `RedisSessionStorage` | `node-telegram-bot-api/bun` | Bun | ✅ | Bun `redis`; cross-instance; optional TTL |
+| `S3SessionStorage` | `node-telegram-bot-api` | any* | ✅ | S3-compatible (AWS S3, R2, MinIO, Spaces); SigV4 over `fetch`; cross-instance |
+
+\*`S3SessionStorage` uses the global `crypto.subtle` (SigV4 signing), present on Node 19+, Bun, Deno and edge. On Node 18 pass one in: `crypto: (await import("node:crypto")).webcrypto as Crypto`.
 
 Use a separate storage name for each bot when bots share a database, Redis database, or parent directory. The default session key is `chat:<id>`, so two bots in the same chat would otherwise use the same key. The examples use `great_bot`; replace it with a stable name for your bot. These names are explicit configuration, not values fetched from Telegram.
 
@@ -433,7 +436,23 @@ bot.use(createSession<Session>({
 import { SqlSessionStorage, SqliteSessionStorage } from "node-telegram-bot-api/bun";
 const sqlStore = new SqlSessionStorage({ table: "great_bot_sessions" });
 const sqliteStore = new SqliteSessionStorage({ database: "./great_bot_sessions.db" });
+
+// durable on any runtime (Node 19+/Bun/edge), shared across instances, backed by S3 / R2 / MinIO
+import { S3SessionStorage } from "node-telegram-bot-api";
+bot.use(createSession<Session>({
+  store: new S3SessionStorage({
+    bucket: "great-bot",
+    region: "eu-west-1", // "auto" for R2
+    credentials: {
+      accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
+      secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
+    },
+    // endpoint + forcePathStyle: true for R2 / MinIO / Spaces; prefix defaults to "sessions/"
+  }),
+}));
 ```
+
+`S3SessionStorage` has no per-object TTL (S3 has none); expire idle sessions with a bucket lifecycle rule on the prefix (whole-day granularity, measured from the last write) - keep it generous (30+ days), since the middleware skips the write when nothing changed. For temporary (STS / role) credentials, pass a `credentials` function that returns fresh `{ accessKeyId, secretAccessKey, sessionToken }` per request.
 
 Any other backend (ioredis, `pg`, a KV service) is ~10 lines implementing the three methods. The `node-telegram-bot-api/bun` stores import Bun built-ins and are isolated behind that subpath - a Node or edge install never resolves them.
 

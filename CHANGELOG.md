@@ -5,6 +5,17 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased][Unreleased]
 
+### Session storage
+
+- Added `S3SessionStorage` (exported from the core `node-telegram-bot-api`): a
+  durable, cross-instance session backend for any S3-compatible object store
+  (AWS S3, Cloudflare R2, MinIO, DigitalOcean Spaces), speaking the S3 REST API
+  directly over `fetch` with AWS Signature V4 signing. Core and runtime-agnostic
+  (Node 19+, Bun, Deno, Workers, edge); `fetch` and `crypto` are injectable, so
+  Node 18 can supply `node:crypto`'s `webcrypto`. It has no per-object TTL - use
+  a bucket lifecycle rule on the prefix. Validated against the AWS SigV4 example
+  vector and live MinIO / RustFS servers.
+
 ## [2.2.0][2.2.0] - 2026-11-02
 
 Stable release of the `2.2.0` line. It includes everything from
