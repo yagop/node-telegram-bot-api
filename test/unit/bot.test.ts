@@ -80,6 +80,47 @@ describe("Bot routing", () => {
     assert.strictEqual(match![1], "42");
   });
 
+  test("hears matches a sticky RegExp independently for each update", async () => {
+    const bot = newBot();
+    const matches: string[] = [];
+    bot.hears(/n(\d+)/y, (ctx) => {
+      matches.push((ctx.match as RegExpMatchArray)[1]!);
+    });
+
+    await bot.handleUpdate(messageUpdate("n42", 1));
+    await bot.handleUpdate(messageUpdate("n43", 2));
+    await bot.handleUpdate(messageUpdate("other", 3));
+    await bot.handleUpdate(messageUpdate("n44", 4));
+
+    assert.deepEqual(matches, ["42", "43", "44"]);
+  });
+
+  test("hears starts matching a reused sticky RegExp at the beginning", async () => {
+    const bot = newBot();
+    const trigger = /hello/y;
+    trigger.lastIndex = 2;
+    let fired = 0;
+    bot.hears(["other", trigger], () => {
+      fired += 1;
+    });
+
+    await bot.handleUpdate(messageUpdate("hello"));
+
+    assert.equal(fired, 1);
+  });
+
+  test("hears supports a frozen RegExp without stateful flags", async () => {
+    const bot = newBot();
+    let fired = 0;
+    bot.hears(Object.freeze(/hello/), () => {
+      fired += 1;
+    });
+
+    await bot.handleUpdate(messageUpdate("hello"));
+
+    assert.equal(fired, 1);
+  });
+
   test("catch handler receives a thrown error", async () => {
     const bot = newBot();
     const boom = new Error("boom");
