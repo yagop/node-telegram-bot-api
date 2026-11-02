@@ -337,6 +337,9 @@ function matchTriggers(
         return text;
       }
     } else {
+      if (t.sticky) {
+        t.lastIndex = 0;
+      }
       const m = text.match(t);
       if (m) {
         return m;
