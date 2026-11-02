@@ -48,6 +48,35 @@ describe("multipart", () => {
     );
   });
 
+  test("boundary is unique per body and does not rely on a global crypto", () => {
+    // The boundary is built from Math.random + timestamp + a counter (no CSPRNG,
+    // so core needs no global `crypto`, which Node exposes unflagged only from
+    // v19). Distinctness across builds is what keeps parts from colliding.
+    const make = () => multipartBody([["a", "1"]], []).boundary;
+    const boundaries = new Set(Array.from({ length: 100 }, make));
+    assert.strictEqual(boundaries.size, 100, "every boundary must be distinct");
+    for (const b of boundaries) {
+      assert.ok(b.length <= 70, "RFC 2046 caps the boundary at 70 chars");
+      assert.ok(/^[0-9A-Za-z-]+$/.test(b));
+    }
+  });
+
+  test("boundary stays within 70 chars even for a tiny Math.random (long base-36 fraction)", () => {
+    // `2 ** -53` (Math.random's smallest non-zero output) has a ~21-char base-36
+    // fraction; two uncapped runs plus the prefix/timestamp/counter would cross
+    // RFC 2046's 70-char limit. The slice cap makes the bound deterministic, so
+    // stub the worst case rather than hope the random path never hits it.
+    const original = Math.random;
+    Math.random = () => 2 ** -53;
+    try {
+      const { boundary } = multipartBody([["a", "1"]], []);
+      assert.ok(boundary.length <= 70, `boundary too long: ${boundary.length}`);
+      assert.ok(/^[0-9A-Za-z-]+$/.test(boundary));
+    } finally {
+      Math.random = original;
+    }
+  });
+
   test("a Blob part streams its bytes and contributes its own content type", async () => {
     const blob = new Blob(["hello"], { type: "text/plain" });
     const { pieces } = multipartBody([], [["document", new InputFile(blob, { filename: "h.txt" })]]);
