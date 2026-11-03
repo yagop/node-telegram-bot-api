@@ -1,14 +1,32 @@
 import { describe, test } from "node:test";
 import assert from "node:assert/strict";
 import { Bot } from "../../src/core/bot.js";
-import type { Update } from "../../src/types/index.js";
-
-const FETCH_NEVER = (async () => {
-  throw new Error("network should not be used in these tests");
-}) as unknown as typeof fetch;
+import type { Update, User } from "../../src/types/index.js";
 
 function newBot(): Bot {
-  return new Bot("123:ABC", { fetch: FETCH_NEVER });
+  // init() always fetches getMe(); answer it so these tests hit no real network.
+  return new Bot("123:ABC", { fetch: getMeFetch("testbot").fetch });
+}
+
+/**
+ * A fake `fetch` that answers `getMe` with a bot `User` carrying `username`,
+ * counting how often it is called. Every bot learns its identity via `getMe()`
+ * in `init()`, so tests supply this as the bot's `fetch`.
+ */
+function getMeFetch(username = "thisbot"): { fetch: typeof fetch; counter: { calls: number } } {
+  const counter = { calls: 0 };
+  const fake = (async (url: string | URL | Request) => {
+    counter.calls += 1;
+    assert.match(String(url), /\/getMe$/, "these tests only expect a getMe call");
+    const result = { id: 7, is_bot: true, first_name: "Bot", username };
+    return new Response(JSON.stringify({ ok: true, result }));
+  }) as unknown as typeof fetch;
+  return { fetch: fake, counter };
+}
+
+/** A command bot whose `getMe()` resolves to a fixed `username`. */
+function newCommandBot(username = "thisbot"): Bot {
+  return new Bot("123:ABC", getMeFetch(username));
 }
 
 function messageUpdate(text: string, updateId = 1): Update {
@@ -50,7 +68,7 @@ describe("Bot routing", () => {
   });
 
   test('command("start") sets ctx.match to the args string', async () => {
-    const bot = newBot();
+    const bot = newCommandBot();
     let match: unknown;
     bot.command("start", (ctx) => {
       match = ctx.match;
@@ -60,7 +78,7 @@ describe("Bot routing", () => {
   });
 
   test('command("start") sets ctx.match to "" with no args', async () => {
-    const bot = newBot();
+    const bot = newCommandBot();
     let match: unknown = "unset";
     bot.command("start", (ctx) => {
       match = ctx.match;
@@ -214,21 +232,125 @@ describe("Bot error boundary", () => {
   });
 });
 
+describe("Bot command @-addressing", () => {
+  // One axis only: the command name is held constant ("start") while the
+  // `@name` suffix varies. `` and the own `@name` (any case) match; another
+  // bot's `@name` falls through to downstream middleware.
+  const cases: Array<{ suffix: string; matches: boolean }> = [
+    { suffix: "", matches: true },
+    { suffix: "@thisbot", matches: true },
+    { suffix: "@THISBOT", matches: true },
+    { suffix: "@otherbot", matches: false },
+  ];
+
+  for (const { suffix, matches } of cases) {
+    const text = `/start${suffix} hi`;
+    test(`${text} ${matches ? "matches this bot" : "falls through"}`, async () => {
+      const bot = newCommandBot("thisbot");
+      let fired = false;
+      let fellThrough = false;
+      bot.command("start", () => {
+        fired = true;
+      });
+      bot.use(() => {
+        fellThrough = true;
+        return Promise.resolve();
+      });
+      await bot.handleUpdate(messageUpdate(text));
+      assert.strictEqual(fired, matches, `handler for ${JSON.stringify(text)}`);
+      assert.strictEqual(fellThrough, !matches, `fall-through for ${JSON.stringify(text)}`);
+    });
+  }
+
+  test("command NAME stays case-sensitive (/START does not match start)", async () => {
+    const bot = newCommandBot("thisbot");
+    let fired = false;
+    let fellThrough = false;
+    bot.command("start", () => {
+      fired = true;
+    });
+    bot.use(() => {
+      fellThrough = true;
+      return Promise.resolve();
+    });
+    await bot.handleUpdate(messageUpdate("/START"));
+    assert.strictEqual(fired, false);
+    assert.strictEqual(fellThrough, true);
+  });
+
+  test("getMe runs at most once across many updates", async () => {
+    const { fetch, counter } = getMeFetch();
+    const bot = new Bot("123:ABC", { fetch });
+    bot.command("start", () => {});
+    await bot.handleUpdate(messageUpdate("/start", 1));
+    await bot.handleUpdate(messageUpdate("/start", 2));
+    await bot.init();
+    assert.strictEqual(counter.calls, 1);
+  });
+
+  test("botInfo and ctx.me are populated for a command bot", async () => {
+    const bot = newCommandBot("thisbot");
+    let seen: User | undefined;
+    bot.command("start", (ctx) => {
+      seen = ctx.me;
+    });
+    await bot.handleUpdate(messageUpdate("/start"));
+    assert.strictEqual(bot.botInfo?.username, "thisbot");
+    assert.strictEqual(seen?.username, "thisbot");
+  });
+
+  test("a failed startup getMe reaches catch and retries on the next update", async () => {
+    let attempt = 0;
+    const fake = (async () => {
+      attempt += 1;
+      if (attempt === 1) {
+        return new Response(JSON.stringify({ ok: false, error_code: 400, description: "boom" }));
+      }
+      const result = { id: 7, is_bot: true, first_name: "Bot", username: "thisbot" };
+      return new Response(JSON.stringify({ ok: true, result }));
+    }) as unknown as typeof fetch;
+    const bot = new Bot("123:ABC", { fetch: fake });
+    const caught: unknown[] = [];
+    bot.catch((err) => {
+      caught.push(err);
+    });
+    let fired = 0;
+    bot.command("start", () => {
+      fired += 1;
+    });
+    await bot.handleUpdate(messageUpdate("/start", 1));
+    await bot.handleUpdate(messageUpdate("/start", 2));
+    assert.strictEqual(caught.length, 1);
+    assert.strictEqual(fired, 1);
+    assert.strictEqual(bot.botInfo?.username, "thisbot");
+  });
+});
+
 describe("Bot polling", () => {
   test("startPolling throws if called while already running (keeps isRunning truthful)", async () => {
     const bot = newBot();
-    // A source whose first `next()` blocks until we resolve it, so the pump
-    // stays parked with `running === true`.
-    const waiters: Array<() => void> = [];
+    // A source that parks `next()` (so the pump stays `running`) until the test
+    // ends it. Order-independent: once ended, any later `next()` resolves `done`
+    // immediately, so it does not race the pump's first `next()` (which only
+    // happens after `init()`'s getMe resolves).
+    let ended = false;
+    const parked: Array<() => void> = [];
+    const done: IteratorResult<Update> = { done: true, value: undefined as unknown as Update };
     const source: AsyncIterable<Update> = {
       [Symbol.asyncIterator]() {
         return {
           next: () =>
-            new Promise<IteratorResult<Update>>((resolve) => {
-              waiters.push(() => resolve({ done: true, value: undefined as unknown as Update }));
-            }),
+            ended
+              ? Promise.resolve(done)
+              : new Promise<IteratorResult<Update>>((resolve) => {
+                  parked.push(() => resolve(done));
+                }),
         };
       },
+    };
+    const endSource = (): void => {
+      ended = true;
+      for (const fn of parked) fn();
     };
 
     const first = bot.startPolling(source);
@@ -237,8 +359,8 @@ describe("Bot polling", () => {
 
     await assert.rejects(() => bot.startPolling(source), /already running/);
 
-    // Draining the source ends the first run cleanly.
-    waiters.forEach((fn) => fn());
+    // Ending the source lets the first run finish cleanly.
+    endSource();
     await first;
     assert.strictEqual(bot.isRunning(), false);
   });

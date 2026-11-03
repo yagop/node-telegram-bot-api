@@ -13,7 +13,7 @@
  * webhooks are mutually exclusive and webhook serving stays out of edge-neutral core.
  */
 
-import type { Update, UpdateType } from "../types/index.js";
+import type { Update, UpdateType, User } from "../types/index.js";
 import { Api } from "./api.js";
 import { compose, type Middleware } from "./compose.js";
 import { Context } from "./context.js";
@@ -63,8 +63,25 @@ export class Bot {
   private controller?: AbortController;
   private running = false;
 
+  /**
+   * This bot's own `User`, fetched once by `getMe()` in `init()` and kept for
+   * the process lifetime (a bot's username is permanent, so there is no
+   * refresh). `undefined` only until `init()` has run.
+   */
+  private ownUser?: User;
+
   constructor(token: string, options?: BotOptions) {
     this.api = new Api(token, options);
+  }
+
+  /**
+   * This bot's own identity, as returned by `getMe()` and kept for the process
+   * lifetime. `undefined` only before `init()` has run; once the bot is serving
+   * updates (polling or webhook) it is always a full `User`, and is also exposed
+   * to handlers as `ctx.me`.
+   */
+  get botInfo(): User | undefined {
+    return this.ownUser;
   }
 
   /**
@@ -113,6 +130,14 @@ export class Bot {
   init(): Promise<void> {
     if (this.started === undefined) {
       this.started = (async () => {
+        // Learn our own identity once, for the command() `@name` compare and
+        // for `botInfo` / `ctx.me`. A bot's username is permanent, so it is
+        // fetched once and kept, with no TTL or refresh. A failure is not
+        // retained (it escapes this memoized promise and is cleared below), so
+        // the next call retries.
+        if (this.ownUser === undefined) {
+          this.ownUser = await this.api.getMe();
+        }
         for (const plugin of this.plugins) {
           if (this.initialized.has(plugin)) {
             continue;
@@ -209,6 +234,17 @@ export class Bot {
       if (!m) {
         return next();
       }
+      // A command addressed to a specific bot (`/cmd@name`) runs only when the
+      // `@name` is ours (Telegram usernames are case-insensitive). If we do not
+      // yet know our own username, we cannot claim it, so we fall through. A
+      // bare `/cmd` (no suffix) always matches.
+      const addressed = m[2];
+      if (addressed !== undefined) {
+        const target = addressed.slice(1).toLowerCase();
+        if (target !== this.ownUser?.username?.toLowerCase()) {
+          return next();
+        }
+      }
       ctx.match = m[3] ?? "";
       return run(ctx, next);
     });
@@ -258,7 +294,7 @@ export class Bot {
    * itself throws.
    */
   async handleUpdate(update: Update): Promise<void> {
-    const ctx = new Context(update, this.api);
+    const ctx = new Context(update, this.api, () => this.ownUser);
     try {
       await this.init(); // memoized; a no-op once startup has run
       await compose(this.middleware)(ctx, () => Promise.resolve());

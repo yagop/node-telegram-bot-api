@@ -16,6 +16,14 @@ import { MemorySessionStorage } from "../../src/core/memory-session-storage.js";
 import { createSession, session, type SessionStore } from "../../src/core/session.js";
 import type { Update } from "../../src/types/index.js";
 
+// Every bot fetches getMe() in init(); answer it so these session tests make no
+// real network call. (These tests exercise session lifecycle, not the bot's own
+// identity.)
+const meFetch = (async () =>
+  new Response(
+    JSON.stringify({ ok: true, result: { id: 1, is_bot: true, first_name: "B", username: "testbot" } })
+  )) as unknown as typeof fetch;
+
 /** A recording store to assert persistence without a real backend. */
 function fakeStore(): SessionStore & { reads: string[]; writes: Array<[string, string]>; deletes: string[] } {
   const map = new Map<string, string>();
@@ -411,7 +419,7 @@ describe("session lifecycle", () => {
       },
     };
     const mw = createSession({ store });
-    const bot = new Bot("123:abc");
+    const bot = new Bot("123:abc", { fetch: meFetch });
     bot.use(mw);
 
     await bot.init();
@@ -434,7 +442,7 @@ describe("session lifecycle", () => {
         if (attempts === 1) throw new Error("init boom");
       },
     };
-    const bot = new Bot("123:abc").use(createSession({ store }));
+    const bot = new Bot("123:abc", { fetch: meFetch }).use(createSession({ store }));
     await assert.rejects(bot.init(), /init boom/);
     await bot.init(); // retried, now succeeds
     assert.equal(attempts, 2);
@@ -452,7 +460,7 @@ describe("session lifecycle", () => {
         closes += 1;
       },
     };
-    const bot = new Bot("123:abc").use(createSession({ store }));
+    const bot = new Bot("123:abc", { fetch: meFetch }).use(createSession({ store }));
 
     await bot.init();
     await bot.close();
@@ -478,7 +486,7 @@ describe("session lifecycle", () => {
         order.push("close:end");
       },
     };
-    const bot = new Bot("123:abc").use(createSession({ store }));
+    const bot = new Bot("123:abc", { fetch: meFetch }).use(createSession({ store }));
     await bot.init();
 
     const closing = bot.close();
@@ -503,7 +511,7 @@ describe("session lifecycle", () => {
         if (fail) throw new Error(`${name} boom`);
       },
     });
-    const bot = new Bot("123:abc")
+    const bot = new Bot("123:abc", { fetch: meFetch })
       .use(createSession({ store: plugin("first") }))
       .use(createSession({ store: plugin("second", true) }))
       .use(createSession({ store: plugin("third") }));
@@ -527,7 +535,7 @@ describe("session lifecycle", () => {
         throw new Error(`${name} boom`);
       },
     });
-    const bot = new Bot("123:abc").use(createSession({ store: boom("a") })).use(createSession({ store: boom("b") }));
+    const bot = new Bot("123:abc", { fetch: meFetch }).use(createSession({ store: boom("a") })).use(createSession({ store: boom("b") }));
     await bot.init(); // only initialized plugins are closed
 
     await assert.rejects(bot.close(), (err: unknown) => {
@@ -554,7 +562,7 @@ describe("session lifecycle", () => {
         }
       },
     });
-    const bot = new Bot("123:abc")
+    const bot = new Bot("123:abc", { fetch: meFetch })
       .use(createSession({ store: plugin("first") }))
       .use(createSession({ store: plugin("second", true) }))
       .use(createSession({ store: plugin("third") }));
@@ -577,7 +585,7 @@ describe("session lifecycle", () => {
         closed.push(name);
       },
     });
-    const bot = new Bot("123:abc")
+    const bot = new Bot("123:abc", { fetch: meFetch })
       .use(createSession({ store: plugin("first") }))
       .use(createSession({ store: plugin("second", true) }))
       .use(createSession({ store: plugin("third") }));
@@ -602,7 +610,7 @@ describe("session lifecycle", () => {
         },
       },
     });
-    const bot = new Bot("123:abc");
+    const bot = new Bot("123:abc", { fetch: meFetch });
     bot.use(mw);
     bot.on("message", mw); // the same object reaching the registry a second time
 
@@ -615,7 +623,7 @@ describe("session lifecycle", () => {
   test("a store-init failure reaches the bot.catch boundary", async () => {
     const store: SessionStore = { ...fakeStore(), init: () => Promise.reject(new Error("init boom")) };
     const seen: unknown[] = [];
-    const bot = new Bot("123:abc")
+    const bot = new Bot("123:abc", { fetch: meFetch })
       .use(createSession({ store }))
       .catch((err) => {
         seen.push(err);
@@ -634,7 +642,7 @@ describe("session lifecycle", () => {
         inits += 1;
       },
     };
-    const bot = new Bot("123:abc");
+    const bot = new Bot("123:abc", { fetch: meFetch });
     bot.on("message", createSession({ store })); // not bot.use()
     await bot.init();
     assert.equal(inits, 1);

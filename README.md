@@ -467,6 +467,8 @@ await bot.init(); // optional: a bad path / unreachable backend fails here, at b
 
 `startPolling()` and `handleUpdate()` await `bot.init()` themselves (memoized), so this is only about *when* a setup error surfaces - one raised during an update goes to the `bot.catch()` boundary like any other. `run()` (`/node`) calls `bot.close()` on shutdown, and `close()` drops the setup memo so a later `init()` starts over. A store that owned the connection it closed (`SqlSessionStorage` with a `url`, `SqliteSessionStorage` with a path) is spent after that - construct a new one; with a caller-supplied client the store stays usable.
 
+`init()` also learns the bot's own `@username` (a single `getMe()`) so `bot.command(...)` can ignore commands addressed to another bot: in a group, `/start@your_bot` runs the handler, `/start@other_bot` falls through, and a bare `/start` always matches (the `@name` compare is case-insensitive; the command name stays case-sensitive). The identity is exposed as `bot.botInfo` and `ctx.me`. Pass `new Bot(token, { username: "your_bot" })` to supply the name directly and skip the `getMe()` call (handy for cold-start webhooks).
+
 ## ⚠️ Errors
 
 Errors expose structured fields, so you branch on values, not message text.

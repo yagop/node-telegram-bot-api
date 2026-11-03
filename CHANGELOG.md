@@ -5,6 +5,20 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased][Unreleased]
 
+### Dispatch
+
+- `bot.command(name, ...)` now ignores commands addressed to another bot: in a
+  group, `/start@some_bot` runs the handler only when `@some_bot` is this bot's
+  own username (compared case-insensitively, as Telegram usernames are);
+  `/start@other_bot` falls through to downstream middleware, and a bare `/start`
+  still always matches. The command name itself stays case-sensitive. To make
+  the comparison, the bot learns its own `@username` via `getMe()`, called once
+  inside `bot.init()` and kept for the process lifetime (a bot's username is
+  permanent, so there is no refresh). A new `username` option on `BotOptions`
+  supplies the name directly (a leading `@` is accepted) and skips `getMe()`
+  entirely, useful for cold-start webhooks. The bot's identity is exposed as
+  `bot.botInfo` (`User | undefined`) and to handlers as `ctx.me`.
+
 ## [2.3.0-rc0][2.3.0-rc0] - 2026-11-03
 
 ### Session storage
