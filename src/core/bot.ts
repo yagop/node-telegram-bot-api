@@ -13,14 +13,23 @@
  * webhooks are mutually exclusive and webhook serving stays out of edge-neutral core.
  */
 
-import type { Update, UpdateType } from "../types/index.js";
+import type { Update, UpdateType, User } from "../types/index.js";
 import { Api } from "./api.js";
 import { compose, type Middleware } from "./compose.js";
 import { Context } from "./context.js";
 import { type LongPollOptions, longPoll } from "./longpoll.js";
 import type { TransportOptions } from "./transport.js";
 
-export interface BotOptions extends TransportOptions {}
+export interface BotOptions extends TransportOptions {
+  /**
+   * This bot's own `@username`, supplied directly so `command()` can reject
+   * `/cmd@otherbot` without a `getMe()` round-trip (useful for cold-start
+   * webhooks). A leading `@` is accepted and stripped; the comparison is
+   * case-insensitive. When set, `getMe()` is skipped entirely and `bot.botInfo`
+   * stays `undefined` (a name was given, not a full `User`).
+   */
+  username?: string;
+}
 
 /**
  * Optional lifecycle a middleware may carry (duck-typed - no base class, no
@@ -63,8 +72,37 @@ export class Bot {
   private controller?: AbortController;
   private running = false;
 
+  /**
+   * This bot's own `User`, cached once learned via `getMe()` in `init()`. Stays
+   * `undefined` when no `command()` was registered (so `getMe()` never ran) or
+   * when the `username` option supplied a name instead of a full `User`.
+   */
+  private cachedBotInfo?: User;
+  /**
+   * The bot's own `@username`, lowercased, for the `command()` `@name` compare.
+   * Set from the `username` option (if given) or from `getMe()` in `init()`.
+   */
+  private ownUsername?: string;
+  /** Set by `command()`; gates the lazy `getMe()` in `init()`. */
+  private hasCommand = false;
+
   constructor(token: string, options?: BotOptions) {
     this.api = new Api(token, options);
+    const username = options?.username;
+    if (username !== undefined) {
+      this.ownUsername = username.replace(/^@/, "").toLowerCase();
+    }
+  }
+
+  /**
+   * This bot's own identity, as returned by `getMe()` and cached for the
+   * process lifetime. `undefined` until `init()` has run a `getMe()` (which
+   * happens only when at least one `command()` is registered) - and always
+   * `undefined` when the `username` option was used, since that supplies a name,
+   * not a full `User`.
+   */
+  get botInfo(): User | undefined {
+    return this.cachedBotInfo;
   }
 
   /**
@@ -113,6 +151,17 @@ export class Bot {
   init(): Promise<void> {
     if (this.started === undefined) {
       this.started = (async () => {
+        // Learn our own identity once, lazily, and only if a command() needs it
+        // for the `@name` compare. A bot's username is permanent, so this is a
+        // one-shot cache with no TTL or refresh. The `username` option, or a
+        // previous successful fetch, short-circuits it. A failure is not cached
+        // (it escapes this memoized promise and is cleared below), so the next
+        // call retries.
+        if (this.hasCommand && this.ownUsername === undefined) {
+          const me = await this.api.getMe();
+          this.cachedBotInfo = me;
+          this.ownUsername = me.username?.toLowerCase();
+        }
         for (const plugin of this.plugins) {
           if (this.initialized.has(plugin)) {
             continue;
@@ -198,6 +247,9 @@ export class Bot {
   command(name: string | string[], ...handlers: Middleware<Context>[]): this {
     const names = (Array.isArray(name) ? name : [name]).map((n) => n.replace(/^\//, ""));
     this.register(handlers);
+    // Flag that we will need our own @username for the addressing check, so
+    // init() performs the one gated getMe() (see init()).
+    this.hasCommand = true;
     const re = new RegExp(`^\\/(${names.map(escapeRegExp).join("|")})(@\\w+)?(?:\\s+(.*))?$`, "s");
     const run = compose(handlers) satisfies Composed;
     return this.use((ctx, next) => {
@@ -208,6 +260,17 @@ export class Bot {
       const m = re.exec(text);
       if (!m) {
         return next();
+      }
+      // A command addressed to a specific bot (`/cmd@name`) runs only when the
+      // `@name` is ours (Telegram usernames are case-insensitive). If we do not
+      // know our own username, we cannot claim it, so we fall through. A bare
+      // `/cmd` (no suffix) always matches.
+      const addressed = m[2];
+      if (addressed !== undefined) {
+        const target = addressed.slice(1).toLowerCase();
+        if (this.ownUsername === undefined || target !== this.ownUsername) {
+          return next();
+        }
       }
       ctx.match = m[3] ?? "";
       return run(ctx, next);
@@ -258,7 +321,7 @@ export class Bot {
    * itself throws.
    */
   async handleUpdate(update: Update): Promise<void> {
-    const ctx = new Context(update, this.api);
+    const ctx = new Context(update, this.api, () => this.cachedBotInfo);
     try {
       await this.init(); // memoized; a no-op once startup has run
       await compose(this.middleware)(ctx, () => Promise.resolve());

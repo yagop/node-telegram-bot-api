@@ -136,9 +136,18 @@ export class Context {
   /** Set by `command()` (args string) / `hears()` (string or RegExpMatchArray). */
   match?: string | RegExpMatchArray;
 
-  constructor(update: Update, api: Api) {
+  /**
+   * Provider for {@link Context.me}. A function (not a captured value) so the
+   * `Context` is decoupled from `Bot` and reads whatever the bot has cached by
+   * the time a handler asks - the bot may only learn its identity during
+   * `init()`, after the `Context` was constructed.
+   */
+  private readonly meProvider?: () => User | undefined;
+
+  constructor(update: Update, api: Api, me?: () => User | undefined) {
     this.update = update;
     this.api = api;
+    this.meProvider = me;
   }
 
   // --- typed payload accessors ------------------------------------------------
@@ -188,6 +197,16 @@ export class Context {
   /** Convenience: `this.chat?.id`. */
   get chatId(): number | undefined {
     return this.chat?.id;
+  }
+
+  /**
+   * This bot's own identity (`bot.botInfo`), or `undefined` when the bot has
+   * not learned it: no `command()` was registered (so `getMe()` never ran), the
+   * `username` option was used (a name, not a full `User`), or `init()` has not
+   * completed yet.
+   */
+  get me(): User | undefined {
+    return this.meProvider?.();
   }
 
   // --- shortcuts --------------------------------------------------------------

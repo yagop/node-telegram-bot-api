@@ -238,6 +238,7 @@ An animated profile photo (a video); `main_frame_timestamp` picks the still fram
 | Property | Type |
 | --- | --- |
 | `api` | [Api](#api) |
+| `botInfo` | [User](#user) \| undefined |
 
 ### `Context`
 
@@ -265,6 +266,7 @@ An animated profile photo (a video); `main_frame_timestamp` picks the still fram
 | `editedMessage` | [Message](#message) \| undefined |
 | `from` | [User](#user) \| undefined |
 | `inlineQuery` | [InlineQuery](#inlinequery) \| undefined |
+| `me` | [User](#user) \| undefined |
 | `message` | [Message](#message) \| undefined |
 
 ### `EntityBuilder`
@@ -1239,6 +1241,7 @@ Subset of Telegram's `ResponseParameters` carried on API errors.
 | `rateLimit`? | [RateLimitOptions](#ratelimitoptions) |
 | `retryBackoffMs`? | number |
 | `timeoutMs`? | number |
+| `username`? | string |
 
 ### `BuiltEntities`
 
