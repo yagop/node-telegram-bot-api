@@ -71,6 +71,89 @@ const chatOf: { [K in UpdateType]: (u: Variant<K>) => Chat | undefined } = {
 };
 
 /**
+ * The slice of the incoming message `ctx.reply` copies routing context from.
+ * Both `InaccessibleMessage` (a callback button on a message the bot can no
+ * longer read) and `BusinessMessagesDeleted` satisfy it structurally, so they
+ * need no casts - they simply carry none (or only some) of the optional fields.
+ */
+type ReplySource = Pick<
+  Message,
+  | "chat"
+  | "business_connection_id"
+  | "message_thread_id"
+  | "is_topic_message"
+  | "direct_messages_topic"
+>;
+
+/**
+ * Exhaustive per-variant resolver for the message `ctx.reply` answers - the
+ * peer of {@link chatOf}. A row returns the payload whose business connection /
+ * forum topic / direct-messages topic the reply must stay in, or `undefined`
+ * when the variant has no such message (the reply then targets the bare chat).
+ * `guest_message` resolves to `undefined` because `ctx.reply` refuses it outright:
+ * guest chats are answered via `answerGuestQuery`, not `sendMessage`.
+ */
+const replySourceOf: { [K in UpdateType]: (u: Variant<K>) => ReplySource | undefined } = {
+  message: (u) => u.message,
+  edited_message: (u) => u.edited_message,
+  channel_post: (u) => u.channel_post,
+  edited_channel_post: (u) => u.edited_channel_post,
+  business_connection: () => undefined,
+  business_message: (u) => u.business_message,
+  edited_business_message: (u) => u.edited_business_message,
+  deleted_business_messages: (u) => u.deleted_business_messages,
+  guest_message: () => undefined,
+  message_reaction: () => undefined,
+  message_reaction_count: () => undefined,
+  inline_query: () => undefined,
+  chosen_inline_result: () => undefined,
+  callback_query: (u) => u.callback_query.message,
+  shipping_query: () => undefined,
+  pre_checkout_query: () => undefined,
+  purchased_paid_media: () => undefined,
+  poll: () => undefined,
+  poll_answer: () => undefined,
+  my_chat_member: () => undefined,
+  chat_member: () => undefined,
+  chat_join_request: () => undefined,
+  chat_boost: () => undefined,
+  removed_chat_boost: () => undefined,
+  managed_bot: () => undefined,
+  subscription: () => undefined,
+  stopped_message_generation: () => undefined,
+};
+
+/** The routing params `ctx.reply` infers from the incoming message. */
+type ReplyRouting = Pick<
+  SendMessageParams,
+  "business_connection_id" | "message_thread_id" | "direct_messages_topic_id"
+>;
+
+/**
+ * Derive the routing params for a reply to `src`. Keys are only set when the
+ * source carries them, so a plain-chat reply stays `{ chat_id, text }`.
+ * `message_thread_id` is copied only for real forum topics (`is_topic_message`):
+ * outside a topic it can name a reply/comment thread, which a reply must not
+ * be forced into.
+ */
+function replyRouting(src: ReplySource | undefined): ReplyRouting {
+  const routing: ReplyRouting = {};
+  if (!src) {
+    return routing;
+  }
+  if (src.business_connection_id !== undefined) {
+    routing.business_connection_id = src.business_connection_id;
+  }
+  if (src.is_topic_message && src.message_thread_id !== undefined) {
+    routing.message_thread_id = src.message_thread_id;
+  }
+  if (src.direct_messages_topic !== undefined) {
+    routing.direct_messages_topic_id = src.direct_messages_topic.topic_id;
+  }
+  return routing;
+}
+
+/**
  * Exhaustive per-variant `from` resolver - the peer of {@link chatOf}, for the
  * `User` who triggered the update. A `User` is not always present (anonymous
  * chat votes on `poll_answer` carry `voter_chat` instead of `user`; channel
@@ -201,9 +284,8 @@ export class Context {
 
   /**
    * This bot's own identity (`bot.botInfo`), or `undefined` when the bot has
-   * not learned it: no `command()` was registered (so `getMe()` never ran), the
-   * `username` option was used (a name, not a full `User`), or `init()` has not
-   * completed yet.
+   * not learned it: no `command()` was registered (so `getMe()` never ran), or
+   * `init()` has not completed yet.
    */
   get me(): User | undefined {
     return this.meProvider?.();
@@ -212,18 +294,33 @@ export class Context {
   // --- shortcuts --------------------------------------------------------------
 
   /**
-   * Send a message to the inferred chat. Throws if no chat id can be derived
-   * from the update (e.g. an inline query carries no chat).
+   * Send a message to the inferred chat, staying where the incoming message
+   * came from: `business_connection_id` for business messages (including
+   * `deleted_business_messages`), `message_thread_id` for forum-topic messages
+   * (`is_topic_message`; a plain reply thread is not followed), and
+   * `direct_messages_topic_id` for channel direct-messages chats. For a callback
+   * query these come from the message the button is attached to. Anything in
+   * `other` wins; pass e.g. `{ message_thread_id: undefined }` to opt out.
+   *
+   * Throws if no chat id can be derived from the update (e.g. an inline query
+   * carries no chat), and for `guest_message`, which must be answered with
+   * `api.answerGuestQuery` and its `guest_query_id` instead.
    */
   reply(
     text: string,
     other?: Omit<SendMessageParams, "chat_id" | "text">
   ): Promise<SendMessageResult> {
+    if ("guest_message" in this.update) {
+      throw new Error(
+        "ctx.reply: guest messages cannot be answered with sendMessage; use api.answerGuestQuery with message.guest_query_id"
+      );
+    }
     const chatId = this.chatId;
     if (chatId === undefined) {
       throw new Error("ctx.reply: cannot infer a chat id from this update");
     }
-    return this.api.sendMessage({ chat_id: chatId, text, ...other });
+    const routing = replyRouting(resolve(this.update, replySourceOf));
+    return this.api.sendMessage({ chat_id: chatId, text, ...routing, ...other });
   }
 
   /**

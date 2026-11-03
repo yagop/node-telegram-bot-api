@@ -103,7 +103,8 @@ describe("Context", () => {
     // The variants the v1 of this getter used to miss (business_message,
     // guest_message, deleted_business_messages, message_reaction_count,
     // chat_boost, removed_chat_boost). Each MUST expose ctx.chat / ctx.chatId so
-    // ctx.reply works in handlers registered via bot.on(<kind>, ...).
+    // handlers registered via bot.on(<kind>, ...) can address the chat (ctx.reply
+    // itself refuses guest_message - see the reply-routing tests).
     const cases: Array<{ kind: string; payload: Record<string, unknown> }> = [
       { kind: "business_message", payload: { message_id: 1, date: 0, chat, text: "bm" } },
       { kind: "edited_business_message", payload: { message_id: 1, date: 0, chat, text: "ebm" } },
@@ -134,5 +135,232 @@ describe("Context", () => {
       const ctx = new Context({ update_id: 1, [kind]: payload } as unknown as Update, api);
       assert.strictEqual(ctx.from?.id, 5050, `${kind} should resolve a from user`);
     }
+  });
+
+  describe("reply() routing (issue #1386)", () => {
+    const group = { id: -100, type: "supergroup", is_forum: true };
+    const biz = { id: 4242, type: "private" };
+
+    async function replyTo(
+      update: Record<string, unknown>,
+      other?: Record<string, unknown>,
+    ) {
+      const { api, calls } = fakeApi();
+      const ctx = new Context(
+        { update_id: 1, ...update } as unknown as Update,
+        api,
+      );
+      await ctx.reply("pong", other);
+      return calls.sendMessage[0];
+    }
+
+    const cases: Array<{
+      name: string;
+      update: Record<string, unknown>;
+      expected: Record<string, unknown>;
+    }> = [
+      {
+        name: "forum topic message keeps its topic",
+        update: {
+          message: {
+            message_id: 1,
+            date: 0,
+            chat: group,
+            is_topic_message: true,
+            message_thread_id: 7,
+            text: "x",
+          },
+        },
+        expected: { chat_id: -100, text: "pong", message_thread_id: 7 },
+      },
+      {
+        name: "non-topic reply thread is not followed",
+        update: {
+          message: {
+            message_id: 1,
+            date: 0,
+            chat: { id: -100, type: "supergroup" },
+            message_thread_id: 7,
+            text: "x",
+          },
+        },
+        expected: { chat_id: -100, text: "pong" },
+      },
+      {
+        name: "edited topic message keeps its topic",
+        update: {
+          edited_message: {
+            message_id: 1,
+            date: 0,
+            chat: group,
+            is_topic_message: true,
+            message_thread_id: 3,
+            text: "x",
+          },
+        },
+        expected: { chat_id: -100, text: "pong", message_thread_id: 3 },
+      },
+      {
+        name: "business_message replies via its connection",
+        update: {
+          business_message: {
+            message_id: 1,
+            date: 0,
+            chat: biz,
+            business_connection_id: "bc1",
+            text: "x",
+          },
+        },
+        expected: {
+          chat_id: 4242,
+          text: "pong",
+          business_connection_id: "bc1",
+        },
+      },
+      {
+        name: "edited_business_message replies via its connection",
+        update: {
+          edited_business_message: {
+            message_id: 1,
+            date: 0,
+            chat: biz,
+            business_connection_id: "bc2",
+            text: "x",
+          },
+        },
+        expected: {
+          chat_id: 4242,
+          text: "pong",
+          business_connection_id: "bc2",
+        },
+      },
+      {
+        name: "deleted_business_messages replies via its connection",
+        update: {
+          deleted_business_messages: {
+            business_connection_id: "bc3",
+            chat: biz,
+            message_ids: [1],
+          },
+        },
+        expected: {
+          chat_id: 4242,
+          text: "pong",
+          business_connection_id: "bc3",
+        },
+      },
+      {
+        name: "channel direct-messages topic is kept",
+        update: {
+          message: {
+            message_id: 1,
+            date: 0,
+            chat: { id: -200, type: "supergroup", is_direct_messages: true },
+            direct_messages_topic: { topic_id: 99 },
+            text: "x",
+          },
+        },
+        expected: { chat_id: -200, text: "pong", direct_messages_topic_id: 99 },
+      },
+      {
+        name: "callback query on a topic message keeps its topic",
+        update: {
+          callback_query: {
+            id: "cq",
+            from: { id: 9, is_bot: false, first_name: "Z" },
+            chat_instance: "ci",
+            message: {
+              message_id: 1,
+              date: 0,
+              chat: group,
+              is_topic_message: true,
+              message_thread_id: 5,
+            },
+          },
+        },
+        expected: { chat_id: -100, text: "pong", message_thread_id: 5 },
+      },
+      {
+        name: "callback query on a business message replies via its connection",
+        update: {
+          callback_query: {
+            id: "cq",
+            from: { id: 9, is_bot: false, first_name: "Z" },
+            chat_instance: "ci",
+            message: {
+              message_id: 1,
+              date: 0,
+              chat: biz,
+              business_connection_id: "bc4",
+            },
+          },
+        },
+        expected: {
+          chat_id: 4242,
+          text: "pong",
+          business_connection_id: "bc4",
+        },
+      },
+      {
+        name: "callback query on an inaccessible message sends only the chat",
+        update: {
+          callback_query: {
+            id: "cq",
+            from: { id: 9, is_bot: false, first_name: "Z" },
+            chat_instance: "ci",
+            message: { message_id: 1, date: 0, chat: group },
+          },
+        },
+        expected: { chat_id: -100, text: "pong" },
+      },
+    ];
+    for (const { name, update, expected } of cases) {
+      test(name, async () => {
+        assert.deepStrictEqual(await replyTo(update), expected);
+      });
+    }
+
+    test("caller options override inferred routing", async () => {
+      const update = {
+        business_message: {
+          message_id: 1,
+          date: 0,
+          chat: group,
+          business_connection_id: "bc1",
+          is_topic_message: true,
+          message_thread_id: 7,
+          text: "x",
+        },
+      };
+      assert.deepStrictEqual(
+        await replyTo(update, {
+          message_thread_id: 8,
+          business_connection_id: undefined,
+        }),
+        {
+          chat_id: -100,
+          text: "pong",
+          message_thread_id: 8,
+          business_connection_id: undefined,
+        },
+      );
+    });
+
+    test("guest_message is refused with a pointer to answerGuestQuery", () => {
+      const { api, calls } = fakeApi();
+      const update = {
+        update_id: 1,
+        guest_message: {
+          message_id: 1,
+          date: 0,
+          chat: biz,
+          guest_query_id: "gq",
+          text: "x",
+        },
+      } as unknown as Update;
+      const ctx = new Context(update, api);
+      assert.throws(() => ctx.reply("pong"), /answerGuestQuery/);
+      assert.strictEqual(calls.sendMessage.length, 0);
+    });
   });
 });
