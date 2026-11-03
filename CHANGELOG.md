@@ -12,14 +12,12 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   own username (compared case-insensitively, as Telegram usernames are);
   `/start@other_bot` falls through to downstream middleware, and a bare `/start`
   still always matches. The command name itself stays case-sensitive. To make
-  the comparison, the bot learns its own `@username` via `getMe()` - called once
-  (and cached for the process lifetime, since a bot's username is permanent),
-  lazily inside `bot.init()`, and only when at least one `command()` has been
-  registered, so a bot with no commands never issues the call. A new `username`
-  option on `BotOptions` supplies the name directly (a leading `@` is accepted)
-  and skips `getMe()` entirely, useful for cold-start webhooks. The bot's
-  identity is exposed as `bot.botInfo` (`User | undefined`) and to handlers as
-  `ctx.me`.
+  the comparison, the bot learns its own `@username` via `getMe()`, called once
+  inside `bot.init()` and cached for the process lifetime (a bot's username is
+  permanent, so there is no refresh). A new `username` option on `BotOptions`
+  supplies the name directly (a leading `@` is accepted) and skips `getMe()`
+  entirely, useful for cold-start webhooks. The bot's identity is exposed as
+  `bot.botInfo` (`User | undefined`) and to handlers as `ctx.me`.
 
 ## [2.3.0-rc0][2.3.0-rc0] - 2026-11-03
 

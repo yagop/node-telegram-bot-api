@@ -8,7 +8,8 @@ const FETCH_NEVER = (async () => {
 }) as unknown as typeof fetch;
 
 function newBot(): Bot {
-  return new Bot("123:ABC", { fetch: FETCH_NEVER });
+  // `username` skips the init() getMe(), so these tests make no network call.
+  return new Bot("123:ABC", { fetch: FETCH_NEVER, username: "testbot" });
 }
 
 /**
@@ -296,16 +297,6 @@ describe("Bot command @-addressing", () => {
     await bot.handleUpdate(messageUpdate("/start@otherbot", 2));
     assert.deepStrictEqual(log, ["cmd", "fallthrough"]);
     // A name was supplied, not a full User.
-    assert.strictEqual(bot.botInfo, undefined);
-  });
-
-  test("a bot with no command() never calls getMe", async () => {
-    const { fetch, counter } = getMeFetch();
-    const bot = new Bot("123:ABC", { fetch });
-    bot.on("message", (_ctx, next) => next());
-    await bot.handleUpdate(messageUpdate("hello"));
-    await bot.init();
-    assert.strictEqual(counter.calls, 0);
     assert.strictEqual(bot.botInfo, undefined);
   });
 

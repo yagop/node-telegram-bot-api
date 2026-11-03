@@ -74,8 +74,8 @@ export class Bot {
 
   /**
    * This bot's own `User`, cached once learned via `getMe()` in `init()`. Stays
-   * `undefined` when no `command()` was registered (so `getMe()` never ran) or
-   * when the `username` option supplied a name instead of a full `User`.
+   * `undefined` when the `username` option supplied a name instead of a full
+   * `User`.
    */
   private cachedBotInfo?: User;
   /**
@@ -83,8 +83,6 @@ export class Bot {
    * Set from the `username` option (if given) or from `getMe()` in `init()`.
    */
   private ownUsername?: string;
-  /** Set by `command()`; gates the lazy `getMe()` in `init()`. */
-  private hasCommand = false;
 
   constructor(token: string, options?: BotOptions) {
     this.api = new Api(token, options);
@@ -96,10 +94,9 @@ export class Bot {
 
   /**
    * This bot's own identity, as returned by `getMe()` and cached for the
-   * process lifetime. `undefined` until `init()` has run a `getMe()` (which
-   * happens only when at least one `command()` is registered) - and always
-   * `undefined` when the `username` option was used, since that supplies a name,
-   * not a full `User`.
+   * process lifetime. `undefined` until `init()` has run its `getMe()`, and
+   * always `undefined` when the `username` option was used, since that supplies
+   * a name, not a full `User`.
    */
   get botInfo(): User | undefined {
     return this.cachedBotInfo;
@@ -151,13 +148,12 @@ export class Bot {
   init(): Promise<void> {
     if (this.started === undefined) {
       this.started = (async () => {
-        // Learn our own identity once, lazily, and only if a command() needs it
-        // for the `@name` compare. A bot's username is permanent, so this is a
-        // one-shot cache with no TTL or refresh. The `username` option, or a
-        // previous successful fetch, short-circuits it. A failure is not cached
-        // (it escapes this memoized promise and is cleared below), so the next
-        // call retries.
-        if (this.hasCommand && this.ownUsername === undefined) {
+        // Learn our own identity once for the command() `@name` compare, unless
+        // the `username` option already supplied it. A bot's username is
+        // permanent, so this is a one-shot cache with no TTL or refresh. A
+        // failure is not cached (it escapes this memoized promise and is cleared
+        // below), so the next call retries.
+        if (this.ownUsername === undefined) {
           const me = await this.api.getMe();
           this.cachedBotInfo = me;
           this.ownUsername = me.username?.toLowerCase();
@@ -247,9 +243,6 @@ export class Bot {
   command(name: string | string[], ...handlers: Middleware<Context>[]): this {
     const names = (Array.isArray(name) ? name : [name]).map((n) => n.replace(/^\//, ""));
     this.register(handlers);
-    // Flag that we will need our own @username for the addressing check, so
-    // init() performs the one gated getMe() (see init()).
-    this.hasCommand = true;
     const re = new RegExp(`^\\/(${names.map(escapeRegExp).join("|")})(@\\w+)?(?:\\s+(.*))?$`, "s");
     const run = compose(handlers) satisfies Composed;
     return this.use((ctx, next) => {
