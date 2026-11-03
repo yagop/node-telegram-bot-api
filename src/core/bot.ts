@@ -20,16 +20,7 @@ import { Context } from "./context.js";
 import { type LongPollOptions, longPoll } from "./longpoll.js";
 import type { TransportOptions } from "./transport.js";
 
-export interface BotOptions extends TransportOptions {
-  /**
-   * This bot's own `@username`, supplied directly so `command()` can reject
-   * `/cmd@otherbot` without a `getMe()` round-trip (useful for cold-start
-   * webhooks). A leading `@` is accepted and stripped; the comparison is
-   * case-insensitive. When set, `getMe()` is skipped entirely and `bot.botInfo`
-   * stays `undefined` (a name was given, not a full `User`).
-   */
-  username?: string;
-}
+export interface BotOptions extends TransportOptions {}
 
 /**
  * Optional lifecycle a middleware may carry (duck-typed - no base class, no
@@ -74,29 +65,20 @@ export class Bot {
 
   /**
    * This bot's own `User`, fetched once by `getMe()` in `init()` and kept for
-   * the process lifetime. Stays `undefined` when the `username` option supplied
-   * a name instead of a full `User`.
+   * the process lifetime (a bot's username is permanent, so there is no
+   * refresh). `undefined` only until `init()` has run.
    */
   private ownUser?: User;
-  /**
-   * The bot's own `@username`, lowercased, for the `command()` `@name` compare.
-   * Set from the `username` option (if given) or from `getMe()` in `init()`.
-   */
-  private ownUsername?: string;
 
   constructor(token: string, options?: BotOptions) {
     this.api = new Api(token, options);
-    const username = options?.username;
-    if (username !== undefined) {
-      this.ownUsername = username.replace(/^@/, "").toLowerCase();
-    }
   }
 
   /**
    * This bot's own identity, as returned by `getMe()` and kept for the process
-   * lifetime. `undefined` until `init()` has run its `getMe()`, and
-   * always `undefined` when the `username` option was used, since that supplies
-   * a name, not a full `User`.
+   * lifetime. `undefined` only before `init()` has run; once the bot is serving
+   * updates (polling or webhook) it is always a full `User`, and is also exposed
+   * to handlers as `ctx.me`.
    */
   get botInfo(): User | undefined {
     return this.ownUser;
@@ -148,15 +130,13 @@ export class Bot {
   init(): Promise<void> {
     if (this.started === undefined) {
       this.started = (async () => {
-        // Learn our own identity once for the command() `@name` compare, unless
-        // the `username` option already supplied it. A bot's username is
-        // permanent, so it is fetched once and kept, with no TTL or refresh. A
-        // failure is not retained (it escapes this memoized promise and is
-        // cleared below), so the next call retries.
-        if (this.ownUsername === undefined) {
-          const me = await this.api.getMe();
-          this.ownUser = me;
-          this.ownUsername = me.username?.toLowerCase();
+        // Learn our own identity once, for the command() `@name` compare and
+        // for `botInfo` / `ctx.me`. A bot's username is permanent, so it is
+        // fetched once and kept, with no TTL or refresh. A failure is not
+        // retained (it escapes this memoized promise and is cleared below), so
+        // the next call retries.
+        if (this.ownUser === undefined) {
+          this.ownUser = await this.api.getMe();
         }
         for (const plugin of this.plugins) {
           if (this.initialized.has(plugin)) {
@@ -256,12 +236,12 @@ export class Bot {
       }
       // A command addressed to a specific bot (`/cmd@name`) runs only when the
       // `@name` is ours (Telegram usernames are case-insensitive). If we do not
-      // know our own username, we cannot claim it, so we fall through. A bare
-      // `/cmd` (no suffix) always matches.
+      // yet know our own username, we cannot claim it, so we fall through. A
+      // bare `/cmd` (no suffix) always matches.
       const addressed = m[2];
       if (addressed !== undefined) {
         const target = addressed.slice(1).toLowerCase();
-        if (this.ownUsername === undefined || target !== this.ownUsername) {
+        if (target !== this.ownUser?.username?.toLowerCase()) {
           return next();
         }
       }

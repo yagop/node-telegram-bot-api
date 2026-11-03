@@ -1241,7 +1241,6 @@ Subset of Telegram's `ResponseParameters` carried on API errors.
 | `rateLimit`? | [RateLimitOptions](#ratelimitoptions) |
 | `retryBackoffMs`? | number |
 | `timeoutMs`? | number |
-| `username`? | string |
 
 ### `BuiltEntities`
 

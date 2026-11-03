@@ -3,25 +3,21 @@ import assert from "node:assert/strict";
 import { Bot } from "../../src/core/bot.js";
 import type { Update, User } from "../../src/types/index.js";
 
-const FETCH_NEVER = (async () => {
-  throw new Error("network should not be used in these tests");
-}) as unknown as typeof fetch;
-
 function newBot(): Bot {
-  // `username` skips the init() getMe(), so these tests make no network call.
-  return new Bot("123:ABC", { fetch: FETCH_NEVER, username: "testbot" });
+  // init() always fetches getMe(); answer it so these tests hit no real network.
+  return new Bot("123:ABC", { fetch: getMeFetch("testbot").fetch });
 }
 
 /**
  * A fake `fetch` that answers `getMe` with a bot `User` carrying `username`,
- * counting how often it is called. Command bots learn their identity via
- * `getMe()`, so they need this instead of `FETCH_NEVER`.
+ * counting how often it is called. Every bot learns its identity via `getMe()`
+ * in `init()`, so tests supply this as the bot's `fetch`.
  */
 function getMeFetch(username = "thisbot"): { fetch: typeof fetch; counter: { calls: number } } {
   const counter = { calls: 0 };
   const fake = (async (url: string | URL | Request) => {
     counter.calls += 1;
-    assert.match(String(url), /\/getMe$/, "a command bot should only call getMe");
+    assert.match(String(url), /\/getMe$/, "these tests only expect a getMe call");
     const result = { id: 7, is_bot: true, first_name: "Bot", username };
     return new Response(JSON.stringify({ ok: true, result }));
   }) as unknown as typeof fetch;
@@ -282,24 +278,6 @@ describe("Bot command @-addressing", () => {
     assert.strictEqual(fellThrough, true);
   });
 
-  test("the username option yields the same matching (and skips getMe)", async () => {
-    // Leading `@` accepted; FETCH_NEVER proves getMe is never called.
-    const bot = new Bot("123:ABC", { fetch: FETCH_NEVER, username: "@thisbot" });
-    const log: string[] = [];
-    bot.command("start", () => {
-      log.push("cmd");
-    });
-    bot.use(() => {
-      log.push("fallthrough");
-      return Promise.resolve();
-    });
-    await bot.handleUpdate(messageUpdate("/start@thisbot", 1));
-    await bot.handleUpdate(messageUpdate("/start@otherbot", 2));
-    assert.deepStrictEqual(log, ["cmd", "fallthrough"]);
-    // A name was supplied, not a full User.
-    assert.strictEqual(bot.botInfo, undefined);
-  });
-
   test("getMe runs at most once across many updates", async () => {
     const { fetch, counter } = getMeFetch();
     const bot = new Bot("123:ABC", { fetch });
@@ -351,18 +329,28 @@ describe("Bot command @-addressing", () => {
 describe("Bot polling", () => {
   test("startPolling throws if called while already running (keeps isRunning truthful)", async () => {
     const bot = newBot();
-    // A source whose first `next()` blocks until we resolve it, so the pump
-    // stays parked with `running === true`.
-    const waiters: Array<() => void> = [];
+    // A source that parks `next()` (so the pump stays `running`) until the test
+    // ends it. Order-independent: once ended, any later `next()` resolves `done`
+    // immediately, so it does not race the pump's first `next()` (which only
+    // happens after `init()`'s getMe resolves).
+    let ended = false;
+    const parked: Array<() => void> = [];
+    const done: IteratorResult<Update> = { done: true, value: undefined as unknown as Update };
     const source: AsyncIterable<Update> = {
       [Symbol.asyncIterator]() {
         return {
           next: () =>
-            new Promise<IteratorResult<Update>>((resolve) => {
-              waiters.push(() => resolve({ done: true, value: undefined as unknown as Update }));
-            }),
+            ended
+              ? Promise.resolve(done)
+              : new Promise<IteratorResult<Update>>((resolve) => {
+                  parked.push(() => resolve(done));
+                }),
         };
       },
+    };
+    const endSource = (): void => {
+      ended = true;
+      for (const fn of parked) fn();
     };
 
     const first = bot.startPolling(source);
@@ -371,8 +359,8 @@ describe("Bot polling", () => {
 
     await assert.rejects(() => bot.startPolling(source), /already running/);
 
-    // Draining the source ends the first run cleanly.
-    waiters.forEach((fn) => fn());
+    // Ending the source lets the first run finish cleanly.
+    endSource();
     await first;
     assert.strictEqual(bot.isRunning(), false);
   });
