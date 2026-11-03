@@ -5,6 +5,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased][Unreleased]
 
+## [2.3.0-rc1][2.3.0-rc1] - 2026-11-03
+
 ### Dispatch
 
 - `bot.command(name, ...)` now ignores commands addressed to another bot: in a
@@ -1322,4 +1324,5 @@ Fixed:
 [2.2.0-rc2]:https://github.com/yagop/node-telegram-bot-api/releases/tag/v2.2.0-rc2
 [2.2.0]:https://github.com/yagop/node-telegram-bot-api/releases/tag/v2.2.0
 [2.3.0-rc0]:https://github.com/yagop/node-telegram-bot-api/releases/tag/v2.3.0-rc0
-[Unreleased]:https://github.com/yagop/node-telegram-bot-api/compare/v2.3.0-rc0...master
+[2.3.0-rc1]:https://github.com/yagop/node-telegram-bot-api/releases/tag/v2.3.0-rc1
+[Unreleased]:https://github.com/yagop/node-telegram-bot-api/compare/v2.3.0-rc1...master
