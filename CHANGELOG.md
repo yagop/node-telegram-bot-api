@@ -5,6 +5,22 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased][Unreleased]
 
+### Dispatch
+
+- `ctx.reply()` now answers where the incoming message came from instead of
+  the bare chat (#1386). It fills `business_connection_id` for
+  `business_message`, `edited_business_message` and `deleted_business_messages`
+  (previously the bot replied as itself, and got a 403 if the customer never
+  started it); `message_thread_id` for forum-topic messages, only when
+  `is_topic_message` is set (previously the reply landed in General; a plain
+  reply/comment thread is still not followed); and `direct_messages_topic_id`
+  for channel direct-messages chats, where it is required. For a callback query
+  the values come from the message the button is attached to. Options passed
+  in `other` still take precedence; pass `undefined` for a key to opt out.
+- `ctx.reply()` now throws for `guest_message` updates, pointing to
+  `api.answerGuestQuery` with the message's `guest_query_id`: a guest bot is
+  not a member of the chat, so `sendMessage` there can never reach it.
+
 ## [2.3.0-rc1][2.3.0-rc1] - 2026-11-03
 
 ### Dispatch
