@@ -73,11 +73,11 @@ export class Bot {
   private running = false;
 
   /**
-   * This bot's own `User`, cached once learned via `getMe()` in `init()`. Stays
-   * `undefined` when the `username` option supplied a name instead of a full
-   * `User`.
+   * This bot's own `User`, fetched once by `getMe()` in `init()` and kept for
+   * the process lifetime. Stays `undefined` when the `username` option supplied
+   * a name instead of a full `User`.
    */
-  private cachedBotInfo?: User;
+  private ownUser?: User;
   /**
    * The bot's own `@username`, lowercased, for the `command()` `@name` compare.
    * Set from the `username` option (if given) or from `getMe()` in `init()`.
@@ -93,13 +93,13 @@ export class Bot {
   }
 
   /**
-   * This bot's own identity, as returned by `getMe()` and cached for the
-   * process lifetime. `undefined` until `init()` has run its `getMe()`, and
+   * This bot's own identity, as returned by `getMe()` and kept for the process
+   * lifetime. `undefined` until `init()` has run its `getMe()`, and
    * always `undefined` when the `username` option was used, since that supplies
    * a name, not a full `User`.
    */
   get botInfo(): User | undefined {
-    return this.cachedBotInfo;
+    return this.ownUser;
   }
 
   /**
@@ -150,12 +150,12 @@ export class Bot {
       this.started = (async () => {
         // Learn our own identity once for the command() `@name` compare, unless
         // the `username` option already supplied it. A bot's username is
-        // permanent, so this is a one-shot cache with no TTL or refresh. A
-        // failure is not cached (it escapes this memoized promise and is cleared
-        // below), so the next call retries.
+        // permanent, so it is fetched once and kept, with no TTL or refresh. A
+        // failure is not retained (it escapes this memoized promise and is
+        // cleared below), so the next call retries.
         if (this.ownUsername === undefined) {
           const me = await this.api.getMe();
-          this.cachedBotInfo = me;
+          this.ownUser = me;
           this.ownUsername = me.username?.toLowerCase();
         }
         for (const plugin of this.plugins) {
@@ -314,7 +314,7 @@ export class Bot {
    * itself throws.
    */
   async handleUpdate(update: Update): Promise<void> {
-    const ctx = new Context(update, this.api, () => this.cachedBotInfo);
+    const ctx = new Context(update, this.api, () => this.ownUser);
     try {
       await this.init(); // memoized; a no-op once startup has run
       await compose(this.middleware)(ctx, () => Promise.resolve());

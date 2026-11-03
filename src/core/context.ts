@@ -138,8 +138,8 @@ export class Context {
 
   /**
    * Provider for {@link Context.me}. A function (not a captured value) so the
-   * `Context` is decoupled from `Bot` and reads whatever the bot has cached by
-   * the time a handler asks - the bot may only learn its identity during
+   * `Context` is decoupled from `Bot` and reads whatever identity the bot has
+   * learned by the time a handler asks - the bot may only fetch it during
    * `init()`, after the `Context` was constructed.
    */
   private readonly meProvider?: () => User | undefined;

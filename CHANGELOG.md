@@ -13,7 +13,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   `/start@other_bot` falls through to downstream middleware, and a bare `/start`
   still always matches. The command name itself stays case-sensitive. To make
   the comparison, the bot learns its own `@username` via `getMe()`, called once
-  inside `bot.init()` and cached for the process lifetime (a bot's username is
+  inside `bot.init()` and kept for the process lifetime (a bot's username is
   permanent, so there is no refresh). A new `username` option on `BotOptions`
   supplies the name directly (a leading `@` is accepted) and skips `getMe()`
   entirely, useful for cold-start webhooks. The bot's identity is exposed as
