@@ -8,7 +8,7 @@ const FETCH_NEVER = (async () => {
 }) as unknown as typeof fetch;
 
 function newBot(): Bot {
-  return new Bot("123:ABC", { fetch: FETCH_NEVER });
+  return new Bot("123:ABC", { fetch: FETCH_NEVER, username: "test_bot" });
 }
 
 function messageUpdate(text: string, updateId = 1): Update {
@@ -241,5 +241,221 @@ describe("Bot polling", () => {
     waiters.forEach((fn) => fn());
     await first;
     assert.strictEqual(bot.isRunning(), false);
+  });
+});
+
+function meResponse(username: string): Response {
+  const result = { id: 1, is_bot: true, first_name: "B", username };
+  return new Response(JSON.stringify({ ok: true, result }));
+}
+
+/** A fake `fetch` that answers `getMe` with the username(s) given, last one repeating. */
+function getMeFetch(...results: Array<string | Error>): {
+  fetch: typeof fetch;
+  calls: () => number;
+} {
+  let calls = 0;
+  const impl = (async () => {
+    const result = results[Math.min(calls, results.length - 1)] as string | Error;
+    calls += 1;
+    if (result instanceof Error) {
+      throw result;
+    }
+    return meResponse(result);
+  }) as unknown as typeof fetch;
+  return { fetch: impl, calls: () => calls };
+}
+
+/** Run `fn` with `Date.now()` moved `ms` into the future. */
+async function afterMs(ms: number, fn: () => Promise<void>): Promise<void> {
+  const realNow = Date.now;
+  const start = realNow();
+  Date.now = () => start + ms;
+  try {
+    await fn();
+  } finally {
+    Date.now = realNow;
+  }
+}
+
+/** Let an in-flight background refresh settle. */
+async function settle(): Promise<void> {
+  await new Promise((resolve) => setTimeout(resolve, 0));
+}
+
+describe("Bot command addressing", () => {
+  const HOUR = 60 * 60 * 1000;
+
+  async function handled(bot: Bot, name: string, text: string): Promise<boolean> {
+    let hit = false;
+    let fellThrough = false;
+    bot.command(name, () => {
+      hit = true;
+    });
+    bot.use(() => {
+      fellThrough = true;
+    });
+    await bot.handleUpdate(messageUpdate(text));
+    assert.strictEqual(fellThrough, !hit, "a non-matching command must reach next()");
+    return hit;
+  }
+
+  const cases: Array<[name: string, text: string, expected: boolean]> = [
+    ["start", "/start", true],
+    ["start", "/start@my_bot", true],
+    ["start", "/start@MY_BOT", true],
+    ["START", "/START@MY_BOT", true],
+    ["start", "/start@other_bot", false],
+    // The command name stays case-sensitive; only the @name part is not.
+    ["start", "/START@MY_BOT", false],
+    ["start", "/START", false],
+  ];
+
+  for (const [name, text, expected] of cases) {
+    test(`getMe: command("${name}") ${expected ? "handles" : "ignores"} ${text}`, async () => {
+      const { fetch } = getMeFetch("My_Bot");
+      assert.strictEqual(await handled(new Bot("123:ABC", { fetch }), name, text), expected);
+    });
+
+    test(`option: command("${name}") ${expected ? "handles" : "ignores"} ${text}`, async () => {
+      const bot = new Bot("123:ABC", { fetch: FETCH_NEVER, username: "My_Bot" });
+      assert.strictEqual(await handled(bot, name, text), expected);
+    });
+  }
+
+  test("ctx.match is still the args of a command addressed to this bot", async () => {
+    const { fetch } = getMeFetch("my_bot");
+    const bot = new Bot("123:ABC", { fetch });
+    let match: unknown;
+    bot.command("start", (ctx) => {
+      match = ctx.match;
+    });
+    await bot.handleUpdate(messageUpdate("/start@my_bot a b"));
+    assert.strictEqual(match, "a b");
+  });
+
+  test("the username option skips getMe and accepts a leading @", async () => {
+    const bot = new Bot("123:ABC", { fetch: FETCH_NEVER, username: "@my_bot" });
+    assert.strictEqual(await handled(bot, "start", "/start@my_bot"), true);
+    assert.strictEqual(bot.botInfo, undefined);
+  });
+
+  test("init() exposes the getMe result as botInfo and calls it once", async () => {
+    const { fetch, calls } = getMeFetch("my_bot");
+    const bot = new Bot("123:ABC", { fetch });
+    const before = bot.botInfo;
+    await bot.init();
+    await bot.handleUpdate(messageUpdate("hello"));
+    assert.strictEqual(before, undefined);
+    assert.strictEqual(bot.botInfo?.username, "my_bot");
+    assert.strictEqual(calls(), 1);
+  });
+
+  test("a failed startup getMe reaches the catch boundary and is retried", async () => {
+    const { fetch, calls } = getMeFetch(new Error("down"), "my_bot");
+    const bot = new Bot("123:ABC", { fetch, maxRetries: 0 });
+    const errors: unknown[] = [];
+    let hits = 0;
+    bot.catch((err) => {
+      errors.push(err);
+    });
+    bot.command("start", () => {
+      hits += 1;
+    });
+    await bot.handleUpdate(messageUpdate("/start@my_bot"));
+    assert.strictEqual(errors.length, 1);
+    assert.strictEqual(hits, 0);
+    await bot.handleUpdate(messageUpdate("/start@my_bot"));
+    assert.strictEqual(errors.length, 1);
+    assert.strictEqual(hits, 1);
+    assert.strictEqual(calls(), 2);
+  });
+
+  test("an expired username is refreshed in the background by the next update", async () => {
+    const { fetch, calls } = getMeFetch("old_bot", "new_bot");
+    const bot = new Bot("123:ABC", { fetch });
+    const hits: string[] = [];
+    bot.command("start", (ctx) => {
+      hits.push(ctx.message?.text ?? "");
+    });
+    await bot.init();
+
+    await afterMs(HOUR - 1000, async () => {
+      await bot.handleUpdate(messageUpdate("/start@old_bot"));
+      assert.strictEqual(calls(), 1);
+    });
+
+    await afterMs(HOUR + 1000, async () => {
+      // The update that triggers the refresh is matched against the old value.
+      await bot.handleUpdate(messageUpdate("/start@old_bot"));
+      assert.strictEqual(calls(), 2);
+      await settle();
+      await bot.handleUpdate(messageUpdate("/start@new_bot"));
+      await bot.handleUpdate(messageUpdate("/start@old_bot"));
+    });
+
+    assert.deepStrictEqual(hits, ["/start@old_bot", "/start@old_bot", "/start@new_bot"]);
+    assert.strictEqual(bot.botInfo?.username, "new_bot");
+    assert.strictEqual(calls(), 2);
+  });
+
+  test("a failed refresh keeps the old username and is tried again", async () => {
+    const { fetch, calls } = getMeFetch("my_bot", new Error("down"), "my_bot");
+    const bot = new Bot("123:ABC", { fetch, maxRetries: 0 });
+    const errors: unknown[] = [];
+    let hits = 0;
+    bot.catch((err) => {
+      errors.push(err);
+    });
+    bot.command("start", () => {
+      hits += 1;
+    });
+    await bot.init();
+
+    await afterMs(HOUR + 1000, async () => {
+      await bot.handleUpdate(messageUpdate("/start@my_bot"));
+      await settle();
+      await bot.handleUpdate(messageUpdate("/start@my_bot"));
+      await settle();
+      assert.strictEqual(calls(), 3);
+      await bot.handleUpdate(messageUpdate("/start@my_bot"));
+    });
+
+    assert.strictEqual(hits, 3);
+    assert.deepStrictEqual(errors, []);
+    assert.strictEqual(calls(), 3);
+  });
+
+  test("only one refresh is in flight at a time", async () => {
+    let release = (): void => {};
+    let calls = 0;
+    const fetch = (async () => {
+      calls += 1;
+      if (calls > 1) {
+        await new Promise<void>((resolve) => {
+          release = resolve;
+        });
+      }
+      return meResponse("my_bot");
+    }) as unknown as typeof globalThis.fetch;
+    const bot = new Bot("123:ABC", { fetch });
+    await bot.init();
+
+    await afterMs(HOUR + 1000, async () => {
+      await bot.handleUpdate(messageUpdate("a"));
+      await bot.handleUpdate(messageUpdate("b"));
+      assert.strictEqual(calls, 2);
+      release();
+      await settle();
+    });
+  });
+
+  test("close() and a later init() keep the cached botInfo", async () => {
+    const { fetch, calls } = getMeFetch("my_bot");
+    const bot = new Bot("123:ABC", { fetch });
+    await bot.init();
+    await bot.close();
+    await bot.init();
+    assert.strictEqual(calls(), 1);
   });
 });

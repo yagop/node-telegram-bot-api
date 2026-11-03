@@ -13,14 +13,25 @@
  * webhooks are mutually exclusive and webhook serving stays out of edge-neutral core.
  */
 
-import type { Update, UpdateType } from "../types/index.js";
+import type { Update, UpdateType, User } from "../types/index.js";
 import { Api } from "./api.js";
 import { compose, type Middleware } from "./compose.js";
 import { Context } from "./context.js";
 import { type LongPollOptions, longPoll } from "./longpoll.js";
 import type { TransportOptions } from "./transport.js";
 
-export interface BotOptions extends TransportOptions {}
+export interface BotOptions extends TransportOptions {
+  /**
+   * The bot's own username (a leading `@` is optional). `command()` compares
+   * `/name@username` against it. Setting it skips `getMe()` entirely, which saves
+   * the startup call on cold-start-sensitive webhooks; `bot.botInfo` then stays
+   * `undefined`.
+   */
+  username?: string;
+}
+
+/** How long a `getMe()` result is trusted before the next update refreshes it. */
+const BOT_INFO_TTL_MS = 60 * 60 * 1000;
 
 /**
  * Optional lifecycle a middleware may carry (duck-typed - no base class, no
@@ -62,9 +73,54 @@ export class Bot {
   private started?: Promise<void>;
   private controller?: AbortController;
   private running = false;
+  /** Lowercased `username` option; when set, `getMe()` is never called. */
+  private readonly configuredUsername?: string;
+  private cachedBotInfo?: User;
+  private botInfoFetchedAt = 0;
+  private refreshingBotInfo = false;
 
   constructor(token: string, options?: BotOptions) {
     this.api = new Api(token, options);
+    this.configuredUsername = options?.username?.replace(/^@/, "").toLowerCase() || undefined;
+  }
+
+  /**
+   * The bot's own `User`, from the `getMe()` call made by {@link Bot.init}.
+   * `undefined` before `init()` has completed, and always when the `username`
+   * option is set (it skips `getMe()`).
+   */
+  get botInfo(): User | undefined {
+    return this.cachedBotInfo;
+  }
+
+  private setBotInfo(me: User): void {
+    this.cachedBotInfo = me;
+    this.botInfoFetchedAt = Date.now();
+  }
+
+  /**
+   * Refresh an expired `getMe()` result in the background, so no update waits on
+   * it. At most one call is in flight; a failure keeps the old value and the next
+   * update tries again, so a Telegram hiccup never drops commands.
+   */
+  private refreshBotInfo(): void {
+    if (
+      this.cachedBotInfo === undefined ||
+      this.refreshingBotInfo ||
+      Date.now() - this.botInfoFetchedAt < BOT_INFO_TTL_MS
+    ) {
+      return;
+    }
+    this.refreshingBotInfo = true;
+    this.api
+      .getMe()
+      .then(
+        (me) => this.setBotInfo(me),
+        () => {}
+      )
+      .finally(() => {
+        this.refreshingBotInfo = false;
+      });
   }
 
   /**
@@ -100,11 +156,12 @@ export class Bot {
   }
 
   /**
-   * Run every registered middleware's `init()` once, in registration order.
-   * Memoized, and awaited by `startPolling()` and `handleUpdate()`, so setup
-   * failures surface at boot (or on the first webhook invocation) rather than
-   * as a per-update lazy path. Call it yourself to fail fast before serving
-   * anything.
+   * Fetch and cache the bot's own `User` via `getMe()` (unless the `username`
+   * option is set), then run every registered middleware's `init()` once, in
+   * registration order. Memoized, and awaited by `startPolling()` and
+   * `handleUpdate()`, so setup failures surface at boot (or on the first webhook
+   * invocation) rather than as a per-update lazy path. Call it yourself to fail
+   * fast before serving anything.
    *
    * A failure is not cached: the next call retries, and *resumes* at the plugin
    * that failed - one whose setup already completed is not run a second time,
@@ -113,6 +170,9 @@ export class Bot {
   init(): Promise<void> {
     if (this.started === undefined) {
       this.started = (async () => {
+        if (this.configuredUsername === undefined && this.cachedBotInfo === undefined) {
+          this.setBotInfo(await this.api.getMe());
+        }
         for (const plugin of this.plugins) {
           if (this.initialized.has(plugin)) {
             continue;
@@ -194,6 +254,9 @@ export class Bot {
   /**
    * Match a message/channel-post text starting with `/name` (also `/name@bot`
    * and trailing args). Sets `ctx.match` to the trimmed args string ("" if none).
+   * A `@bot` part must name this bot (case-insensitive, see {@link Bot.botInfo}
+   * and the `username` option); a command addressed to another bot falls through
+   * to `next()`.
    */
   command(name: string | string[], ...handlers: Middleware<Context>[]): this {
     const names = (Array.isArray(name) ? name : [name]).map((n) => n.replace(/^\//, ""));
@@ -209,9 +272,17 @@ export class Bot {
       if (!m) {
         return next();
       }
+      const target = m[2]?.slice(1).toLowerCase();
+      if (target !== undefined && target !== this.ownUsername()) {
+        return next();
+      }
       ctx.match = m[3] ?? "";
       return run(ctx, next);
     });
+  }
+
+  private ownUsername(): string | undefined {
+    return this.configuredUsername ?? this.cachedBotInfo?.username?.toLowerCase();
   }
 
   /**
@@ -261,6 +332,7 @@ export class Bot {
     const ctx = new Context(update, this.api);
     try {
       await this.init(); // memoized; a no-op once startup has run
+      this.refreshBotInfo();
       await compose(this.middleware)(ctx, () => Promise.resolve());
     } catch (err) {
       // Inside the boundary: a plugin's setup failure is an update-processing

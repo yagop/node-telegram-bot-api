@@ -465,6 +465,8 @@ bot.use(createSession<Session>({ store: new FileSessionStorage({ path: "./.great
 await bot.init(); // optional: a bad path / unreachable backend fails here, at boot
 ```
 
+`bot.init()` also calls `getMe()` and caches the result as `bot.botInfo`, so that `bot.command()` can ignore commands addressed to another bot (`/start@other_bot`). Pass the `username` option to skip that call, for example on cold-start-sensitive webhooks.
+
 `startPolling()` and `handleUpdate()` await `bot.init()` themselves (memoized), so this is only about *when* a setup error surfaces - one raised during an update goes to the `bot.catch()` boundary like any other. `run()` (`/node`) calls `bot.close()` on shutdown, and `close()` drops the setup memo so a later `init()` starts over. A store that owned the connection it closed (`SqlSessionStorage` with a `url`, `SqliteSessionStorage` with a path) is spent after that - construct a new one; with a caller-supplied client the store stays usable.
 
 ## ⚠️ Errors

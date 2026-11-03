@@ -5,6 +5,14 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased][Unreleased]
 
+### Routing
+
+- `bot.command()` no longer runs for a command addressed to another bot
+  (`/start@other_bot`). `bot.init()` now calls `getMe()` and caches the result as
+  `bot.botInfo`, refreshed in the background after an hour; the `@name` part is
+  compared case-insensitively. A new `username` option in `BotOptions` skips
+  `getMe()` entirely (#1376).
+
 ## [2.3.0-rc0][2.3.0-rc0] - 2026-11-03
 
 ### Session storage
