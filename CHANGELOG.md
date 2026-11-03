@@ -5,6 +5,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased][Unreleased]
 
+## [2.3.0-rc0][2.3.0-rc0] - 2026-11-03
+
 ### Session storage
 
 - Added `S3SessionStorage` (exported from the core `node-telegram-bot-api`): a
@@ -14,7 +16,14 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   (Node 19+, Bun, Deno, Workers, edge); `fetch` and `crypto` are injectable, so
   Node 18 can supply `node:crypto`'s `webcrypto`. It has no per-object TTL - use
   a bucket lifecycle rule on the prefix. Validated against the AWS SigV4 example
-  vector and live MinIO / RustFS servers.
+  vector, the `aws4` reference signer, and live MinIO / RustFS / Bun S3 servers.
+
+### Uploads
+
+- `InputFile` uploads no longer throw `ReferenceError: crypto is not defined` on
+  Node 18: the multipart boundary is now built without the global WebCrypto
+  (which Node exposes unflagged only from v19), so uploads work across the full
+  supported Node 18.2+ range (#1378).
 
 ## [2.2.0][2.2.0] - 2026-11-02
 
@@ -1300,4 +1309,5 @@ Fixed:
 [2.2.0-rc1]:https://github.com/yagop/node-telegram-bot-api/releases/tag/v2.2.0-rc1
 [2.2.0-rc2]:https://github.com/yagop/node-telegram-bot-api/releases/tag/v2.2.0-rc2
 [2.2.0]:https://github.com/yagop/node-telegram-bot-api/releases/tag/v2.2.0
-[Unreleased]:https://github.com/yagop/node-telegram-bot-api/compare/v2.2.0...master
+[2.3.0-rc0]:https://github.com/yagop/node-telegram-bot-api/releases/tag/v2.3.0-rc0
+[Unreleased]:https://github.com/yagop/node-telegram-bot-api/compare/v2.3.0-rc0...master
