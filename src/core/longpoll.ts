@@ -26,6 +26,7 @@ const DEFAULT_POLL_TIMEOUT = 30; // 30 seconds
 const DEFAULT_RETRY_DELAY = 1000; // 1 second, when the error carries no retry_after
 const DEFAULT_CONFLICT_RETRY_DELAY = 5000; // 5 seconds; the other poller needs time to exit
 const DEFAULT_MAX_CONFLICT_RETRIES = 10;
+const STOP_CONFIRM_TIMEOUT_MS = 5000; // bounds shutdown; Transport alone would retry 429s/timeouts for minutes
 
 const log = debug("polling");
 
@@ -100,7 +101,45 @@ async function recover(ctx: RetryContext): Promise<{ conflicts: number } | "stop
   return { conflicts: plan.conflicts };
 }
 
-/** Async-generator update source: long-polls `getUpdates` and yields each update until the signal aborts. */
+/** Debug-log a non-empty batch (an idle long poll's empty answer stays quiet). */
+function logBatch(updates: Update[]): void {
+  if (updates.length > 0) {
+    log("%d update(s)", updates.length);
+  }
+}
+
+/**
+ * Best-effort final `getUpdates` on stop, so Telegram confirms the handled
+ * updates below `offset` (it confirms only via a later poll's offset). Skipped
+ * unless the loop was aborted - an error exit keeps fail-loud redelivery - and
+ * when the last answered poll already carried `offset`. Never throws.
+ */
+async function confirmOnStop(
+  api: Api,
+  signal: AbortSignal | undefined,
+  offset: number | undefined,
+  confirmed: number | undefined
+): Promise<void> {
+  if (!signal?.aborted || offset === undefined || offset === confirmed) {
+    return;
+  }
+  try {
+    await api.getUpdates(
+      { offset, limit: 1, timeout: 0 },
+      AbortSignal.timeout(STOP_CONFIRM_TIMEOUT_MS)
+    );
+    log("confirmed updates below %d on stop", offset);
+  } catch (err) {
+    log("failed to confirm updates below %d on stop: %s", offset, String(err));
+  }
+}
+
+/**
+ * Async-generator update source: long-polls `getUpdates` and yields each update
+ * until the signal aborts. An update counts as handled once the consumer asks
+ * for the next one; on abort, handled-but-unconfirmed updates are confirmed with
+ * one final poll (not on error exits, so fail-loud keeps redelivery).
+ */
 export async function* longPoll(
   api: Api,
   options: LongPollOptions = {},
@@ -116,49 +155,53 @@ export async function* longPoll(
   const maxConflictRetries = options.maxConflictRetries ?? DEFAULT_MAX_CONFLICT_RETRIES;
   const onError = options.onError;
   let conflicts = 0; // consecutive 409s; reset on any successful poll
+  let confirmed = offset; // offset of the last poll Telegram answered
 
   log("started (timeout=%ds)", timeout);
-  while (!signal?.aborted) {
-    let updates: Update[];
-    try {
-      updates = await api.getUpdates(
-        {
-          offset,
-          limit,
-          timeout,
-          allowed_updates: allowed,
-        },
-        signal
-      );
-    } catch (err) {
-      // A 409 (another instance polling the same token) is transient for polling
-      // but bounded, so an overlapping redeploy heals while a real two-instance
-      // deployment still surfaces. `recover` throws for anything non-retryable.
-      const outcome = await recover({
-        err,
-        conflicts,
-        retry,
-        retryDelayMs,
-        conflictRetryDelayMs,
-        maxConflictRetries,
-        onError,
-        signal,
-      });
-      if (outcome === "stop") {
-        return;
+  try {
+    while (!signal?.aborted) {
+      let updates: Update[];
+      try {
+        updates = await api.getUpdates(
+          {
+            offset,
+            limit,
+            timeout,
+            allowed_updates: allowed,
+          },
+          signal
+        );
+      } catch (err) {
+        // A 409 (another instance polling the same token) is transient for polling
+        // but bounded, so an overlapping redeploy heals while a real two-instance
+        // deployment still surfaces. `recover` throws for anything non-retryable.
+        const outcome = await recover({
+          err,
+          conflicts,
+          retry,
+          retryDelayMs,
+          conflictRetryDelayMs,
+          maxConflictRetries,
+          onError,
+          signal,
+        });
+        if (outcome === "stop") {
+          return;
+        }
+        conflicts = outcome.conflicts;
+        // retry WITHOUT advancing offset
+        continue;
       }
-      conflicts = outcome.conflicts;
-      // retry WITHOUT advancing offset
-      continue;
-    }
 
-    conflicts = 0; // a successful poll clears the conflict streak
-    if (updates.length > 0) {
-      log("%d update(s)", updates.length);
+      confirmed = offset;
+      conflicts = 0; // a successful poll clears the conflict streak
+      logBatch(updates);
+      for (const update of updates) {
+        yield update;
+        offset = update.update_id + 1;
+      }
     }
-    for (const update of updates) {
-      yield update;
-      offset = update.update_id + 1;
-    }
+  } finally {
+    await confirmOnStop(api, signal, offset, confirmed);
   }
 }

@@ -364,4 +364,28 @@ describe("Bot polling", () => {
     await first;
     assert.strictEqual(bot.isRunning(), false);
   });
+
+  test("stop() during a slow handler confirms its update, so a restart does not redeliver it (#1385)", async () => {
+    const offsets: Array<string | null> = [];
+    const fake = (async (url: string | URL | Request, init?: RequestInit) => {
+      const method = String(url).split("/").pop();
+      if (method === "getMe") {
+        const result = { id: 7, is_bot: true, first_name: "Bot", username: "thisbot" };
+        return new Response(JSON.stringify({ ok: true, result }));
+      }
+      assert.strictEqual(method, "getUpdates");
+      offsets.push(new URLSearchParams(String(init?.body ?? "")).get("offset"));
+      const result = offsets.length === 1 ? [messageUpdate("hi", 100)] : [];
+      return new Response(JSON.stringify({ ok: true, result }));
+    }) as unknown as typeof fetch;
+    const bot = new Bot("123:ABC", { fetch: fake });
+    bot.on("message", () => {
+      bot.stop(); // SIGTERM arrives mid-handler
+    });
+
+    await bot.startPolling();
+
+    // Poll 1 fetched update 100; the stop-time confirm then carried offset 101.
+    assert.deepStrictEqual(offsets, [null, "101"]);
+  });
 });

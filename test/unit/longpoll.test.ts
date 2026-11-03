@@ -11,18 +11,21 @@ function upd(id: number): Update {
 }
 
 /** Build a fake `Api` whose `getUpdates` runs the given step functions in order. */
-function fakeApi(steps: Array<(params: { offset?: number }) => Update[] | Promise<Update[]>>): {
+type GetUpdatesParams = { offset?: number; limit?: number; timeout?: number };
+type Step = (params: GetUpdatesParams, signal?: AbortSignal) => Update[] | Promise<Update[]>;
+
+function fakeApi(steps: Step[]): {
   api: Api;
   offsets: Array<number | undefined>;
 } {
   const offsets: Array<number | undefined> = [];
   let i = 0;
   const api = {
-    getUpdates: async (params: { offset?: number }) => {
+    getUpdates: async (params: GetUpdatesParams, signal?: AbortSignal) => {
       offsets.push(params.offset);
       const step = steps[Math.min(i, steps.length - 1)]!;
       i += 1;
-      return step(params);
+      return step(params, signal);
     },
   } as unknown as Api;
   return { api, offsets };
@@ -31,7 +34,7 @@ function fakeApi(steps: Array<(params: { offset?: number }) => Update[] | Promis
 describe("longPoll", () => {
   test("yields one update then returns cleanly on abort", async () => {
     const controller = new AbortController();
-    const { api } = fakeApi([
+    const { api, offsets } = fakeApi([
       () => [upd(100)],
       () => {
         controller.abort();
@@ -44,6 +47,8 @@ describe("longPoll", () => {
       seen.push(update.update_id);
     }
     assert.deepStrictEqual(seen, [100]);
+    // The second poll already carried offset 101, so nothing is left to confirm on stop.
+    assert.deepStrictEqual(offsets, [undefined, 101]);
   });
 
   test("resumes after a transient NetworkError without advancing offset", async () => {
@@ -69,8 +74,9 @@ describe("longPoll", () => {
     }
 
     assert.deepStrictEqual(seen, [5, 6]);
-    // Offsets per call: 1st undefined, 2nd 6 (after yielding 5), 3rd 6 (no advance across failure).
-    assert.deepStrictEqual(offsets, [undefined, 6, 6]);
+    // Offsets per call: 1st undefined, 2nd 6 (after yielding 5), 3rd 6 (no advance across failure),
+    // 4th 7 - the stop-time confirm of update 6, handled after the abort.
+    assert.deepStrictEqual(offsets, [undefined, 6, 6, 7]);
   });
 
   test("resumes after a 429 without advancing offset (a flood never kills the loop)", async () => {
@@ -93,8 +99,9 @@ describe("longPoll", () => {
     }
 
     assert.deepStrictEqual(seen, [5, 6]);
-    // Offset is NOT advanced across the 429 (same as a transient error).
-    assert.deepStrictEqual(offsets, [undefined, 6, 6]);
+    // Offset is NOT advanced across the 429 (same as a transient error); the
+    // trailing 7 is the stop-time confirm of update 6.
+    assert.deepStrictEqual(offsets, [undefined, 6, 6, 7]);
   });
 
   test("rethrows a fatal TelegramApiError(401)", async () => {
@@ -276,5 +283,81 @@ describe("longPoll", () => {
     }
     assert.strictEqual(caught, undefined);
     assert.deepStrictEqual(seen, [300]);
+  });
+
+  describe("confirm on stop (issue #1385)", () => {
+    test("stop() during a handler confirms the handled update with a final poll", async () => {
+      const controller = new AbortController();
+      let confirm: { params: GetUpdatesParams; aborted?: boolean } | undefined;
+      const { api } = fakeApi([
+        () => [upd(100)],
+        (params, signal) => {
+          confirm = { params, aborted: signal?.aborted };
+          return [];
+        },
+      ]);
+
+      const seen: number[] = [];
+      for await (const update of longPoll(api, {}, controller.signal)) {
+        seen.push(update.update_id);
+        controller.abort(); // stop() lands while the handler runs
+      }
+
+      assert.deepStrictEqual(seen, [100]);
+      // Sent on its own live deadline, not the aborted signal (which would cancel it).
+      assert.deepStrictEqual(confirm, {
+        params: { offset: 101, limit: 1, timeout: 0 },
+        aborted: false,
+      });
+    });
+
+    test("a mid-batch stop confirms only the updates handled, not the rest", async () => {
+      const controller = new AbortController();
+      const { api, offsets } = fakeApi([() => [upd(1), upd(2), upd(3)], () => []]);
+
+      // The shape of Bot.startPolling: check the signal before handling each update.
+      const handled: number[] = [];
+      for await (const update of longPoll(api, {}, controller.signal)) {
+        if (controller.signal.aborted) {
+          break;
+        }
+        handled.push(update.update_id);
+        controller.abort(); // stop() while update 1 is being handled
+      }
+
+      assert.deepStrictEqual(handled, [1]);
+      // offset 2 confirms update 1 only; 2 and 3 stay pending for the next start.
+      assert.deepStrictEqual(offsets, [undefined, 2]);
+    });
+
+    test("nothing is confirmed when the consumer throws without an abort", async () => {
+      const { api, offsets } = fakeApi([() => [upd(1), upd(2)], () => []]);
+
+      await assert.rejects(async () => {
+        for await (const update of longPoll(api, {}, new AbortController().signal)) {
+          if (update.update_id === 2) {
+            throw new Error("catch boundary rethrew"); // fail-loud: keep redelivery
+          }
+        }
+      }, /catch boundary rethrew/);
+
+      // Offset 2 was pending (update 1 handled) but is not confirmed on an error exit.
+      assert.deepStrictEqual(offsets, [undefined]);
+    });
+
+    test("a failing confirm is swallowed so it cannot mask the stop", async () => {
+      const controller = new AbortController();
+      const { api, offsets } = fakeApi([
+        () => [upd(100)],
+        () => {
+          throw new NetworkError("connection reset");
+        },
+      ]);
+
+      for await (const _ of longPoll(api, {}, controller.signal)) {
+        controller.abort();
+      }
+      assert.deepStrictEqual(offsets, [undefined, 101]);
+    });
   });
 });

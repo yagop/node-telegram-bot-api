@@ -960,7 +960,10 @@ default delay.
 
 ### `longPoll()`
 
-Async-generator update source: long-polls `getUpdates` and yields each update until the signal aborts.
+Async-generator update source: long-polls `getUpdates` and yields each update
+until the signal aborts. An update counts as handled once the consumer asks
+for the next one; on abort, handled-but-unconfirmed updates are confirmed with
+one final poll (not on error exits, so fail-loud keeps redelivery).
 
 | Param | Type |
 | --- | --- |
