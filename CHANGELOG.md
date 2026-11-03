@@ -5,6 +5,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased][Unreleased]
 
+## [2.3.0-rc1][2.3.0-rc1] - 2026-11-03
+
 ### Dispatch
 
 - `bot.command(name, ...)` now ignores commands addressed to another bot: in a
@@ -14,9 +16,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   still always matches. The command name itself stays case-sensitive. To make
   the comparison, the bot learns its own `@username` via `getMe()`, called once
   inside `bot.init()` and kept for the process lifetime (a bot's username is
-  permanent, so there is no refresh). A new `username` option on `BotOptions`
-  supplies the name directly (a leading `@` is accepted) and skips `getMe()`
-  entirely, useful for cold-start webhooks. The bot's identity is exposed as
+  permanent, so there is no refresh). The bot's identity is exposed as
   `bot.botInfo` (`User | undefined`) and to handlers as `ctx.me`.
 
 ## [2.3.0-rc0][2.3.0-rc0] - 2026-11-03
@@ -1324,4 +1324,5 @@ Fixed:
 [2.2.0-rc2]:https://github.com/yagop/node-telegram-bot-api/releases/tag/v2.2.0-rc2
 [2.2.0]:https://github.com/yagop/node-telegram-bot-api/releases/tag/v2.2.0
 [2.3.0-rc0]:https://github.com/yagop/node-telegram-bot-api/releases/tag/v2.3.0-rc0
-[Unreleased]:https://github.com/yagop/node-telegram-bot-api/compare/v2.3.0-rc0...master
+[2.3.0-rc1]:https://github.com/yagop/node-telegram-bot-api/releases/tag/v2.3.0-rc1
+[Unreleased]:https://github.com/yagop/node-telegram-bot-api/compare/v2.3.0-rc1...master
