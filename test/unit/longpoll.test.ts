@@ -3,18 +3,13 @@ import assert from "node:assert/strict";
 import type { Api } from "../../src/core/api.js";
 import { NetworkError, TelegramApiError } from "../../src/core/errors.js";
 import { longPoll } from "../../src/core/longpoll.js";
-import type { Update } from "../../src/types/index.js";
+import type { GetUpdatesParams, Update } from "../../src/types/index.js";
 
 /** A minimal `Update` carrying just `update_id` for assertions. */
 function upd(id: number): Update {
   return { update_id: id, message: {} } as unknown as Update;
 }
 
-type GetUpdatesParams = {
-  offset?: number;
-  limit?: number;
-  timeout?: number;
-};
 type Step = (params: GetUpdatesParams, signal?: AbortSignal) => Update[] | Promise<Update[]>;
 
 /** Build a fake `Api` whose `getUpdates` runs the given step functions in order. */
