@@ -5,6 +5,18 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased][Unreleased]
 
+### Polling
+
+- Stopping the polling loop (`bot.stop()`, or SIGINT/SIGTERM via `run()`) while
+  a handler runs no longer leaves that update unconfirmed (#1385). Telegram only
+  confirms updates when a later `getUpdates` carries their offset, and the loop
+  used to exit before sending it, so the handled update was redelivered on the
+  next start and non-idempotent handlers ran twice. On abort, `longPoll` now
+  sends one final `getUpdates({ offset, limit: 1, timeout: 0 })` (best effort,
+  capped at 5s) for updates that were handled but not yet confirmed. Updates the
+  loop never handled - the rest of a batch - are still redelivered, and an
+  error exit (a throwing `bot.catch()`) still confirms nothing.
+
 ### Dispatch
 
 - `ctx.reply()` now answers where the incoming message came from instead of
