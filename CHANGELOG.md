@@ -5,6 +5,11 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased][Unreleased]
 
+## [2.3.0][2.3.0] - 2026-11-04
+
+Stable release of the `2.3.0` line. It includes everything from
+`2.3.0-rc0` and `2.3.0-rc1` (see below), plus the following changes.
+
 ### Polling
 
 - Stopping the polling loop (`bot.stop()`, or SIGINT/SIGTERM via `run()`) while
@@ -14,8 +19,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   next start and non-idempotent handlers ran twice. On abort, `longPoll` now
   sends one final `getUpdates({ offset, limit: 1, timeout: 0 })` (best effort,
   capped at 5s) for updates that were handled but not yet confirmed. Updates the
-  loop never handled - the rest of a batch - are still redelivered, and an
-  error exit (a throwing `bot.catch()`) still confirms nothing.
+  loop never handled - the rest of a batch - are still redelivered, and the
+  update whose `bot.catch()` throws (fail-loud) is never confirmed.
 
 ### Dispatch
 
@@ -1353,4 +1358,5 @@ Fixed:
 [2.2.0]:https://github.com/yagop/node-telegram-bot-api/releases/tag/v2.2.0
 [2.3.0-rc0]:https://github.com/yagop/node-telegram-bot-api/releases/tag/v2.3.0-rc0
 [2.3.0-rc1]:https://github.com/yagop/node-telegram-bot-api/releases/tag/v2.3.0-rc1
-[Unreleased]:https://github.com/yagop/node-telegram-bot-api/compare/v2.3.0-rc1...master
+[2.3.0]:https://github.com/yagop/node-telegram-bot-api/releases/tag/v2.3.0
+[Unreleased]:https://github.com/yagop/node-telegram-bot-api/compare/v2.3.0...master
