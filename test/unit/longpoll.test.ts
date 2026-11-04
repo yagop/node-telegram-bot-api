@@ -10,10 +10,14 @@ function upd(id: number): Update {
   return { update_id: id, message: {} } as unknown as Update;
 }
 
-/** Build a fake `Api` whose `getUpdates` runs the given step functions in order. */
-type GetUpdatesParams = { offset?: number; limit?: number; timeout?: number };
+type GetUpdatesParams = {
+  offset?: number;
+  limit?: number;
+  timeout?: number;
+};
 type Step = (params: GetUpdatesParams, signal?: AbortSignal) => Update[] | Promise<Update[]>;
 
+/** Build a fake `Api` whose `getUpdates` runs the given step functions in order. */
 function fakeApi(steps: Step[]): {
   api: Api;
   offsets: Array<number | undefined>;
