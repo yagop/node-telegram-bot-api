@@ -287,11 +287,11 @@ describe("longPoll", () => {
   describe("confirm on stop (issue #1385)", () => {
     test("stop() during a handler confirms the handled update with a final poll", async () => {
       const controller = new AbortController();
-      let confirm: { params: GetUpdatesParams; aborted?: boolean } | undefined;
+      let confirm: { params: GetUpdatesParams; signal?: AbortSignal } | undefined;
       const { api } = fakeApi([
         () => [upd(100)],
         (params, signal) => {
-          confirm = { params, aborted: signal?.aborted };
+          confirm = { params, signal };
           return [];
         },
       ]);
@@ -303,11 +303,47 @@ describe("longPoll", () => {
       }
 
       assert.deepStrictEqual(seen, [100]);
-      // Sent on its own live deadline, not the aborted signal (which would cancel it).
-      assert.deepStrictEqual(confirm, {
-        params: { offset: 101, limit: 1, timeout: 0 },
-        aborted: false,
-      });
+      assert.deepStrictEqual(confirm?.params, { offset: 101, limit: 1, timeout: 0 });
+      // Sent on its own live deadline: not the aborted loop signal (which would
+      // cancel it), and not unbounded (which could stall shutdown for minutes).
+      assert.ok(confirm?.signal instanceof AbortSignal);
+      assert.notStrictEqual(confirm.signal, controller.signal);
+      assert.strictEqual(confirm.signal.aborted, false);
+    });
+
+    test("an update returned by the confirm poll is dropped, not yielded", async () => {
+      const controller = new AbortController();
+      // Update 101 arrived while 100 was handled: the confirm poll returns it,
+      // but it stays unconfirmed (offset 101 confirms only < 101) for the next start.
+      const { api, offsets } = fakeApi([() => [upd(100)], () => [upd(101)]]);
+
+      const seen: number[] = [];
+      for await (const update of longPoll(api, {}, controller.signal)) {
+        seen.push(update.update_id);
+        controller.abort();
+      }
+
+      assert.deepStrictEqual(seen, [100]);
+      assert.deepStrictEqual(offsets, [undefined, 101]); // no poll after the confirm
+    });
+
+    test("a caller-supplied offset counts as already confirmed", async () => {
+      // Stopped before the first poll: nothing new was handled, so no request at all.
+      const aborted = new AbortController();
+      aborted.abort();
+      const idle = fakeApi([() => []]);
+      for await (const _ of longPoll(idle.api, { offset: 50 }, aborted.signal)) {
+        // no updates
+      }
+      assert.deepStrictEqual(idle.offsets, []);
+
+      // Handled update 50, then stopped: polls from 50, confirms 51.
+      const controller = new AbortController();
+      const run = fakeApi([() => [upd(50)], () => []]);
+      for await (const _ of longPoll(run.api, { offset: 50 }, controller.signal)) {
+        controller.abort();
+      }
+      assert.deepStrictEqual(run.offsets, [50, 51]);
     });
 
     test("a mid-batch stop confirms only the updates handled, not the rest", async () => {
