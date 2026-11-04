@@ -101,11 +101,62 @@ async function recover(ctx: RetryContext): Promise<{ conflicts: number } | "stop
   return { conflicts: plan.conflicts };
 }
 
-/** Debug-log a non-empty batch (an idle long poll's empty answer stays quiet). */
-function logBatch(updates: Update[]): void {
-  if (updates.length > 0) {
-    log("%d update(s)", updates.length);
+/** `LongPollOptions` with defaults applied, plus the loop's signal - fixed for the loop's lifetime. */
+type PollConfig = Omit<RetryContext, "err" | "conflicts"> & {
+  timeout: number;
+  limit?: number;
+  allowedUpdates?: string[];
+};
+
+function resolveConfig(options: LongPollOptions, signal: AbortSignal | undefined): PollConfig {
+  return {
+    timeout: options.timeout ?? DEFAULT_POLL_TIMEOUT,
+    limit: options.limit,
+    allowedUpdates: options.allowedUpdates,
+    retry: options.retry ?? true,
+    retryDelayMs: options.retryDelayMs ?? DEFAULT_RETRY_DELAY,
+    conflictRetryDelayMs: options.conflictRetryDelayMs ?? DEFAULT_CONFLICT_RETRY_DELAY,
+    maxConflictRetries: options.maxConflictRetries ?? DEFAULT_MAX_CONFLICT_RETRIES,
+    onError: options.onError,
+    signal,
+  };
+}
+
+/**
+ * Long-poll until a batch arrives, retrying transient failures at the same
+ * offset. Owns the consecutive-409 streak, which only spans failed polls (any
+ * answered poll returns, resetting it). `undefined` once the signal aborts;
+ * throws when the error is fatal.
+ */
+async function fetchBatch(
+  api: Api,
+  offset: number | undefined,
+  config: PollConfig
+): Promise<Update[] | undefined> {
+  let conflicts = 0;
+  while (!config.signal?.aborted) {
+    try {
+      return await api.getUpdates(
+        {
+          offset,
+          limit: config.limit,
+          timeout: config.timeout,
+          allowed_updates: config.allowedUpdates,
+        },
+        config.signal
+      );
+    } catch (err) {
+      // A 409 (another instance polling the same token) is transient for polling
+      // but bounded, so an overlapping redeploy heals while a real two-instance
+      // deployment still surfaces. `recover` throws for anything non-retryable.
+      const outcome = await recover({ ...config, err, conflicts });
+      if (outcome === "stop") {
+        return undefined;
+      }
+      conflicts = outcome.conflicts;
+    }
   }
+  return undefined;
 }
 
 /**
@@ -145,57 +196,21 @@ export async function* longPoll(
   options: LongPollOptions = {},
   signal?: AbortSignal
 ): AsyncGenerator<Update> {
+  const config = resolveConfig(options, signal);
   let offset = options.offset;
-  const timeout = options.timeout ?? DEFAULT_POLL_TIMEOUT;
-  const limit = options.limit;
-  const allowed = options.allowedUpdates;
-  const retry = options.retry ?? true;
-  const retryDelayMs = options.retryDelayMs ?? DEFAULT_RETRY_DELAY;
-  const conflictRetryDelayMs = options.conflictRetryDelayMs ?? DEFAULT_CONFLICT_RETRY_DELAY;
-  const maxConflictRetries = options.maxConflictRetries ?? DEFAULT_MAX_CONFLICT_RETRIES;
-  const onError = options.onError;
-  let conflicts = 0; // consecutive 409s; reset on any successful poll
   let confirmed = offset; // offset of the last poll Telegram answered
 
-  log("started (timeout=%ds)", timeout);
+  log("started (timeout=%ds)", config.timeout);
   try {
     while (!signal?.aborted) {
-      let updates: Update[];
-      try {
-        updates = await api.getUpdates(
-          {
-            offset,
-            limit,
-            timeout,
-            allowed_updates: allowed,
-          },
-          signal
-        );
-      } catch (err) {
-        // A 409 (another instance polling the same token) is transient for polling
-        // but bounded, so an overlapping redeploy heals while a real two-instance
-        // deployment still surfaces. `recover` throws for anything non-retryable.
-        const outcome = await recover({
-          err,
-          conflicts,
-          retry,
-          retryDelayMs,
-          conflictRetryDelayMs,
-          maxConflictRetries,
-          onError,
-          signal,
-        });
-        if (outcome === "stop") {
-          return;
-        }
-        conflicts = outcome.conflicts;
-        // retry WITHOUT advancing offset
-        continue;
+      const updates = await fetchBatch(api, offset, config);
+      if (updates === undefined) {
+        return;
       }
-
       confirmed = offset;
-      conflicts = 0; // a successful poll clears the conflict streak
-      logBatch(updates);
+      if (updates.length > 0) {
+        log("%d update(s)", updates.length);
+      }
       for (const update of updates) {
         yield update;
         offset = update.update_id + 1;
