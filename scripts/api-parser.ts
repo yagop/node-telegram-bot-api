@@ -381,7 +381,7 @@ const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 // `InputFile` is NOT listed here: it is no longer defined in schemas.ts; it is
 // imported from the Phase-1 core class (../core/files.js). It is therefore still
 // a "known" name for the empty-object filter, handled separately below.
-const PRELUDE_NAMES = new Set(["ChatId", "ReplyMarkup", "ParseMode"]);
+const PRELUDE_NAMES = new Set(["ChatId", "ReplyMarkup", "ParseMode", "ChatOrCallbackReply"]);
 
 const PRELUDE = `// ---------------------------------------------------------------------------
 // Library-specific helpers (not 1:1 documented objects)
@@ -407,7 +407,7 @@ export type ReplyMarkup = _Exclusive<${REPLY_MARKUP_UNION}>;
  * omitted only for an ephemeral reply to a callback query (\`callback_query_id\`
  * without \`receiver_user_id\`), so every other call without it is a type error.
  */
-type _ChatOrCallbackReply =
+export type ChatOrCallbackReply =
   | { chat_id: number | string }
   | { ephemeral_message_parameters: { callback_query_id: string; receiver_user_id?: never } };
 `;
@@ -527,7 +527,7 @@ for (const m of methods) {
   // is required unless the call is an ephemeral reply to a callback query.
   const names = new Map(m.fields.map((f) => [f.name, f]));
   const ephemeral = names.get("chat_id")?.optional && names.has("ephemeral_message_parameters");
-  out.push(`export type ${C}Params = ${emitFields(m.fields)}${ephemeral ? " & _ChatOrCallbackReply" : ""};`);
+  out.push(`export type ${C}Params = ${emitFields(m.fields)}${ephemeral ? " & ChatOrCallbackReply" : ""};`);
   out.push(`export type ${C}Result = ${m.ret};\n`);
 }
 

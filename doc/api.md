@@ -2363,6 +2363,20 @@ type ChatMemberUpdated = {
 };
 ```
 
+### `ChatOrCallbackReply`
+
+Target of an ephemeral-capable send method. Telegram lets `chat_id` be
+omitted only for an ephemeral reply to a callback query (`callback_query_id`
+without `receiver_user_id`), so every other call without it is a type error.
+
+```ts
+type ChatOrCallbackReply = {
+  chat_id: number | string;
+} | {
+  ephemeral_message_parameters: { callback_query_id: string; receiver_user_id?: never };
+};
+```
+
 ### `ChatOwnerChanged`
 
 ```ts
@@ -7612,7 +7626,7 @@ type SendAnimationParams = {
   suggested_post_parameters?: [SuggestedPostParameters](#suggestedpostparameters);
   thumbnail?: [InputFile](#inputfile) | string;
   width?: number;
-} & _ChatOrCallbackReply;
+} & [ChatOrCallbackReply](#chatorcallbackreply);
 ```
 
 ### `SendAnimationResult`
@@ -7645,7 +7659,7 @@ type SendAudioParams = {
   suggested_post_parameters?: [SuggestedPostParameters](#suggestedpostparameters);
   thumbnail?: [InputFile](#inputfile) | string;
   title?: string;
-} & _ChatOrCallbackReply;
+} & [ChatOrCallbackReply](#chatorcallbackreply);
 ```
 
 ### `SendAudioResult`
@@ -7727,7 +7741,7 @@ type SendContactParams = {
   reply_parameters?: [ReplyParameters](#replyparameters);
   suggested_post_parameters?: [SuggestedPostParameters](#suggestedpostparameters);
   vcard?: string;
-} & _ChatOrCallbackReply;
+} & [ChatOrCallbackReply](#chatorcallbackreply);
 ```
 
 ### `SendContactResult`
@@ -7783,7 +7797,7 @@ type SendDocumentParams = {
   reply_parameters?: [ReplyParameters](#replyparameters);
   suggested_post_parameters?: [SuggestedPostParameters](#suggestedpostparameters);
   thumbnail?: [InputFile](#inputfile) | string;
-} & _ChatOrCallbackReply;
+} & [ChatOrCallbackReply](#chatorcallbackreply);
 ```
 
 ### `SendDocumentResult`
@@ -7902,7 +7916,7 @@ type SendLivePhotoParams = {
   reply_parameters?: [ReplyParameters](#replyparameters);
   show_caption_above_media?: boolean;
   suggested_post_parameters?: [SuggestedPostParameters](#suggestedpostparameters);
-} & _ChatOrCallbackReply;
+} & [ChatOrCallbackReply](#chatorcallbackreply);
 ```
 
 ### `SendLivePhotoResult`
@@ -7933,7 +7947,7 @@ type SendLocationParams = {
   reply_markup?: [ReplyMarkup](#replymarkup);
   reply_parameters?: [ReplyParameters](#replyparameters);
   suggested_post_parameters?: [SuggestedPostParameters](#suggestedpostparameters);
-} & _ChatOrCallbackReply;
+} & [ChatOrCallbackReply](#chatorcallbackreply);
 ```
 
 ### `SendLocationResult`
@@ -8006,7 +8020,7 @@ type SendMessageParams = {
   reply_parameters?: [ReplyParameters](#replyparameters);
   suggested_post_parameters?: [SuggestedPostParameters](#suggestedpostparameters);
   text: string;
-} & _ChatOrCallbackReply;
+} & [ChatOrCallbackReply](#chatorcallbackreply);
 ```
 
 ### `SendMessageResult`
@@ -8067,7 +8081,7 @@ type SendPhotoParams = {
   reply_parameters?: [ReplyParameters](#replyparameters);
   show_caption_above_media?: boolean;
   suggested_post_parameters?: [SuggestedPostParameters](#suggestedpostparameters);
-} & _ChatOrCallbackReply;
+} & [ChatOrCallbackReply](#chatorcallbackreply);
 ```
 
 ### `SendPhotoResult`
@@ -8159,7 +8173,7 @@ type SendRichMessageParams = {
   reply_parameters?: [ReplyParameters](#replyparameters);
   rich_message: [InputRichMessage](#inputrichmessage);
   suggested_post_parameters?: [SuggestedPostParameters](#suggestedpostparameters);
-} & _ChatOrCallbackReply;
+} & [ChatOrCallbackReply](#chatorcallbackreply);
 ```
 
 ### `SendRichMessageResult`
@@ -8213,7 +8227,7 @@ type SendStickerParams = {
   reply_parameters?: [ReplyParameters](#replyparameters);
   sticker: [InputFile](#inputfile) | string;
   suggested_post_parameters?: [SuggestedPostParameters](#suggestedpostparameters);
-} & _ChatOrCallbackReply;
+} & [ChatOrCallbackReply](#chatorcallbackreply);
 ```
 
 ### `SendStickerResult`
@@ -8246,7 +8260,7 @@ type SendVenueParams = {
   reply_parameters?: [ReplyParameters](#replyparameters);
   suggested_post_parameters?: [SuggestedPostParameters](#suggestedpostparameters);
   title: string;
-} & _ChatOrCallbackReply;
+} & [ChatOrCallbackReply](#chatorcallbackreply);
 ```
 
 ### `SendVenueResult`
@@ -8275,7 +8289,7 @@ type SendVideoNoteParams = {
   suggested_post_parameters?: [SuggestedPostParameters](#suggestedpostparameters);
   thumbnail?: [InputFile](#inputfile) | string;
   video_note: [InputFile](#inputfile) | string;
-} & _ChatOrCallbackReply;
+} & [ChatOrCallbackReply](#chatorcallbackreply);
 ```
 
 ### `SendVideoNoteResult`
@@ -8313,7 +8327,7 @@ type SendVideoParams = {
   thumbnail?: [InputFile](#inputfile) | string;
   video: [InputFile](#inputfile) | string;
   width?: number;
-} & _ChatOrCallbackReply;
+} & [ChatOrCallbackReply](#chatorcallbackreply);
 ```
 
 ### `SendVideoResult`
@@ -8343,7 +8357,7 @@ type SendVoiceParams = {
   reply_parameters?: [ReplyParameters](#replyparameters);
   suggested_post_parameters?: [SuggestedPostParameters](#suggestedpostparameters);
   voice: [InputFile](#inputfile) | string;
-} & _ChatOrCallbackReply;
+} & [ChatOrCallbackReply](#chatorcallbackreply);
 ```
 
 ### `SendVoiceResult`
