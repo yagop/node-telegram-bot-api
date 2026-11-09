@@ -103,6 +103,14 @@ export class Api {
   sendVideoNote(params: T.SendVideoNoteParams, signal?: AbortSignal): Promise<T.SendVideoNoteResult> {
     return this.request<T.SendVideoNoteResult>("sendVideoNote", params, signal);
   }
+  /** {@link https://core.telegram.org/bots/api#sendwidget sendWidget} */
+  sendWidget(params: T.SendWidgetParams, signal?: AbortSignal): Promise<T.SendWidgetResult> {
+    return this.request<T.SendWidgetResult>("sendWidget", params, signal);
+  }
+  /** {@link https://core.telegram.org/bots/api#sendsharedwidget sendSharedWidget} */
+  sendSharedWidget(params: T.SendSharedWidgetParams, signal?: AbortSignal): Promise<T.SendSharedWidgetResult> {
+    return this.request<T.SendSharedWidgetResult>("sendSharedWidget", params, signal);
+  }
   /** {@link https://core.telegram.org/bots/api#sendpaidmedia sendPaidMedia} */
   sendPaidMedia(params: T.SendPaidMediaParams, signal?: AbortSignal): Promise<T.SendPaidMediaResult> {
     return this.request<T.SendPaidMediaResult>("sendPaidMedia", params, signal);
@@ -287,6 +295,10 @@ export class Api {
   getChatMember(params: T.GetChatMemberParams, signal?: AbortSignal): Promise<T.GetChatMemberResult> {
     return this.request<T.GetChatMemberResult>("getChatMember", params, signal);
   }
+  /** {@link https://core.telegram.org/bots/api#getchatsharethemebackdrops getChatShareThemeBackdrops} */
+  getChatShareThemeBackdrops(signal?: AbortSignal): Promise<T.GetChatShareThemeBackdropsResult> {
+    return this.request<T.GetChatShareThemeBackdropsResult>("getChatShareThemeBackdrops", undefined, signal);
+  }
   /** {@link https://core.telegram.org/bots/api#getuserpersonalchatmessages getUserPersonalChatMessages} */
   getUserPersonalChatMessages(params: T.GetUserPersonalChatMessagesParams, signal?: AbortSignal): Promise<T.GetUserPersonalChatMessagesResult> {
     return this.request<T.GetUserPersonalChatMessagesResult>("getUserPersonalChatMessages", params, signal);
@@ -354,6 +366,10 @@ export class Api {
   /** {@link https://core.telegram.org/bots/api#answercallbackquery answerCallbackQuery} */
   answerCallbackQuery(params: T.AnswerCallbackQueryParams, signal?: AbortSignal): Promise<T.AnswerCallbackQueryResult> {
     return this.request<T.AnswerCallbackQueryResult>("answerCallbackQuery", params, signal);
+  }
+  /** {@link https://core.telegram.org/bots/api#answerwidgetquery answerWidgetQuery} */
+  answerWidgetQuery(params: T.AnswerWidgetQueryParams, signal?: AbortSignal): Promise<T.AnswerWidgetQueryResult> {
+    return this.request<T.AnswerWidgetQueryResult>("answerWidgetQuery", params, signal);
   }
   /** {@link https://core.telegram.org/bots/api#answerguestquery answerGuestQuery} */
   answerGuestQuery(params: T.AnswerGuestQueryParams, signal?: AbortSignal): Promise<T.AnswerGuestQueryResult> {
@@ -523,6 +539,10 @@ export class Api {
   getChatGifts(params: T.GetChatGiftsParams, signal?: AbortSignal): Promise<T.GetChatGiftsResult> {
     return this.request<T.GetChatGiftsResult>("getChatGifts", params, signal);
   }
+  /** {@link https://core.telegram.org/bots/api#getuniquegift getUniqueGift} */
+  getUniqueGift(params: T.GetUniqueGiftParams, signal?: AbortSignal): Promise<T.GetUniqueGiftResult> {
+    return this.request<T.GetUniqueGiftResult>("getUniqueGift", params, signal);
+  }
   /** {@link https://core.telegram.org/bots/api#convertgifttostars convertGiftToStars} */
   convertGiftToStars(params: T.ConvertGiftToStarsParams, signal?: AbortSignal): Promise<T.ConvertGiftToStarsResult> {
     return this.request<T.ConvertGiftToStarsResult>("convertGiftToStars", params, signal);
@@ -534,6 +554,10 @@ export class Api {
   /** {@link https://core.telegram.org/bots/api#transfergift transferGift} */
   transferGift(params: T.TransferGiftParams, signal?: AbortSignal): Promise<T.TransferGiftResult> {
     return this.request<T.TransferGiftResult>("transferGift", params, signal);
+  }
+  /** {@link https://core.telegram.org/bots/api#deletebusinessaccountgift deleteBusinessAccountGift} */
+  deleteBusinessAccountGift(params: T.DeleteBusinessAccountGiftParams, signal?: AbortSignal): Promise<T.DeleteBusinessAccountGiftResult> {
+    return this.request<T.DeleteBusinessAccountGiftResult>("deleteBusinessAccountGift", params, signal);
   }
   /** {@link https://core.telegram.org/bots/api#poststory postStory} */
   postStory(params: T.PostStoryParams, signal?: AbortSignal): Promise<T.PostStoryResult> {
@@ -586,6 +610,14 @@ export class Api {
   /** {@link https://core.telegram.org/bots/api#editmessagechecklist editMessageChecklist} */
   editMessageChecklist(params: T.EditMessageChecklistParams, signal?: AbortSignal): Promise<T.EditMessageChecklistResult> {
     return this.request<T.EditMessageChecklistResult>("editMessageChecklist", params, signal);
+  }
+  /** {@link https://core.telegram.org/bots/api#editmessagewidgetdata editMessageWidgetData} */
+  editMessageWidgetData(params?: T.EditMessageWidgetDataParams, signal?: AbortSignal): Promise<T.EditMessageWidgetDataResult> {
+    return this.request<T.EditMessageWidgetDataResult>("editMessageWidgetData", params, signal);
+  }
+  /** {@link https://core.telegram.org/bots/api#editsharedwidgetdata editSharedWidgetData} */
+  editSharedWidgetData(params: T.EditSharedWidgetDataParams, signal?: AbortSignal): Promise<T.EditSharedWidgetDataResult> {
+    return this.request<T.EditSharedWidgetDataResult>("editSharedWidgetData", params, signal);
   }
   /** {@link https://core.telegram.org/bots/api#editmessagereplymarkup editMessageReplyMarkup} */
   editMessageReplyMarkup(params?: T.EditMessageReplyMarkupParams, signal?: AbortSignal): Promise<T.EditMessageReplyMarkupResult> {

@@ -128,6 +128,10 @@ export class RichTextBuilder {
     });
   }
 
+  tonAddress(content: RichTextContent, address: string): this {
+    return this.push({ type: "ton_address", text: asRichText(content), address });
+  }
+
   /** A mention by username (the `@handle` form). */
   mention(content: RichTextContent, username: string): this {
     return this.push({ type: "mention", text: asRichText(content), username });

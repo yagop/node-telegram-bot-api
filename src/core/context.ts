@@ -68,6 +68,9 @@ const chatOf: { [K in UpdateType]: (u: Variant<K>) => Chat | undefined } = {
   managed_bot: () => undefined,
   subscription: () => undefined,
   stopped_message_generation: (u) => u.stopped_message_generation.chat,
+  widget_query: (u) => u.widget_query.chat,
+  // A shared widget was forwarded elsewhere; the query names no chat.
+  shared_widget_query: () => undefined,
 };
 
 /**
@@ -121,6 +124,8 @@ const replySourceOf: { [K in UpdateType]: (u: Variant<K>) => ReplySource | undef
   managed_bot: () => undefined,
   subscription: () => undefined,
   stopped_message_generation: () => undefined,
+  widget_query: () => undefined,
+  shared_widget_query: () => undefined,
 };
 
 /** The routing params `ctx.reply` infers from the incoming message. */
@@ -191,6 +196,8 @@ const fromOf: { [K in UpdateType]: (u: Variant<K>) => User | undefined } = {
   subscription: (u) => u.subscription.user,
   // MessageGenerationStopped carries only a chat, no acting user.
   stopped_message_generation: () => undefined,
+  widget_query: (u) => u.widget_query.from,
+  shared_widget_query: (u) => u.shared_widget_query.from,
 };
 
 /**

@@ -865,6 +865,13 @@ describe("methods", () => {
     });
   });
 
+  method("getChatShareThemeBackdrops", () => {
+    test("returns chat share theme backdrops", async () => {
+      const res = await api.getChatShareThemeBackdrops();
+      expect(Array.isArray(res.backdrops)).toBe(true);
+    });
+  });
+
   method("setChatStickerSet", () => {
     test("sets the chat sticker set", async () => {
       await api.setChatStickerSet({ chat_id: chatId, sticker_set_name: "pusheen" });
@@ -1299,6 +1306,20 @@ describe("methods", () => {
   method("convertGiftToStars", () => {
     test("converts a gift to stars", async () => {
       await api.convertGiftToStars({ business_connection_id: "e2e", owned_gift_id: "e2e" });
+    });
+  });
+
+  method("deleteBusinessAccountGift", () => {
+    test("deletes a business account gift", async () => {
+      await api.deleteBusinessAccountGift({ business_connection_id: "e2e", owned_gift_id: "e2e" });
+    });
+  });
+
+  method("getUniqueGift", () => {
+    test("returns a unique gift", async () => {
+      // Any public collectible works; #1 of an early collection is a stable pick.
+      const gift = await api.getUniqueGift({ name: "PlushPepe-1" });
+      expect(gift.name).toBe("PlushPepe-1");
     });
   });
 
@@ -1857,6 +1878,56 @@ describe("methods", () => {
       });
       const ok = await api.deleteStickerSet({ name });
       expect(ok).toBe(true);
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // Widgets (production allows them in private chats only, so these target the
+  // private chat of TEST_USER_ID, who must have started the bot; sent silently)
+  // -------------------------------------------------------------------------
+
+  // A shared widget carries the widget.id that sendSharedWidget/editSharedWidgetData need.
+  async function sendSharedWidgetFixture(): Promise<string> {
+    const msg = await api.sendWidget({ chat_id: await targetUserId(), html: "<b>e2e</b>", is_shared: true, disable_notification: true });
+    expect(msg.widget?.id).toBeDefined();
+    return msg.widget?.id as string;
+  }
+
+  method("sendWidget", () => {
+    test("sends a widget", async () => {
+      const msg = await api.sendWidget({ chat_id: await targetUserId(), html: "<b>e2e</b>", chat_data: "e2e", disable_notification: true });
+      expect(msg.widget?.html).toBe("<b>e2e</b>");
+    });
+  });
+
+  method("sendSharedWidget", () => {
+    test("sends a shared widget again", async () => {
+      const widget_id = await sendSharedWidgetFixture();
+      const msg = await api.sendSharedWidget({ chat_id: await targetUserId(), widget_id, disable_notification: true });
+      expect(msg.widget?.id).toBe(widget_id);
+    });
+  });
+
+  method("editMessageWidgetData", () => {
+    test("edits the data of a widget message", async () => {
+      const chat_id = await targetUserId();
+      const msg = await api.sendWidget({ chat_id, html: "<b>e2e</b>", disable_notification: true });
+      const ok = await api.editMessageWidgetData({ chat_id, message_id: msg.message_id, chat_data: "e2e edited" });
+      expect(ok).toBe(true);
+    });
+  });
+
+  method("editSharedWidgetData", () => {
+    test("edits the public data of a shared widget", async () => {
+      const widget_id = await sendSharedWidgetFixture();
+      const ok = await api.editSharedWidgetData({ widget_id, public_data: "e2e edited" });
+      expect(ok).toBe(true);
+    });
+  });
+
+  method("answerWidgetQuery", () => {
+    test("answers a widget query", async () => {
+      await api.answerWidgetQuery({ widget_query_id: "e2e" });
     });
   });
 
