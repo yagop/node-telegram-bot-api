@@ -25,6 +25,8 @@ relative `../src` paths.
 | [`16-sessions.ts`](./16-sessions.ts) | `createSession()` + `session.get(ctx)`, durable `FileSessionStorage` (`/node`), `taggedReplies` for a name->email reply flow | `BOT_TOKEN=... bun examples/16-sessions.ts` |
 | [`17-callback-tracking.ts`](./17-callback-tracking.ts) | Routing button presses two ways: stateless `callback_data` paging, vs. `expectCallback`/`matchCallback(ctx, { once: true })` for an oversized, private, one-shot confirmation | `BOT_TOKEN=... bun examples/17-callback-tracking.ts` |
 | [`18-reply-tracking-lru.ts`](./18-reply-tracking-lru.ts) | Bounding the reply/press tables with a per-chat LRU: `createSession({ replyTracking: { maxEntriesPerChat, maxBytesPerChat, defaultTtlSeconds, slidingTtl } })`, evicting least-recently-used markers | `BOT_TOKEN=... bun examples/18-reply-tracking-lru.ts` |
+| [`19-widgets.ts`](./19-widgets.ts) | `sendWidget` with `allow_queries`: the page calls `TelegramWidget.request()`, the bot answers the `widget_query` with `answerWidgetQuery` and updates `chat_data` with `editMessageWidgetData` | `BOT_TOKEN=... bun examples/19-widgets.ts` |
+| [`20-ephemeral-replies.ts`](./20-ephemeral-replies.ts) | A button whose press gets an "Only visible to you" reply: `ephemeral_message_parameters.callback_query_id` without `chat_id`, then `answerCallbackQuery` | `BOT_TOKEN=... bun examples/20-ephemeral-replies.ts` |
 
 The framework webhook examples (03-05) target serverless/framework platforms and
 aren't standalone-runnable here, but they typecheck and show the exact wiring.
