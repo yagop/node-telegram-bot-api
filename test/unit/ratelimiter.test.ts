@@ -123,6 +123,49 @@ describe("RateLimiter", () => {
     assert.strictEqual(true, true);
   });
 
+  // Reads a bucket's private token count, like the LRU test reads the private map.
+  const tokens = (bucket: unknown): number => (bucket as { tokens: number }).tokens;
+  const internals = (limiter: RateLimiter) =>
+    limiter as unknown as { global: TokenBucket; chats: Map<string, TokenBucket> };
+
+  test("a request waiting on its chat holds no global token (#1390)", async () => {
+    const clock = fakeClock();
+    const limiter = new RateLimiter({ global: 2, perChat: 1, now: clock.now });
+    await limiter.acquire("A"); // global 2 -> 1, chat A 1 -> 0
+
+    // A second send to A waits on A's bucket. Taking the global token first
+    // would leave the global bucket empty while it waits.
+    const controller = new AbortController();
+    const pending = limiter.acquire("A", controller.signal);
+    assert.strictEqual(await settledNextTick(pending), false);
+    assert.strictEqual(tokens(internals(limiter).global), 1);
+
+    // So another chat still gets the remaining global token right away.
+    assert.strictEqual(await settledNextTick(limiter.acquire("B")), true);
+
+    controller.abort(new Error("stop waiting"));
+    await assert.rejects(pending, /stop waiting/);
+  });
+
+  test("a request waiting on the global cap holds no chat token", async () => {
+    const clock = fakeClock();
+    const limiter = new RateLimiter({ global: 1, perChat: 1, now: clock.now });
+    await limiter.acquire("X"); // drains the only global token
+
+    // A send to A waits on the global bucket. Taking A's token first would let
+    // a later send to A go out right behind it once the global cap frees up.
+    const controller = new AbortController();
+    const pending = limiter.acquire("A", controller.signal);
+    assert.strictEqual(await settledNextTick(pending), false);
+    assert.strictEqual(tokens(internals(limiter).chats.get("A")), 1);
+
+    // An abort consumes nothing from either bucket.
+    controller.abort(new Error("stop waiting"));
+    await assert.rejects(pending, /stop waiting/);
+    assert.strictEqual(tokens(internals(limiter).chats.get("A")), 1);
+    assert.strictEqual(tokens(internals(limiter).global), 0);
+  });
+
   test("per-chat buckets are evicted LRU past maxChatBuckets", async () => {
     const clock = fakeClock();
     const limiter = new RateLimiter({ perChat: 1, maxChatBuckets: 2, now: clock.now });

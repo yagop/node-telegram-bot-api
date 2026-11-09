@@ -71,6 +71,14 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   `verifyUser` and `verifyChat`.
 - Added `PaidMessagesWaived` and `Message.paid_messages_waived`.
 
+### Rate limiting
+
+- `rateLimit: { global, perChat }` now takes the global and the per-chat token together,
+  once both are available. Before, a request queued behind a busy chat spent its global
+  token while it waited, so a chat backlog could later push sends over the global cap
+  (#1390). Neither token is spent while a request waits on the other, and an aborted
+  wait spends neither.
+
 ## [2.3.0][2.3.0] - 2026-11-04
 
 Stable release of the `2.3.0` line. It includes everything from

@@ -58,16 +58,32 @@ export class TokenBucket {
    * decrement happens only once the wait is in the past, so an aborted take
    * consumes no token.
    */
-  async take(signal?: AbortSignal): Promise<void> {
+  take(signal?: AbortSignal): Promise<void> {
+    return TokenBucket.takeAll([this], signal);
+  }
+
+  /**
+   * Wait until EVERY bucket has a token, then consume one from each in the same
+   * step. Taking them one after another would spend the first bucket's token
+   * while the request still waits on the next, so it would go out later without
+   * a fresh check of the first bucket's rate. Same recheck loop and abort
+   * guarantee as `take()`: nothing is consumed until all waits are in the past.
+   */
+  static async takeAll(buckets: readonly TokenBucket[], signal?: AbortSignal): Promise<void> {
     for (;;) {
-      this.refill();
-      const wait = this.waitMs();
+      let wait = 0;
+      for (const bucket of buckets) {
+        bucket.refill();
+        wait = Math.max(wait, bucket.waitMs());
+      }
       if (wait <= 0) {
-        this.tokens -= 1;
+        for (const bucket of buckets) {
+          bucket.tokens -= 1;
+        }
         return;
       }
       await delay(wait, signal); // throws on abort -> propagates without consuming a token
-      // loop: refill and recheck (another take may have consumed the token first)
+      // loop: refill and recheck (another take may have consumed a token first)
     }
   }
 }
@@ -87,9 +103,12 @@ export interface RateLimitOptions {
 }
 
 /**
- * Combines a global token bucket with per-chat buckets. `acquire()` awaits the
- * global bucket (when configured) and, when a `chatId` is present and `perChat`
- * is set, the bucket for that chat (created on first use, keyed by string id).
+ * Combines a global token bucket with per-chat buckets. `acquire()` waits until
+ * the global bucket (when configured) and, when a `chatId` is present and
+ * `perChat` is set, the bucket for that chat (created on first use, keyed by
+ * string id) both have a token, then takes both at once - so a request queued
+ * behind a busy chat holds no global token, and one queued behind the global
+ * cap holds no chat token. Both limits are checked at send time.
  * Per-chat buckets are cached as a bounded LRU: a chat that is accessed is moved
  * to most-recently-used, and once `maxChatBuckets` is reached the
  * least-recently-used chat's bucket is evicted, so the map cannot grow without
@@ -114,11 +133,15 @@ export class RateLimiter {
   }
 
   async acquire(chatId: string | number | undefined, signal?: AbortSignal): Promise<void> {
+    const buckets: TokenBucket[] = [];
     if (this.global) {
-      await this.global.take(signal);
+      buckets.push(this.global);
     }
     if (this.perChatRate !== undefined && chatId !== undefined) {
-      await this.chatBucket(String(chatId)).take(signal);
+      buckets.push(this.chatBucket(String(chatId)));
+    }
+    if (buckets.length > 0) {
+      await TokenBucket.takeAll(buckets, signal);
     }
   }
 
