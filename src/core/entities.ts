@@ -19,6 +19,8 @@ export const EntityType = {
   Url: "url",
   Email: "email",
   PhoneNumber: "phone_number",
+  BankCardNumber: "bank_card_number",
+  TonAddress: "ton_address",
   Bold: "bold",
   Italic: "italic",
   Underline: "underline",
@@ -31,6 +33,7 @@ export const EntityType = {
   TextLink: "text_link",
   TextMention: "text_mention",
   CustomEmoji: "custom_emoji",
+  DateTime: "date_time",
 } as const;
 
 export interface BuiltEntities {

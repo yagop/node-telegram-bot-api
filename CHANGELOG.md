@@ -5,6 +5,58 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased][Unreleased]
 
+### Bot API 10.4 (November 9, 2026)
+
+#### Widgets
+
+- Added `sendWidget`, `sendSharedWidget`, `answerWidgetQuery`, `editMessageWidgetData`,
+  and `editSharedWidgetData`.
+- Added `Widget` and `widget` on `Message` and `ExternalReplyInfo`.
+- Added `WidgetQuery`/`SharedWidgetQuery` and the `widget_query`/`shared_widget_query`
+  update types, plus `WidgetQueryType` (`WidgetQueryTypeData`, `WidgetQueryTypeSignData`,
+  `WidgetQueryTypeSentTransaction`) and `WidgetQueryWallet`.
+- Added `InputWidgetMessageContent` and `InputSharedWidgetMessageContent`.
+- `ctx.chat`/`ctx.from` resolve for widget queries (`shared_widget_query` has no chat).
+
+#### Ephemeral Messages
+
+- `chat_id` in the ephemeral-capable send methods and `receiver_user_id` in
+  `EphemeralMessageParameters` are now optional, so `callback_query_id` alone sends an
+  ephemeral reply to a callback query (in any chat except channel direct-messages chats).
+
+#### Quotes from rich messages
+
+- Added `rich_texts` to `TextQuote` and `quote_rich_texts` to `ReplyParameters`.
+
+#### TON wallet
+
+- Added `TonWalletCard`, `TonWalletCardSticker`, `TonNft`, `TonNftAttribute`, and
+  `ChatFullInfo.ton_wallet_card`.
+- Added `TonWalletTransfer` and `Message.ton_wallet_transfer`.
+- Renamed `StoryAreaPosition` to `AreaPosition`, following the Bot API.
+  `StoryAreaPosition` stays as a deprecated alias.
+
+#### Chat share themes
+
+- Added `ChatShareTheme` (`ChatShareThemeEmoji`, `ChatShareThemeUniqueGift`),
+  `ChatFullInfo.share_theme`, and `EmojiType` (`EmojiTypeEmoji`, `EmojiTypeCustomEmoji`).
+- Added `ChatShareThemeBackdrop`, `ChatShareThemeBackdrops`, and
+  `getChatShareThemeBackdrops`.
+
+#### Gifts
+
+- Added `getUniqueGift` and `deleteBusinessAccountGift`.
+
+#### General
+
+- Added `RichTextTonAddress` (with `RichTextBuilder.tonAddress()`) and the
+  `ton_address`/`bank_card_number` entity types (with `EntityType.TonAddress` /
+  `EntityType.BankCardNumber`). `EntityType` also gains the previously missing
+  `DateTime`.
+- Added `custom_description_parse_mode` and `custom_description_entities` to
+  `verifyUser` and `verifyChat`.
+- Added `PaidMessagesWaived` and `Message.paid_messages_waived`.
+
 ## [2.3.0][2.3.0] - 2026-11-04
 
 Stable release of the `2.3.0` line. It includes everything from

@@ -37,6 +37,7 @@ An animated profile photo (a video); `main_frame_timestamp` picks the still fram
 | `answerPreCheckoutQuery` | `params`: [AnswerPreCheckoutQueryParams](#answerprecheckoutqueryparams), `signal?`: AbortSignal | Promise<boolean> | [answerPreCheckoutQuery](https://core.telegram.org/bots/api#answerprecheckoutquery) |
 | `answerShippingQuery` | `params`: [AnswerShippingQueryParams](#answershippingqueryparams), `signal?`: AbortSignal | Promise<boolean> | [answerShippingQuery](https://core.telegram.org/bots/api#answershippingquery) |
 | `answerWebAppQuery` | `params`: [AnswerWebAppQueryParams](#answerwebappqueryparams), `signal?`: AbortSignal | Promise<[SentWebAppMessage](#sentwebappmessage)> | [answerWebAppQuery](https://core.telegram.org/bots/api#answerwebappquery) |
+| `answerWidgetQuery` | `params`: [AnswerWidgetQueryParams](#answerwidgetqueryparams), `signal?`: AbortSignal | Promise<boolean> | [answerWidgetQuery](https://core.telegram.org/bots/api#answerwidgetquery) |
 | `approveChatJoinRequest` | `params`: [ApproveChatJoinRequestParams](#approvechatjoinrequestparams), `signal?`: AbortSignal | Promise<boolean> | [approveChatJoinRequest](https://core.telegram.org/bots/api#approvechatjoinrequest) |
 | `approveSuggestedPost` | `params`: [ApproveSuggestedPostParams](#approvesuggestedpostparams), `signal?`: AbortSignal | Promise<boolean> | [approveSuggestedPost](https://core.telegram.org/bots/api#approvesuggestedpost) |
 | `banChatMember` | `params`: [BanChatMemberParams](#banchatmemberparams), `signal?`: AbortSignal | Promise<boolean> | [banChatMember](https://core.telegram.org/bots/api#banchatmember) |
@@ -55,6 +56,7 @@ An animated profile photo (a video); `main_frame_timestamp` picks the still fram
 | `declineChatJoinRequest` | `params`: [DeclineChatJoinRequestParams](#declinechatjoinrequestparams), `signal?`: AbortSignal | Promise<boolean> | [declineChatJoinRequest](https://core.telegram.org/bots/api#declinechatjoinrequest) |
 | `declineSuggestedPost` | `params`: [DeclineSuggestedPostParams](#declinesuggestedpostparams), `signal?`: AbortSignal | Promise<boolean> | [declineSuggestedPost](https://core.telegram.org/bots/api#declinesuggestedpost) |
 | `deleteAllMessageReactions` | `params`: [DeleteAllMessageReactionsParams](#deleteallmessagereactionsparams), `signal?`: AbortSignal | Promise<boolean> | [deleteAllMessageReactions](https://core.telegram.org/bots/api#deleteallmessagereactions) |
+| `deleteBusinessAccountGift` | `params`: [DeleteBusinessAccountGiftParams](#deletebusinessaccountgiftparams), `signal?`: AbortSignal | Promise<boolean> | [deleteBusinessAccountGift](https://core.telegram.org/bots/api#deletebusinessaccountgift) |
 | `deleteBusinessMessages` | `params`: [DeleteBusinessMessagesParams](#deletebusinessmessagesparams), `signal?`: AbortSignal | Promise<boolean> | [deleteBusinessMessages](https://core.telegram.org/bots/api#deletebusinessmessages) |
 | `deleteChatPhoto` | `params`: [DeleteChatPhotoParams](#deletechatphotoparams), `signal?`: AbortSignal | Promise<boolean> | [deleteChatPhoto](https://core.telegram.org/bots/api#deletechatphoto) |
 | `deleteChatStickerSet` | `params`: [DeleteChatStickerSetParams](#deletechatstickersetparams), `signal?`: AbortSignal | Promise<boolean> | [deleteChatStickerSet](https://core.telegram.org/bots/api#deletechatstickerset) |
@@ -82,6 +84,8 @@ An animated profile photo (a video); `main_frame_timestamp` picks the still fram
 | `editMessageMedia` | `params`: [EditMessageMediaParams](#editmessagemediaparams), `signal?`: AbortSignal | Promise<[EditMessageMediaResult](#editmessagemediaresult)> | [editMessageMedia](https://core.telegram.org/bots/api#editmessagemedia) |
 | `editMessageReplyMarkup` | `params?`: [EditMessageReplyMarkupParams](#editmessagereplymarkupparams), `signal?`: AbortSignal | Promise<[EditMessageReplyMarkupResult](#editmessagereplymarkupresult)> | [editMessageReplyMarkup](https://core.telegram.org/bots/api#editmessagereplymarkup) |
 | `editMessageText` | `params?`: [EditMessageTextParams](#editmessagetextparams), `signal?`: AbortSignal | Promise<[EditMessageTextResult](#editmessagetextresult)> | [editMessageText](https://core.telegram.org/bots/api#editmessagetext) |
+| `editMessageWidgetData` | `params?`: [EditMessageWidgetDataParams](#editmessagewidgetdataparams), `signal?`: AbortSignal | Promise<boolean> | [editMessageWidgetData](https://core.telegram.org/bots/api#editmessagewidgetdata) |
+| `editSharedWidgetData` | `params`: [EditSharedWidgetDataParams](#editsharedwidgetdataparams), `signal?`: AbortSignal | Promise<boolean> | [editSharedWidgetData](https://core.telegram.org/bots/api#editsharedwidgetdata) |
 | `editStory` | `params`: [EditStoryParams](#editstoryparams), `signal?`: AbortSignal | Promise<[Story](#story)> | [editStory](https://core.telegram.org/bots/api#editstory) |
 | `editUserStarSubscription` | `params`: [EditUserStarSubscriptionParams](#edituserstarsubscriptionparams), `signal?`: AbortSignal | Promise<boolean> | [editUserStarSubscription](https://core.telegram.org/bots/api#edituserstarsubscription) |
 | `exportChatInviteLink` | `params`: [ExportChatInviteLinkParams](#exportchatinvitelinkparams), `signal?`: AbortSignal | Promise<string> | [exportChatInviteLink](https://core.telegram.org/bots/api#exportchatinvitelink) |
@@ -97,6 +101,7 @@ An animated profile photo (a video); `main_frame_timestamp` picks the still fram
 | `getChatMember` | `params`: [GetChatMemberParams](#getchatmemberparams), `signal?`: AbortSignal | Promise<[ChatMember](#chatmember)> | [getChatMember](https://core.telegram.org/bots/api#getchatmember) |
 | `getChatMemberCount` | `params`: [GetChatMemberCountParams](#getchatmembercountparams), `signal?`: AbortSignal | Promise<number> | [getChatMemberCount](https://core.telegram.org/bots/api#getchatmembercount) |
 | `getChatMenuButton` | `params?`: [GetChatMenuButtonParams](#getchatmenubuttonparams), `signal?`: AbortSignal | Promise<[MenuButton](#menubutton)> | [getChatMenuButton](https://core.telegram.org/bots/api#getchatmenubutton) |
+| `getChatShareThemeBackdrops` | `signal?`: AbortSignal | Promise<[ChatShareThemeBackdrops](#chatsharethemebackdrops)> | [getChatShareThemeBackdrops](https://core.telegram.org/bots/api#getchatsharethemebackdrops) |
 | `getCustomEmojiStickers` | `params`: [GetCustomEmojiStickersParams](#getcustomemojistickersparams), `signal?`: AbortSignal | Promise<[GetCustomEmojiStickersResult](#getcustomemojistickersresult)> | [getCustomEmojiStickers](https://core.telegram.org/bots/api#getcustomemojistickers) |
 | `getFile` | `params`: [GetFileParams](#getfileparams), `signal?`: AbortSignal | Promise<[File](#file)> | [getFile](https://core.telegram.org/bots/api#getfile) |
 | `getForumTopicIconStickers` | `signal?`: AbortSignal | Promise<[GetForumTopicIconStickersResult](#getforumtopiciconstickersresult)> | [getForumTopicIconStickers](https://core.telegram.org/bots/api#getforumtopiciconstickers) |
@@ -112,6 +117,7 @@ An animated profile photo (a video); `main_frame_timestamp` picks the still fram
 | `getMyStarBalance` | `signal?`: AbortSignal | Promise<[StarAmount](#staramount)> | [getMyStarBalance](https://core.telegram.org/bots/api#getmystarbalance) |
 | `getStarTransactions` | `params?`: [GetStarTransactionsParams](#getstartransactionsparams), `signal?`: AbortSignal | Promise<[StarTransactions](#startransactions)> | [getStarTransactions](https://core.telegram.org/bots/api#getstartransactions) |
 | `getStickerSet` | `params`: [GetStickerSetParams](#getstickersetparams), `signal?`: AbortSignal | Promise<[StickerSet](#stickerset)> | [getStickerSet](https://core.telegram.org/bots/api#getstickerset) |
+| `getUniqueGift` | `params`: [GetUniqueGiftParams](#getuniquegiftparams), `signal?`: AbortSignal | Promise<[UniqueGift](#uniquegift)> | [getUniqueGift](https://core.telegram.org/bots/api#getuniquegift) |
 | `getUpdates` | `params?`: [GetUpdatesParams](#getupdatesparams), `signal?`: AbortSignal | Promise<[GetUpdatesResult](#getupdatesresult)> | [getUpdates](https://core.telegram.org/bots/api#getupdates) |
 | `getUserChatBoosts` | `params`: [GetUserChatBoostsParams](#getuserchatboostsparams), `signal?`: AbortSignal | Promise<[UserChatBoosts](#userchatboosts)> | [getUserChatBoosts](https://core.telegram.org/bots/api#getuserchatboosts) |
 | `getUserGifts` | `params`: [GetUserGiftsParams](#getusergiftsparams), `signal?`: AbortSignal | Promise<[OwnedGifts](#ownedgifts)> | [getUserGifts](https://core.telegram.org/bots/api#getusergifts) |
@@ -162,11 +168,13 @@ An animated profile photo (a video); `main_frame_timestamp` picks the still fram
 | `sendPoll` | `params`: [SendPollParams](#sendpollparams), `signal?`: AbortSignal | Promise<[Message](#message)> | [sendPoll](https://core.telegram.org/bots/api#sendpoll) |
 | `sendRichMessage` | `params`: [SendRichMessageParams](#sendrichmessageparams), `signal?`: AbortSignal | Promise<[Message](#message)> | [sendRichMessage](https://core.telegram.org/bots/api#sendrichmessage) |
 | `sendRichMessageDraft` | `params`: [SendRichMessageDraftParams](#sendrichmessagedraftparams), `signal?`: AbortSignal | Promise<boolean> | [sendRichMessageDraft](https://core.telegram.org/bots/api#sendrichmessagedraft) |
+| `sendSharedWidget` | `params`: [SendSharedWidgetParams](#sendsharedwidgetparams), `signal?`: AbortSignal | Promise<[Message](#message)> | [sendSharedWidget](https://core.telegram.org/bots/api#sendsharedwidget) |
 | `sendSticker` | `params`: [SendStickerParams](#sendstickerparams), `signal?`: AbortSignal | Promise<[Message](#message)> | [sendSticker](https://core.telegram.org/bots/api#sendsticker) |
 | `sendVenue` | `params`: [SendVenueParams](#sendvenueparams), `signal?`: AbortSignal | Promise<[Message](#message)> | [sendVenue](https://core.telegram.org/bots/api#sendvenue) |
 | `sendVideo` | `params`: [SendVideoParams](#sendvideoparams), `signal?`: AbortSignal | Promise<[Message](#message)> | [sendVideo](https://core.telegram.org/bots/api#sendvideo) |
 | `sendVideoNote` | `params`: [SendVideoNoteParams](#sendvideonoteparams), `signal?`: AbortSignal | Promise<[Message](#message)> | [sendVideoNote](https://core.telegram.org/bots/api#sendvideonote) |
 | `sendVoice` | `params`: [SendVoiceParams](#sendvoiceparams), `signal?`: AbortSignal | Promise<[Message](#message)> | [sendVoice](https://core.telegram.org/bots/api#sendvoice) |
+| `sendWidget` | `params`: [SendWidgetParams](#sendwidgetparams), `signal?`: AbortSignal | Promise<[Message](#message)> | [sendWidget](https://core.telegram.org/bots/api#sendwidget) |
 | `setBusinessAccountBio` | `params`: [SetBusinessAccountBioParams](#setbusinessaccountbioparams), `signal?`: AbortSignal | Promise<boolean> | [setBusinessAccountBio](https://core.telegram.org/bots/api#setbusinessaccountbio) |
 | `setBusinessAccountGiftSettings` | `params`: [SetBusinessAccountGiftSettingsParams](#setbusinessaccountgiftsettingsparams), `signal?`: AbortSignal | Promise<boolean> | [setBusinessAccountGiftSettings](https://core.telegram.org/bots/api#setbusinessaccountgiftsettings) |
 | `setBusinessAccountName` | `params`: [SetBusinessAccountNameParams](#setbusinessaccountnameparams), `signal?`: AbortSignal | Promise<boolean> | [setBusinessAccountName](https://core.telegram.org/bots/api#setbusinessaccountname) |
@@ -228,7 +236,7 @@ An animated profile photo (a video); `main_frame_timestamp` picks the still fram
 | `hears` | `trigger`: string \| RegExp \| (string \| RegExp)[], `...handlers`: [Middleware](#middleware)<[Context](#context)>[] | this | Match message text: a string matches exactly (sets `ctx.match` to the text); a RegExp matches when `text.match(re)` is non-null (sets `ctx.match` to the `RegExpMatchArray`). |
 | `init` | - | Promise<void> | Run every registered middleware's `init()` once, in registration order. Memoized, and awaited by `startPolling()` and `handleUpdate()`, so setup failures surface at boot (or on the first webhook invocation) rather than as a per-update lazy path. Call it yourself to fail fast before serving anything.  A failure is not cached: the next call retries, and *resumes* at the plugin that failed - one whose setup already completed is not run a second time, so a plugin that opens a resource per call cannot leak one per retry. |
 | `isRunning` | - | boolean | - |
-| `on` | `kind`: "message" \| "edited_message" \| "channel_post" \| "edited_channel_post" \| "business_connection" \| "business_message" \| "edited_business_message" \| "deleted_business_messages" \| "guest_message" \| "message_reaction" \| "message_reaction_count" \| "inline_query" \| "chosen_inline_result" \| "callback_query" \| "shipping_query" \| "pre_checkout_query" \| "purchased_paid_media" \| "poll" \| "poll_answer" \| "my_chat_member" \| "chat_member" \| "chat_join_request" \| "chat_boost" \| "removed_chat_boost" \| "managed_bot" \| "subscription" \| "stopped_message_generation" \| ("message" \| "edited_message" \| "channel_post" \| "edited_channel_post" \| "business_connection" \| "business_message" \| "edited_business_message" \| "deleted_business_messages" \| "guest_message" \| "message_reaction" \| "message_reaction_count" \| "inline_query" \| "chosen_inline_result" \| "callback_query" \| "shipping_query" \| "pre_checkout_query" \| "purchased_paid_media" \| "poll" \| "poll_answer" \| "my_chat_member" \| "chat_member" \| "chat_join_request" \| "chat_boost" \| "removed_chat_boost" \| "managed_bot" \| "subscription" \| "stopped_message_generation")[], `...handlers`: [Middleware](#middleware)<[Context](#context)>[] | this | Run `handlers` only when the given payload key (e.g. `"message"`, `"callback_query"`) is present on the update. |
+| `on` | `kind`: "message" \| "edited_message" \| "channel_post" \| "edited_channel_post" \| "business_connection" \| "business_message" \| "edited_business_message" \| "deleted_business_messages" \| "guest_message" \| "message_reaction" \| "message_reaction_count" \| "inline_query" \| "chosen_inline_result" \| "callback_query" \| "widget_query" \| "shared_widget_query" \| "shipping_query" \| "pre_checkout_query" \| "purchased_paid_media" \| "poll" \| "poll_answer" \| "my_chat_member" \| "chat_member" \| "chat_join_request" \| "chat_boost" \| "removed_chat_boost" \| "managed_bot" \| "subscription" \| "stopped_message_generation" \| ("message" \| "edited_message" \| "channel_post" \| "edited_channel_post" \| "business_connection" \| "business_message" \| "edited_business_message" \| "deleted_business_messages" \| "guest_message" \| "message_reaction" \| "message_reaction_count" \| "inline_query" \| "chosen_inline_result" \| "callback_query" \| "widget_query" \| "shared_widget_query" \| "shipping_query" \| "pre_checkout_query" \| "purchased_paid_media" \| "poll" \| "poll_answer" \| "my_chat_member" \| "chat_member" \| "chat_join_request" \| "chat_boost" \| "removed_chat_boost" \| "managed_bot" \| "subscription" \| "stopped_message_generation")[], `...handlers`: [Middleware](#middleware)<[Context](#context)>[] | this | Run `handlers` only when the given payload key (e.g. `"message"`, `"callback_query"`) is present on the update. |
 | `startPolling` | `source?`: AsyncIterable<[Update](#update), any, any>, `options?`: [LongPollOptions](#longpolloptions) | Promise<void> | Pump an update source (default `longPoll`) through `handleUpdate` until `stop()` aborts. Resolves when the source is exhausted or aborted. This is long-poll mode; for webhooks use `webhookCallback`/`createWebhookServer`.  A handler error does not stop the pump: it is routed to the `catch` boundary (default: log and continue). The promise rejects only when that boundary itself throws - the fail-loud opt-in (see `catch`).  Not re-entrant: calling it while a previous pump is still active throws, so `isRunning()` stays truthful and the prior `AbortController` is never orphaned. Stop the running loop (`stop()`, then `await` its promise) first. |
 | `stop` | - | void | Abort the running pump loop. |
 | `use` | `...mw`: [Middleware](#middleware)<[Context](#context)>[] | this | Register one or more middleware to run on every update. A middleware that also carries `init` / `close` (see MiddlewarePlugin) is picked up for the bot lifecycle: its setup runs once via Bot.init, its teardown via Bot.close. |
@@ -557,6 +565,7 @@ own data. `.build()` returns the plain `RichText` (its accumulated sequence).
 | `subscript` | `content`: [RichTextContent](#richtextcontent) | this | - |
 | `superscript` | `content`: [RichTextContent](#richtextcontent) | this | - |
 | `textMention` | `content`: [RichTextContent](#richtextcontent), `user`: [User](#user) | this | A text_mention of a user (works without a username). |
+| `tonAddress` | `content`: [RichTextContent](#richtextcontent), `address`: string | this | - |
 | `underline` | `content`: [RichTextContent](#richtextcontent) | this | - |
 | `url` | `content`: [RichTextContent](#richtextcontent), `url`: string | this | A hyperlink to `url`. |
 
@@ -1571,6 +1580,21 @@ type AnswerWebAppQueryParams = {
 type AnswerWebAppQueryResult = [SentWebAppMessage](#sentwebappmessage);
 ```
 
+### `AnswerWidgetQueryParams`
+
+```ts
+type AnswerWidgetQueryParams = {
+  data?: string;
+  widget_query_id: string;
+};
+```
+
+### `AnswerWidgetQueryResult`
+
+```ts
+type AnswerWidgetQueryResult = boolean;
+```
+
 ### `ApproveChatJoinRequestParams`
 
 ```ts
@@ -1600,6 +1624,19 @@ type ApproveSuggestedPostParams = {
 
 ```ts
 type ApproveSuggestedPostResult = boolean;
+```
+
+### `AreaPosition`
+
+```ts
+type AreaPosition = {
+  corner_radius_percentage: number;
+  height_percentage: number;
+  rotation_angle: number;
+  width_percentage: number;
+  x_percentage: number;
+  y_percentage: number;
+};
 ```
 
 ### `Audio`
@@ -2146,9 +2183,11 @@ type ChatFullInfo = {
   profile_accent_color_id?: number;
   profile_background_custom_emoji_id?: string;
   rating?: [UserRating](#userrating);
+  share_theme?: [ChatShareTheme](#chatsharetheme);
   slow_mode_delay?: number;
   sticker_set_name?: string;
   title?: string;
+  ton_wallet_card?: [TonWalletCard](#tonwalletcard);
   type: string;
   unique_gift_colors?: [UniqueGiftColors](#uniquegiftcolors);
   unrestrict_boost_count?: number;
@@ -2371,6 +2410,49 @@ type ChatPhoto = {
   big_file_unique_id: string;
   small_file_id: string;
   small_file_unique_id: string;
+};
+```
+
+### `ChatShareTheme`
+
+```ts
+type ChatShareTheme = [ChatShareThemeEmoji](#chatsharethemeemoji) | [ChatShareThemeUniqueGift](#chatsharethemeuniquegift);
+```
+
+### `ChatShareThemeBackdrop`
+
+```ts
+type ChatShareThemeBackdrop = {
+  colors: [UniqueGiftBackdropColors](#uniquegiftbackdropcolors);
+  id: number;
+  name: string;
+};
+```
+
+### `ChatShareThemeBackdrops`
+
+```ts
+type ChatShareThemeBackdrops = {
+  backdrops: [ChatShareThemeBackdrop](#chatsharethemebackdrop)[];
+};
+```
+
+### `ChatShareThemeEmoji`
+
+```ts
+type ChatShareThemeEmoji = {
+  background_backdrop_id?: number;
+  emojis: [EmojiType](#emojitype)[];
+  type: string;
+};
+```
+
+### `ChatShareThemeUniqueGift`
+
+```ts
+type ChatShareThemeUniqueGift = {
+  gift: [UniqueGift](#uniquegift);
+  type: string;
 };
 ```
 
@@ -2751,6 +2833,21 @@ type DeleteAllMessageReactionsParams = {
 
 ```ts
 type DeleteAllMessageReactionsResult = boolean;
+```
+
+### `DeleteBusinessAccountGiftParams`
+
+```ts
+type DeleteBusinessAccountGiftParams = {
+  business_connection_id: string;
+  owned_gift_id: string;
+};
+```
+
+### `DeleteBusinessAccountGiftResult`
+
+```ts
+type DeleteBusinessAccountGiftResult = boolean;
 ```
 
 ### `DeleteBusinessMessagesParams`
@@ -3261,6 +3358,40 @@ type EditMessageTextParams = {
 type EditMessageTextResult = [Message](#message) | boolean;
 ```
 
+### `EditMessageWidgetDataParams`
+
+```ts
+type EditMessageWidgetDataParams = {
+  chat_data?: string;
+  chat_id?: number | string;
+  inline_message_id?: string;
+  message_id?: number;
+  public_data?: string;
+};
+```
+
+### `EditMessageWidgetDataResult`
+
+```ts
+type EditMessageWidgetDataResult = boolean;
+```
+
+### `EditSharedWidgetDataParams`
+
+```ts
+type EditSharedWidgetDataParams = {
+  cache_time?: number;
+  public_data: string;
+  widget_id: string;
+};
+```
+
+### `EditSharedWidgetDataResult`
+
+```ts
+type EditSharedWidgetDataResult = boolean;
+```
+
 ### `EditStoryParams`
 
 ```ts
@@ -3297,6 +3428,30 @@ type EditUserStarSubscriptionParams = {
 type EditUserStarSubscriptionResult = boolean;
 ```
 
+### `EmojiType`
+
+```ts
+type EmojiType = [EmojiTypeEmoji](#emojitypeemoji) | [EmojiTypeCustomEmoji](#emojitypecustomemoji);
+```
+
+### `EmojiTypeCustomEmoji`
+
+```ts
+type EmojiTypeCustomEmoji = {
+  custom_emoji_id: string;
+  type: string;
+};
+```
+
+### `EmojiTypeEmoji`
+
+```ts
+type EmojiTypeEmoji = {
+  emoji: string;
+  type: string;
+};
+```
+
 ### `EncryptedCredentials`
 
 ```ts
@@ -3329,7 +3484,7 @@ type EncryptedPassportElement = {
 ```ts
 type EphemeralMessageParameters = {
   callback_query_id?: string;
-  receiver_user_id: number;
+  receiver_user_id?: number;
   replace_callback_query_message?: boolean;
 };
 ```
@@ -3388,6 +3543,7 @@ type ExternalReplyInfo = {
   video?: [Video](#video);
   video_note?: [VideoNote](#videonote);
   voice?: [Voice](#voice);
+  widget?: [Widget](#widget);
 };
 ```
 
@@ -3702,6 +3858,18 @@ type GetChatParams = {
 type GetChatResult = [ChatFullInfo](#chatfullinfo);
 ```
 
+### `GetChatShareThemeBackdropsParams`
+
+```ts
+type GetChatShareThemeBackdropsParams = Record<string, never>;
+```
+
+### `GetChatShareThemeBackdropsResult`
+
+```ts
+type GetChatShareThemeBackdropsResult = [ChatShareThemeBackdrops](#chatsharethemebackdrops);
+```
+
 ### `GetCustomEmojiStickersParams`
 
 ```ts
@@ -3909,6 +4077,20 @@ type GetStickerSetParams = {
 
 ```ts
 type GetStickerSetResult = [StickerSet](#stickerset);
+```
+
+### `GetUniqueGiftParams`
+
+```ts
+type GetUniqueGiftParams = {
+  name: string;
+};
+```
+
+### `GetUniqueGiftResult`
+
+```ts
+type GetUniqueGiftResult = [UniqueGift](#uniquegift);
 ```
 
 ### `GetUpdatesParams`
@@ -4860,7 +5042,7 @@ type InputMediaVoiceNote = {
 ### `InputMessageContent`
 
 ```ts
-type InputMessageContent = [InputTextMessageContent](#inputtextmessagecontent) | [InputRichMessageContent](#inputrichmessagecontent) | [InputLocationMessageContent](#inputlocationmessagecontent) | [InputVenueMessageContent](#inputvenuemessagecontent) | [InputContactMessageContent](#inputcontactmessagecontent) | [InputInvoiceMessageContent](#inputinvoicemessagecontent);
+type InputMessageContent = [InputTextMessageContent](#inputtextmessagecontent) | [InputRichMessageContent](#inputrichmessagecontent) | [InputLocationMessageContent](#inputlocationmessagecontent) | [InputVenueMessageContent](#inputvenuemessagecontent) | [InputContactMessageContent](#inputcontactmessagecontent) | [InputInvoiceMessageContent](#inputinvoicemessagecontent) | [InputWidgetMessageContent](#inputwidgetmessagecontent) | [InputSharedWidgetMessageContent](#inputsharedwidgetmessagecontent);
 ```
 
 ### `InputPaidMedia`
@@ -5239,6 +5421,19 @@ type InputRichMessageMedia = {
 };
 ```
 
+### `InputSharedWidgetMessageContent`
+
+```ts
+type InputSharedWidgetMessageContent = {
+  caption?: string;
+  caption_entities?: [MessageEntity](#messageentity)[];
+  chat_data?: string;
+  parse_mode?: string;
+  show_caption_above_media?: boolean;
+  widget_id: string;
+};
+```
+
 ### `InputSticker`
 
 ```ts
@@ -5301,6 +5496,24 @@ type InputVenueMessageContent = {
   latitude: number;
   longitude: number;
   title: string;
+};
+```
+
+### `InputWidgetMessageContent`
+
+```ts
+type InputWidgetMessageContent = {
+  allow_queries?: boolean;
+  caption?: string;
+  caption_entities?: [MessageEntity](#messageentity)[];
+  chat_data?: string;
+  height?: number;
+  html: string;
+  is_shared?: boolean;
+  parse_mode?: string;
+  public_data?: string;
+  show_caption_above_media?: boolean;
+  width?: number;
 };
 ```
 
@@ -5632,6 +5845,7 @@ type Message = {
   new_chat_title?: string;
   paid_media?: [PaidMediaInfo](#paidmediainfo);
   paid_message_price_changed?: [PaidMessagePriceChanged](#paidmessagepricechanged);
+  paid_messages_waived?: [PaidMessagesWaived](#paidmessageswaived);
   paid_star_count?: number;
   passport_data?: [PassportData](#passportdata);
   photo?: [PhotoSize](#photosize)[];
@@ -5665,6 +5879,7 @@ type Message = {
   suggested_post_refunded?: [SuggestedPostRefunded](#suggestedpostrefunded);
   supergroup_chat_created?: true;
   text?: string;
+  ton_wallet_transfer?: [TonWalletTransfer](#tonwallettransfer);
   unique_gift?: [UniqueGiftInfo](#uniquegiftinfo);
   users_shared?: [UsersShared](#usersshared);
   venue?: [Venue](#venue);
@@ -5677,6 +5892,7 @@ type Message = {
   video_note?: [VideoNote](#videonote);
   voice?: [Voice](#voice);
   web_app_data?: [WebAppData](#webappdata);
+  widget?: [Widget](#widget);
   write_access_allowed?: [WriteAccessAllowed](#writeaccessallowed);
 };
 ```
@@ -5962,6 +6178,12 @@ type PaidMediaVideo = {
 type PaidMessagePriceChanged = {
   paid_message_star_count: number;
 };
+```
+
+### `PaidMessagesWaived`
+
+```ts
+type PaidMessagesWaived = Record<string, never>;
 ```
 
 ### `ParseMode`
@@ -6581,6 +6803,7 @@ type ReplyParameters = {
   quote_entities?: [MessageEntity](#messageentity)[];
   quote_parse_mode?: string;
   quote_position?: number;
+  quote_rich_texts?: [RichText](#richtext)[];
 };
 ```
 
@@ -7015,7 +7238,7 @@ type RichMessageButton = {
 ### `RichText`
 
 ```ts
-type RichText = string | [RichText](#richtext)[] | [RichTextBold](#richtextbold) | [RichTextItalic](#richtextitalic) | [RichTextUnderline](#richtextunderline) | [RichTextStrikethrough](#richtextstrikethrough) | [RichTextSpoiler](#richtextspoiler) | [RichTextDateTime](#richtextdatetime) | [RichTextTextMention](#richtexttextmention) | [RichTextSubscript](#richtextsubscript) | [RichTextSuperscript](#richtextsuperscript) | [RichTextMarked](#richtextmarked) | [RichTextCode](#richtextcode) | [RichTextCustomEmoji](#richtextcustomemoji) | [RichTextMathematicalExpression](#richtextmathematicalexpression) | [RichTextUrl](#richtexturl) | [RichTextEmailAddress](#richtextemailaddress) | [RichTextPhoneNumber](#richtextphonenumber) | [RichTextBankCardNumber](#richtextbankcardnumber) | [RichTextMention](#richtextmention) | [RichTextHashtag](#richtexthashtag) | [RichTextCashtag](#richtextcashtag) | [RichTextBotCommand](#richtextbotcommand) | [RichTextButton](#richtextbutton) | [RichTextAnchor](#richtextanchor) | [RichTextAnchorLink](#richtextanchorlink) | [RichTextReference](#richtextreference) | [RichTextReferenceLink](#richtextreferencelink);
+type RichText = string | [RichText](#richtext)[] | [RichTextBold](#richtextbold) | [RichTextItalic](#richtextitalic) | [RichTextUnderline](#richtextunderline) | [RichTextStrikethrough](#richtextstrikethrough) | [RichTextSpoiler](#richtextspoiler) | [RichTextDateTime](#richtextdatetime) | [RichTextTextMention](#richtexttextmention) | [RichTextSubscript](#richtextsubscript) | [RichTextSuperscript](#richtextsuperscript) | [RichTextMarked](#richtextmarked) | [RichTextCode](#richtextcode) | [RichTextCustomEmoji](#richtextcustomemoji) | [RichTextMathematicalExpression](#richtextmathematicalexpression) | [RichTextUrl](#richtexturl) | [RichTextEmailAddress](#richtextemailaddress) | [RichTextPhoneNumber](#richtextphonenumber) | [RichTextBankCardNumber](#richtextbankcardnumber) | [RichTextTonAddress](#richtexttonaddress) | [RichTextMention](#richtextmention) | [RichTextHashtag](#richtexthashtag) | [RichTextCashtag](#richtextcashtag) | [RichTextBotCommand](#richtextbotcommand) | [RichTextButton](#richtextbutton) | [RichTextAnchor](#richtextanchor) | [RichTextAnchorLink](#richtextanchorlink) | [RichTextReference](#richtextreference) | [RichTextReferenceLink](#richtextreferencelink);
 ```
 
 ### `RichTextAnchor`
@@ -7256,6 +7479,16 @@ type RichTextTextMention = {
 };
 ```
 
+### `RichTextTonAddress`
+
+```ts
+type RichTextTonAddress = {
+  address: string;
+  text: [RichText](#richtext);
+  type: string;
+};
+```
+
 ### `RichTextUnderline`
 
 ```ts
@@ -7362,7 +7595,7 @@ type SendAnimationParams = {
   business_connection_id?: string;
   caption?: string;
   caption_entities?: [MessageEntity](#messageentity)[];
-  chat_id: number | string;
+  chat_id?: number | string;
   direct_messages_topic_id?: number;
   disable_notification?: boolean;
   duration?: number;
@@ -7397,7 +7630,7 @@ type SendAudioParams = {
   business_connection_id?: string;
   caption?: string;
   caption_entities?: [MessageEntity](#messageentity)[];
-  chat_id: number | string;
+  chat_id?: number | string;
   direct_messages_topic_id?: number;
   disable_notification?: boolean;
   duration?: number;
@@ -7480,7 +7713,7 @@ type SendChecklistResult = [Message](#message);
 type SendContactParams = {
   allow_paid_broadcast?: boolean;
   business_connection_id?: string;
-  chat_id: number | string;
+  chat_id?: number | string;
   direct_messages_topic_id?: number;
   disable_notification?: boolean;
   ephemeral_message_parameters?: [EphemeralMessageParameters](#ephemeralmessageparameters);
@@ -7536,7 +7769,7 @@ type SendDocumentParams = {
   business_connection_id?: string;
   caption?: string;
   caption_entities?: [MessageEntity](#messageentity)[];
-  chat_id: number | string;
+  chat_id?: number | string;
   direct_messages_topic_id?: number;
   disable_content_type_detection?: boolean;
   disable_notification?: boolean;
@@ -7654,7 +7887,7 @@ type SendLivePhotoParams = {
   business_connection_id?: string;
   caption?: string;
   caption_entities?: [MessageEntity](#messageentity)[];
-  chat_id: number | string;
+  chat_id?: number | string;
   direct_messages_topic_id?: number;
   disable_notification?: boolean;
   ephemeral_message_parameters?: [EphemeralMessageParameters](#ephemeralmessageparameters);
@@ -7684,7 +7917,7 @@ type SendLivePhotoResult = [Message](#message);
 type SendLocationParams = {
   allow_paid_broadcast?: boolean;
   business_connection_id?: string;
-  chat_id: number | string;
+  chat_id?: number | string;
   direct_messages_topic_id?: number;
   disable_notification?: boolean;
   ephemeral_message_parameters?: [EphemeralMessageParameters](#ephemeralmessageparameters);
@@ -7759,7 +7992,7 @@ type SendMessageDraftResult = boolean;
 type SendMessageParams = {
   allow_paid_broadcast?: boolean;
   business_connection_id?: string;
-  chat_id: number | string;
+  chat_id?: number | string;
   direct_messages_topic_id?: number;
   disable_notification?: boolean;
   entities?: [MessageEntity](#messageentity)[];
@@ -7820,7 +8053,7 @@ type SendPhotoParams = {
   business_connection_id?: string;
   caption?: string;
   caption_entities?: [MessageEntity](#messageentity)[];
-  chat_id: number | string;
+  chat_id?: number | string;
   direct_messages_topic_id?: number;
   disable_notification?: boolean;
   ephemeral_message_parameters?: [EphemeralMessageParameters](#ephemeralmessageparameters);
@@ -7915,7 +8148,7 @@ type SendRichMessageDraftResult = boolean;
 type SendRichMessageParams = {
   allow_paid_broadcast?: boolean;
   business_connection_id?: string;
-  chat_id: number | string;
+  chat_id?: number | string;
   direct_messages_topic_id?: number;
   disable_notification?: boolean;
   ephemeral_message_parameters?: [EphemeralMessageParameters](#ephemeralmessageparameters);
@@ -7935,13 +8168,40 @@ type SendRichMessageParams = {
 type SendRichMessageResult = [Message](#message);
 ```
 
+### `SendSharedWidgetParams`
+
+```ts
+type SendSharedWidgetParams = {
+  allow_paid_broadcast?: boolean;
+  caption?: string;
+  caption_entities?: [MessageEntity](#messageentity)[];
+  chat_data?: string;
+  chat_id: number | string;
+  disable_notification?: boolean;
+  message_effect_id?: string;
+  message_thread_id?: number;
+  parse_mode?: string;
+  protect_content?: boolean;
+  reply_markup?: [ReplyMarkup](#replymarkup);
+  reply_parameters?: [ReplyParameters](#replyparameters);
+  show_caption_above_media?: boolean;
+  widget_id: string;
+};
+```
+
+### `SendSharedWidgetResult`
+
+```ts
+type SendSharedWidgetResult = [Message](#message);
+```
+
 ### `SendStickerParams`
 
 ```ts
 type SendStickerParams = {
   allow_paid_broadcast?: boolean;
   business_connection_id?: string;
-  chat_id: number | string;
+  chat_id?: number | string;
   direct_messages_topic_id?: number;
   disable_notification?: boolean;
   emoji?: string;
@@ -7969,7 +8229,7 @@ type SendVenueParams = {
   address: string;
   allow_paid_broadcast?: boolean;
   business_connection_id?: string;
-  chat_id: number | string;
+  chat_id?: number | string;
   direct_messages_topic_id?: number;
   disable_notification?: boolean;
   ephemeral_message_parameters?: [EphemeralMessageParameters](#ephemeralmessageparameters);
@@ -8001,7 +8261,7 @@ type SendVenueResult = [Message](#message);
 type SendVideoNoteParams = {
   allow_paid_broadcast?: boolean;
   business_connection_id?: string;
-  chat_id: number | string;
+  chat_id?: number | string;
   direct_messages_topic_id?: number;
   disable_notification?: boolean;
   duration?: number;
@@ -8032,7 +8292,7 @@ type SendVideoParams = {
   business_connection_id?: string;
   caption?: string;
   caption_entities?: [MessageEntity](#messageentity)[];
-  chat_id: number | string;
+  chat_id?: number | string;
   cover?: [InputFile](#inputfile) | string;
   direct_messages_topic_id?: number;
   disable_notification?: boolean;
@@ -8070,7 +8330,7 @@ type SendVoiceParams = {
   business_connection_id?: string;
   caption?: string;
   caption_entities?: [MessageEntity](#messageentity)[];
-  chat_id: number | string;
+  chat_id?: number | string;
   direct_messages_topic_id?: number;
   disable_notification?: boolean;
   duration?: number;
@@ -8090,6 +8350,38 @@ type SendVoiceParams = {
 
 ```ts
 type SendVoiceResult = [Message](#message);
+```
+
+### `SendWidgetParams`
+
+```ts
+type SendWidgetParams = {
+  allow_paid_broadcast?: boolean;
+  allow_queries?: boolean;
+  caption?: string;
+  caption_entities?: [MessageEntity](#messageentity)[];
+  chat_data?: string;
+  chat_id: number | string;
+  disable_notification?: boolean;
+  height?: number;
+  html: string;
+  is_shared?: boolean;
+  message_effect_id?: string;
+  message_thread_id?: number;
+  parse_mode?: string;
+  protect_content?: boolean;
+  public_data?: string;
+  reply_markup?: [ReplyMarkup](#replymarkup);
+  reply_parameters?: [ReplyParameters](#replyparameters);
+  show_caption_above_media?: boolean;
+  width?: number;
+};
+```
+
+### `SendWidgetResult`
+
+```ts
+type SendWidgetResult = [Message](#message);
 ```
 
 ### `SentGuestMessage`
@@ -8718,6 +9010,18 @@ type SharedUser = {
 };
 ```
 
+### `SharedWidgetQuery`
+
+```ts
+type SharedWidgetQuery = {
+  data: string;
+  from: [User](#user);
+  id: string;
+  type: [WidgetQueryType](#widgetquerytype);
+  widget_id: string;
+};
+```
+
 ### `ShippingAddress`
 
 ```ts
@@ -8902,7 +9206,7 @@ type Story = {
 
 ```ts
 type StoryArea = {
-  position: [StoryAreaPosition](#storyareaposition);
+  position: [AreaPosition](#areaposition);
   type: [StoryAreaType](#storyareatype);
 };
 ```
@@ -8910,14 +9214,7 @@ type StoryArea = {
 ### `StoryAreaPosition`
 
 ```ts
-type StoryAreaPosition = {
-  corner_radius_percentage: number;
-  height_percentage: number;
-  rotation_angle: number;
-  width_percentage: number;
-  x_percentage: number;
-  y_percentage: number;
-};
+type StoryAreaPosition = [AreaPosition](#areaposition);
 ```
 
 ### `StoryAreaType`
@@ -9089,7 +9386,62 @@ type TextQuote = {
   entities?: [MessageEntity](#messageentity)[];
   is_manual?: true;
   position: number;
+  rich_texts?: [RichText](#richtext)[];
   text: string;
+};
+```
+
+### `TonNft`
+
+```ts
+type TonNft = {
+  address: string;
+  attributes?: [TonNftAttribute](#tonnftattribute)[];
+  collection_address?: string;
+  description: string;
+  gift?: [UniqueGift](#uniquegift);
+  index: string;
+  name: string;
+};
+```
+
+### `TonNftAttribute`
+
+```ts
+type TonNftAttribute = {
+  trait_type: string;
+  value: string;
+};
+```
+
+### `TonWalletCard`
+
+```ts
+type TonWalletCard = {
+  address: string;
+  amount: string;
+  background_nft_address?: string;
+  stickers: [TonWalletCardSticker](#tonwalletcardsticker)[];
+};
+```
+
+### `TonWalletCardSticker`
+
+```ts
+type TonWalletCardSticker = {
+  nft: [TonNft](#tonnft);
+  position: [AreaPosition](#areaposition);
+};
+```
+
+### `TonWalletTransfer`
+
+```ts
+type TonWalletTransfer = {
+  amount: string;
+  comment?: string;
+  peer_address: string;
+  transaction_id: string;
 };
 ```
 
@@ -9459,6 +9811,14 @@ type Update = {
 } | {
   update_id: number;
 } & {
+  widget_query: [WidgetQuery](#widgetquery);
+} | {
+  update_id: number;
+} & {
+  shared_widget_query: [SharedWidgetQuery](#sharedwidgetquery);
+} | {
+  update_id: number;
+} & {
   shipping_query: [ShippingQuery](#shippingquery);
 } | {
   update_id: number;
@@ -9641,6 +10001,8 @@ type Venue = {
 type VerifyChatParams = {
   chat_id: number | string;
   custom_description?: string;
+  custom_description_entities?: [MessageEntity](#messageentity)[];
+  custom_description_parse_mode?: string;
 };
 ```
 
@@ -9655,6 +10017,8 @@ type VerifyChatResult = boolean;
 ```ts
 type VerifyUserParams = {
   custom_description?: string;
+  custom_description_entities?: [MessageEntity](#messageentity)[];
+  custom_description_parse_mode?: string;
   user_id: number;
 };
 ```
@@ -9785,6 +10149,82 @@ type WebhookInfo = {
 };
 ```
 
+### `Widget`
+
+```ts
+type Widget = {
+  chat_data?: string;
+  height?: number;
+  html: string;
+  id?: string;
+  public_data?: string;
+  width?: number;
+};
+```
+
+### `WidgetQuery`
+
+```ts
+type WidgetQuery = {
+  chat?: [Chat](#chat);
+  chat_instance: string;
+  chat_type?: string;
+  data: string;
+  from: [User](#user);
+  id: string;
+  inline_message_id?: string;
+  message_id?: number;
+  type: [WidgetQueryType](#widgetquerytype);
+  widget_id?: string;
+};
+```
+
+### `WidgetQueryType`
+
+```ts
+type WidgetQueryType = [WidgetQueryTypeData](#widgetquerytypedata) | [WidgetQueryTypeSignData](#widgetquerytypesigndata) | [WidgetQueryTypeSentTransaction](#widgetquerytypesenttransaction);
+```
+
+### `WidgetQueryTypeData`
+
+```ts
+type WidgetQueryTypeData = {
+  type: string;
+  wallet_card?: [TonWalletCard](#tonwalletcard);
+};
+```
+
+### `WidgetQueryTypeSentTransaction`
+
+```ts
+type WidgetQueryTypeSentTransaction = {
+  msg_hash: string;
+  type: string;
+  wallet: [WidgetQueryWallet](#widgetquerywallet);
+};
+```
+
+### `WidgetQueryTypeSignData`
+
+```ts
+type WidgetQueryTypeSignData = {
+  sign_data: string;
+  type: string;
+  wallet: [WidgetQueryWallet](#widgetquerywallet);
+};
+```
+
+### `WidgetQueryWallet`
+
+```ts
+type WidgetQueryWallet = {
+  address: string;
+  amount: string;
+  public_key?: string;
+  state_init?: string;
+};
+```
+
 ### `WriteAccessAllowed`
 
 ```ts
@@ -9812,12 +10252,14 @@ Every documented MessageEntity kind, typo-proof versus raw strings.
 
 ```ts
 const EntityType: {
+  readonly BankCardNumber: "bank_card_number";
   readonly Blockquote: "blockquote";
   readonly Bold: "bold";
   readonly BotCommand: "bot_command";
   readonly Cashtag: "cashtag";
   readonly Code: "code";
   readonly CustomEmoji: "custom_emoji";
+  readonly DateTime: "date_time";
   readonly Email: "email";
   readonly ExpandableBlockquote: "expandable_blockquote";
   readonly Hashtag: "hashtag";
@@ -9829,6 +10271,7 @@ const EntityType: {
   readonly Strikethrough: "strikethrough";
   readonly TextLink: "text_link";
   readonly TextMention: "text_mention";
+  readonly TonAddress: "ton_address";
   readonly Underline: "underline";
   readonly Url: "url";
 };
@@ -9883,7 +10326,7 @@ const SESSION_VERSION: 1;
 `Update` field names dispatched as events (every `Update` payload key except `update_id`).
 
 ```ts
-const UPDATE_TYPES: readonly ["message", "edited_message", "channel_post", "edited_channel_post", "business_connection", "business_message", "edited_business_message", "deleted_business_messages", "guest_message", "message_reaction", "message_reaction_count", "inline_query", "chosen_inline_result", "callback_query", "shipping_query", "pre_checkout_query", "purchased_paid_media", "poll", "poll_answer", "my_chat_member", "chat_member", "chat_join_request", "chat_boost", "removed_chat_boost", "managed_bot", "subscription", "stopped_message_generation"];
+const UPDATE_TYPES: readonly ["message", "edited_message", "channel_post", "edited_channel_post", "business_connection", "business_message", "edited_business_message", "deleted_business_messages", "guest_message", "message_reaction", "message_reaction_count", "inline_query", "chosen_inline_result", "callback_query", "widget_query", "shared_widget_query", "shipping_query", "pre_checkout_query", "purchased_paid_media", "poll", "poll_answer", "my_chat_member", "chat_member", "chat_join_request", "chat_boost", "removed_chat_boost", "managed_bot", "subscription", "stopped_message_generation"];
 ```
 
 ### `nextPagesWebhook`

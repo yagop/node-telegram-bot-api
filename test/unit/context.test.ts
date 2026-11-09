@@ -113,6 +113,10 @@ describe("Context", () => {
       { kind: "message_reaction_count", payload: { chat, message_id: 1, date: 0, reactions: [] } },
       { kind: "chat_boost", payload: { chat, boost: { boost_id: "b", source: { source: "premium" }, add_date: 0 } } },
       { kind: "removed_chat_boost", payload: { chat, boost_id: "b", remove_date: 0, source: { source: "premium" } } },
+      {
+        kind: "widget_query",
+        payload: { id: "w", from: { id: 1, is_bot: false, first_name: "U" }, chat, message_id: 1, chat_instance: "ci", type: { type: "data" }, data: "x" },
+      },
     ];
     for (const { kind, payload } of cases) {
       const ctx = new Context({ update_id: 1, [kind]: payload } as unknown as Update, api);
@@ -130,10 +134,27 @@ describe("Context", () => {
       { kind: "guest_message", payload: { message_id: 1, date: 0, chat: { id: 1, type: "private" }, from: user, text: "x" } },
       { kind: "managed_bot", payload: { user, bot: { id: 2, is_bot: true, first_name: "B" } } },
       { kind: "subscription", payload: { user, invoice_payload: "e2e", state: "active" } },
+      { kind: "widget_query", payload: { id: "w", from: user, chat_instance: "ci", type: { type: "data" }, data: "x" } },
+      { kind: "shared_widget_query", payload: { id: "w", from: user, type: { type: "data" }, data: "x", widget_id: "wid" } },
     ];
     for (const { kind, payload } of cases) {
       const ctx = new Context({ update_id: 1, [kind]: payload } as unknown as Update, api);
       assert.strictEqual(ctx.from?.id, 5050, `${kind} should resolve a from user`);
+    }
+  });
+
+  test("widget queries without a chat resolve no chat", () => {
+    const { api } = fakeApi();
+    const from = { id: 5050, is_bot: false, first_name: "U" };
+    const base = { id: "w", from, type: { type: "data" }, data: "x" };
+    // A forwarded shared widget names no chat; an inline-mode original has only inline_message_id.
+    const cases: Array<{ kind: string; payload: Record<string, unknown> }> = [
+      { kind: "shared_widget_query", payload: { ...base, widget_id: "wid" } },
+      { kind: "widget_query", payload: { ...base, inline_message_id: "im", chat_instance: "ci" } },
+    ];
+    for (const { kind, payload } of cases) {
+      const ctx = new Context({ update_id: 1, [kind]: payload } as unknown as Update, api);
+      assert.strictEqual(ctx.chat, undefined, `${kind} should resolve no chat`);
     }
   });
 
