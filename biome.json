@@ -1,6 +1,6 @@
 {
   "$schema": "https://biomejs.dev/schemas/2.5.0/schema.json",
-  "root": false,
+  "root": true,
   "formatter": {
     "enabled": true,
     "indentStyle": "space",
@@ -27,5 +27,16 @@
       }
     }
   },
-  "plugins": ["./no-nullish-assign.grit"]
+  "overrides": [
+    {
+      "includes": ["scripts/**"],
+      "linter": {
+        "rules": {
+          "complexity": { "noExcessiveCognitiveComplexity": "off" },
+          "suspicious": { "noExplicitAny": "off" }
+        }
+      }
+    }
+  ],
+  "plugins": ["./src/no-nullish-assign.grit"]
 }

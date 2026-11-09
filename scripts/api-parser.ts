@@ -53,10 +53,14 @@ let curRow: string[] | null = null;
 let curRowIsHeader = false;
 
 function finalize() {
-  if (!cur) return;
+  if (!cur) {
+    return;
+  }
   cur.name = cur.name.trim();
   cur.desc = cur.desc.trim();
-  if (/^[A-Za-z][A-Za-z0-9]*$/.test(cur.name)) records.push(cur);
+  if (/^[A-Za-z][A-Za-z0-9]*$/.test(cur.name)) {
+    records.push(cur);
+  }
   cur = null;
 }
 
@@ -71,7 +75,9 @@ const html = await fetch(API_URL).then((r) => r.text());
 // buffer (curRow / cur.liItems) changes as elements open and close.
 const appendLast = (get: () => string[] | null) => (t: { text: string }) => {
   const buf = get();
-  if (buf && buf.length) buf[buf.length - 1] += t.text;
+  if (buf?.length) {
+    buf[buf.length - 1] += t.text;
+  }
 };
 
 // <th> and <td> share one handler: push a cell on open, append streamed text to
@@ -79,8 +85,12 @@ const appendLast = (get: () => string[] | null) => (t: { text: string }) => {
 // read off `el.tagName`, so both selectors register the same object.
 const cellHandler = {
   element(el: { tagName: string }) {
-    if (!curRow) return;
-    if (el.tagName === "th") curRowIsHeader = true;
+    if (!curRow) {
+      return;
+    }
+    if (el.tagName === "th") {
+      curRowIsHeader = true;
+    }
     curRow.push("");
   },
   text: appendLast(() => curRow),
@@ -93,17 +103,23 @@ const rewriter = new HTMLRewriter()
       cur = { name: "", desc: "", headers: [], rows: [], liItems: [] };
     },
     text(t) {
-      if (cur) cur.name += t.text;
+      if (cur) {
+        cur.name += t.text;
+      }
     },
   })
   .on("#dev_page_content p", {
     text(t) {
-      if (cur) cur.desc += t.text;
+      if (cur) {
+        cur.desc += t.text;
+      }
     },
   })
   .on("#dev_page_content tr", {
     element(el) {
-      if (!cur) return;
+      if (!cur) {
+        return;
+      }
       // Open a row buffer; the </tr> end-tag brackets it explicitly - no need to
       // defer materialization or disambiguate header-vs-data rows after the fact.
       curRow = [];
@@ -111,8 +127,11 @@ const rewriter = new HTMLRewriter()
       const rec = cur;
       const row = curRow;
       el.onEndTag(() => {
-        if (curRowIsHeader) rec.headers.push(...row);
-        else rec.rows.push(row);
+        if (curRowIsHeader) {
+          rec.headers.push(...row);
+        } else {
+          rec.rows.push(row);
+        }
         curRow = null;
       });
     },
@@ -121,7 +140,9 @@ const rewriter = new HTMLRewriter()
   .on("#dev_page_content td", cellHandler)
   .on("#dev_page_content ul li", {
     element() {
-      if (cur) cur.liItems.push("");
+      if (cur) {
+        cur.liItems.push("");
+      }
     },
     text: appendLast(() => cur?.liItems ?? null),
   });
@@ -149,14 +170,28 @@ function splitUnion(s: string): string[] {
 }
 
 function mapScalar(s: string): string {
-  if (/^Integer$/.test(s)) return "number";
-  if (/^Float( number)?$/.test(s)) return "number";
-  if (/^String$/.test(s)) return "string";
-  if (/^Boolean$/.test(s)) return "boolean";
-  if (/^True$/.test(s)) return "true";
+  if (/^Integer$/.test(s)) {
+    return "number";
+  }
+  if (/^Float( number)?$/.test(s)) {
+    return "number";
+  }
+  if (/^String$/.test(s)) {
+    return "string";
+  }
+  if (/^Boolean$/.test(s)) {
+    return "boolean";
+  }
+  if (/^True$/.test(s)) {
+    return "true";
+  }
   // A bare `InputFile` also accepts a file_id / URL string.
-  if (/^InputFile$/.test(s)) return "InputFile | string";
-  if (/^[A-Z][A-Za-z0-9]*$/.test(s)) return s; // reference to another type
+  if (/^InputFile$/.test(s)) {
+    return "InputFile | string";
+  }
+  if (/^[A-Z][A-Za-z0-9]*$/.test(s)) {
+    return s; // reference to another type
+  }
   unmapped.add(s);
   return "never";
 }
@@ -168,7 +203,9 @@ function mapType(raw: string): string {
     return /[ |]/.test(inner) ? `(${inner})[]` : `${inner}[]`;
   }
   const parts = splitUnion(s);
-  if (parts.length > 1) return [...new Set(parts.flatMap((part) => mapType(part).split(" | ")))].join(" | ");
+  if (parts.length > 1) {
+    return [...new Set(parts.flatMap((part) => mapType(part).split(" | ")))].join(" | ");
+  }
   return mapScalar(s);
 }
 
@@ -183,8 +220,12 @@ function proseUnionMembers(descRaw: string): string[] {
   const d = descRaw.replace(/\s+/g, " ");
   const lead = d.match(/[^.]*\b(?:can be|(?:any |one )of the following)\b[^.]*/i)?.[0] ?? "";
   const members: string[] = [];
-  if (/\bcan be (?:either )?(?:a |an )?String\b/i.test(lead)) members.push("string");
-  for (const m of lead.matchAll(/\bArray of ([A-Z][A-Za-z0-9]*)\b/g)) members.push(mapType(`Array of ${m[1]}`));
+  if (/\bcan be (?:either )?(?:a |an )?String\b/i.test(lead)) {
+    members.push("string");
+  }
+  for (const m of lead.matchAll(/\bArray of ([A-Z][A-Za-z0-9]*)\b/g)) {
+    members.push(mapType(`Array of ${m[1]}`));
+  }
   return [...new Set(members)];
 }
 
@@ -198,10 +239,19 @@ function proseUnionMembers(descRaw: string): string[] {
 // only those field NAMES, and only on `Input*` types - never `*.url`, venue/
 // location coords, `photo_url`, or any response type.
 
-const FILE_FIELDS = new Set(["media", "thumbnail", "photo", "cover", "animation", "video", "sticker"]);
+const FILE_FIELDS = new Set([
+  "media",
+  "thumbnail",
+  "photo",
+  "cover",
+  "animation",
+  "video",
+  "sticker",
+]);
 
 /** The documented `reply_markup` union, as `mapType` emits it. The only list of `ReplyMarkup` members (see PRELUDE). */
-const REPLY_MARKUP_UNION = "InlineKeyboardMarkup | ReplyKeyboardMarkup | ReplyKeyboardRemove | ForceReply";
+const REPLY_MARKUP_UNION =
+  "InlineKeyboardMarkup | ReplyKeyboardMarkup | ReplyKeyboardRemove | ForceReply";
 
 // ---------------------------------------------------------------------------
 // Reply-type extraction from method prose
@@ -238,46 +288,82 @@ const RETURN_OVERRIDES: Record<string, string> = {
 const unresolved: string[] = [];
 
 function parseReturn(method: string, descRaw: string): string {
-  if (RETURN_OVERRIDES[method]) return RETURN_OVERRIDES[method];
+  if (RETURN_OVERRIDES[method]) {
+    return RETURN_OVERRIDES[method];
+  }
   const d = descRaw.replace(/\s+/g, " ").trim();
 
-  if (/otherwise\s+True\s+is\s+returned/i.test(d) && /Message\s+is\s+returned/.test(d)) return "Message | boolean";
-  if (/[Aa]rray of MessageId/.test(d)) return "MessageId[]";
+  if (/otherwise\s+True\s+is\s+returned/i.test(d) && /Message\s+is\s+returned/.test(d)) {
+    return "Message | boolean";
+  }
+  if (/[Aa]rray of MessageId/.test(d)) {
+    return "MessageId[]";
+  }
 
   // "(an) array of X object(s) ... is returned" / "Returns an Array of X"
-  let m = d.match(/[Rr]eturns an Array of ([A-Z][A-Za-z]+)/) || d.match(/[Aa]rray of ([A-Z][A-Za-z]+) objects?/);
-  if (m) return `${m[1]}[]`;
+  let m =
+    d.match(/[Rr]eturns an Array of ([A-Z][A-Za-z]+)/) ||
+    d.match(/[Aa]rray of ([A-Z][A-Za-z]+) objects?/);
+  if (m) {
+    return `${m[1]}[]`;
+  }
 
-  if (/MessageId of the .*is returned|Returns the MessageId/.test(d)) return "MessageId";
-  if (/Message\s+is\s+returned|the sent Message|the edited Message|the stopped Message|in form of a Message/.test(d))
+  if (/MessageId of the .*is returned|Returns the MessageId/.test(d)) {
+    return "MessageId";
+  }
+  if (
+    /Message\s+is\s+returned|the sent Message|the edited Message|the stopped Message|in form of a Message/.test(
+      d
+    )
+  ) {
     return "Message";
+  }
 
   // "as (a) X object" - e.g. "the new invite link as ChatInviteLink object"
   m = d.match(/\bas (?:a |an )?([A-Z][A-Za-z]+) object/);
-  if (m) return m[1];
+  if (m) {
+    return m[1];
+  }
   // "in form of a X object" / "(a|an) X object is returned" / "Returns a X object"
   m =
     d.match(/in form of (?:a|an) ([A-Z][A-Za-z]+) object/) ||
     d.match(/(?:a|an) ([A-Z][A-Za-z]+) object is returned/) ||
     d.match(/[Rr]eturns (?:a|an) ([A-Z][A-Za-z]+) object/);
-  if (m) return m[1];
+  if (m) {
+    return m[1];
+  }
   // "the ... X (object) is returned"
   m = d.match(
-    /the (?:new |uploaded |stopped |edited |sent |revoked |created )?([A-Z][A-Za-z]+) (?:object )?is returned/,
+    /the (?:new |uploaded |stopped |edited |sent |revoked |created )?([A-Z][A-Za-z]+) (?:object )?is returned/
   );
-  if (m) return m[1];
+  if (m) {
+    return m[1];
+  }
   // "Returns X on success." / "Returns the uploaded X"
-  m = d.match(/[Rr]eturns (?:the (?:new |edited |uploaded )?)?([A-Z][A-Za-z]+)(?: on success| objects?)?\b/);
+  m = d.match(
+    /[Rr]eturns (?:the (?:new |edited |uploaded )?)?([A-Z][A-Za-z]+)(?: on success| objects?)?\b/
+  );
   if (
     m &&
-    !/^(True|False|Int|Integer|String|Boolean|Float|Bot|JSON|Use|On|If|It|Telegram|Currently|Array|An|A)$/.test(m[1])
-  )
+    !/^(True|False|Int|Integer|String|Boolean|Float|Bot|JSON|Use|On|If|It|Telegram|Currently|Array|An|A)$/.test(
+      m[1]
+    )
+  ) {
     return m[1];
+  }
 
-  if (/invite link as String|as a? ?String\b/.test(d)) return "string";
-  if (/Returns True|True is returned|returns? .*\btrue\b/i.test(d)) return "boolean";
-  if (/Returns .*\bString\b/.test(d)) return "string";
-  if (/Returns .*\bInt(?:eger)?\b/.test(d)) return "number";
+  if (/invite link as String|as a? ?String\b/.test(d)) {
+    return "string";
+  }
+  if (/Returns True|True is returned|returns? .*\btrue\b/i.test(d)) {
+    return "boolean";
+  }
+  if (/Returns .*\bString\b/.test(d)) {
+    return "string";
+  }
+  if (/Returns .*\bInt(?:eger)?\b/.test(d)) {
+    return "number";
+  }
 
   unresolved.push(method);
   return "boolean";
@@ -360,7 +446,10 @@ for (const rec of records) {
     });
   } else if (rec.rows.length) {
     types.push({ name: rec.name, fields: fieldsFromRows(rec, false) });
-  } else if (rec.liItems.length >= 2 && rec.liItems.every((x) => /^[A-Z][A-Za-z0-9]*$/.test(x.trim()))) {
+  } else if (
+    rec.liItems.length >= 2 &&
+    rec.liItems.every((x) => /^[A-Z][A-Za-z0-9]*$/.test(x.trim()))
+  ) {
     // No field table, but a bullet list of type-name links → "one of" union. Some
     // abstract types (e.g. RichText) additionally accept non-object forms named in
     // the prose - "either a String ..., an Array of RichText, or any of the
@@ -382,7 +471,13 @@ const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 // `InputFile` is NOT listed here: it is no longer defined in schemas.ts; it is
 // imported from the Phase-1 core class (../core/files.js). It is therefore still
 // a "known" name for the empty-object filter, handled separately below.
-const PRELUDE_NAMES = new Set(["ChatId", "ReplyMarkup", "ParseMode", "ChatOrCallbackReply", "DistributiveOmit"]);
+const PRELUDE_NAMES = new Set([
+  "ChatId",
+  "ReplyMarkup",
+  "ParseMode",
+  "ChatOrCallbackReply",
+  "DistributiveOmit",
+]);
 
 /** The documented \`chat_id\` type of the ephemeral-capable send methods (checked per method). */
 const CHAT_ID_TYPE = "number | string";
@@ -428,7 +523,8 @@ export type ChatOrCallbackReply =
 // The docs mark `chat_id` and `receiver_user_id` "Optional", but their descriptions
 // say when each is required. The phrases below are checked on every run, so a
 // reworded rule fails the generator instead of silently losing the stricter types.
-const EPHEMERAL_RULE = /required unless the message is sent as an ephemeral reply to a callback query/;
+const EPHEMERAL_RULE =
+  /required unless the message is sent as an ephemeral reply to a callback query/;
 /** What "an ephemeral reply to a callback query" is: `callback_query_id` without `receiver_user_id`. */
 const CALLBACK_REPLY_RULE =
   /If specified and\s+receiver_user_id\s+is omitted, then the message is sent as an ephemeral reply to the callback query/;
@@ -446,10 +542,16 @@ function emitEphemeralParameters(fields: Field[]): string {
     !EPHEMERAL_RULE.test(receiver.desc) ||
     !CALLBACK_REPLY_RULE.test(callback.desc)
   ) {
-    throw new Error("EphemeralMessageParameters no longer matches the documented receiver_user_id rule");
+    throw new Error(
+      "EphemeralMessageParameters no longer matches the documented receiver_user_id rule"
+    );
   }
   const rest = fields.filter((f) => f !== receiver && f !== callback);
-  const callbackReply = emitFields([{ ...receiver, type: "never" }, { ...callback, optional: false }, ...rest]);
+  const callbackReply = emitFields([
+    { ...receiver, type: "never" },
+    { ...callback, optional: false },
+    ...rest,
+  ]);
   const namedReceiver = emitFields([{ ...receiver, optional: false }, callback, ...rest]);
   return (
     `/** An ephemeral reply to a callback query: \`callback_query_id\` without \`receiver_user_id\`. */\n` +
@@ -459,7 +561,9 @@ function emitEphemeralParameters(fields: Field[]): string {
 }
 
 function emitFields(fields: Field[]): string {
-  if (!fields.length) return "Record<string, never>";
+  if (!fields.length) {
+    return "Record<string, never>";
+  }
   const body = fields.map((f) => `  ${f.name}${f.optional ? "?" : ""}: ${f.type};`).join("\n");
   return `{\n${body}\n}`;
 }
@@ -473,20 +577,38 @@ const defined = new Set<string>([
   "InputFile", // imported from ../core/files.js, not emitted as a placeholder
 ]);
 const referenced = new Set<string>();
-const collect = (ts: string) => ts.match(/[A-Z][A-Za-z0-9]*/g)?.forEach((n) => referenced.add(n));
-for (const t of types) t.fields.forEach((f) => collect(f.type));
+const collect = (ts: string) => {
+  for (const n of ts.match(/[A-Z][A-Za-z0-9]*/g) ?? []) {
+    referenced.add(n);
+  }
+};
+for (const t of types) {
+  for (const f of t.fields) {
+    collect(f.type);
+  }
+}
 for (const m of methods) {
-  m.fields.forEach((f) => collect(f.type));
+  for (const f of m.fields) {
+    collect(f.type);
+  }
   collect(m.ret);
 }
-for (const u of unions) u.members.forEach((n) => referenced.add(n));
+for (const u of unions) {
+  for (const n of u.members) {
+    referenced.add(n);
+  }
+}
 
-const emptyTypes = [...new Set(emptyTypeCandidates)].filter((n) => referenced.has(n) && !defined.has(n)).sort();
+const emptyTypes = [...new Set(emptyTypeCandidates)]
+  .filter((n) => referenced.has(n) && !defined.has(n))
+  .sort();
 
 // Fail loudly rather than emit `unknown`/`never`.
 if (unmapped.size) {
   console.error("✗ Unmapped Telegram type strings:");
-  for (const u of unmapped) console.error("   - " + JSON.stringify(u));
+  for (const u of unmapped) {
+    console.error(`   - ${JSON.stringify(u)}`);
+  }
   process.exit(1);
 }
 
@@ -509,7 +631,9 @@ out.push(PRELUDE);
 // `if ('message' in u)` narrow `u.message` to `Message`, instead of the v1
 // all-optional object where every field was `T | undefined`.
 const updateDef = types.find((t) => t.name === "Update");
-if (!updateDef) throw new Error("Could not find the `Update` object in the parsed docs");
+if (!updateDef) {
+  throw new Error("Could not find the `Update` object in the parsed docs");
+}
 const updateVariants = updateDef.fields.filter((f) => f.name !== "update_id");
 const updateKeys = updateVariants.map((f) => f.name);
 
@@ -519,7 +643,7 @@ out.push(`\n// -----------------------------------------------------------------
 out.push(
   `export type Update =\n` +
     updateVariants.map((f) => `  | ({ update_id: number } & { ${f.name}: ${f.type} })`).join("\n") +
-    `;\n`,
+    `;\n`
 );
 
 // All payload keys across every `Update` variant. A discriminated union's
@@ -530,7 +654,7 @@ out.push(
   `\n/** \`keyof\` distributed over a union (each member's keys, unioned). */\n` +
     `type _KeysOfUnion<T> = T extends unknown ? keyof T : never;\n` +
     `/** Every payload key across all \`Update\` variants. */\n` +
-    `type _UpdateKeys = _KeysOfUnion<Update>;\n`,
+    `type _UpdateKeys = _KeysOfUnion<Update>;\n`
 );
 
 out.push(
@@ -543,7 +667,7 @@ out.push(
     `// \`satisfies\` above rejects any entry that is not an \`Update\` payload key, and\n` +
     `// this rejects the reverse - a payload key that is missing from UPDATE_TYPES.\n` +
     `type _AssertNever<T extends never> = T;\n` +
-    `type _UpdateTypesAreExhaustive = _AssertNever<Exclude<Exclude<_UpdateKeys, "update_id">, UpdateType>>;\n`,
+    `type _UpdateTypesAreExhaustive = _AssertNever<Exclude<Exclude<_UpdateKeys, "update_id">, UpdateType>>;\n`
 );
 
 out.push(`\n// ---------------------------------------------------------------------------
@@ -551,7 +675,9 @@ out.push(`\n// -----------------------------------------------------------------
 // ---------------------------------------------------------------------------\n`);
 let ephemeralParametersEmitted = false;
 for (const t of types) {
-  if (t.name === "Update") continue; // emitted above as a discriminated union
+  if (t.name === "Update") {
+    continue; // emitted above as a discriminated union
+  }
   if (t.name === "EphemeralMessageParameters") {
     out.push(emitEphemeralParameters(t.fields));
     ephemeralParametersEmitted = true;
@@ -560,18 +686,24 @@ for (const t of types) {
   out.push(`export type ${t.name} = ${emitFields(t.fields)};\n`);
 }
 if (!ephemeralParametersEmitted) {
-  throw new Error("EphemeralMessageParameters not found in the docs: its strict union was not emitted");
+  throw new Error(
+    "EphemeralMessageParameters not found in the docs: its strict union was not emitted"
+  );
 }
 
 if (emptyTypes.length) {
   out.push(`\n// Placeholder objects (documented as holding no fields)\n`);
-  for (const n of emptyTypes) out.push(`export type ${n} = Record<string, never>;\n`);
+  for (const n of emptyTypes) {
+    out.push(`export type ${n} = Record<string, never>;\n`);
+  }
 }
 
 out.push(`\n// ---------------------------------------------------------------------------
 // Union ("one of") objects
 // ---------------------------------------------------------------------------\n`);
-for (const u of unions) out.push(`export type ${u.name} = ${u.members.join(" | ")};\n`);
+for (const u of unions) {
+  out.push(`export type ${u.name} = ${u.members.join(" | ")};\n`);
+}
 
 out.push(`\n// ---------------------------------------------------------------------------
 // Methods: request params + reply types
@@ -587,16 +719,27 @@ for (const m of methods) {
   const parameters = m.fields.find((f) => f.name === "ephemeral_message_parameters");
   const ephemeral = chat !== undefined && EPHEMERAL_RULE.test(chat.desc);
   const expectedShape =
-    chat?.optional && chat.type === CHAT_ID_TYPE && parameters?.optional && parameters.type === "EphemeralMessageParameters";
+    chat?.optional &&
+    chat.type === CHAT_ID_TYPE &&
+    parameters?.optional &&
+    parameters.type === "EphemeralMessageParameters";
   if (ephemeral ? !expectedShape : chat?.optional && parameters) {
-    throw new Error(`${m.name}: chat_id / ephemeral_message_parameters do not match the documented ephemeral-reply rule`);
+    throw new Error(
+      `${m.name}: chat_id / ephemeral_message_parameters do not match the documented ephemeral-reply rule`
+    );
   }
-  if (ephemeral) ephemeralMethods++;
+  if (ephemeral) {
+    ephemeralMethods++;
+  }
   const fields = ephemeral ? m.fields.filter((f) => f !== chat) : m.fields;
-  out.push(`export type ${C}Params = ${emitFields(fields)}${ephemeral ? " & ChatOrCallbackReply" : ""};`);
+  out.push(
+    `export type ${C}Params = ${emitFields(fields)}${ephemeral ? " & ChatOrCallbackReply" : ""};`
+  );
   out.push(`export type ${C}Result = ${m.ret};\n`);
 }
-if (!ephemeralMethods) throw new Error("No ephemeral-capable send method found: the chat_id rule no longer applies");
+if (!ephemeralMethods) {
+  throw new Error("No ephemeral-capable send method found: the chat_id rule no longer applies");
+}
 
 await Bun.write(OUT, ascii(out.join("\n")));
 
@@ -642,7 +785,9 @@ for (const m of methods) {
   const result = `T.${C}Result`;
   // TSDoc link to the official Bot API page for this method. TypeDoc renders it
   // in the generated reference; the anchor is the method name lowercased.
-  apiOut.push(`  /** {@link https://core.telegram.org/bots/api#${m.name.toLowerCase()} ${m.name}} */`);
+  apiOut.push(
+    `  /** {@link https://core.telegram.org/bots/api#${m.name.toLowerCase()} ${m.name}} */`
+  );
   const hasFields = m.fields.length > 0;
   const allOptional = hasFields && m.fields.every((f) => f.optional);
 
@@ -651,21 +796,21 @@ for (const m of methods) {
     apiOut.push(
       `  ${m.name}(signal?: AbortSignal): Promise<${result}> {\n` +
         `    return this.request<${result}>(${JSON.stringify(m.name)}, undefined, signal);\n` +
-        `  }`,
+        `  }`
     );
   } else if (allOptional) {
     // Every field optional → params is optional.
     apiOut.push(
       `  ${m.name}(params?: T.${C}Params, signal?: AbortSignal): Promise<${result}> {\n` +
         `    return this.request<${result}>(${JSON.stringify(m.name)}, params, signal);\n` +
-        `  }`,
+        `  }`
     );
   } else {
     // At least one required field → params is required.
     apiOut.push(
       `  ${m.name}(params: T.${C}Params, signal?: AbortSignal): Promise<${result}> {\n` +
         `    return this.request<${result}>(${JSON.stringify(m.name)}, params, signal);\n` +
-        `  }`,
+        `  }`
     );
   }
 }
@@ -686,6 +831,6 @@ console.log(`  empty objects:  ${emptyTypes.length} (${emptyTypes.join(", ") || 
 console.log(`  methods:        ${methods.length}`);
 if (unresolved.length) {
   console.log(`\n⚠ reply type fell back to boolean for ${unresolved.length} method(s):`);
-  console.log("   " + unresolved.join(", "));
+  console.log(`   ${unresolved.join(", ")}`);
   console.log("   (add to RETURN_OVERRIDES if wrong)");
 }
