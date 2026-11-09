@@ -28,6 +28,24 @@ type _Exclusive<U, T = U> = T extends unknown ? T & { [K in Exclude<_KeysOfUnion
  */
 export type ReplyMarkup = _Exclusive<InlineKeyboardMarkup | ReplyKeyboardMarkup | ReplyKeyboardRemove | ForceReply>;
 
+/**
+ * `Omit` applied to each member of a union. Plain `Omit` merges the members,
+ * which loses the `chat_id` rule of the send param types: use this in wrappers,
+ * e.g. `DistributiveOmit<SendMessageParams, "parse_mode">`.
+ */
+export type DistributiveOmit<T, K extends PropertyKey> = T extends unknown ? Omit<T, K> : never;
+
+/**
+ * Target of an ephemeral-capable send method. Telegram lets `chat_id` be
+ * omitted only for an ephemeral reply to a callback query (`callback_query_id`
+ * without `receiver_user_id`), so every other call without it is a type error.
+ * `chat_id?: never` means the key must be omitted. The `chat_id` member is last
+ * so that the compiler error names `chat_id`.
+ */
+export type ChatOrCallbackReply =
+  | { chat_id?: never; ephemeral_message_parameters: EphemeralCallbackReply }
+  | { chat_id: number | string };
+
 
 // ---------------------------------------------------------------------------
 // Update - discriminated union, one variant per payload key
@@ -418,8 +436,15 @@ export type ReplyParameters = {
   poll_option_id?: string;
 };
 
-export type EphemeralMessageParameters = {
-  receiver_user_id?: number;
+/** An ephemeral reply to a callback query: `callback_query_id` without `receiver_user_id`. */
+export type EphemeralCallbackReply = {
+  receiver_user_id?: never;
+  callback_query_id: string;
+  replace_callback_query_message?: boolean;
+};
+
+export type EphemeralMessageParameters = EphemeralCallbackReply | {
+  receiver_user_id: number;
   callback_query_id?: string;
   replace_callback_query_message?: boolean;
 };
@@ -3351,7 +3376,6 @@ export type CloseResult = boolean;
 
 export type SendMessageParams = {
   business_connection_id?: string;
-  chat_id?: number | string;
   message_thread_id?: number;
   direct_messages_topic_id?: number;
   ephemeral_message_parameters?: EphemeralMessageParameters;
@@ -3366,7 +3390,7 @@ export type SendMessageParams = {
   suggested_post_parameters?: SuggestedPostParameters;
   reply_parameters?: ReplyParameters;
   reply_markup?: ReplyMarkup;
-};
+} & ChatOrCallbackReply;
 export type SendMessageResult = Message;
 
 export type ForwardMessageParams = {
@@ -3429,7 +3453,6 @@ export type CopyMessagesResult = MessageId[];
 
 export type SendPhotoParams = {
   business_connection_id?: string;
-  chat_id?: number | string;
   message_thread_id?: number;
   direct_messages_topic_id?: number;
   ephemeral_message_parameters?: EphemeralMessageParameters;
@@ -3446,12 +3469,11 @@ export type SendPhotoParams = {
   suggested_post_parameters?: SuggestedPostParameters;
   reply_parameters?: ReplyParameters;
   reply_markup?: ReplyMarkup;
-};
+} & ChatOrCallbackReply;
 export type SendPhotoResult = Message;
 
 export type SendLivePhotoParams = {
   business_connection_id?: string;
-  chat_id?: number | string;
   message_thread_id?: number;
   direct_messages_topic_id?: number;
   ephemeral_message_parameters?: EphemeralMessageParameters;
@@ -3469,12 +3491,11 @@ export type SendLivePhotoParams = {
   suggested_post_parameters?: SuggestedPostParameters;
   reply_parameters?: ReplyParameters;
   reply_markup?: ReplyMarkup;
-};
+} & ChatOrCallbackReply;
 export type SendLivePhotoResult = Message;
 
 export type SendAudioParams = {
   business_connection_id?: string;
-  chat_id?: number | string;
   message_thread_id?: number;
   direct_messages_topic_id?: number;
   ephemeral_message_parameters?: EphemeralMessageParameters;
@@ -3493,12 +3514,11 @@ export type SendAudioParams = {
   suggested_post_parameters?: SuggestedPostParameters;
   reply_parameters?: ReplyParameters;
   reply_markup?: ReplyMarkup;
-};
+} & ChatOrCallbackReply;
 export type SendAudioResult = Message;
 
 export type SendDocumentParams = {
   business_connection_id?: string;
-  chat_id?: number | string;
   message_thread_id?: number;
   direct_messages_topic_id?: number;
   ephemeral_message_parameters?: EphemeralMessageParameters;
@@ -3515,12 +3535,11 @@ export type SendDocumentParams = {
   suggested_post_parameters?: SuggestedPostParameters;
   reply_parameters?: ReplyParameters;
   reply_markup?: ReplyMarkup;
-};
+} & ChatOrCallbackReply;
 export type SendDocumentResult = Message;
 
 export type SendVideoParams = {
   business_connection_id?: string;
-  chat_id?: number | string;
   message_thread_id?: number;
   direct_messages_topic_id?: number;
   ephemeral_message_parameters?: EphemeralMessageParameters;
@@ -3544,12 +3563,11 @@ export type SendVideoParams = {
   suggested_post_parameters?: SuggestedPostParameters;
   reply_parameters?: ReplyParameters;
   reply_markup?: ReplyMarkup;
-};
+} & ChatOrCallbackReply;
 export type SendVideoResult = Message;
 
 export type SendAnimationParams = {
   business_connection_id?: string;
-  chat_id?: number | string;
   message_thread_id?: number;
   direct_messages_topic_id?: number;
   ephemeral_message_parameters?: EphemeralMessageParameters;
@@ -3570,12 +3588,11 @@ export type SendAnimationParams = {
   suggested_post_parameters?: SuggestedPostParameters;
   reply_parameters?: ReplyParameters;
   reply_markup?: ReplyMarkup;
-};
+} & ChatOrCallbackReply;
 export type SendAnimationResult = Message;
 
 export type SendVoiceParams = {
   business_connection_id?: string;
-  chat_id?: number | string;
   message_thread_id?: number;
   direct_messages_topic_id?: number;
   ephemeral_message_parameters?: EphemeralMessageParameters;
@@ -3591,12 +3608,11 @@ export type SendVoiceParams = {
   suggested_post_parameters?: SuggestedPostParameters;
   reply_parameters?: ReplyParameters;
   reply_markup?: ReplyMarkup;
-};
+} & ChatOrCallbackReply;
 export type SendVoiceResult = Message;
 
 export type SendVideoNoteParams = {
   business_connection_id?: string;
-  chat_id?: number | string;
   message_thread_id?: number;
   direct_messages_topic_id?: number;
   ephemeral_message_parameters?: EphemeralMessageParameters;
@@ -3611,7 +3627,7 @@ export type SendVideoNoteParams = {
   suggested_post_parameters?: SuggestedPostParameters;
   reply_parameters?: ReplyParameters;
   reply_markup?: ReplyMarkup;
-};
+} & ChatOrCallbackReply;
 export type SendVideoNoteResult = Message;
 
 export type SendWidgetParams = {
@@ -3692,7 +3708,6 @@ export type SendMediaGroupResult = Message[];
 
 export type SendLocationParams = {
   business_connection_id?: string;
-  chat_id?: number | string;
   message_thread_id?: number;
   direct_messages_topic_id?: number;
   ephemeral_message_parameters?: EphemeralMessageParameters;
@@ -3709,12 +3724,11 @@ export type SendLocationParams = {
   suggested_post_parameters?: SuggestedPostParameters;
   reply_parameters?: ReplyParameters;
   reply_markup?: ReplyMarkup;
-};
+} & ChatOrCallbackReply;
 export type SendLocationResult = Message;
 
 export type SendVenueParams = {
   business_connection_id?: string;
-  chat_id?: number | string;
   message_thread_id?: number;
   direct_messages_topic_id?: number;
   ephemeral_message_parameters?: EphemeralMessageParameters;
@@ -3733,12 +3747,11 @@ export type SendVenueParams = {
   suggested_post_parameters?: SuggestedPostParameters;
   reply_parameters?: ReplyParameters;
   reply_markup?: ReplyMarkup;
-};
+} & ChatOrCallbackReply;
 export type SendVenueResult = Message;
 
 export type SendContactParams = {
   business_connection_id?: string;
-  chat_id?: number | string;
   message_thread_id?: number;
   direct_messages_topic_id?: number;
   ephemeral_message_parameters?: EphemeralMessageParameters;
@@ -3753,7 +3766,7 @@ export type SendContactParams = {
   suggested_post_parameters?: SuggestedPostParameters;
   reply_parameters?: ReplyParameters;
   reply_markup?: ReplyMarkup;
-};
+} & ChatOrCallbackReply;
 export type SendContactResult = Message;
 
 export type SendPollParams = {
@@ -4772,7 +4785,6 @@ export type DeleteAllMessageReactionsResult = boolean;
 
 export type SendStickerParams = {
   business_connection_id?: string;
-  chat_id?: number | string;
   message_thread_id?: number;
   direct_messages_topic_id?: number;
   ephemeral_message_parameters?: EphemeralMessageParameters;
@@ -4785,7 +4797,7 @@ export type SendStickerParams = {
   suggested_post_parameters?: SuggestedPostParameters;
   reply_parameters?: ReplyParameters;
   reply_markup?: ReplyMarkup;
-};
+} & ChatOrCallbackReply;
 export type SendStickerResult = Message;
 
 export type GetStickerSetParams = {
@@ -4886,7 +4898,6 @@ export type DeleteStickerSetResult = boolean;
 
 export type SendRichMessageParams = {
   business_connection_id?: string;
-  chat_id?: number | string;
   message_thread_id?: number;
   direct_messages_topic_id?: number;
   ephemeral_message_parameters?: EphemeralMessageParameters;
@@ -4898,7 +4909,7 @@ export type SendRichMessageParams = {
   suggested_post_parameters?: SuggestedPostParameters;
   reply_parameters?: ReplyParameters;
   reply_markup?: ReplyMarkup;
-};
+} & ChatOrCallbackReply;
 export type SendRichMessageResult = Message;
 
 export type SendRichMessageDraftParams = {

@@ -256,7 +256,7 @@ An animated profile photo (a video); `main_frame_timestamp` picks the still fram
 | --- | --- | --- | --- |
 | `answerCallbackQuery` | `other?`: Omit<[AnswerCallbackQueryParams](#answercallbackqueryparams), "callback_query_id"> | Promise<boolean> | Answer the callback query that triggered this update. Throws if the update is not a callback query. |
 | `getSession` | - | [SessionHandle](#sessionhandle)<T> | The session handle for this update: `.data` (the persistent bag - mutate it in place or reassign it, it flushes after the handler), `.ext()` for layers built on sessions, and `.delete()` to evict the key. `<T>` is the caller's asserted `data` shape, defaulting to `Record<string, unknown>` like `createSession()` itself; to fix it once instead of per call site, use the middleware's own `.get(ctx)`. Throws if the session middleware has not run for this update (not registered, or no derivable session key). |
-| `reply` | `text`: string, `other?`: Omit<[SendMessageParams](#sendmessageparams), "chat_id" \| "text"> | Promise<[Message](#message)> | Send a message to the inferred chat, staying where the incoming message came from: `business_connection_id` for business messages (including `deleted_business_messages`), `message_thread_id` for forum-topic messages (`is_topic_message`; a plain reply thread is not followed), and `direct_messages_topic_id` for channel direct-messages chats. For a callback query these come from the message the button is attached to. Anything in `other` wins; pass e.g. `{ message_thread_id: undefined }` to opt out.  Throws if no chat id can be derived from the update (e.g. an inline query carries no chat), and for `guest_message`, which must be answered with `api.answerGuestQuery` and its `guest_query_id` instead. |
+| `reply` | `text`: string, `other?`: Omit<[SendMessageParams](#sendmessageparams), "chat_id" \| "text"> | Promise<[Message](#message)> | Send a message to the inferred chat, staying where the incoming message came from: `business_connection_id` for business messages (including `deleted_business_messages`), `message_thread_id` for forum-topic messages (`is_topic_message`; a plain reply thread is not followed), and `direct_messages_topic_id` for channel direct-messages chats. For a callback query these come from the message the button is attached to. Anything in `other` wins; pass e.g. `{ message_thread_id: undefined }` to opt out.  Throws if no chat id can be derived from the update (e.g. an inline query carries no chat) unless `other` makes it an ephemeral reply to a callback query, and for `guest_message`, which must be answered with `api.answerGuestQuery` and its `guest_query_id` instead. |
 
 #### Properties
 
@@ -2363,6 +2363,23 @@ type ChatMemberUpdated = {
 };
 ```
 
+### `ChatOrCallbackReply`
+
+Target of an ephemeral-capable send method. Telegram lets `chat_id` be
+omitted only for an ephemeral reply to a callback query (`callback_query_id`
+without `receiver_user_id`), so every other call without it is a type error.
+`chat_id?: never` means the key must be omitted. The `chat_id` member is last
+so that the compiler error names `chat_id`.
+
+```ts
+type ChatOrCallbackReply = {
+  chat_id?: never;
+  ephemeral_message_parameters: [EphemeralCallbackReply](#ephemeralcallbackreply);
+} | {
+  chat_id: number | string;
+};
+```
+
 ### `ChatOwnerChanged`
 
 ```ts
@@ -3076,6 +3093,16 @@ type DirectMessagesTopic = {
 type DisabledButton = Record<string, never>;
 ```
 
+### `DistributiveOmit`
+
+`Omit` applied to each member of a union. Plain `Omit` merges the members,
+which loses the `chat_id` rule of the send param types: use this in wrappers,
+e.g. `DistributiveOmit<SendMessageParams, "parse_mode">`.
+
+```ts
+type DistributiveOmit<T, K extends PropertyKey> = T extends unknown ? Omit<T, K> : never;
+```
+
 ### `Document`
 
 ```ts
@@ -3479,12 +3506,24 @@ type EncryptedPassportElement = {
 };
 ```
 
+### `EphemeralCallbackReply`
+
+An ephemeral reply to a callback query: `callback_query_id` without `receiver_user_id`.
+
+```ts
+type EphemeralCallbackReply = {
+  callback_query_id: string;
+  receiver_user_id?: never;
+  replace_callback_query_message?: boolean;
+};
+```
+
 ### `EphemeralMessageParameters`
 
 ```ts
-type EphemeralMessageParameters = {
+type EphemeralMessageParameters = [EphemeralCallbackReply](#ephemeralcallbackreply) | {
   callback_query_id?: string;
-  receiver_user_id?: number;
+  receiver_user_id: number;
   replace_callback_query_message?: boolean;
 };
 ```
@@ -7595,7 +7634,6 @@ type SendAnimationParams = {
   business_connection_id?: string;
   caption?: string;
   caption_entities?: [MessageEntity](#messageentity)[];
-  chat_id?: number | string;
   direct_messages_topic_id?: number;
   disable_notification?: boolean;
   duration?: number;
@@ -7612,7 +7650,7 @@ type SendAnimationParams = {
   suggested_post_parameters?: [SuggestedPostParameters](#suggestedpostparameters);
   thumbnail?: [InputFile](#inputfile) | string;
   width?: number;
-};
+} & [ChatOrCallbackReply](#chatorcallbackreply);
 ```
 
 ### `SendAnimationResult`
@@ -7630,7 +7668,6 @@ type SendAudioParams = {
   business_connection_id?: string;
   caption?: string;
   caption_entities?: [MessageEntity](#messageentity)[];
-  chat_id?: number | string;
   direct_messages_topic_id?: number;
   disable_notification?: boolean;
   duration?: number;
@@ -7645,7 +7682,7 @@ type SendAudioParams = {
   suggested_post_parameters?: [SuggestedPostParameters](#suggestedpostparameters);
   thumbnail?: [InputFile](#inputfile) | string;
   title?: string;
-};
+} & [ChatOrCallbackReply](#chatorcallbackreply);
 ```
 
 ### `SendAudioResult`
@@ -7713,7 +7750,6 @@ type SendChecklistResult = [Message](#message);
 type SendContactParams = {
   allow_paid_broadcast?: boolean;
   business_connection_id?: string;
-  chat_id?: number | string;
   direct_messages_topic_id?: number;
   disable_notification?: boolean;
   ephemeral_message_parameters?: [EphemeralMessageParameters](#ephemeralmessageparameters);
@@ -7727,7 +7763,7 @@ type SendContactParams = {
   reply_parameters?: [ReplyParameters](#replyparameters);
   suggested_post_parameters?: [SuggestedPostParameters](#suggestedpostparameters);
   vcard?: string;
-};
+} & [ChatOrCallbackReply](#chatorcallbackreply);
 ```
 
 ### `SendContactResult`
@@ -7769,7 +7805,6 @@ type SendDocumentParams = {
   business_connection_id?: string;
   caption?: string;
   caption_entities?: [MessageEntity](#messageentity)[];
-  chat_id?: number | string;
   direct_messages_topic_id?: number;
   disable_content_type_detection?: boolean;
   disable_notification?: boolean;
@@ -7783,7 +7818,7 @@ type SendDocumentParams = {
   reply_parameters?: [ReplyParameters](#replyparameters);
   suggested_post_parameters?: [SuggestedPostParameters](#suggestedpostparameters);
   thumbnail?: [InputFile](#inputfile) | string;
-};
+} & [ChatOrCallbackReply](#chatorcallbackreply);
 ```
 
 ### `SendDocumentResult`
@@ -7887,7 +7922,6 @@ type SendLivePhotoParams = {
   business_connection_id?: string;
   caption?: string;
   caption_entities?: [MessageEntity](#messageentity)[];
-  chat_id?: number | string;
   direct_messages_topic_id?: number;
   disable_notification?: boolean;
   ephemeral_message_parameters?: [EphemeralMessageParameters](#ephemeralmessageparameters);
@@ -7902,7 +7936,7 @@ type SendLivePhotoParams = {
   reply_parameters?: [ReplyParameters](#replyparameters);
   show_caption_above_media?: boolean;
   suggested_post_parameters?: [SuggestedPostParameters](#suggestedpostparameters);
-};
+} & [ChatOrCallbackReply](#chatorcallbackreply);
 ```
 
 ### `SendLivePhotoResult`
@@ -7917,7 +7951,6 @@ type SendLivePhotoResult = [Message](#message);
 type SendLocationParams = {
   allow_paid_broadcast?: boolean;
   business_connection_id?: string;
-  chat_id?: number | string;
   direct_messages_topic_id?: number;
   disable_notification?: boolean;
   ephemeral_message_parameters?: [EphemeralMessageParameters](#ephemeralmessageparameters);
@@ -7933,7 +7966,7 @@ type SendLocationParams = {
   reply_markup?: [ReplyMarkup](#replymarkup);
   reply_parameters?: [ReplyParameters](#replyparameters);
   suggested_post_parameters?: [SuggestedPostParameters](#suggestedpostparameters);
-};
+} & [ChatOrCallbackReply](#chatorcallbackreply);
 ```
 
 ### `SendLocationResult`
@@ -7992,7 +8025,6 @@ type SendMessageDraftResult = boolean;
 type SendMessageParams = {
   allow_paid_broadcast?: boolean;
   business_connection_id?: string;
-  chat_id?: number | string;
   direct_messages_topic_id?: number;
   disable_notification?: boolean;
   entities?: [MessageEntity](#messageentity)[];
@@ -8006,7 +8038,7 @@ type SendMessageParams = {
   reply_parameters?: [ReplyParameters](#replyparameters);
   suggested_post_parameters?: [SuggestedPostParameters](#suggestedpostparameters);
   text: string;
-};
+} & [ChatOrCallbackReply](#chatorcallbackreply);
 ```
 
 ### `SendMessageResult`
@@ -8053,7 +8085,6 @@ type SendPhotoParams = {
   business_connection_id?: string;
   caption?: string;
   caption_entities?: [MessageEntity](#messageentity)[];
-  chat_id?: number | string;
   direct_messages_topic_id?: number;
   disable_notification?: boolean;
   ephemeral_message_parameters?: [EphemeralMessageParameters](#ephemeralmessageparameters);
@@ -8067,7 +8098,7 @@ type SendPhotoParams = {
   reply_parameters?: [ReplyParameters](#replyparameters);
   show_caption_above_media?: boolean;
   suggested_post_parameters?: [SuggestedPostParameters](#suggestedpostparameters);
-};
+} & [ChatOrCallbackReply](#chatorcallbackreply);
 ```
 
 ### `SendPhotoResult`
@@ -8148,7 +8179,6 @@ type SendRichMessageDraftResult = boolean;
 type SendRichMessageParams = {
   allow_paid_broadcast?: boolean;
   business_connection_id?: string;
-  chat_id?: number | string;
   direct_messages_topic_id?: number;
   disable_notification?: boolean;
   ephemeral_message_parameters?: [EphemeralMessageParameters](#ephemeralmessageparameters);
@@ -8159,7 +8189,7 @@ type SendRichMessageParams = {
   reply_parameters?: [ReplyParameters](#replyparameters);
   rich_message: [InputRichMessage](#inputrichmessage);
   suggested_post_parameters?: [SuggestedPostParameters](#suggestedpostparameters);
-};
+} & [ChatOrCallbackReply](#chatorcallbackreply);
 ```
 
 ### `SendRichMessageResult`
@@ -8201,7 +8231,6 @@ type SendSharedWidgetResult = [Message](#message);
 type SendStickerParams = {
   allow_paid_broadcast?: boolean;
   business_connection_id?: string;
-  chat_id?: number | string;
   direct_messages_topic_id?: number;
   disable_notification?: boolean;
   emoji?: string;
@@ -8213,7 +8242,7 @@ type SendStickerParams = {
   reply_parameters?: [ReplyParameters](#replyparameters);
   sticker: [InputFile](#inputfile) | string;
   suggested_post_parameters?: [SuggestedPostParameters](#suggestedpostparameters);
-};
+} & [ChatOrCallbackReply](#chatorcallbackreply);
 ```
 
 ### `SendStickerResult`
@@ -8229,7 +8258,6 @@ type SendVenueParams = {
   address: string;
   allow_paid_broadcast?: boolean;
   business_connection_id?: string;
-  chat_id?: number | string;
   direct_messages_topic_id?: number;
   disable_notification?: boolean;
   ephemeral_message_parameters?: [EphemeralMessageParameters](#ephemeralmessageparameters);
@@ -8246,7 +8274,7 @@ type SendVenueParams = {
   reply_parameters?: [ReplyParameters](#replyparameters);
   suggested_post_parameters?: [SuggestedPostParameters](#suggestedpostparameters);
   title: string;
-};
+} & [ChatOrCallbackReply](#chatorcallbackreply);
 ```
 
 ### `SendVenueResult`
@@ -8261,7 +8289,6 @@ type SendVenueResult = [Message](#message);
 type SendVideoNoteParams = {
   allow_paid_broadcast?: boolean;
   business_connection_id?: string;
-  chat_id?: number | string;
   direct_messages_topic_id?: number;
   disable_notification?: boolean;
   duration?: number;
@@ -8275,7 +8302,7 @@ type SendVideoNoteParams = {
   suggested_post_parameters?: [SuggestedPostParameters](#suggestedpostparameters);
   thumbnail?: [InputFile](#inputfile) | string;
   video_note: [InputFile](#inputfile) | string;
-};
+} & [ChatOrCallbackReply](#chatorcallbackreply);
 ```
 
 ### `SendVideoNoteResult`
@@ -8292,7 +8319,6 @@ type SendVideoParams = {
   business_connection_id?: string;
   caption?: string;
   caption_entities?: [MessageEntity](#messageentity)[];
-  chat_id?: number | string;
   cover?: [InputFile](#inputfile) | string;
   direct_messages_topic_id?: number;
   disable_notification?: boolean;
@@ -8313,7 +8339,7 @@ type SendVideoParams = {
   thumbnail?: [InputFile](#inputfile) | string;
   video: [InputFile](#inputfile) | string;
   width?: number;
-};
+} & [ChatOrCallbackReply](#chatorcallbackreply);
 ```
 
 ### `SendVideoResult`
@@ -8330,7 +8356,6 @@ type SendVoiceParams = {
   business_connection_id?: string;
   caption?: string;
   caption_entities?: [MessageEntity](#messageentity)[];
-  chat_id?: number | string;
   direct_messages_topic_id?: number;
   disable_notification?: boolean;
   duration?: number;
@@ -8343,7 +8368,7 @@ type SendVoiceParams = {
   reply_parameters?: [ReplyParameters](#replyparameters);
   suggested_post_parameters?: [SuggestedPostParameters](#suggestedpostparameters);
   voice: [InputFile](#inputfile) | string;
-};
+} & [ChatOrCallbackReply](#chatorcallbackreply);
 ```
 
 ### `SendVoiceResult`

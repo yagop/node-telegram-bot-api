@@ -94,6 +94,12 @@ they are almost always one of two shapes: a union gaining a member, or a field
 going from required to optional (`x:` -> `x?:`). If a deletion is *not* one of
 those shapes, investigate before continuing.
 
+For every field that goes from required to optional, read its description in the
+docs. If the prose states a rule ("required unless ...", "required if ..."), the
+"Optional" column is not the whole truth: encode the rule in the generator so the
+wrong call is a type error (see `ChatOrCallbackReply` and `emitEphemeralParameters`
+in `scripts/api-parser.ts`), with a check that fails the run if the phrase changes.
+
 ## 3. There is (usually) nothing to hand-add
 
 This is the big change from v1. Because methods are generated, the work that used to

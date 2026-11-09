@@ -160,6 +160,12 @@ never on message text.
   misses absent keys.
 - **ASCII only** in code, comments, and commit messages: use `-`, `->`, `...` - never em dashes or
   smart quotes (a commit hook rejects them; emoji are fine).
+- **Types are as strict as the Bot API prose, not only its tables.** When the docs mark a
+  field "Optional" but the description states a rule ("required unless ...", "one of ..."),
+  encode the rule in the generator so a wrong call is a compile error, not a runtime error
+  (e.g. `ChatOrCallbackReply`, the `EphemeralMessageParameters` union, the exclusive
+  `ReplyMarkup`). Each rule must check the documented phrase or shape on every run and fail
+  the generator if it no longer matches - never drop a rule silently.
 - TypeScript style: prefer `type` over `interface`; never emit `any`; avoid `unknown` and index
   signatures. Prose-enum string fields (e.g. `MessageEntity.type`) are deliberately kept `string`,
   not narrowed to unions.

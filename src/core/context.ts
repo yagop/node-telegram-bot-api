@@ -310,7 +310,8 @@ export class Context {
    * `other` wins; pass e.g. `{ message_thread_id: undefined }` to opt out.
    *
    * Throws if no chat id can be derived from the update (e.g. an inline query
-   * carries no chat), and for `guest_message`, which must be answered with
+   * carries no chat) unless `other` makes it an ephemeral reply to a callback
+   * query, and for `guest_message`, which must be answered with
    * `api.answerGuestQuery` and its `guest_query_id` instead.
    */
   reply(
@@ -324,6 +325,12 @@ export class Context {
     }
     const chatId = this.chatId;
     if (chatId === undefined) {
+      // An ephemeral reply to a callback query needs no chat (e.g. a button on an
+      // inline message, whose callback query carries no chat).
+      const ephemeral = other?.ephemeral_message_parameters;
+      if (ephemeral && ephemeral.receiver_user_id === undefined) {
+        return this.api.sendMessage({ text, ...other, ephemeral_message_parameters: ephemeral });
+      }
       throw new Error("ctx.reply: cannot infer a chat id from this update");
     }
     const routing = replyRouting(resolve(this.update, replySourceOf));
