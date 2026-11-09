@@ -22,11 +22,14 @@ Bun is the primary toolchain (it is a devDependency and runs the unit suite and 
 ```sh
 bun install                       # install deps (CI uses --frozen-lockfile)
 
-npm run check                     # full local gate: typecheck (x3) + lint:core + check:edge + unit tests
+npm run check                     # full local gate: typecheck (x4) + lint:core + lint:bun-isolation + check:edge + lint:format + unit tests
 npm run typecheck                 # tsc --noEmit over src (strict)
 npm run typecheck:test            # tsc over test/ (needs bun types installed)
 npm run lint:core                 # FAILS if src/core touches node:* or Node globals (see below)
+npm run lint:bun-isolation        # FAILS if src/core or src/node imports bun / bun:*
 npm run check:edge                # FAILS if src/core bundles a Node builtin (even transitively)
+npm run lint:format               # Biome lint + format check over src/ and scripts/
+npx biome check --write ./src ./scripts   # apply Biome's fixes (config: root biome.json)
 
 npm test                          # unit tests via Bun (test/unit)
 npm run test:node:unit            # unit tests via Node's node:test + tsx (CI runs this on Node 22/24/26)
