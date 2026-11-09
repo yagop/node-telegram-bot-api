@@ -428,9 +428,10 @@ function emitEphemeralParameters(fields: Field[]): string {
     throw new Error("EphemeralMessageParameters no longer matches the documented receiver_user_id rule");
   }
   // Two whole object members (no intersection), so the API reference reads plainly.
-  const member = (r: Partial<Field>, c: Partial<Field>) =>
-    emitFields(fields.map((f) => (f === receiver ? { ...f, ...r } : f === callback ? { ...f, ...c } : f)));
-  return `${member({ type: "never" }, { optional: false })} | ${member({ optional: false }, {})}`;
+  const rest = fields.filter((f) => f !== receiver && f !== callback);
+  const callbackReply = emitFields([{ ...receiver, type: "never" }, { ...callback, optional: false }, ...rest]);
+  const namedReceiver = emitFields([{ ...receiver, optional: false }, callback, ...rest]);
+  return `${callbackReply} | ${namedReceiver}`;
 }
 
 function emitFields(fields: Field[]): string {
