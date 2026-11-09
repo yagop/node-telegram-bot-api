@@ -4,7 +4,7 @@ import { type EncodedRequest, encodeForm } from "../../src/core/encode.js";
 import { InputFile } from "../../src/core/files.js";
 import { MediaGroupBuilder } from "../../src/core/media.js";
 import { serializeParams } from "../../src/core/serialize.js";
-import type { SendMessageParams } from "../../src/types/index.js";
+import type { EphemeralMessageParameters, SendMessageParams, SendPhotoParams } from "../../src/types/index.js";
 
 /** Plain params -> serializeParams -> encodeForm. */
 const enc = (p: Record<string, unknown>) => encodeForm(serializeParams(p));
@@ -158,22 +158,37 @@ describe("reply_markup", () => {
   });
 
   // Checked by `npm run typecheck:test`: `chat_id` may be omitted only for an
-  // ephemeral reply to a callback query.
+  // ephemeral reply to a callback query, and ephemeral parameters must name a
+  // receiver or a callback query.
   test("a send without chat_id must be an ephemeral callback reply", () => {
+    const callbackReply: EphemeralMessageParameters = { callback_query_id: "q" };
     const valid: SendMessageParams[] = [
       { chat_id: 1, text: "hi" },
       { chat_id: 1, text: "hi", ephemeral_message_parameters: { receiver_user_id: 2 } },
       { chat_id: 1, text: "hi", ephemeral_message_parameters: { receiver_user_id: 2, callback_query_id: "q" } },
-      { text: "hi", ephemeral_message_parameters: { callback_query_id: "q" } },
+      { chat_id: 1, text: "hi", ephemeral_message_parameters: callbackReply },
+      { text: "hi", ephemeral_message_parameters: callbackReply },
+      { text: "hi", ephemeral_message_parameters: { callback_query_id: "q", replace_callback_query_message: true } },
     ];
     const invalid: SendMessageParams[] = [
       // @ts-expect-error no chat_id
       { text: "hi" },
+      // @ts-expect-error chat_id is undefined
+      { chat_id: undefined, text: "hi" },
       // @ts-expect-error no chat_id and no callback_query_id
       { text: "hi", ephemeral_message_parameters: { receiver_user_id: 2 } },
       // @ts-expect-error receiver_user_id needs a chat_id
       { text: "hi", ephemeral_message_parameters: { receiver_user_id: 2, callback_query_id: "q" } },
+      // @ts-expect-error ephemeral parameters without receiver_user_id and callback_query_id
+      { chat_id: 1, text: "hi", ephemeral_message_parameters: {} },
     ];
-    assert.strictEqual(valid.length + invalid.length, 7);
+    // The rule holds on the other ephemeral-capable methods too.
+    // @ts-expect-error no chat_id
+    const photo: SendPhotoParams = { photo: "file_id" };
+    // A wrapper that supplies chat_id itself (as ctx.reply does) still compiles.
+    const withChat = (p: Omit<SendMessageParams, "chat_id">): SendMessageParams => ({ ...p, chat_id: 1 });
+    assert.strictEqual(valid.length + invalid.length, 11);
+    assert.deepStrictEqual(withChat({ text: "hi" }), { text: "hi", chat_id: 1 });
+    assert.deepStrictEqual(photo, { photo: "file_id" });
   });
 });

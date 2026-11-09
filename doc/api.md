@@ -2368,12 +2368,14 @@ type ChatMemberUpdated = {
 Target of an ephemeral-capable send method. Telegram lets `chat_id` be
 omitted only for an ephemeral reply to a callback query (`callback_query_id`
 without `receiver_user_id`), so every other call without it is a type error.
+The `chat_id` member is last so that the compiler error names `chat_id`.
 
 ```ts
 type ChatOrCallbackReply = {
-  chat_id: number | string;
-} | {
+  chat_id?: never;
   ephemeral_message_parameters: { callback_query_id: string; receiver_user_id?: never };
+} | {
+  chat_id: number | string;
 };
 ```
 
@@ -3497,8 +3499,12 @@ type EncryptedPassportElement = {
 
 ```ts
 type EphemeralMessageParameters = {
+  callback_query_id: string;
+  receiver_user_id?: never;
+  replace_callback_query_message?: boolean;
+} | {
   callback_query_id?: string;
-  receiver_user_id?: number;
+  receiver_user_id: number;
   replace_callback_query_message?: boolean;
 };
 ```
@@ -7609,7 +7615,6 @@ type SendAnimationParams = {
   business_connection_id?: string;
   caption?: string;
   caption_entities?: [MessageEntity](#messageentity)[];
-  chat_id?: number | string;
   direct_messages_topic_id?: number;
   disable_notification?: boolean;
   duration?: number;
@@ -7644,7 +7649,6 @@ type SendAudioParams = {
   business_connection_id?: string;
   caption?: string;
   caption_entities?: [MessageEntity](#messageentity)[];
-  chat_id?: number | string;
   direct_messages_topic_id?: number;
   disable_notification?: boolean;
   duration?: number;
@@ -7727,7 +7731,6 @@ type SendChecklistResult = [Message](#message);
 type SendContactParams = {
   allow_paid_broadcast?: boolean;
   business_connection_id?: string;
-  chat_id?: number | string;
   direct_messages_topic_id?: number;
   disable_notification?: boolean;
   ephemeral_message_parameters?: [EphemeralMessageParameters](#ephemeralmessageparameters);
@@ -7783,7 +7786,6 @@ type SendDocumentParams = {
   business_connection_id?: string;
   caption?: string;
   caption_entities?: [MessageEntity](#messageentity)[];
-  chat_id?: number | string;
   direct_messages_topic_id?: number;
   disable_content_type_detection?: boolean;
   disable_notification?: boolean;
@@ -7901,7 +7903,6 @@ type SendLivePhotoParams = {
   business_connection_id?: string;
   caption?: string;
   caption_entities?: [MessageEntity](#messageentity)[];
-  chat_id?: number | string;
   direct_messages_topic_id?: number;
   disable_notification?: boolean;
   ephemeral_message_parameters?: [EphemeralMessageParameters](#ephemeralmessageparameters);
@@ -7931,7 +7932,6 @@ type SendLivePhotoResult = [Message](#message);
 type SendLocationParams = {
   allow_paid_broadcast?: boolean;
   business_connection_id?: string;
-  chat_id?: number | string;
   direct_messages_topic_id?: number;
   disable_notification?: boolean;
   ephemeral_message_parameters?: [EphemeralMessageParameters](#ephemeralmessageparameters);
@@ -8006,7 +8006,6 @@ type SendMessageDraftResult = boolean;
 type SendMessageParams = {
   allow_paid_broadcast?: boolean;
   business_connection_id?: string;
-  chat_id?: number | string;
   direct_messages_topic_id?: number;
   disable_notification?: boolean;
   entities?: [MessageEntity](#messageentity)[];
@@ -8067,7 +8066,6 @@ type SendPhotoParams = {
   business_connection_id?: string;
   caption?: string;
   caption_entities?: [MessageEntity](#messageentity)[];
-  chat_id?: number | string;
   direct_messages_topic_id?: number;
   disable_notification?: boolean;
   ephemeral_message_parameters?: [EphemeralMessageParameters](#ephemeralmessageparameters);
@@ -8162,7 +8160,6 @@ type SendRichMessageDraftResult = boolean;
 type SendRichMessageParams = {
   allow_paid_broadcast?: boolean;
   business_connection_id?: string;
-  chat_id?: number | string;
   direct_messages_topic_id?: number;
   disable_notification?: boolean;
   ephemeral_message_parameters?: [EphemeralMessageParameters](#ephemeralmessageparameters);
@@ -8215,7 +8212,6 @@ type SendSharedWidgetResult = [Message](#message);
 type SendStickerParams = {
   allow_paid_broadcast?: boolean;
   business_connection_id?: string;
-  chat_id?: number | string;
   direct_messages_topic_id?: number;
   disable_notification?: boolean;
   emoji?: string;
@@ -8243,7 +8239,6 @@ type SendVenueParams = {
   address: string;
   allow_paid_broadcast?: boolean;
   business_connection_id?: string;
-  chat_id?: number | string;
   direct_messages_topic_id?: number;
   disable_notification?: boolean;
   ephemeral_message_parameters?: [EphemeralMessageParameters](#ephemeralmessageparameters);
@@ -8275,7 +8270,6 @@ type SendVenueResult = [Message](#message);
 type SendVideoNoteParams = {
   allow_paid_broadcast?: boolean;
   business_connection_id?: string;
-  chat_id?: number | string;
   direct_messages_topic_id?: number;
   disable_notification?: boolean;
   duration?: number;
@@ -8306,7 +8300,6 @@ type SendVideoParams = {
   business_connection_id?: string;
   caption?: string;
   caption_entities?: [MessageEntity](#messageentity)[];
-  chat_id?: number | string;
   cover?: [InputFile](#inputfile) | string;
   direct_messages_topic_id?: number;
   disable_notification?: boolean;
@@ -8344,7 +8337,6 @@ type SendVoiceParams = {
   business_connection_id?: string;
   caption?: string;
   caption_entities?: [MessageEntity](#messageentity)[];
-  chat_id?: number | string;
   direct_messages_topic_id?: number;
   disable_notification?: boolean;
   duration?: number;
