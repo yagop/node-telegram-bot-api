@@ -13,8 +13,8 @@
 // each CJS artifact references its own map. It is idempotent: once corrected,
 // none of the patterns match again. Runs under plain Node (no bun) because it
 // executes via `npm run build` / `prepare`, which consumers run on install.
-import { readdirSync, readFileSync, writeFileSync, statSync } from "node:fs";
-import { join, dirname } from "node:path";
+import { readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
+import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const distDir = join(dirname(fileURLToPath(import.meta.url)), "..", "dist");
@@ -44,7 +44,9 @@ function walk(dir) {
       continue;
     }
     const rule = ruleFor(entry);
-    if (!rule) continue;
+    if (!rule) {
+      continue;
+    }
     const original = readFileSync(full, "utf8");
     const fixed = original.replace(rule.find, rule.replace);
     if (fixed !== original) {

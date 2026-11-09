@@ -12,8 +12,9 @@
  *
  * Run with: `npm run generate:docs` (== `bun scripts/generate-docs.ts`).
  */
-import { Application, ReflectionKind } from "typedoc";
+
 import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { Application, ReflectionKind } from "typedoc";
 
 const ENTRY_POINTS = ["src/core/index.ts", "src/node/index.ts", "src/bun/index.ts"];
 // The build tsconfig (not the root) - it includes src/bun and the Bun ambient
@@ -53,7 +54,9 @@ const seen = new Set<string>();
 const collected: Obj[] = [];
 function collect(node: Obj): void {
   for (const c of node.children || []) {
-    if (c.kind === K.Reference) continue;
+    if (c.kind === K.Reference) {
+      continue;
+    }
     if (
       [K.Class, K.Interface, K.Function, K.Enum, K.Variable, K.TypeAlias].includes(c.kind) &&
       c.name &&
@@ -62,12 +65,15 @@ function collect(node: Obj): void {
       seen.add(c.name);
       collected.push(c);
     }
-    if ([K.Project, K.Module, K.Namespace].includes(c.kind)) collect(c);
+    if ([K.Project, K.Module, K.Namespace].includes(c.kind)) {
+      collect(c);
+    }
   }
 }
 collect(doc);
 
-const byName = <T extends Obj>(arr: T[]) => arr.slice().sort((a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0));
+const byName = <T extends Obj>(arr: T[]) =>
+  arr.slice().sort((a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0));
 const classes = byName(collected.filter((c) => c.kind === K.Class));
 const interfaces = byName(collected.filter((c) => c.kind === K.Interface));
 const functions = byName(collected.filter((c) => c.kind === K.Function));
@@ -93,12 +99,16 @@ const escCell = (s: string) => (s ?? "").replace(/\|/g, "\\|").replace(/\n/g, " 
 // Type -> string. `inline` collapses object literals to a single line; when
 // false, object literals are pretty-printed (used for fenced type blocks).
 function renderType(t: Obj | undefined, inline = true, indent = ""): string {
-  if (!t) return "";
+  if (!t) {
+    return "";
+  }
   switch (t.type) {
     case "intrinsic":
       return t.name;
     case "literal":
-      if (t.value === null) return "null";
+      if (t.value === null) {
+        return "null";
+      }
       return typeof t.value === "string" ? JSON.stringify(t.value) : String(t.value);
     case "array":
       return `${paren(renderType(t.elementType, inline, indent))}[]`;
@@ -126,7 +136,9 @@ function renderType(t: Obj | undefined, inline = true, indent = ""): string {
       return `infer ${t.name}`;
     case "reference": {
       let s = linkRef(t.name ?? "");
-      if (t.typeArguments?.length) s += `<${t.typeArguments.map((x: Obj) => renderType(x, inline, indent)).join(", ")}>`;
+      if (t.typeArguments?.length) {
+        s += `<${t.typeArguments.map((x: Obj) => renderType(x, inline, indent)).join(", ")}>`;
+      }
       return s;
     }
     case "reflection":
@@ -140,7 +152,9 @@ function renderType(t: Obj | undefined, inline = true, indent = ""): string {
       // TypeDoc shape: { head: string, tail: [[type, sep], ...] }. Each tail
       // entry is a substitution type followed by its literal separator.
       let s = `\`${t.head ?? ""}`;
-      for (const [sub, sep] of t.tail || []) s += `\${${renderType(sub, inline, indent)}}${sep ?? ""}`;
+      for (const [sub, sep] of t.tail || []) {
+        s += `\${${renderType(sub, inline, indent)}}${sep ?? ""}`;
+      }
       return `${s}\``;
     }
     case "unknown":
@@ -154,7 +168,9 @@ function renderType(t: Obj | undefined, inline = true, indent = ""): string {
 // `type` / `default`: `<E extends object>`, `<T = Record<string, unknown>>`. Names
 // alone would misstate the declared surface, so render all three parts.
 function typeParams(tps: Obj[] | undefined, indent = ""): string {
-  if (!tps?.length) return "";
+  if (!tps?.length) {
+    return "";
+  }
   const parts = tps.map((t: Obj) => {
     const constraint = t.type ? ` extends ${renderType(t.type, true, indent)}` : "";
     const dflt = t.default ? ` = ${renderType(t.default, true, indent)}` : "";
@@ -175,25 +191,33 @@ function fieldSig(m: Obj, indent = ""): string {
   const opt = m.flags?.isOptional ? "?" : "";
   // A method member (e.g. `read<V>()`, `expectReply()`) carries call signatures
   // directly and has no `.type`; render it as a function type so it isn't blank.
-  const type = m.signatures?.length ? sigType(m.signatures[0], indent) : renderType(m.type, true, indent);
+  const type = m.signatures?.length
+    ? sigType(m.signatures[0], indent)
+    : renderType(m.type, true, indent);
   return `${ro}${rest}${m.name}${opt}: ${type}`;
 }
 
 function renderDeclType(decl: Obj | undefined, inline: boolean, indent: string): string {
-  if (!decl) return "{}";
+  if (!decl) {
+    return "{}";
+  }
   if (decl.signatures?.length) {
     return sigType(decl.signatures[0], indent);
   }
   if (decl.children?.length) {
     const fields: Obj[] = decl.children;
-    if (inline) return `{ ${fields.map((m: Obj) => fieldSig(m)).join("; ")} }`;
+    if (inline) {
+      return `{ ${fields.map((m: Obj) => fieldSig(m)).join("; ")} }`;
+    }
     const inner = `${indent}  `;
     const lines = fields.map((m: Obj) => `${inner}${fieldSig(m, inner)};`);
     return `{\n${lines.join("\n")}\n${indent}}`;
   }
   if (decl.indexSignature) {
     const is = Array.isArray(decl.indexSignature) ? decl.indexSignature[0] : decl.indexSignature;
-    const key = (is.parameters || []).map((p: Obj) => `[${p.name}: ${renderType(p.type, inline, indent)}]`).join(", ");
+    const key = (is.parameters || [])
+      .map((p: Obj) => `[${p.name}: ${renderType(p.type, inline, indent)}]`)
+      .join(", ");
     return `{ ${key}: ${renderType(is.type, inline, indent)} }`;
   }
   return "{}";
@@ -204,8 +228,12 @@ function renderDeclType(decl: Obj | undefined, inline: boolean, indent: string):
 // alias/variable body -> readable right-hand side. `block` pretty-prints object
 // literals across multiple lines (used inside fenced ```ts blocks).
 function aliasRhs(a: Obj, block = false): string {
-  if (a.children?.length) return renderDeclType(a, !block, "");
-  if (a.signatures?.length) return renderDeclType(a, !block, "");
+  if (a.children?.length) {
+    return renderDeclType(a, !block, "");
+  }
+  if (a.signatures?.length) {
+    return renderDeclType(a, !block, "");
+  }
   return renderType(a.type, !block, "");
 }
 
@@ -213,12 +241,16 @@ function renderPart(p: Obj): string {
   if (p.kind === "inline-tag") {
     if (p.tag === "@link" || p.tag === "@linkplain") {
       const text = p.text || "";
-      if (typeof p.target === "string" && /^https?:/.test(p.target)) return `[${text || p.target}](${p.target})`;
+      if (typeof p.target === "string" && /^https?:/.test(p.target)) {
+        return `[${text || p.target}](${p.target})`;
+      }
       return text;
     }
     return "";
   }
-  if (p.kind === "relative-link") return "";
+  if (p.kind === "relative-link") {
+    return "";
+  }
   return p.text || "";
 }
 const renderSummary = (comment: Obj | undefined) =>
@@ -229,8 +261,10 @@ const renderSummary = (comment: Obj | undefined) =>
 // `Error.captureStackTrace`, which @types/node and @types/bun graft onto every
 // `extends Error` class) are dropped - they are not part of this API surface.
 const membersOf = (r: Obj) => (r.children || []).filter((m: Obj) => !m.flags?.isExternal);
-const methodsOf = (r: Obj) => membersOf(r).filter((m: Obj) => m.kind === K.Method || m.kind === K.Function);
-const propsOf = (r: Obj) => membersOf(r).filter((m: Obj) => m.kind === K.Property || m.kind === K.Accessor);
+const methodsOf = (r: Obj) =>
+  membersOf(r).filter((m: Obj) => m.kind === K.Method || m.kind === K.Function);
+const propsOf = (r: Obj) =>
+  membersOf(r).filter((m: Obj) => m.kind === K.Property || m.kind === K.Accessor);
 
 // --- emitters ---
 
@@ -238,16 +272,29 @@ function emitClass(c: Obj): string {
   const out: string[] = [];
   out.push(`### \`${c.name}\``);
   const sum = renderSummary(c.comment);
-  if (sum) out.push("", sum);
+  if (sum) {
+    out.push("", sum);
+  }
   const sigsOf = (m: Obj) => m.signatures || [];
   const methods = methodsOf(c);
   if (methods.length) {
-    out.push("", "#### Methods", "", "| Method | Params | Returns | Description |", "| --- | --- | --- | --- |");
+    out.push(
+      "",
+      "#### Methods",
+      "",
+      "| Method | Params | Returns | Description |",
+      "| --- | --- | --- | --- |"
+    );
     for (const m of methods) {
       const sig = sigsOf(m)[0];
-      if (!sig) continue;
+      if (!sig) {
+        continue;
+      }
       const params = (sig.parameters || [])
-        .map((p: Obj) => `\`${p.flags?.isRest ? "..." : ""}${p.name}${p.flags?.isOptional ? "?" : ""}\`: ${escCell(renderType(p.type, true))}`)
+        .map(
+          (p: Obj) =>
+            `\`${p.flags?.isRest ? "..." : ""}${p.name}${p.flags?.isOptional ? "?" : ""}\`: ${escCell(renderType(p.type, true))}`
+        )
         .join(", ");
       const ret = escCell(renderType(sig.type, true));
       // Render the full comment summary: for generated Api methods this is the
@@ -279,11 +326,17 @@ function emitFunction(f: Obj): string {
   const sig = f.signatures?.[0];
   out.push(`### \`${f.name}()\``);
   const sum = renderSummary(sig?.comment || f.comment);
-  if (sum) out.push("", sum);
+  if (sum) {
+    out.push("", sum);
+  }
   const params = sig?.parameters || [];
   if (params.length) {
     out.push("", "| Param | Type |", "| --- | --- |");
-    for (const p of params) out.push(`| \`${p.flags?.isRest ? "..." : ""}${p.name}${p.flags?.isOptional ? "?" : ""}\` | ${escCell(renderType(p.type, true)) || "void"} |`);
+    for (const p of params) {
+      out.push(
+        `| \`${p.flags?.isRest ? "..." : ""}${p.name}${p.flags?.isOptional ? "?" : ""}\` | ${escCell(renderType(p.type, true)) || "void"} |`
+      );
+    }
   }
   const ret = renderType(sig?.type, true);
   out.push("", `**Returns:** ${ret || "void"}`);
@@ -294,17 +347,25 @@ function emitInterface(i: Obj): string {
   const out: string[] = [];
   out.push(`### \`${i.name}\``);
   const sum = renderSummary(i.comment);
-  if (sum) out.push("", sum);
+  if (sum) {
+    out.push("", sum);
+  }
   const props = propsOf(i);
   const calls = membersOf(i).filter((m: Obj) => m.kind === K.CallSignature);
   if (props.length) {
     out.push("", "| Property | Type |", "| --- | --- |");
-    for (const p of props) out.push(`| \`${p.name}\`${p.flags?.isOptional ? "?" : ""} | ${escCell(renderType(p.type, true)) || "void"} |`);
+    for (const p of props) {
+      out.push(
+        `| \`${p.name}\`${p.flags?.isOptional ? "?" : ""} | ${escCell(renderType(p.type, true)) || "void"} |`
+      );
+    }
   }
   if (calls.length) {
     out.push("", "**Call signature:**", "");
     for (const s of calls) {
-      const params = (s.parameters || []).map((p: Obj) => `\`${p.name}\`: ${escCell(renderType(p.type, true))}`).join(", ");
+      const params = (s.parameters || [])
+        .map((p: Obj) => `\`${p.name}\`: ${escCell(renderType(p.type, true))}`)
+        .join(", ");
       out.push(`\`(${params}) => ${escCell(renderType(s.type, true))}\``);
     }
   }
@@ -318,7 +379,7 @@ function emitEnum(e: Obj): string {
   if (members.length) {
     out.push("", "| Member | Value |", "| --- | --- |");
     for (const m of members) {
-      const v = m.type?.type === "literal" ? renderType(m.type) : m.defaultValue ?? "";
+      const v = m.type?.type === "literal" ? renderType(m.type) : (m.defaultValue ?? "");
       out.push(`| \`${m.name}\` | ${v || "-"} |`);
     }
   }
@@ -339,24 +400,40 @@ const md: string[] = [];
 md.push("# node-telegram-bot-api - API reference");
 md.push("");
 md.push(
-  "Auto-generated by `scripts/generate-docs.ts` from the TypeScript source via [TypeDoc](https://typedoc.org). Regenerate with `npm run generate:docs`. Every `Api` method links to its [Bot API](https://core.telegram.org/bots/api) page.",
+  "Auto-generated by `scripts/generate-docs.ts` from the TypeScript source via [TypeDoc](https://typedoc.org). Regenerate with `npm run generate:docs`. Every `Api` method links to its [Bot API](https://core.telegram.org/bots/api) page."
 );
 md.push("");
 md.push("## Contents");
 md.push("");
 const toc: string[] = [];
-if (classes.length) toc.push("- [Classes](#classes)");
-if (functions.length) toc.push("- [Functions](#functions)");
-if (interfaces.length) toc.push("- [Interfaces](#interfaces)");
-if (enums.length) toc.push("- [Enums](#enums)");
-if (aliases.length) toc.push("- [Type aliases](#type-aliases)");
-if (variables.length) toc.push("- [Variables](#variables)");
+if (classes.length) {
+  toc.push("- [Classes](#classes)");
+}
+if (functions.length) {
+  toc.push("- [Functions](#functions)");
+}
+if (interfaces.length) {
+  toc.push("- [Interfaces](#interfaces)");
+}
+if (enums.length) {
+  toc.push("- [Enums](#enums)");
+}
+if (aliases.length) {
+  toc.push("- [Type aliases](#type-aliases)");
+}
+if (variables.length) {
+  toc.push("- [Variables](#variables)");
+}
 md.push(...toc);
 
 const section = (title: string, items: Obj[], emit: (x: Obj) => string) => {
-  if (!items.length) return;
+  if (!items.length) {
+    return;
+  }
   md.push("", `## ${title}`, "");
-  for (const it of items) md.push("", emit(it));
+  for (const it of items) {
+    md.push("", emit(it));
+  }
 };
 section("Classes", classes, emitClass);
 section("Functions", functions, emitFunction);
@@ -370,9 +447,16 @@ if (aliases.length) {
   for (const a of aliases) {
     md.push("", `### \`${a.name}\``);
     const sum = renderSummary(a.comment);
-    if (sum) md.push("", sum);
+    if (sum) {
+      md.push("", sum);
+    }
     // The alias's own parameters too, or a body referring to `T` declares nothing.
-    md.push("", "```ts", `type ${a.name}${typeParams(a.typeParameters)} = ${aliasRhs(a, true)};`, "```");
+    md.push(
+      "",
+      "```ts",
+      `type ${a.name}${typeParams(a.typeParameters)} = ${aliasRhs(a, true)};`,
+      "```"
+    );
   }
 }
 if (variables.length) {
@@ -380,7 +464,9 @@ if (variables.length) {
   for (const v of variables) {
     md.push("", `### \`${v.name}\``);
     const sum = renderSummary(v.comment);
-    if (sum) md.push("", sum);
+    if (sum) {
+      md.push("", sum);
+    }
     md.push("", "```ts", `const ${v.name}: ${renderType(v.type, false)};`, "```");
   }
 }

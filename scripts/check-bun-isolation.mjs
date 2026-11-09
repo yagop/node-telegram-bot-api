@@ -26,8 +26,11 @@ function collectTsFiles(dir) {
   }
   for (const entry of entries) {
     const full = join(dir, entry);
-    if (statSync(full).isDirectory()) out.push(...collectTsFiles(full));
-    else if (entry.endsWith(".ts")) out.push(full);
+    if (statSync(full).isDirectory()) {
+      out.push(...collectTsFiles(full));
+    } else if (entry.endsWith(".ts")) {
+      out.push(full);
+    }
   }
   return out;
 }
@@ -47,7 +50,9 @@ const PATTERNS = [
 
 /** Blank out comments while preserving newline positions, so line numbers stay accurate. */
 function stripComments(text) {
-  return text.replace(/\/\*[\s\S]*?\*\//g, (m) => m.replace(/[^\n]/g, " ")).replace(/\/\/[^\n]*/g, "");
+  return text
+    .replace(/\/\*[\s\S]*?\*\//g, (m) => m.replace(/[^\n]/g, " "))
+    .replace(/\/\/[^\n]*/g, "");
 }
 
 const offenders = [];
@@ -58,15 +63,20 @@ for (const dir of GUARDED_DIRS) {
     const scanned = stripComments(raw);
     const seen = new Set();
     for (const re of PATTERNS) {
-      re.lastIndex = 0;
-      let m;
-      while ((m = re.exec(scanned)) !== null) {
+      for (const m of scanned.matchAll(re)) {
         const line = scanned.slice(0, m.index).split(/\r?\n/).length;
         const spec = m[1];
         const key = `${line}:${spec}`;
-        if (seen.has(key)) continue;
+        if (seen.has(key)) {
+          continue;
+        }
         seen.add(key);
-        offenders.push({ file: file.slice(ROOT.length + 1), line, spec, text: (rawLines[line - 1] ?? "").trim() });
+        offenders.push({
+          file: file.slice(ROOT.length + 1),
+          line,
+          spec,
+          text: (rawLines[line - 1] ?? "").trim(),
+        });
       }
     }
   }
@@ -78,7 +88,9 @@ if (offenders.length > 0) {
     console.error(`  ${o.file}:${o.line}  imports "${o.spec}"`);
     console.error(`      ${o.text}`);
   }
-  console.error(`\n${offenders.length} offending Bun import(s) found. Move the code to src/bun/.\n`);
+  console.error(
+    `\n${offenders.length} offending Bun import(s) found. Move the code to src/bun/.\n`
+  );
   process.exit(1);
 }
 

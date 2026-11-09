@@ -61,7 +61,9 @@ const BUILTINS = new Set([
 
 /** Is `spec` a Node built-in (with or without the `node:` prefix)? */
 function isNodeBuiltin(spec) {
-  if (spec.startsWith("node:")) return true;
+  if (spec.startsWith("node:")) {
+    return true;
+  }
   // Strip subpath (e.g. `fs/promises` -> `fs`).
   const top = spec.split("/")[0];
   return BUILTINS.has(top);
@@ -73,8 +75,11 @@ function collectTsFiles(dir) {
   for (const entry of readdirSync(dir)) {
     const full = join(dir, entry);
     const st = statSync(full);
-    if (st.isDirectory()) out.push(...collectTsFiles(full));
-    else if (entry.endsWith(".ts")) out.push(full);
+    if (st.isDirectory()) {
+      out.push(...collectTsFiles(full));
+    } else if (entry.endsWith(".ts")) {
+      out.push(full);
+    }
   }
   return out;
 }
@@ -93,7 +98,9 @@ const PATTERNS = [
 
 /** Blank out comments while preserving newline positions, so line numbers stay accurate. */
 function stripCommentsWhole(text) {
-  return text.replace(/\/\*[\s\S]*?\*\//g, (m) => m.replace(/[^\n]/g, " ")).replace(/\/\/[^\n]*/g, "");
+  return text
+    .replace(/\/\*[\s\S]*?\*\//g, (m) => m.replace(/[^\n]/g, " "))
+    .replace(/\/\/[^\n]*/g, "");
 }
 
 /** Strip line/block comments so we don't match specifiers inside comments. */
@@ -110,7 +117,10 @@ function stripComments(line) {
  * replaced with spaces (preserving column positions).
  */
 function stripStringContents(line) {
-  return line.replace(/(["'`])((?:\\.|(?!\1)[^\\])*)\1/g, (_m, q, body) => q + " ".repeat(body.length) + q);
+  return line.replace(
+    /(["'`])((?:\\.|(?!\1)[^\\])*)\1/g,
+    (_m, q, body) => q + " ".repeat(body.length) + q
+  );
 }
 
 /**
@@ -123,7 +133,15 @@ function stripStringContents(line) {
  * `Blob`, `FormData`, `TextDecoder`, `AbortSignal`, `Response`, `Request`,
  * `URLSearchParams`, ...) are intentionally absent and never flagged.
  */
-const NODE_GLOBALS = ["Buffer", "process", "global", "__dirname", "__filename", "setImmediate", "clearImmediate"];
+const NODE_GLOBALS = [
+  "Buffer",
+  "process",
+  "global",
+  "__dirname",
+  "__filename",
+  "setImmediate",
+  "clearImmediate",
+];
 
 /**
  * Build the matcher for a single Node global.
@@ -145,7 +163,9 @@ const GLOBAL_PATTERNS = NODE_GLOBALS.map((name) => ({ name, re: globalMatcher(na
  * even though `process` is preceded by a `.` (so the matcher above skips it).
  * Flag `globalThis.<denied>` for any denied global reachable off `globalThis`.
  */
-const GLOBALTHIS_PATTERN = new RegExp(`\\bglobalThis\\s*\\.\\s*(?<name>${NODE_GLOBALS.join("|")})(?![\\w$])`);
+const GLOBALTHIS_PATTERN = new RegExp(
+  `\\bglobalThis\\s*\\.\\s*(?<name>${NODE_GLOBALS.join("|")})(?![\\w$])`
+);
 
 const files = collectTsFiles(CORE_DIR);
 const importOffenders = [];
@@ -158,16 +178,23 @@ for (const file of files) {
   const scanned = stripCommentsWhole(raw);
   const seen = new Set();
   for (const re of PATTERNS) {
-    re.lastIndex = 0;
-    let m;
-    while ((m = re.exec(scanned)) !== null) {
+    for (const m of scanned.matchAll(re)) {
       const spec = m.groups?.spec;
-      if (!spec || !isNodeBuiltin(spec)) continue;
+      if (!spec || !isNodeBuiltin(spec)) {
+        continue;
+      }
       const line = scanned.slice(0, m.index).split(/\r?\n/).length;
       const key = `${line}:${spec}`;
-      if (seen.has(key)) continue;
+      if (seen.has(key)) {
+        continue;
+      }
       seen.add(key);
-      importOffenders.push({ file: file.slice(ROOT.length + 1), line, spec, text: (rawLines[line - 1] ?? "").trim() });
+      importOffenders.push({
+        file: file.slice(ROOT.length + 1),
+        line,
+        spec,
+        text: (rawLines[line - 1] ?? "").trim(),
+      });
     }
   }
 }
@@ -182,7 +209,9 @@ for (const file of files) {
     // Track multi-line block comments crudely; skip lines fully inside one.
     if (inBlockComment) {
       const end = line.indexOf("*/");
-      if (end === -1) continue;
+      if (end === -1) {
+        continue;
+      }
       line = line.slice(end + 2);
       inBlockComment = false;
     }
@@ -247,11 +276,13 @@ if (globalOffenders.length > 0) {
   console.error(`\n${globalOffenders.length} offending global use(s) found in src/core.\n`);
 }
 
-if (failed) process.exit(1);
+if (failed) {
+  process.exit(1);
+}
 
 console.log(
   `OK: scanned ${files.length} file(s) in src/core; ` +
     `no Node built-in imports and no Node-only globals ` +
-    `(${NODE_GLOBALS.join(", ")}) found.`,
+    `(${NODE_GLOBALS.join(", ")}) found.`
 );
 process.exit(0);
