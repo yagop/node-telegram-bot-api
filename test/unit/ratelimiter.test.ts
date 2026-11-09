@@ -166,6 +166,22 @@ describe("RateLimiter", () => {
     assert.strictEqual(tokens(internals(limiter).global), 0);
   });
 
+  test("takeAll charges a bucket listed twice only once", async () => {
+    const clock = fakeClock();
+    const bucket = new TokenBucket(1, { burst: 1, now: clock.now });
+
+    await TokenBucket.takeAll([bucket, bucket]);
+    assert.strictEqual(tokens(bucket), 0);
+
+    // The bucket is now empty, so a repeat waits instead of driving it negative.
+    const controller = new AbortController();
+    const pending = TokenBucket.takeAll([bucket, bucket], controller.signal);
+    assert.strictEqual(await settledNextTick(pending), false);
+    controller.abort(new Error("stop waiting"));
+    await assert.rejects(pending, /stop waiting/);
+    assert.strictEqual(tokens(bucket), 0);
+  });
+
   test("per-chat buckets are evicted LRU past maxChatBuckets", async () => {
     const clock = fakeClock();
     const limiter = new RateLimiter({ perChat: 1, maxChatBuckets: 2, now: clock.now });

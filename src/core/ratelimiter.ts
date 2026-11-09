@@ -70,14 +70,17 @@ export class TokenBucket {
    * guarantee as `take()`: nothing is consumed until all waits are in the past.
    */
   static async takeAll(buckets: readonly TokenBucket[], signal?: AbortSignal): Promise<void> {
+    // A bucket listed twice is checked and charged once: the check loop below
+    // runs before any decrement, so a repeat would pass on the same token.
+    const unique = new Set(buckets);
     for (;;) {
       let wait = 0;
-      for (const bucket of buckets) {
+      for (const bucket of unique) {
         bucket.refill();
         wait = Math.max(wait, bucket.waitMs());
       }
       if (wait <= 0) {
-        for (const bucket of buckets) {
+        for (const bucket of unique) {
           bucket.tokens -= 1;
         }
         return;
