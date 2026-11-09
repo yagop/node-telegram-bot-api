@@ -29,13 +29,21 @@ type _Exclusive<U, T = U> = T extends unknown ? T & { [K in Exclude<_KeysOfUnion
 export type ReplyMarkup = _Exclusive<InlineKeyboardMarkup | ReplyKeyboardMarkup | ReplyKeyboardRemove | ForceReply>;
 
 /**
+ * `Omit` applied to each member of a union. Plain `Omit` merges the members,
+ * which loses the `chat_id` rule of the send param types: use this in wrappers,
+ * e.g. `DistributiveOmit<SendMessageParams, "parse_mode">`.
+ */
+export type DistributiveOmit<T, K extends PropertyKey> = T extends unknown ? Omit<T, K> : never;
+
+/**
  * Target of an ephemeral-capable send method. Telegram lets `chat_id` be
  * omitted only for an ephemeral reply to a callback query (`callback_query_id`
  * without `receiver_user_id`), so every other call without it is a type error.
- * The `chat_id` member is last so that the compiler error names `chat_id`.
+ * `chat_id?: never` means the key must be omitted. The `chat_id` member is last
+ * so that the compiler error names `chat_id`.
  */
 export type ChatOrCallbackReply =
-  | { chat_id?: never; ephemeral_message_parameters: { receiver_user_id?: never; callback_query_id: string } }
+  | { chat_id?: never; ephemeral_message_parameters: EphemeralCallbackReply }
   | { chat_id: number | string };
 
 
@@ -428,11 +436,14 @@ export type ReplyParameters = {
   poll_option_id?: string;
 };
 
-export type EphemeralMessageParameters = {
+/** An ephemeral reply to a callback query: `callback_query_id` without `receiver_user_id`. */
+export type EphemeralCallbackReply = {
   receiver_user_id?: never;
   callback_query_id: string;
   replace_callback_query_message?: boolean;
-} | {
+};
+
+export type EphemeralMessageParameters = EphemeralCallbackReply | {
   receiver_user_id: number;
   callback_query_id?: string;
   replace_callback_query_message?: boolean;

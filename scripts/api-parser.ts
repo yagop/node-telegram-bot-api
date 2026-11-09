@@ -382,7 +382,10 @@ const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 // `InputFile` is NOT listed here: it is no longer defined in schemas.ts; it is
 // imported from the Phase-1 core class (../core/files.js). It is therefore still
 // a "known" name for the empty-object filter, handled separately below.
-const PRELUDE_NAMES = new Set(["ChatId", "ReplyMarkup", "ParseMode", "ChatOrCallbackReply"]);
+const PRELUDE_NAMES = new Set(["ChatId", "ReplyMarkup", "ParseMode", "ChatOrCallbackReply", "DistributiveOmit"]);
+
+/** The documented \`chat_id\` type of the ephemeral-capable send methods (checked per method). */
+const CHAT_ID_TYPE = "number | string";
 
 const PRELUDE = `// ---------------------------------------------------------------------------
 // Library-specific helpers (not 1:1 documented objects)
@@ -404,34 +407,55 @@ type _Exclusive<U, T = U> = T extends unknown ? T & { [K in Exclude<_KeysOfUnion
 export type ReplyMarkup = _Exclusive<${REPLY_MARKUP_UNION}>;
 
 /**
+ * \`Omit\` applied to each member of a union. Plain \`Omit\` merges the members,
+ * which loses the \`chat_id\` rule of the send param types: use this in wrappers,
+ * e.g. \`DistributiveOmit<SendMessageParams, "parse_mode">\`.
+ */
+export type DistributiveOmit<T, K extends PropertyKey> = T extends unknown ? Omit<T, K> : never;
+
+/**
  * Target of an ephemeral-capable send method. Telegram lets \`chat_id\` be
  * omitted only for an ephemeral reply to a callback query (\`callback_query_id\`
  * without \`receiver_user_id\`), so every other call without it is a type error.
- * The \`chat_id\` member is last so that the compiler error names \`chat_id\`.
+ * \`chat_id?: never\` means the key must be omitted. The \`chat_id\` member is last
+ * so that the compiler error names \`chat_id\`.
  */
 export type ChatOrCallbackReply =
-  | { chat_id?: never; ephemeral_message_parameters: { receiver_user_id?: never; callback_query_id: string } }
-  | { chat_id: number | string };
+  | { chat_id?: never; ephemeral_message_parameters: EphemeralCallbackReply }
+  | { chat_id: ${CHAT_ID_TYPE} };
 `;
 
-// The docs mark both fields "Optional", but `receiver_user_id` is "required unless
-// the message is sent as an ephemeral reply to a callback query". The phrase is
-// checked on every run, so a reworded rule fails the generator instead of
-// silently losing the stricter types.
+// The docs mark `chat_id` and `receiver_user_id` "Optional", but their descriptions
+// say when each is required. The phrases below are checked on every run, so a
+// reworded rule fails the generator instead of silently losing the stricter types.
 const EPHEMERAL_RULE = /required unless the message is sent as an ephemeral reply to a callback query/;
+/** What "an ephemeral reply to a callback query" is: `callback_query_id` without `receiver_user_id`. */
+const CALLBACK_REPLY_RULE =
+  /If specified and\s+receiver_user_id\s+is omitted, then the message is sent as an ephemeral reply to the callback query/;
 
-/** `EphemeralMessageParameters`: a callback reply, or a named receiver. Never neither. */
+/**
+ * `EphemeralMessageParameters` as two members: `EphemeralCallbackReply` (a
+ * callback query, no receiver) or a named receiver. Never neither.
+ */
 function emitEphemeralParameters(fields: Field[]): string {
   const receiver = fields.find((f) => f.name === "receiver_user_id");
   const callback = fields.find((f) => f.name === "callback_query_id");
-  if (!receiver?.optional || !callback?.optional || !EPHEMERAL_RULE.test(receiver.desc)) {
+  if (
+    !receiver?.optional ||
+    !callback?.optional ||
+    !EPHEMERAL_RULE.test(receiver.desc) ||
+    !CALLBACK_REPLY_RULE.test(callback.desc)
+  ) {
     throw new Error("EphemeralMessageParameters no longer matches the documented receiver_user_id rule");
   }
-  // Two whole object members (no intersection), so the API reference reads plainly.
   const rest = fields.filter((f) => f !== receiver && f !== callback);
   const callbackReply = emitFields([{ ...receiver, type: "never" }, { ...callback, optional: false }, ...rest]);
   const namedReceiver = emitFields([{ ...receiver, optional: false }, callback, ...rest]);
-  return `${callbackReply} | ${namedReceiver}`;
+  return (
+    `/** An ephemeral reply to a callback query: \`callback_query_id\` without \`receiver_user_id\`. */\n` +
+    `export type EphemeralCallbackReply = ${callbackReply};\n\n` +
+    `export type EphemeralMessageParameters = EphemeralCallbackReply | ${namedReceiver};\n`
+  );
 }
 
 function emitFields(fields: Field[]): string {
@@ -525,10 +549,18 @@ out.push(
 out.push(`\n// ---------------------------------------------------------------------------
 // Objects
 // ---------------------------------------------------------------------------\n`);
+let ephemeralParametersEmitted = false;
 for (const t of types) {
   if (t.name === "Update") continue; // emitted above as a discriminated union
-  const body = t.name === "EphemeralMessageParameters" ? emitEphemeralParameters(t.fields) : emitFields(t.fields);
-  out.push(`export type ${t.name} = ${body};\n`);
+  if (t.name === "EphemeralMessageParameters") {
+    out.push(emitEphemeralParameters(t.fields));
+    ephemeralParametersEmitted = true;
+    continue;
+  }
+  out.push(`export type ${t.name} = ${emitFields(t.fields)};\n`);
+}
+if (!ephemeralParametersEmitted) {
+  throw new Error("EphemeralMessageParameters not found in the docs: its strict union was not emitted");
 }
 
 if (emptyTypes.length) {
@@ -549,11 +581,15 @@ for (const m of methods) {
   const C = cap(m.name);
   // The docs mark `chat_id` "Optional" on the ephemeral-capable send methods, but it
   // is required unless the call is an ephemeral reply to a callback query:
-  // `ChatOrCallbackReply` carries `chat_id` for these methods.
+  // `ChatOrCallbackReply` carries `chat_id` for these methods. The rule is keyed on
+  // the documented phrase, and every other part of the expected shape is checked.
   const chat = m.fields.find((f) => f.name === "chat_id");
-  const ephemeral = chat?.optional && m.fields.some((f) => f.name === "ephemeral_message_parameters");
-  if (ephemeral && !EPHEMERAL_RULE.test(chat.desc)) {
-    throw new Error(`${m.name}: optional chat_id without the documented ephemeral-reply rule`);
+  const parameters = m.fields.find((f) => f.name === "ephemeral_message_parameters");
+  const ephemeral = chat !== undefined && EPHEMERAL_RULE.test(chat.desc);
+  const expectedShape =
+    chat?.optional && chat.type === CHAT_ID_TYPE && parameters?.optional && parameters.type === "EphemeralMessageParameters";
+  if (ephemeral ? !expectedShape : chat?.optional && parameters) {
+    throw new Error(`${m.name}: chat_id / ephemeral_message_parameters do not match the documented ephemeral-reply rule`);
   }
   if (ephemeral) ephemeralMethods++;
   const fields = ephemeral ? m.fields.filter((f) => f !== chat) : m.fields;

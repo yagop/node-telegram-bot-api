@@ -256,7 +256,7 @@ An animated profile photo (a video); `main_frame_timestamp` picks the still fram
 | --- | --- | --- | --- |
 | `answerCallbackQuery` | `other?`: Omit<[AnswerCallbackQueryParams](#answercallbackqueryparams), "callback_query_id"> | Promise<boolean> | Answer the callback query that triggered this update. Throws if the update is not a callback query. |
 | `getSession` | - | [SessionHandle](#sessionhandle)<T> | The session handle for this update: `.data` (the persistent bag - mutate it in place or reassign it, it flushes after the handler), `.ext()` for layers built on sessions, and `.delete()` to evict the key. `<T>` is the caller's asserted `data` shape, defaulting to `Record<string, unknown>` like `createSession()` itself; to fix it once instead of per call site, use the middleware's own `.get(ctx)`. Throws if the session middleware has not run for this update (not registered, or no derivable session key). |
-| `reply` | `text`: string, `other?`: Omit<[SendMessageParams](#sendmessageparams), "chat_id" \| "text"> | Promise<[Message](#message)> | Send a message to the inferred chat, staying where the incoming message came from: `business_connection_id` for business messages (including `deleted_business_messages`), `message_thread_id` for forum-topic messages (`is_topic_message`; a plain reply thread is not followed), and `direct_messages_topic_id` for channel direct-messages chats. For a callback query these come from the message the button is attached to. Anything in `other` wins; pass e.g. `{ message_thread_id: undefined }` to opt out.  Throws if no chat id can be derived from the update (e.g. an inline query carries no chat), and for `guest_message`, which must be answered with `api.answerGuestQuery` and its `guest_query_id` instead. |
+| `reply` | `text`: string, `other?`: Omit<[SendMessageParams](#sendmessageparams), "chat_id" \| "text"> | Promise<[Message](#message)> | Send a message to the inferred chat, staying where the incoming message came from: `business_connection_id` for business messages (including `deleted_business_messages`), `message_thread_id` for forum-topic messages (`is_topic_message`; a plain reply thread is not followed), and `direct_messages_topic_id` for channel direct-messages chats. For a callback query these come from the message the button is attached to. Anything in `other` wins; pass e.g. `{ message_thread_id: undefined }` to opt out.  Throws if no chat id can be derived from the update (e.g. an inline query carries no chat) unless `other` makes it an ephemeral reply to a callback query, and for `guest_message`, which must be answered with `api.answerGuestQuery` and its `guest_query_id` instead. |
 
 #### Properties
 
@@ -2368,12 +2368,13 @@ type ChatMemberUpdated = {
 Target of an ephemeral-capable send method. Telegram lets `chat_id` be
 omitted only for an ephemeral reply to a callback query (`callback_query_id`
 without `receiver_user_id`), so every other call without it is a type error.
-The `chat_id` member is last so that the compiler error names `chat_id`.
+`chat_id?: never` means the key must be omitted. The `chat_id` member is last
+so that the compiler error names `chat_id`.
 
 ```ts
 type ChatOrCallbackReply = {
   chat_id?: never;
-  ephemeral_message_parameters: { callback_query_id: string; receiver_user_id?: never };
+  ephemeral_message_parameters: [EphemeralCallbackReply](#ephemeralcallbackreply);
 } | {
   chat_id: number | string;
 };
@@ -3092,6 +3093,16 @@ type DirectMessagesTopic = {
 type DisabledButton = Record<string, never>;
 ```
 
+### `DistributiveOmit`
+
+`Omit` applied to each member of a union. Plain `Omit` merges the members,
+which loses the `chat_id` rule of the send param types: use this in wrappers,
+e.g. `DistributiveOmit<SendMessageParams, "parse_mode">`.
+
+```ts
+type DistributiveOmit<T, K extends PropertyKey> = T extends unknown ? Omit<T, K> : never;
+```
+
 ### `Document`
 
 ```ts
@@ -3495,14 +3506,22 @@ type EncryptedPassportElement = {
 };
 ```
 
-### `EphemeralMessageParameters`
+### `EphemeralCallbackReply`
+
+An ephemeral reply to a callback query: `callback_query_id` without `receiver_user_id`.
 
 ```ts
-type EphemeralMessageParameters = {
+type EphemeralCallbackReply = {
   callback_query_id: string;
   receiver_user_id?: never;
   replace_callback_query_message?: boolean;
-} | {
+};
+```
+
+### `EphemeralMessageParameters`
+
+```ts
+type EphemeralMessageParameters = [EphemeralCallbackReply](#ephemeralcallbackreply) | {
   callback_query_id?: string;
   receiver_user_id: number;
   replace_callback_query_message?: boolean;

@@ -29,11 +29,14 @@ This project adheres to [Semantic Versioning](http://semver.org/).
     ephemeral reply to a callback query (`callback_query_id` without
     `receiver_user_id`). The rule is the exported `ChatOrCallbackReply` type.
   - `EphemeralMessageParameters` must have `receiver_user_id` or `callback_query_id`.
-  - `Omit` and `Pick` do not distribute over these param types, so a wrapper such as
+    The callback-reply form is the exported `EphemeralCallbackReply` type.
+  - `Omit` and `Pick` merge the members of these param types, so a wrapper such as
     `Omit<SendMessageParams, "parse_mode">` loses the rule and its spread is rejected.
-    `Omit<SendMessageParams, "chat_id">` plus your own `chat_id` works. For other
-    keys, use a distributive form:
-    `type DistOmit<T, K extends PropertyKey> = T extends unknown ? Omit<T, K> : never`.
+    Use the exported `DistributiveOmit<SendMessageParams, "parse_mode">`.
+    `Omit<SendMessageParams, "chat_id">` plus your own `chat_id` works as before.
+    `interface X extends SendMessageParams` no longer compiles; use a `type` intersection.
+- `ctx.reply` on an update without a chat (e.g. a callback query from an inline message)
+  sends when `other` makes it an ephemeral reply to the callback query, instead of throwing.
 
 #### Quotes from rich messages
 

@@ -57,6 +57,32 @@ describe("Context", () => {
     });
   });
 
+  // A button on an inline message: the callback query carries no chat.
+  const chatlessCallback = {
+    update_id: 1,
+    callback_query: { id: "cb", from: { id: 9, is_bot: false, first_name: "U" }, chat_instance: "ci", inline_message_id: "im" },
+  } as unknown as Update;
+
+  test("reply() without a chat sends an ephemeral callback reply", async () => {
+    const { api, calls } = fakeApi();
+    const ctx = new Context(chatlessCallback, api);
+    await ctx.reply("pong", { ephemeral_message_parameters: { callback_query_id: "cb" } });
+    assert.deepStrictEqual(calls.sendMessage[0], {
+      text: "pong",
+      ephemeral_message_parameters: { callback_query_id: "cb" },
+    });
+  });
+
+  test("reply() without a chat throws unless it is an ephemeral callback reply", () => {
+    const { api } = fakeApi();
+    const ctx = new Context(chatlessCallback, api);
+    assert.throws(() => ctx.reply("pong"), /cannot infer a chat id/);
+    assert.throws(
+      () => ctx.reply("pong", { ephemeral_message_parameters: { receiver_user_id: 9 } }),
+      /cannot infer a chat id/
+    );
+  });
+
   test("chat / from / chatId accessors", () => {
     const { api } = fakeApi();
     const ctx = new Context(messageUpdate(), api);
