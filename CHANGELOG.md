@@ -78,6 +78,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   token while it waited, so a chat backlog could later push sends over the global cap
   (#1390). Neither token is spent while a request waits on the other, and an aborted
   wait spends neither.
+- Added `TokenBucket.takeAll(buckets, signal?)`, which takes one token from each bucket
+  once all of them have one.
 
 ## [2.3.0][2.3.0] - 2026-11-04
 
