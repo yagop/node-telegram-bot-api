@@ -7612,7 +7612,7 @@ type SendAnimationParams = {
   suggested_post_parameters?: [SuggestedPostParameters](#suggestedpostparameters);
   thumbnail?: [InputFile](#inputfile) | string;
   width?: number;
-};
+} & _ChatOrCallbackReply;
 ```
 
 ### `SendAnimationResult`
@@ -7645,7 +7645,7 @@ type SendAudioParams = {
   suggested_post_parameters?: [SuggestedPostParameters](#suggestedpostparameters);
   thumbnail?: [InputFile](#inputfile) | string;
   title?: string;
-};
+} & _ChatOrCallbackReply;
 ```
 
 ### `SendAudioResult`
@@ -7727,7 +7727,7 @@ type SendContactParams = {
   reply_parameters?: [ReplyParameters](#replyparameters);
   suggested_post_parameters?: [SuggestedPostParameters](#suggestedpostparameters);
   vcard?: string;
-};
+} & _ChatOrCallbackReply;
 ```
 
 ### `SendContactResult`
@@ -7783,7 +7783,7 @@ type SendDocumentParams = {
   reply_parameters?: [ReplyParameters](#replyparameters);
   suggested_post_parameters?: [SuggestedPostParameters](#suggestedpostparameters);
   thumbnail?: [InputFile](#inputfile) | string;
-};
+} & _ChatOrCallbackReply;
 ```
 
 ### `SendDocumentResult`
@@ -7902,7 +7902,7 @@ type SendLivePhotoParams = {
   reply_parameters?: [ReplyParameters](#replyparameters);
   show_caption_above_media?: boolean;
   suggested_post_parameters?: [SuggestedPostParameters](#suggestedpostparameters);
-};
+} & _ChatOrCallbackReply;
 ```
 
 ### `SendLivePhotoResult`
@@ -7933,7 +7933,7 @@ type SendLocationParams = {
   reply_markup?: [ReplyMarkup](#replymarkup);
   reply_parameters?: [ReplyParameters](#replyparameters);
   suggested_post_parameters?: [SuggestedPostParameters](#suggestedpostparameters);
-};
+} & _ChatOrCallbackReply;
 ```
 
 ### `SendLocationResult`
@@ -8006,7 +8006,7 @@ type SendMessageParams = {
   reply_parameters?: [ReplyParameters](#replyparameters);
   suggested_post_parameters?: [SuggestedPostParameters](#suggestedpostparameters);
   text: string;
-};
+} & _ChatOrCallbackReply;
 ```
 
 ### `SendMessageResult`
@@ -8067,7 +8067,7 @@ type SendPhotoParams = {
   reply_parameters?: [ReplyParameters](#replyparameters);
   show_caption_above_media?: boolean;
   suggested_post_parameters?: [SuggestedPostParameters](#suggestedpostparameters);
-};
+} & _ChatOrCallbackReply;
 ```
 
 ### `SendPhotoResult`
@@ -8159,7 +8159,7 @@ type SendRichMessageParams = {
   reply_parameters?: [ReplyParameters](#replyparameters);
   rich_message: [InputRichMessage](#inputrichmessage);
   suggested_post_parameters?: [SuggestedPostParameters](#suggestedpostparameters);
-};
+} & _ChatOrCallbackReply;
 ```
 
 ### `SendRichMessageResult`
@@ -8213,7 +8213,7 @@ type SendStickerParams = {
   reply_parameters?: [ReplyParameters](#replyparameters);
   sticker: [InputFile](#inputfile) | string;
   suggested_post_parameters?: [SuggestedPostParameters](#suggestedpostparameters);
-};
+} & _ChatOrCallbackReply;
 ```
 
 ### `SendStickerResult`
@@ -8246,7 +8246,7 @@ type SendVenueParams = {
   reply_parameters?: [ReplyParameters](#replyparameters);
   suggested_post_parameters?: [SuggestedPostParameters](#suggestedpostparameters);
   title: string;
-};
+} & _ChatOrCallbackReply;
 ```
 
 ### `SendVenueResult`
@@ -8275,7 +8275,7 @@ type SendVideoNoteParams = {
   suggested_post_parameters?: [SuggestedPostParameters](#suggestedpostparameters);
   thumbnail?: [InputFile](#inputfile) | string;
   video_note: [InputFile](#inputfile) | string;
-};
+} & _ChatOrCallbackReply;
 ```
 
 ### `SendVideoNoteResult`
@@ -8313,7 +8313,7 @@ type SendVideoParams = {
   thumbnail?: [InputFile](#inputfile) | string;
   video: [InputFile](#inputfile) | string;
   width?: number;
-};
+} & _ChatOrCallbackReply;
 ```
 
 ### `SendVideoResult`
@@ -8343,7 +8343,7 @@ type SendVoiceParams = {
   reply_parameters?: [ReplyParameters](#replyparameters);
   suggested_post_parameters?: [SuggestedPostParameters](#suggestedpostparameters);
   voice: [InputFile](#inputfile) | string;
-};
+} & _ChatOrCallbackReply;
 ```
 
 ### `SendVoiceResult`

@@ -156,4 +156,24 @@ describe("reply_markup", () => {
     ];
     assert.strictEqual(mixed.length, 3);
   });
+
+  // Checked by `npm run typecheck:test`: `chat_id` may be omitted only for an
+  // ephemeral reply to a callback query.
+  test("a send without chat_id must be an ephemeral callback reply", () => {
+    const valid: SendMessageParams[] = [
+      { chat_id: 1, text: "hi" },
+      { chat_id: 1, text: "hi", ephemeral_message_parameters: { receiver_user_id: 2 } },
+      { chat_id: 1, text: "hi", ephemeral_message_parameters: { receiver_user_id: 2, callback_query_id: "q" } },
+      { text: "hi", ephemeral_message_parameters: { callback_query_id: "q" } },
+    ];
+    const invalid: SendMessageParams[] = [
+      // @ts-expect-error no chat_id
+      { text: "hi" },
+      // @ts-expect-error no chat_id and no callback_query_id
+      { text: "hi", ephemeral_message_parameters: { receiver_user_id: 2 } },
+      // @ts-expect-error receiver_user_id needs a chat_id
+      { text: "hi", ephemeral_message_parameters: { receiver_user_id: 2, callback_query_id: "q" } },
+    ];
+    assert.strictEqual(valid.length + invalid.length, 7);
+  });
 });

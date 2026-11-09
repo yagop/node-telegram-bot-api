@@ -28,6 +28,15 @@ type _Exclusive<U, T = U> = T extends unknown ? T & { [K in Exclude<_KeysOfUnion
  */
 export type ReplyMarkup = _Exclusive<InlineKeyboardMarkup | ReplyKeyboardMarkup | ReplyKeyboardRemove | ForceReply>;
 
+/**
+ * Target of an ephemeral-capable send method. Telegram lets `chat_id` be
+ * omitted only for an ephemeral reply to a callback query (`callback_query_id`
+ * without `receiver_user_id`), so every other call without it is a type error.
+ */
+type _ChatOrCallbackReply =
+  | { chat_id: number | string }
+  | { ephemeral_message_parameters: { callback_query_id: string; receiver_user_id?: never } };
+
 
 // ---------------------------------------------------------------------------
 // Update - discriminated union, one variant per payload key
@@ -3366,7 +3375,7 @@ export type SendMessageParams = {
   suggested_post_parameters?: SuggestedPostParameters;
   reply_parameters?: ReplyParameters;
   reply_markup?: ReplyMarkup;
-};
+} & _ChatOrCallbackReply;
 export type SendMessageResult = Message;
 
 export type ForwardMessageParams = {
@@ -3446,7 +3455,7 @@ export type SendPhotoParams = {
   suggested_post_parameters?: SuggestedPostParameters;
   reply_parameters?: ReplyParameters;
   reply_markup?: ReplyMarkup;
-};
+} & _ChatOrCallbackReply;
 export type SendPhotoResult = Message;
 
 export type SendLivePhotoParams = {
@@ -3469,7 +3478,7 @@ export type SendLivePhotoParams = {
   suggested_post_parameters?: SuggestedPostParameters;
   reply_parameters?: ReplyParameters;
   reply_markup?: ReplyMarkup;
-};
+} & _ChatOrCallbackReply;
 export type SendLivePhotoResult = Message;
 
 export type SendAudioParams = {
@@ -3493,7 +3502,7 @@ export type SendAudioParams = {
   suggested_post_parameters?: SuggestedPostParameters;
   reply_parameters?: ReplyParameters;
   reply_markup?: ReplyMarkup;
-};
+} & _ChatOrCallbackReply;
 export type SendAudioResult = Message;
 
 export type SendDocumentParams = {
@@ -3515,7 +3524,7 @@ export type SendDocumentParams = {
   suggested_post_parameters?: SuggestedPostParameters;
   reply_parameters?: ReplyParameters;
   reply_markup?: ReplyMarkup;
-};
+} & _ChatOrCallbackReply;
 export type SendDocumentResult = Message;
 
 export type SendVideoParams = {
@@ -3544,7 +3553,7 @@ export type SendVideoParams = {
   suggested_post_parameters?: SuggestedPostParameters;
   reply_parameters?: ReplyParameters;
   reply_markup?: ReplyMarkup;
-};
+} & _ChatOrCallbackReply;
 export type SendVideoResult = Message;
 
 export type SendAnimationParams = {
@@ -3570,7 +3579,7 @@ export type SendAnimationParams = {
   suggested_post_parameters?: SuggestedPostParameters;
   reply_parameters?: ReplyParameters;
   reply_markup?: ReplyMarkup;
-};
+} & _ChatOrCallbackReply;
 export type SendAnimationResult = Message;
 
 export type SendVoiceParams = {
@@ -3591,7 +3600,7 @@ export type SendVoiceParams = {
   suggested_post_parameters?: SuggestedPostParameters;
   reply_parameters?: ReplyParameters;
   reply_markup?: ReplyMarkup;
-};
+} & _ChatOrCallbackReply;
 export type SendVoiceResult = Message;
 
 export type SendVideoNoteParams = {
@@ -3611,7 +3620,7 @@ export type SendVideoNoteParams = {
   suggested_post_parameters?: SuggestedPostParameters;
   reply_parameters?: ReplyParameters;
   reply_markup?: ReplyMarkup;
-};
+} & _ChatOrCallbackReply;
 export type SendVideoNoteResult = Message;
 
 export type SendWidgetParams = {
@@ -3709,7 +3718,7 @@ export type SendLocationParams = {
   suggested_post_parameters?: SuggestedPostParameters;
   reply_parameters?: ReplyParameters;
   reply_markup?: ReplyMarkup;
-};
+} & _ChatOrCallbackReply;
 export type SendLocationResult = Message;
 
 export type SendVenueParams = {
@@ -3733,7 +3742,7 @@ export type SendVenueParams = {
   suggested_post_parameters?: SuggestedPostParameters;
   reply_parameters?: ReplyParameters;
   reply_markup?: ReplyMarkup;
-};
+} & _ChatOrCallbackReply;
 export type SendVenueResult = Message;
 
 export type SendContactParams = {
@@ -3753,7 +3762,7 @@ export type SendContactParams = {
   suggested_post_parameters?: SuggestedPostParameters;
   reply_parameters?: ReplyParameters;
   reply_markup?: ReplyMarkup;
-};
+} & _ChatOrCallbackReply;
 export type SendContactResult = Message;
 
 export type SendPollParams = {
@@ -4785,7 +4794,7 @@ export type SendStickerParams = {
   suggested_post_parameters?: SuggestedPostParameters;
   reply_parameters?: ReplyParameters;
   reply_markup?: ReplyMarkup;
-};
+} & _ChatOrCallbackReply;
 export type SendStickerResult = Message;
 
 export type GetStickerSetParams = {
@@ -4898,7 +4907,7 @@ export type SendRichMessageParams = {
   suggested_post_parameters?: SuggestedPostParameters;
   reply_parameters?: ReplyParameters;
   reply_markup?: ReplyMarkup;
-};
+} & _ChatOrCallbackReply;
 export type SendRichMessageResult = Message;
 
 export type SendRichMessageDraftParams = {

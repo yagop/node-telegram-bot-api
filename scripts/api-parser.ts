@@ -401,6 +401,15 @@ type _Exclusive<U, T = U> = T extends unknown ? T & { [K in Exclude<_KeysOfUnion
  * mixing them (e.g. \`inline_keyboard\` + \`keyboard\`) is a type error.
  */
 export type ReplyMarkup = _Exclusive<${REPLY_MARKUP_UNION}>;
+
+/**
+ * Target of an ephemeral-capable send method. Telegram lets \`chat_id\` be
+ * omitted only for an ephemeral reply to a callback query (\`callback_query_id\`
+ * without \`receiver_user_id\`), so every other call without it is a type error.
+ */
+type _ChatOrCallbackReply =
+  | { chat_id: number | string }
+  | { ephemeral_message_parameters: { callback_query_id: string; receiver_user_id?: never } };
 `;
 
 function emitFields(fields: Field[]): string {
@@ -514,7 +523,11 @@ out.push(`\n// -----------------------------------------------------------------
 // ---------------------------------------------------------------------------\n`);
 for (const m of methods) {
   const C = cap(m.name);
-  out.push(`export type ${C}Params = ${emitFields(m.fields)};`);
+  // The docs mark `chat_id` "Optional" on the ephemeral-capable send methods, but it
+  // is required unless the call is an ephemeral reply to a callback query.
+  const names = new Map(m.fields.map((f) => [f.name, f]));
+  const ephemeral = names.get("chat_id")?.optional && names.has("ephemeral_message_parameters");
+  out.push(`export type ${C}Params = ${emitFields(m.fields)}${ephemeral ? " & _ChatOrCallbackReply" : ""};`);
   out.push(`export type ${C}Result = ${m.ret};\n`);
 }
 

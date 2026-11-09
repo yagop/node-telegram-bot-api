@@ -23,6 +23,9 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - `chat_id` in the ephemeral-capable send methods and `receiver_user_id` in
   `EphemeralMessageParameters` are now optional, so `callback_query_id` alone sends an
   ephemeral reply to a callback query (in any chat except channel direct-messages chats).
+- Types: a call to one of these methods without `chat_id` is a type error unless it
+  is an ephemeral reply to a callback query (`callback_query_id` without
+  `receiver_user_id`), the only case in which Telegram accepts it.
 
 #### Quotes from rich messages
 
