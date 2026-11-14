@@ -19,7 +19,7 @@
 npm install node-telegram-bot-api
 ```
 
-> **Runs on **Bun, modern Node.js, Deno, Cloudflare Workers and Vercel Functions λ**
+> **Runs on Bun, modern Node.js, Deno, Cloudflare Workers and Vercel Functions λ**
 
 ## 🚀 Usage
 
