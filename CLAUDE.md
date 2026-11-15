@@ -152,26 +152,8 @@ never on message text.
 ## Use cases
 
 `README.md` is the user-facing reference for each feature below. Runnable examples live in
-[`examples/`](examples/README.md); they import the published package name (`node-telegram-bot-api`,
-`/node`, `/bun`), never `../src`. Typecheck them with
-`./node_modules/.bin/tsc -p examples/tsconfig.json --noEmit`.
-
-| Use case | Key API | Example |
-| --- | --- | --- |
-| Polling bot | `Bot`, `command`/`hears`/`on`, `ctx.reply`, `run()` (`/node`) | [`01-polling-bot.ts`](examples/01-polling-bot.ts) |
-| Raw API client | `Api` (`getMe`, `sendMessage`, ...) | [`02-api-client.ts`](examples/02-api-client.ts) |
-| Webhooks | `webhookCallback`, `registerExpressWebhook`, `nextAppWebhook`, `createWebhookServer` (`/node`) | [`03`](examples/03-webhook-workers.ts), [`04`](examples/04-webhook-express.ts), [`05`](examples/05-webhook-nextjs.ts), [`13`](examples/13-webhook-node-server.ts) |
-| Keyboards & formatting | `InlineKeyboardBuilder`, `ReplyKeyboardBuilder`, `EntityBuilder`, `EntityType` | [`06-keyboards.ts`](examples/06-keyboards.ts), [`07-formatting.ts`](examples/07-formatting.ts) |
-| Uploads | `InputFile`, `fromPath` (`/node`), `MediaGroupBuilder` | [`08-uploads.ts`](examples/08-uploads.ts) |
-| Middleware | `bot.use`, `await next()`, `bot.catch` | [`09-middleware.ts`](examples/09-middleware.ts) |
-| Resilience & rate limiting | `maxRetries`, `retryBackoffMs`, `rateLimit`, `TelegramApiError` | [`10-resilience-ratelimit.ts`](examples/10-resilience-ratelimit.ts) |
-| Low-level update stream | `longPoll(api, opts, signal)` | [`11-longpoll-stream.ts`](examples/11-longpoll-stream.ts) |
-| Sessions & conversations | `createSession`, `ctx.getSession<T>()`, `session.get(ctx)` | [`12-conversation.ts`](examples/12-conversation.ts), [`16-sessions.ts`](examples/16-sessions.ts) |
-| Reply tracking | `taggedReplies`, `expectReply`/`matchReply`/`forgetReply`, `replyTracking` LRU | [`16-sessions.ts`](examples/16-sessions.ts), [`18-reply-tracking-lru.ts`](examples/18-reply-tracking-lru.ts) |
-| Button presses | `expectCallback`/`matchCallback(ctx, { once })`/`forgetCallback` | [`17-callback-tracking.ts`](examples/17-callback-tracking.ts) |
-| Rich messages | `RichMessageBuilder`, `RichTextBuilder`, `sendRichMessage` | [`15-rich-message.ts`](examples/15-rich-message.ts) |
-| Widgets | `sendWidget`, `answerWidgetQuery`, `editMessageWidgetData` | [`19-widgets.ts`](examples/19-widgets.ts) |
-| Ephemeral replies | `ephemeral_message_parameters.callback_query_id` | [`20-ephemeral-replies.ts`](examples/20-ephemeral-replies.ts) |
+[`examples/`](examples/README.md); `npm run typecheck:examples` (part of `npm run check`) keeps them
+compiling.
 
 ### Middleware
 
