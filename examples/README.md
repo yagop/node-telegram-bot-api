@@ -14,13 +14,12 @@ relative `../src` paths.
 | [`05-webhook-nextjs.ts`](./05-webhook-nextjs.ts) | `nextAppWebhook` as an App Router `export const POST` | `app/api/telegram/route.ts` in a Next.js app (illustrative) |
 | [`06-keyboards.ts`](./06-keyboards.ts) | `InlineKeyboardBuilder`, `ReplyKeyboardBuilder`, `ctx.answerCallbackQuery` | `BOT_TOKEN=... bun examples/06-keyboards.ts` |
 | [`07-formatting.ts`](./07-formatting.ts) | `EntityBuilder` + `EntityType` + `json()`, sending entities | `BOT_TOKEN=... CHAT_ID=... bun examples/07-formatting.ts` |
-| [`08-uploads.ts`](./08-uploads.ts) | `InputFile`, `fromPath` (`/node`), `MediaGroupBuilder` | `BOT_TOKEN=... CHAT_ID=... bun examples/08-uploads.ts` |
+| [`08-uploads.ts`](./08-uploads.ts) | `InputFile`, `fromPath` (`/node`), `MediaGroupBuilder`, `sendLivePhoto` (uploaded still + short clip) | `BOT_TOKEN=... CHAT_ID=... bun examples/08-uploads.ts` |
 | [`09-middleware.ts`](./09-middleware.ts) | `bot.use` for timing, an in-memory session, and an allowlist auth gate | `BOT_TOKEN=... ALLOWED_USERS=111,222 bun examples/09-middleware.ts` |
 | [`10-resilience-ratelimit.ts`](./10-resilience-ratelimit.ts) | `maxRetries`/`retryBackoffMs`/`rateLimit`, branching on `TelegramApiError`/`NetworkError` | `BOT_TOKEN=... CHAT_ID=... bun examples/10-resilience-ratelimit.ts` |
 | [`11-longpoll-stream.ts`](./11-longpoll-stream.ts) | Consume `longPoll(api, opts, signal)` with `for await`, filter, stop via `AbortController` | `BOT_TOKEN=... bun examples/11-longpoll-stream.ts` |
 | [`12-conversation.ts`](./12-conversation.ts) | A spaceship launch flow with typed session states: name your ship, pick a planet, and launch | `BOT_TOKEN=... bun examples/12-conversation.ts` |
 | [`13-webhook-node-server.ts`](./13-webhook-node-server.ts) | `createWebhookServer` (`/node`): a raw `node:http` webhook server, no framework | `BOT_TOKEN=... WEBHOOK_SECRET=... PUBLIC_URL=https://... bun examples/13-webhook-node-server.ts` |
-| [`14-photo-video-livephoto.ts`](./14-photo-video-livephoto.ts) | `sendPhoto`/`sendVideo`/`sendLivePhoto` uploading bytes only (`InputFile` + `fromPath` - no URLs, no `file_id`) | `BOT_TOKEN=... CHAT_ID=... bun examples/14-photo-video-livephoto.ts` |
 | [`15-rich-message.ts`](./15-rich-message.ts) | `RichMessageBuilder`, `RichTextBuilder`, `richMessageButton`/`richListItem`, `sendRichMessage` (blocks + `html` mode) | `BOT_TOKEN=... CHAT_ID=... bun examples/15-rich-message.ts` |
 | [`16-sessions.ts`](./16-sessions.ts) | `createSession()` + `session.get(ctx)`, durable `FileSessionStorage` (`/node`), `taggedReplies` for a name->email reply flow | `BOT_TOKEN=... bun examples/16-sessions.ts` |
 | [`17-callback-tracking.ts`](./17-callback-tracking.ts) | Routing button presses two ways: stateless `callback_data` paging, vs. `expectCallback`/`matchCallback(ctx, { once: true })` for an oversized, private, one-shot confirmation | `BOT_TOKEN=... bun examples/17-callback-tracking.ts` |
@@ -45,7 +44,7 @@ The examples import the **package name**, so the package must resolve. Either:
 - **Or just typecheck** them against the source (no build) via the path-mapped
   config - the bare-name imports are mapped onto `src/`:
   ```sh
-  ./node_modules/.bin/tsc -p examples/tsconfig.json --noEmit
+  npm run typecheck:examples
   ```
 
 ## Conventions

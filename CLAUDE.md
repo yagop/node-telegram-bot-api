@@ -48,7 +48,7 @@ bun test -t "429 then success retries"        # by test-name substring
 
 ## Architecture
 
-Three source folders, one published package, exposed via subpath exports (`.`, `./node`, `./types`):
+Four source folders, one published package, exposed via subpath exports (`.`, `./node`, `./bun`, `./types`):
 
 ```text
 src/
@@ -60,12 +60,14 @@ src/
   node/   the ONLY folder allowed to import node:*. Node-only sugar: fromPath() (fs
           uploads), createWebhookServer() (node:http -> delegates to core's
           webhookCallback), the managed run() polling runner, the DEBUG stderr sink.
+  bun/    the ONLY folder allowed to import bun / bun:*. Bun-native session stores
+          (SQLite, SQL, Redis); never re-exported from `.` or `./node`.
   types/  the generated schema (re-exported by core): discriminated Update, the generated
           Api method signatures / *Params / *Result types, expanded MessageEntity.
 ```
 
-The `exports` map points `.` at the core, `./node` at the Node helpers, and `./types` at the
-schema; each subpath ships ESM + CJS with matching typings:
+The `exports` map points `.` at the core, `./node` at the Node helpers, `./bun` at the Bun stores,
+and `./types` at the schema; each subpath ships ESM + CJS with matching typings:
 
 ```jsonc
 // package.json
@@ -75,6 +77,7 @@ schema; each subpath ships ESM + CJS with matching typings:
     "require": { "types": "./dist/core/index.d.cts", "default": "./dist/core/index.cjs" }
   },
   "./node":  { /* same shape -> dist/node/*  */ },
+  "./bun":   { /* same shape -> dist/bun/*   */ },
   "./types": { /* same shape -> dist/types/* */ }
 }
 ```
@@ -148,6 +151,57 @@ Errors (`src/core/errors.ts`): a `TelegramBotError` base preserving `cause`, plu
 `TimeoutError`, `ParseError`, `TelegramApiError` (structured `errorCode`/`description`/`parameters`
 + a `retryAfter` getter). Callers branch on values (`err.errorCode === 429`, `err.retryAfter`),
 never on message text.
+
+## Use cases
+
+`README.md` is the user-facing reference for each feature below. Runnable examples live in
+[`examples/`](examples/README.md); `npm run typecheck:examples` (part of `npm run check`) keeps them
+compiling.
+
+### Middleware
+
+koa-style: `bot.use(mw)` wraps everything downstream via `await next()` (timing, auth, sessions,
+rate-limit, error boundaries). A middleware may carry `init`/`close`: `bot.init()` runs them once in
+registration order (also learns `bot.botInfo` via `getMe()`), `bot.close()` in reverse. A handler
+error never stops the bot: it goes to the `bot.catch()` boundary (default `console.error`, update
+consumed). Throwing from the boundary is the fail-loud opt-in (`startPolling()` rejects, the
+webhook answers 500).
+
+### Sessions (`src/core/session.ts`)
+
+Opt-in `createSession<T>({ store, initial?, ttlSeconds?, replyTracking? })`. The `store` is
+**required** (no implicit default). Nothing lives in process memory between updates, so the same
+code works on serverless and on polling. Default key is `chat:<id>`. The handle exposes `.data`,
+`.ext()` (for layers built on sessions) and `.delete()` (evicts the key on flush). For multi-step
+flows, type the session as a discriminated union (see `12-conversation.ts`).
+
+### Reply tracking (`src/core/reply-tracking.ts`)
+
+A layer on top of the session, stored in the envelope's `ext.reply`; a bot that does not use it
+persists nothing extra. Markers are plain JSON matched on `reply_to_message.message_id` (replies) or
+`callback_query.message.message_id` (presses), never live promises, so they survive restarts.
+Replies and presses use **separate tables**. A marker expires only if it has a TTL: a per-call
+`ttlSeconds`, or `replyTracking.defaultTtlSeconds` for every marker (`slidingTtl` re-arms it on
+use); the session's own `ttlSeconds` still expires the whole envelope, markers included. Size is
+bounded separately: `maxEntriesPerChat` / `maxBytesPerChat` evict the least-recently-used markers
+per chat. A press does **not** consume its marker unless `{ once: true }` (at most once, not
+exactly once). Prefer plain `callback_data` when 64 bytes are enough.
+
+### Storage backends
+
+All implement the string key/value `SessionStore`: `read`, `write(key, value, { ttlSeconds })`,
+`delete`, optional `init`/`close`/`touch`. Serialization happens once in the session codec, never
+in a store.
+
+| Store | Subpath | Runtime | Source |
+| --- | --- | --- | --- |
+| `MemorySessionStorage` | `.` | any (not durable) | `src/core/memory-session-storage.ts` |
+| `S3SessionStorage` | `.` | any (SigV4 over `fetch`) | `src/core/s3-session-storage.ts` |
+| `FileSessionStorage` | `./node` | Node | `src/node/file-session-storage.ts` |
+| `SqliteSessionStorage`, `SqlSessionStorage`, `RedisSessionStorage` | `./bun` | Bun | `src/bun/*` |
+
+`src/core` and `src/node` must not import `bun` / `bun:*` (enforced by `lint:bun-isolation`); the
+Bun stores stay behind `./bun`, so a Node or edge install never resolves them.
 
 ## Critical invariants
 
