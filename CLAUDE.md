@@ -48,8 +48,7 @@ bun test -t "429 then success retries"        # by test-name substring
 
 ## Architecture
 
-Four source folders, one published package, exposed via subpath exports (`.`, `./node`, `./bun`,
-`./types`):
+Four source folders, one published package, exposed via subpath exports (`.`, `./node`, `./bun`, `./types`):
 
 ```text
 src/
@@ -183,9 +182,10 @@ persists nothing extra. Markers are plain JSON matched on `reply_to_message.mess
 `callback_query.message.message_id` (presses), never live promises, so they survive restarts.
 Replies and presses use **separate tables**. A marker expires only if it has a TTL: a per-call
 `ttlSeconds`, or `replyTracking.defaultTtlSeconds` for every marker (`slidingTtl` re-arms it on
-use); the session's own `ttlSeconds` still expires the whole envelope, markers included. Size is bounded separately: `maxEntriesPerChat` / `maxBytesPerChat` evict the
-least-recently-used markers per chat. A press does **not** consume its marker unless `{ once: true }` (at most once,
-not exactly once). Prefer plain `callback_data` when 64 bytes are enough.
+use); the session's own `ttlSeconds` still expires the whole envelope, markers included. Size is
+bounded separately: `maxEntriesPerChat` / `maxBytesPerChat` evict the least-recently-used markers
+per chat. A press does **not** consume its marker unless `{ once: true }` (at most once, not
+exactly once). Prefer plain `callback_data` when 64 bytes are enough.
 
 ### Storage backends
 
