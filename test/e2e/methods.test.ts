@@ -331,10 +331,15 @@ describe("methods", () => {
       const msg = await api.sendLivePhoto({
         chat_id: chatId,
         live_photo: new InputFile(MP4_32, {
-          filename: "e2e.mov",
-          contentType: "video/quicktime",
+          filename: "e2e.mp4",
+          contentType: "video/mp4",
         }),
-        photo: "https://upload.wikimedia.org/wikipedia/commons/3/3a/Cat03.jpg",
+        // Upload the still: by URL the API still answers with live_photo, but
+        // clients render a plain photo.
+        photo: new InputFile(JPEG_160, {
+          filename: "e2e.jpg",
+          contentType: "image/jpeg",
+        }),
       });
       expect(msg).toBeDefined();
     });
