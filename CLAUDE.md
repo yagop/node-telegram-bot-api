@@ -149,6 +149,73 @@ Errors (`src/core/errors.ts`): a `TelegramBotError` base preserving `cause`, plu
 + a `retryAfter` getter). Callers branch on values (`err.errorCode === 429`, `err.retryAfter`),
 never on message text.
 
+## Use cases
+
+`README.md` is the user-facing reference for each feature below. Runnable examples live in
+[`examples/`](examples/README.md); they import the published package name (`node-telegram-bot-api`,
+`/node`, `/bun`), never `../src`. Typecheck them with
+`./node_modules/.bin/tsc -p examples/tsconfig.json --noEmit`.
+
+| Use case | Key API | Example |
+| --- | --- | --- |
+| Polling bot | `Bot`, `command`/`hears`/`on`, `ctx.reply`, `run()` (`/node`) | [`01-polling-bot.ts`](examples/01-polling-bot.ts) |
+| Raw API client | `Api` (`getMe`, `sendMessage`, ...) | [`02-api-client.ts`](examples/02-api-client.ts) |
+| Webhooks | `webhookCallback`, `registerExpressWebhook`, `nextAppWebhook`, `createWebhookServer` (`/node`) | [`03`](examples/03-webhook-workers.ts), [`04`](examples/04-webhook-express.ts), [`05`](examples/05-webhook-nextjs.ts), [`13`](examples/13-webhook-node-server.ts) |
+| Keyboards & formatting | `InlineKeyboardBuilder`, `ReplyKeyboardBuilder`, `EntityBuilder`, `EntityType` | [`06-keyboards.ts`](examples/06-keyboards.ts), [`07-formatting.ts`](examples/07-formatting.ts) |
+| Uploads | `InputFile`, `fromPath` (`/node`), `MediaGroupBuilder` | [`08-uploads.ts`](examples/08-uploads.ts) |
+| Middleware | `bot.use`, `await next()`, `bot.catch` | [`09-middleware.ts`](examples/09-middleware.ts) |
+| Resilience & rate limiting | `maxRetries`, `retryBackoffMs`, `rateLimit`, `TelegramApiError` | [`10-resilience-ratelimit.ts`](examples/10-resilience-ratelimit.ts) |
+| Low-level update stream | `longPoll(api, opts, signal)` | [`11-longpoll-stream.ts`](examples/11-longpoll-stream.ts) |
+| Sessions & conversations | `createSession`, `ctx.getSession<T>()`, `session.get(ctx)` | [`12-conversation.ts`](examples/12-conversation.ts), [`16-sessions.ts`](examples/16-sessions.ts) |
+| Reply tracking | `taggedReplies`, `expectReply`/`matchReply`/`forgetReply`, `replyTracking` LRU | [`16-sessions.ts`](examples/16-sessions.ts), [`18-reply-tracking-lru.ts`](examples/18-reply-tracking-lru.ts) |
+| Button presses | `expectCallback`/`matchCallback(ctx, { once })`/`forgetCallback` | [`17-callback-tracking.ts`](examples/17-callback-tracking.ts) |
+| Rich messages | `RichMessageBuilder`, `RichTextBuilder`, `sendRichMessage` | [`15-rich-message.ts`](examples/15-rich-message.ts) |
+| Widgets | `sendWidget`, `answerWidgetQuery`, `editMessageWidgetData` | [`19-widgets.ts`](examples/19-widgets.ts) |
+| Ephemeral replies | `ephemeral_message_parameters.callback_query_id` | [`20-ephemeral-replies.ts`](examples/20-ephemeral-replies.ts) |
+
+### Middleware
+
+koa-style: `bot.use(mw)` wraps everything downstream via `await next()` (timing, auth, sessions,
+rate-limit, error boundaries). A middleware may carry `init`/`close`: `bot.init()` runs them once in
+registration order (also learns `bot.botInfo` via `getMe()`), `bot.close()` in reverse. A handler
+error never stops the bot: it goes to the `bot.catch()` boundary (default `console.error`, update
+consumed). Throwing from the boundary is the fail-loud opt-in (`startPolling()` rejects, the
+webhook answers 500).
+
+### Sessions (`src/core/session.ts`)
+
+Opt-in `createSession<T>({ store, initial?, ttlSeconds?, replyTracking? })`. The `store` is
+**required** (no implicit default). Nothing lives in process memory between updates, so the same
+code works on serverless and on polling. Default key is `chat:<id>`. The handle exposes `.data`,
+`.ext()` (for layers built on sessions) and `.delete()` (evicts the key on flush). For multi-step
+flows, type the session as a discriminated union (see `12-conversation.ts`).
+
+### Reply tracking (`src/core/reply-tracking.ts`)
+
+A layer on top of the session, stored in the envelope's `ext.reply`; a bot that does not use it
+persists nothing extra. Markers are plain JSON matched on `reply_to_message.message_id` (replies) or
+`callback_query.message.message_id` (presses), never live promises, so they survive restarts.
+Replies and presses use **separate tables**. Nothing expires unless `ttlSeconds` is set;
+`replyTracking: { maxEntriesPerChat, maxBytesPerChat, defaultTtlSeconds, slidingTtl }` adds a
+per-chat LRU cap. A press does **not** consume its marker unless `{ once: true }` (at most once,
+not exactly once). Prefer plain `callback_data` when 64 bytes are enough.
+
+### Storage backends
+
+All implement the string key/value `SessionStore`: `read`, `write(key, value, { ttlSeconds })`,
+`delete`, optional `init`/`close`/`touch`. Serialization happens once in the session codec, never
+in a store.
+
+| Store | Subpath | Runtime | Source |
+| --- | --- | --- | --- |
+| `MemorySessionStorage` | `.` | any (not durable) | `src/core/memory-session-storage.ts` |
+| `S3SessionStorage` | `.` | any (SigV4 over `fetch`) | `src/core/s3-session-storage.ts` |
+| `FileSessionStorage` | `./node` | Node | `src/node/file-session-storage.ts` |
+| `SqliteSessionStorage`, `SqlSessionStorage`, `RedisSessionStorage` | `./bun` | Bun | `src/bun/*` |
+
+`src/core` and `src/node` must not import `bun` / `bun:*` (enforced by `lint:bun-isolation`); the
+Bun stores stay behind `./bun`, so a Node or edge install never resolves them.
+
 ## Critical invariants
 
 - **`src/core/api.ts` and `src/types/schemas.ts` are GENERATED** by `scripts/api-parser.ts` from
