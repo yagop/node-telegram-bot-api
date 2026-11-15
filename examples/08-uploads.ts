@@ -87,7 +87,7 @@ if (chatId !== 0) {
 
   // 7) Two uploads in one call: a live photo is a short video (`live_photo`)
   //    plus its still frame (`photo`). Each InputFile becomes its own multipart part.
-  const still = async () => (await fetch("https://picsum.photos/seed/live/600/400")).body!;
+  const still = async () => (await fetch("https://telegram.org/example/photo.jpg")).body!;
   await bot.api.sendLivePhoto({
     chat_id: chatId,
     live_photo: new InputFile(remoteVideo, { filename: "live.mp4", contentType: "video/mp4" }),
