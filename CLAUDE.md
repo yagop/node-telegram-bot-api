@@ -48,7 +48,8 @@ bun test -t "429 then success retries"        # by test-name substring
 
 ## Architecture
 
-Three source folders, one published package, exposed via subpath exports (`.`, `./node`, `./types`):
+Four source folders, one published package, exposed via subpath exports (`.`, `./node`, `./bun`,
+`./types`):
 
 ```text
 src/
@@ -60,12 +61,14 @@ src/
   node/   the ONLY folder allowed to import node:*. Node-only sugar: fromPath() (fs
           uploads), createWebhookServer() (node:http -> delegates to core's
           webhookCallback), the managed run() polling runner, the DEBUG stderr sink.
+  bun/    the ONLY folder allowed to import bun / bun:*. Bun-native session stores
+          (SQLite, SQL, Redis); never re-exported from `.` or `./node`.
   types/  the generated schema (re-exported by core): discriminated Update, the generated
           Api method signatures / *Params / *Result types, expanded MessageEntity.
 ```
 
-The `exports` map points `.` at the core, `./node` at the Node helpers, and `./types` at the
-schema; each subpath ships ESM + CJS with matching typings:
+The `exports` map points `.` at the core, `./node` at the Node helpers, `./bun` at the Bun stores,
+and `./types` at the schema; each subpath ships ESM + CJS with matching typings:
 
 ```jsonc
 // package.json
@@ -75,6 +78,7 @@ schema; each subpath ships ESM + CJS with matching typings:
     "require": { "types": "./dist/core/index.d.cts", "default": "./dist/core/index.cjs" }
   },
   "./node":  { /* same shape -> dist/node/*  */ },
+  "./bun":   { /* same shape -> dist/bun/*   */ },
   "./types": { /* same shape -> dist/types/* */ }
 }
 ```
@@ -177,9 +181,10 @@ flows, type the session as a discriminated union (see `12-conversation.ts`).
 A layer on top of the session, stored in the envelope's `ext.reply`; a bot that does not use it
 persists nothing extra. Markers are plain JSON matched on `reply_to_message.message_id` (replies) or
 `callback_query.message.message_id` (presses), never live promises, so they survive restarts.
-Replies and presses use **separate tables**. Nothing expires unless `ttlSeconds` is set;
-`replyTracking: { maxEntriesPerChat, maxBytesPerChat, defaultTtlSeconds, slidingTtl }` adds a
-per-chat LRU cap. A press does **not** consume its marker unless `{ once: true }` (at most once,
+Replies and presses use **separate tables**. A marker expires only if it has a TTL: a per-call
+`ttlSeconds`, or `replyTracking.defaultTtlSeconds` for every marker (`slidingTtl` re-arms it on
+use); the session's own `ttlSeconds` still expires the whole envelope, markers included. Size is bounded separately: `maxEntriesPerChat` / `maxBytesPerChat` evict the
+least-recently-used markers per chat. A press does **not** consume its marker unless `{ once: true }` (at most once,
 not exactly once). Prefer plain `callback_data` when 64 bytes are enough.
 
 ### Storage backends
