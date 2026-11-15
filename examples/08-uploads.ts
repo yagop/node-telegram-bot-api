@@ -67,7 +67,7 @@ if (chatId !== 0) {
   // 4) A photo by URL (a plain string is a file_id or URL, sent as-is).
   await bot.api.sendPhoto({
     chat_id: chatId,
-    photo: "https://picsum.photos/seed/ntba/600/400",
+    photo: "https://telegram.org/example/photo.jpg",
     caption: "Sent by URL",
   });
 
@@ -79,8 +79,8 @@ if (chatId !== 0) {
   // 6) An album. `new MediaGroupBuilder().build()` mints attach:// refs for any InputFile.
   const logo = await fetch("https://telegram.org/img/t_logo.png");
   const album = new MediaGroupBuilder()
-    .photo({ media: "https://picsum.photos/seed/a/400", caption: "First" })
-    .photo({ media: "https://picsum.photos/seed/b/400" })
+    .photo({ media: "https://telegram.org/example/photo.jpg", caption: "First" })
+    .video({ media: "https://telegram.org/example/video.mp4" })
     .photo({ media: new InputFile(logo.body!, { filename: "logo.png" }) }) // mixes uploads + URLs freely
     .build();
   await bot.api.sendMediaGroup({ chat_id: chatId, media: album });
