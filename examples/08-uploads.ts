@@ -11,6 +11,7 @@
  *   - `fromPath("./pic.jpg")` - stream a local file from disk (from the `/node` subpath).
  *   - `new MediaGroupBuilder()` - build a `sendMediaGroup` payload; uploaded files are wired
  *     in via `attach://` references for you.
+ *   - Several InputFile fields in one call (`sendLivePhoto`: video + still).
  * A plain string in a file field is always treated as a `file_id` or URL.
  *
  * Run: BOT_TOKEN=123:abc CHAT_ID=12345 bun examples/08-uploads.ts
@@ -83,6 +84,16 @@ if (chatId !== 0) {
     .photo({ media: new InputFile(logo.body!, { filename: "logo.png" }) }) // mixes uploads + URLs freely
     .build();
   await bot.api.sendMediaGroup({ chat_id: chatId, media: album });
+
+  // 7) Two uploads in one call: a live photo is a short video (`live_photo`)
+  //    plus its still frame (`photo`). Each InputFile becomes its own multipart part.
+  const still = async () => (await fetch("https://picsum.photos/seed/live/600/400")).body!;
+  await bot.api.sendLivePhoto({
+    chat_id: chatId,
+    live_photo: new InputFile(remoteVideo, { filename: "live.mp4", contentType: "video/mp4" }),
+    photo: new InputFile(still, { filename: "still.jpg", contentType: "image/jpeg" }),
+    caption: "Live photo: video + still",
+  });
 
   console.log("Uploads sent.");
 } else {
