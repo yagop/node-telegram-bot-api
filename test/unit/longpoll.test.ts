@@ -346,16 +346,12 @@ describe("longPoll", () => {
       assert.deepStrictEqual(run.offsets, [50, 51]);
     });
 
-    test("a mid-batch stop confirms only the updates handled, not the rest", async () => {
+    test("a mid-batch abort stops yielding and confirms only the handled update", async () => {
       const controller = new AbortController();
       const { api, offsets } = fakeApi([() => [upd(1), upd(2), upd(3)], () => []]);
 
-      // The shape of Bot.startPolling: check the signal before handling each update.
       const handled: number[] = [];
       for await (const update of longPoll(api, {}, controller.signal)) {
-        if (controller.signal.aborted) {
-          break;
-        }
         handled.push(update.update_id);
         controller.abort(); // stop() while update 1 is being handled
       }
