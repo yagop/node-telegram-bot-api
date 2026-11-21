@@ -214,6 +214,9 @@ export async function* longPoll(
       for (const update of updates) {
         yield update;
         offset = update.update_id + 1;
+        if (signal?.aborted) {
+          return;
+        }
       }
     }
   } finally {

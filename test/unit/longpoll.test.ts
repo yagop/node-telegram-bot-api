@@ -365,6 +365,21 @@ describe("longPoll", () => {
       assert.deepStrictEqual(offsets, [undefined, 2]);
     });
 
+    test("a mid-batch abort stops yielding and confirms only the handled update", async () => {
+      const controller = new AbortController();
+      const { api, offsets } = fakeApi([() => [upd(1), upd(2), upd(3)], () => []]);
+
+      const handled: number[] = [];
+      for await (const update of longPoll(api, {}, controller.signal)) {
+        handled.push(update.update_id);
+        controller.abort(); // stop() while update 1 is being handled
+      }
+
+      assert.deepStrictEqual(handled, [1]);
+      // offset 2 confirms update 1 only; 2 and 3 stay pending for the next start.
+      assert.deepStrictEqual(offsets, [undefined, 2]);
+    });
+
     test("nothing is confirmed when the consumer throws without an abort", async () => {
       const { api, offsets } = fakeApi([() => [upd(1), upd(2)], () => []]);
 

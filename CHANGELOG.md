@@ -5,6 +5,11 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased][Unreleased]
 
+### Polling
+
+- After its signal is aborted, `longPoll()` stops yielding the rest of the
+  current batch, including for consumers that call it directly.
+
 ## [2.4.0][2.4.0] - 2026-11-09
 
 ### Bot API 10.4 (November 9, 2026)
