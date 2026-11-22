@@ -246,6 +246,7 @@ describe("methods", () => {
       const me = await api.getMe();
       expect(me.is_bot).toBe(true);
       expect(typeof me.id).toBe("number");
+      expect(typeof me.has_topic_sidebar).toBe("boolean");
     });
   });
 
@@ -1085,6 +1086,14 @@ describe("methods", () => {
     test("returns the name", async () => {
       const name = await api.getMyName();
       expect(name).toBeDefined();
+    });
+  });
+
+  method("setMySettings", () => {
+    // Self-contained: writes back the value getMe reports, so nothing changes.
+    test("re-applies the current settings", async () => {
+      const me = await api.getMe();
+      await api.setMySettings({ has_topic_sidebar: me.has_topic_sidebar });
     });
   });
 

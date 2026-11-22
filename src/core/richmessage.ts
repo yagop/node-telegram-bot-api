@@ -149,12 +149,16 @@ export class RichMessageBuilder {
     );
   }
 
-  /** An expandable (collapsed) block quotation. */
-  expandableBlockquote(text: RichTextContent, credit?: RichTextContent): this {
+  /** An expandable (collapsed) block quotation wrapping nested blocks, with an optional `credit`. */
+  expandableBlockquote(blocks: BlockContent, credit?: RichTextContent): this {
     return this.push(
       credit === undefined
-        ? { type: "expandable_blockquote", text: asRichText(text) }
-        : { type: "expandable_blockquote", text: asRichText(text), credit: asRichText(credit) }
+        ? { type: "expandable_blockquote", blocks: resolveBlocks(blocks) }
+        : {
+            type: "expandable_blockquote",
+            blocks: resolveBlocks(blocks),
+            credit: asRichText(credit),
+          }
     );
   }
 

@@ -13,7 +13,7 @@
  * webhooks are mutually exclusive and webhook serving stays out of edge-neutral core.
  */
 
-import type { Update, UpdateType, User } from "../types/index.js";
+import type { BotFullInfo, Update, UpdateType } from "../types/index.js";
 import { Api } from "./api.js";
 import { compose, type Middleware } from "./compose.js";
 import { Context } from "./context.js";
@@ -64,11 +64,11 @@ export class Bot {
   private running = false;
 
   /**
-   * This bot's own `User`, fetched once by `getMe()` in `init()` and kept for
+   * This bot's own `BotFullInfo`, fetched once by `getMe()` in `init()` and kept for
    * the process lifetime (a bot's username is permanent, so there is no
    * refresh). `undefined` only until `init()` has run.
    */
-  private ownUser?: User;
+  private ownUser?: BotFullInfo;
 
   constructor(token: string, options?: BotOptions) {
     this.api = new Api(token, options);
@@ -77,10 +77,10 @@ export class Bot {
   /**
    * This bot's own identity, as returned by `getMe()` and kept for the process
    * lifetime. `undefined` only before `init()` has run; once the bot is serving
-   * updates (polling or webhook) it is always a full `User`, and is also exposed
+   * updates (polling or webhook) it is always a full `BotFullInfo`, and is also exposed
    * to handlers as `ctx.me`.
    */
-  get botInfo(): User | undefined {
+  get botInfo(): BotFullInfo | undefined {
     return this.ownUser;
   }
 

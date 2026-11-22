@@ -11,6 +11,7 @@
 import type {
   AnswerCallbackQueryParams,
   AnswerCallbackQueryResult,
+  BotFullInfo,
   CallbackQuery,
   Chat,
   InlineQuery,
@@ -232,9 +233,9 @@ export class Context {
    * learned by the time a handler asks - the bot may only fetch it during
    * `init()`, after the `Context` was constructed.
    */
-  private readonly meProvider?: () => User | undefined;
+  private readonly meProvider?: () => BotFullInfo | undefined;
 
-  constructor(update: Update, api: Api, me?: () => User | undefined) {
+  constructor(update: Update, api: Api, me?: () => BotFullInfo | undefined) {
     this.update = update;
     this.api = api;
     this.meProvider = me;
@@ -294,7 +295,7 @@ export class Context {
    * not learned it: no `command()` was registered (so `getMe()` never ran), or
    * `init()` has not completed yet.
    */
-  get me(): User | undefined {
+  get me(): BotFullInfo | undefined {
     return this.meProvider?.();
   }
 

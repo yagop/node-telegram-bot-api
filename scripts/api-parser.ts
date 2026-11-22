@@ -261,7 +261,7 @@ const REPLY_MARKUP_UNION =
 // taken verbatim from the documentation wording.
 const RETURN_OVERRIDES: Record<string, string> = {
   getUpdates: "Update[]",
-  getMe: "User",
+  getMe: "BotFullInfo",
   getMyDefaultAdministratorRights: "ChatAdministratorRights",
   getUserProfilePhotos: "UserProfilePhotos",
   getUserProfileAudios: "UserProfileAudios",

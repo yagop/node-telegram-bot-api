@@ -5,6 +5,27 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased][Unreleased]
 
+### Bot API 10.5 (November 22, 2026)
+
+#### Bot Settings
+
+- Added `setMySettings` (inline mode, privacy mode, joining groups, topics in
+  private chats, topic sidebar, `callback_query_mode`).
+- Added `BotFullInfo`, now returned by `getMe`, with the new fields
+  `active_usernames`, `inline_query_placeholder`, `needs_inline_query_location`
+  and `has_topic_sidebar`. `bot.botInfo` and `ctx.me` are typed `BotFullInfo`.
+- **Breaking (types):** the bot-only fields (`can_join_groups`,
+  `can_read_all_group_messages`, `supports_inline_queries`, ...) are removed
+  from `User`, matching the docs. Read them from `getMe()` / `bot.botInfo`.
+
+#### General
+
+- Added `inviter` to `WriteAccessAllowed`.
+- **Breaking:** `RichBlockExpandableBlockQuotation` and
+  `InputRichBlockExpandableBlockQuotation` replace `text` with `blocks`, and
+  `RichMessageBuilder.expandableBlockquote` now takes nested blocks (like
+  `blockquote`) instead of rich text.
+
 ## [2.4.1][2.4.1] - 2026-11-21
 
 ### Polling

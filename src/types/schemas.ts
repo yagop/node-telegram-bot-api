@@ -146,6 +146,27 @@ export type WebhookInfo = {
   allowed_updates?: string[];
 };
 
+export type BotFullInfo = {
+  id: number;
+  is_bot: true;
+  first_name: string;
+  username?: string;
+  active_usernames?: string[];
+  can_join_groups: boolean;
+  can_read_all_group_messages: boolean;
+  supports_guest_queries: boolean;
+  supports_inline_queries: boolean;
+  inline_query_placeholder?: string;
+  needs_inline_query_location: boolean;
+  can_connect_to_business: boolean;
+  has_main_web_app: boolean;
+  has_topics_enabled: boolean;
+  allows_users_to_create_topics: boolean;
+  has_topic_sidebar: boolean;
+  can_manage_bots: boolean;
+  supports_join_request_queries: boolean;
+};
+
 export type User = {
   id: number;
   is_bot: boolean;
@@ -155,16 +176,6 @@ export type User = {
   language_code?: string;
   is_premium?: true;
   added_to_attachment_menu?: true;
-  can_join_groups?: boolean;
-  can_read_all_group_messages?: boolean;
-  supports_guest_queries?: boolean;
-  supports_inline_queries?: boolean;
-  can_connect_to_business?: boolean;
-  has_main_web_app?: boolean;
-  has_topics_enabled?: boolean;
-  allows_users_to_create_topics?: boolean;
-  can_manage_bots?: boolean;
-  supports_join_request_queries?: boolean;
 };
 
 export type Chat = {
@@ -901,6 +912,7 @@ export type WriteAccessAllowed = {
   from_request?: boolean;
   web_app_name?: string;
   from_attachment_menu?: boolean;
+  inviter?: User;
 };
 
 export type VideoChatScheduled = {
@@ -2345,7 +2357,7 @@ export type RichBlockBlockQuotation = {
 
 export type RichBlockExpandableBlockQuotation = {
   type: string;
-  text: RichText;
+  blocks: RichBlock[];
   credit?: RichText;
 };
 
@@ -2499,7 +2511,7 @@ export type InputRichBlockBlockQuotation = {
 
 export type InputRichBlockExpandableBlockQuotation = {
   type: string;
-  text: RichText;
+  blocks: InputRichBlock[];
   credit?: RichText;
 };
 
@@ -3366,7 +3378,7 @@ export type GetWebhookInfoParams = Record<string, never>;
 export type GetWebhookInfoResult = WebhookInfo;
 
 export type GetMeParams = Record<string, never>;
-export type GetMeResult = User;
+export type GetMeResult = BotFullInfo;
 
 export type LogOutParams = Record<string, never>;
 export type LogOutResult = boolean;
@@ -4256,6 +4268,25 @@ export type SetManagedBotAccessSettingsParams = {
   added_user_ids?: number[];
 };
 export type SetManagedBotAccessSettingsResult = boolean;
+
+export type SetMySettingsParams = {
+  supports_inline_queries?: boolean;
+  inline_query_placeholder?: string;
+  needs_inline_query_location?: boolean;
+  inline_feedback_share_denominator?: number;
+  can_join_groups?: boolean;
+  can_read_all_group_messages?: boolean;
+  can_connect_to_business?: boolean;
+  can_manage_bots?: boolean;
+  supports_guest_queries?: boolean;
+  supports_join_request_queries?: boolean;
+  has_topics_enabled?: boolean;
+  allows_users_to_create_topics?: boolean;
+  has_topic_sidebar?: boolean;
+  can_communicate_with_bots?: boolean;
+  callback_query_mode?: string;
+};
+export type SetMySettingsResult = boolean;
 
 export type SetMyCommandsParams = {
   commands: BotCommand[];
