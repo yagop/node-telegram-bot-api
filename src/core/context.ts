@@ -310,8 +310,9 @@ export class Context {
    * query these come from the message the button is attached to. Anything in
    * `other` wins; pass e.g. `{ message_thread_id: undefined }` to opt out.
    *
-   * Throws if no chat id can be derived from the update (e.g. an inline query
-   * carries no chat) unless `other` makes it an ephemeral reply to a callback
+   * Throws if no chat id can be derived from the update (e.g. an inline query,
+   * or a callback query that arrives with only `inline_message_id`, carries no
+   * chat) unless `other` makes it an ephemeral reply to a callback
    * query, and for `guest_message`, which must be answered with
    * `api.answerGuestQuery` and its `guest_query_id` instead.
    */

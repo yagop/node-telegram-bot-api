@@ -35,8 +35,8 @@ import {
   expectCallback,
   forgetCallback,
   type InlineKeyboardMarkup,
-  matchCallback,
   MemorySessionStorage,
+  matchCallback,
   TelegramApiError,
 } from "node-telegram-bot-api";
 import { run } from "node-telegram-bot-api/node";
@@ -92,19 +92,26 @@ bot.on("callback_query", async (ctx, next) => {
   await ctx.answerCallbackQuery();
 
   const page = Number(match[1]);
-  const message = ctx.callbackQuery?.message;
-  if (!message) return; // inline-mode message: nothing to edit
+  // `message` is absent for inline-mode messages and when the bot set
+  // `callback_query_mode`; then only `inline_message_id` identifies the page.
+  const query = ctx.callbackQuery;
+  const target = query?.message
+    ? { chat_id: query.message.chat.id, message_id: query.message.message_id }
+    : query?.inline_message_id
+      ? { inline_message_id: query.inline_message_id }
+      : undefined;
+  if (!target) return;
 
   try {
     await ctx.api.editMessageText({
-      chat_id: message.chat.id,
-      message_id: message.message_id,
+      ...target,
       text: pageText(page),
       reply_markup: pageKeyboard(page),
     });
   } catch (err) {
     // The identical-edit race above; any other API error is a real problem.
-    if (!(err instanceof TelegramApiError && err.description.includes("message is not modified"))) throw err;
+    if (!(err instanceof TelegramApiError && err.description.includes("message is not modified")))
+      throw err;
   }
   // The keyboard stays live: press again and this handler runs again.
 });
@@ -148,7 +155,10 @@ bot.on("callback_query", async (ctx, next) => {
   }
 
   if (ctx.from?.id !== pending.requestedBy) {
-    await ctx.answerCallbackQuery({ text: "Only the person who ran /delete can confirm.", show_alert: true });
+    await ctx.answerCallbackQuery({
+      text: "Only the person who ran /delete can confirm.",
+      show_alert: true,
+    });
     return;
   }
 
@@ -157,7 +167,9 @@ bot.on("callback_query", async (ctx, next) => {
   ctx.getSession<Session>().data.pendingConfirmationId = undefined;
 
   await ctx.answerCallbackQuery({ text: "Deleting..." });
-  await ctx.reply(`Ran ${pending.op} on ${pending.targets.join(", ")} (asked at ${pending.requestedAt}).`);
+  await ctx.reply(
+    `Ran ${pending.op} on ${pending.targets.join(", ")} (asked at ${pending.requestedAt}).`
+  );
 });
 
 await run(bot, { exitOnError: true });
