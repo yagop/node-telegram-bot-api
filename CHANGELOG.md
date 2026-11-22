@@ -10,7 +10,9 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 #### Bot Settings
 
 - Added `setMySettings` (inline mode, privacy mode, joining groups, topics in
-  private chats, topic sidebar, `callback_query_mode`).
+  private chats, topic sidebar, `callback_query_mode`). `has_topic_sidebar`
+  takes effect only while `has_topics_enabled` is on: otherwise Telegram
+  accepts the call but `getMe` keeps reporting `has_topic_sidebar: false`.
 - Added `BotFullInfo`, now returned by `getMe`, with the new fields
   `active_usernames`, `inline_query_placeholder`, `needs_inline_query_location`
   and `has_topic_sidebar`. `bot.botInfo` and `ctx.me` are typed `BotFullInfo`.
