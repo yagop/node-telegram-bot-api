@@ -475,12 +475,20 @@ const PRELUDE_NAMES = new Set([
   "ChatId",
   "ReplyMarkup",
   "ParseMode",
+  "CallbackQueryMode",
   "ChatOrCallbackReply",
   "DistributiveOmit",
 ]);
 
 /** The documented \`chat_id\` type of the ephemeral-capable send methods (checked per method). */
 const CHAT_ID_TYPE = "number | string";
+
+/**
+ * Every documented `callback_query_mode` value, hand-curated like `ParseMode` and
+ * emitted as the `CallbackQueryMode` const in PRELUDE. `checkCallbackQueryModes`
+ * fails the run if the docs list other values.
+ */
+const CALLBACK_QUERY_MODES = { Default: "default", Auto: "auto", Inline: "inline" } as const;
 
 const PRELUDE = `// ---------------------------------------------------------------------------
 // Library-specific helpers (not 1:1 documented objects)
@@ -491,6 +499,13 @@ export type ChatId = number | string;
 
 /** Text formatting mode accepted by \`parse_mode\` fields. */
 export type ParseMode = "Markdown" | "MarkdownV2" | "HTML";
+
+/** Every documented \`callback_query_mode\` value, typo-proof versus raw strings. */
+export const CallbackQueryMode = {
+${Object.entries(CALLBACK_QUERY_MODES)
+  .map(([k, v]) => `  ${k}: "${v}",\n`)
+  .join("")}} as const;
+export type CallbackQueryMode = (typeof CallbackQueryMode)[keyof typeof CallbackQueryMode];
 
 /** One member of the union \`U\`: each member forbids the keys only other members have. */
 type _Exclusive<U, T = U> = T extends unknown ? T & { [K in Exclude<_KeysOfUnion<U>, keyof T>]?: never } : never;
@@ -528,6 +543,23 @@ const EPHEMERAL_RULE =
 /** What "an ephemeral reply to a callback query" is: `callback_query_id` without `receiver_user_id`. */
 const CALLBACK_REPLY_RULE =
   /If specified and\s+receiver_user_id\s+is omitted, then the message is sent as an ephemeral reply to the callback query/;
+
+/**
+ * `callback_query_mode` stays `string` (a prose enum), but `CallbackQueryMode` in
+ * PRELUDE lists its values. Its "Must be one of ..." sentence is checked on every run,
+ * so a new or renamed mode fails the generator instead of leaving the const stale.
+ */
+function checkCallbackQueryModes(fields: Field[]): void {
+  const desc = fields.find((f) => f.name === "callback_query_mode")?.desc ?? "";
+  const sentence = /Must be one of (.*)$/.exec(desc)?.[1] ?? "";
+  const documented = [...sentence.matchAll(/["\u201c]([a-z_]+)["\u201d]/g)].map((x) => x[1]);
+  const expected = Object.values(CALLBACK_QUERY_MODES);
+  if (documented.join() !== expected.join()) {
+    throw new Error(
+      `setMySettings.callback_query_mode: docs list [${documented.join(", ")}], CallbackQueryMode has [${expected.join(", ")}]`
+    );
+  }
+}
 
 /**
  * `EphemeralMessageParameters` as two members: `EphemeralCallbackReply` (a
@@ -709,6 +741,7 @@ out.push(`\n// -----------------------------------------------------------------
 // Methods: request params + reply types
 // ---------------------------------------------------------------------------\n`);
 let ephemeralMethods = 0;
+let callbackQueryModesChecked = false;
 for (const m of methods) {
   const C = cap(m.name);
   // The docs mark `chat_id` "Optional" on the ephemeral-capable send methods, but it
@@ -731,6 +764,10 @@ for (const m of methods) {
   if (ephemeral) {
     ephemeralMethods++;
   }
+  if (m.name === "setMySettings") {
+    checkCallbackQueryModes(m.fields);
+    callbackQueryModesChecked = true;
+  }
   const fields = ephemeral ? m.fields.filter((f) => f !== chat) : m.fields;
   out.push(
     `export type ${C}Params = ${emitFields(fields)}${ephemeral ? " & ChatOrCallbackReply" : ""};`
@@ -739,6 +776,9 @@ for (const m of methods) {
 }
 if (!ephemeralMethods) {
   throw new Error("No ephemeral-capable send method found: the chat_id rule no longer applies");
+}
+if (!callbackQueryModesChecked) {
+  throw new Error("setMySettings not found in the docs: CallbackQueryMode was not checked");
 }
 
 await Bun.write(OUT, ascii(out.join("\n")));

@@ -2040,6 +2040,14 @@ type CallbackQuery = {
 };
 ```
 
+### `CallbackQueryMode`
+
+Every documented `callback_query_mode` value, typo-proof versus raw strings.
+
+```ts
+type CallbackQueryMode = typeof [CallbackQueryMode](#callbackquerymode)[keyof typeof [CallbackQueryMode](#callbackquerymode)];
+```
+
 ### `Chat`
 
 ```ts
