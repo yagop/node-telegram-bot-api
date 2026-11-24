@@ -36,9 +36,9 @@ $ npm run generate:types   # bun scripts/api-parser.ts
 ```
 
 The generator is strict: an unmapped type string is a hard error rather than
-`unknown`, and an unresolved return type falls back to `boolean` (reported in the
-run summary; add the method to `RETURN_OVERRIDES` in `scripts/api-parser.ts` if
-that is wrong). The full flow, including the rare generator extensions, is in the
+`unknown`, and an unresolved return type fails the run (add the method to
+`RETURN_OVERRIDES` in `scripts/api-parser.ts` with the verbatim documented
+return type). The full flow, including the rare generator extensions, is in the
 `update-bot-api` skill (`.claude/skills/update-bot-api/SKILL.md`).
 
 
