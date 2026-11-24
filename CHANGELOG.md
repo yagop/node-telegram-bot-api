@@ -15,8 +15,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   accepts the call but `getMe` keeps reporting `has_topic_sidebar: false`.
 - Added the `CallbackQueryMode` const (`Default`, `Auto`, `Inline`), like
   `ParseMode` a typo-proof handle on a field that stays `string`:
-  `setMySettings({ callback_query_mode: CallbackQueryMode.Inline })`. The
-  generator checks it against the docs' list of modes on every run.
+  `setMySettings({ callback_query_mode: CallbackQueryMode.Inline })`.
 - Added `BotFullInfo`, now returned by `getMe`, with the new fields
   `active_usernames`, `inline_query_placeholder`, `needs_inline_query_location`
   and `has_topic_sidebar`. `bot.botInfo` and `ctx.me` are typed `BotFullInfo`.
