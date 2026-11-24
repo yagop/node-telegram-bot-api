@@ -285,8 +285,6 @@ const RETURN_OVERRIDES: Record<string, string> = {
   answerGuestQuery: "SentGuestMessage",
 };
 
-const unresolved: string[] = [];
-
 function parseReturn(method: string, descRaw: string): string {
   if (RETURN_OVERRIDES[method]) {
     return RETURN_OVERRIDES[method];
@@ -365,8 +363,9 @@ function parseReturn(method: string, descRaw: string): string {
     return "number";
   }
 
-  unresolved.push(method);
-  return "boolean";
+  throw new Error(
+    `${method}: unresolved return type - no rule matched its docs sentence. Extend parseReturn in scripts/api-parser.ts or add ${method} to RETURN_OVERRIDES.`
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -838,8 +837,3 @@ console.log(`  objects:        ${types.length}`);
 console.log(`  unions:         ${unions.length}`);
 console.log(`  empty objects:  ${emptyTypes.length} (${emptyTypes.join(", ") || "none"})`);
 console.log(`  methods:        ${methods.length}`);
-if (unresolved.length) {
-  console.log(`\n⚠ reply type fell back to boolean for ${unresolved.length} method(s):`);
-  console.log(`   ${unresolved.join(", ")}`);
-  console.log("   (add to RETURN_OVERRIDES if wrong)");
-}

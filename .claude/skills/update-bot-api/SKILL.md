@@ -71,10 +71,10 @@ The generator is **strict on purpose**:
 - An **unmapped type string** is a hard error (non-zero exit) - it never falls back
   to `unknown`. If Telegram introduces a new scalar spelling, extend `mapScalar` /
   `mapType` in `scripts/api-parser.ts`.
-- An **unresolved return type** falls back to `boolean` and is listed in the run
-  summary (`reply type fell back to boolean for N method(s)`). If that is wrong,
-  add the method to `RETURN_OVERRIDES` in `scripts/api-parser.ts` with the verbatim
-  documented return type.
+- An **unresolved return type** fails the run with the method named
+  (`<method>: unresolved return type - no rule matched its docs sentence`). If the
+  heuristic cannot resolve it, add the method to `RETURN_OVERRIDES` in
+  `scripts/api-parser.ts` with the verbatim documented return type.
 
 Do **not** hand-edit `src/types/schemas.ts` or `src/core/api.ts` - both are generated.
 New types are re-exported publicly for free (`src/core/index.ts` ->
@@ -208,8 +208,8 @@ Bumping the version and publishing is a **separate** step - use the **release** 
 ## Gotchas checklist
 
 - [ ] Trusted the **raw** changelog, not a WebFetch/LLM summary (hallucinated classes).
-- [ ] Generator exited 0 - no unmapped type strings, no unintended `boolean` fallbacks
-      (added to `RETURN_OVERRIDES` where needed).
+- [ ] Generator exited 0 - no unmapped type strings, no unresolved return
+      types (added to `RETURN_OVERRIDES` where needed).
 - [ ] Reviewed the `schemas.ts` + `api.ts` diff; every deletion is a union-member add
       or a field-optional change.
 - [ ] Did **not** hand-edit the generated files or try to wire serialization - new
