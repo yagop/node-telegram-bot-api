@@ -293,7 +293,7 @@ function parseReturn(method: string, descRaw: string): string {
   }
   const d = descRaw.replace(/\s+/g, " ").trim();
 
-  if (/otherwise\s+True\s+is\s+returned/i.test(d) && /Message\s+is\s+returned/.test(d)) {
+  if (/otherwise[,]?\s+True\s+is\s+returned/i.test(d) && /Message\s+is\s+returned/.test(d)) {
     return "Message | boolean";
   }
   if (/[Aa]rray of MessageId/.test(d)) {
