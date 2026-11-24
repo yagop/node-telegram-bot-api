@@ -108,7 +108,7 @@ An animated profile photo (a video); `main_frame_timestamp` picks the still fram
 | `getGameHighScores` | `params`: [GetGameHighScoresParams](#getgamehighscoresparams), `signal?`: AbortSignal | Promise<[GetGameHighScoresResult](#getgamehighscoresresult)> | [getGameHighScores](https://core.telegram.org/bots/api#getgamehighscores) |
 | `getManagedBotAccessSettings` | `params`: [GetManagedBotAccessSettingsParams](#getmanagedbotaccesssettingsparams), `signal?`: AbortSignal | Promise<[BotAccessSettings](#botaccesssettings)> | [getManagedBotAccessSettings](https://core.telegram.org/bots/api#getmanagedbotaccesssettings) |
 | `getManagedBotToken` | `params`: [GetManagedBotTokenParams](#getmanagedbottokenparams), `signal?`: AbortSignal | Promise<[BusinessConnection](#businessconnection)> | [getManagedBotToken](https://core.telegram.org/bots/api#getmanagedbottoken) |
-| `getMe` | `signal?`: AbortSignal | Promise<[User](#user)> | [getMe](https://core.telegram.org/bots/api#getme) |
+| `getMe` | `signal?`: AbortSignal | Promise<[BotFullInfo](#botfullinfo)> | [getMe](https://core.telegram.org/bots/api#getme) |
 | `getMyCommands` | `params?`: [GetMyCommandsParams](#getmycommandsparams), `signal?`: AbortSignal | Promise<[GetMyCommandsResult](#getmycommandsresult)> | [getMyCommands](https://core.telegram.org/bots/api#getmycommands) |
 | `getMyDefaultAdministratorRights` | `params?`: [GetMyDefaultAdministratorRightsParams](#getmydefaultadministratorrightsparams), `signal?`: AbortSignal | Promise<[ChatAdministratorRights](#chatadministratorrights)> | [getMyDefaultAdministratorRights](https://core.telegram.org/bots/api#getmydefaultadministratorrights) |
 | `getMyDescription` | `params?`: [GetMyDescriptionParams](#getmydescriptionparams), `signal?`: AbortSignal | Promise<[BotDescription](#botdescription)> | [getMyDescription](https://core.telegram.org/bots/api#getmydescription) |
@@ -197,6 +197,7 @@ An animated profile photo (a video); `main_frame_timestamp` picks the still fram
 | `setMyDescription` | `params?`: [SetMyDescriptionParams](#setmydescriptionparams), `signal?`: AbortSignal | Promise<boolean> | [setMyDescription](https://core.telegram.org/bots/api#setmydescription) |
 | `setMyName` | `params?`: [SetMyNameParams](#setmynameparams), `signal?`: AbortSignal | Promise<boolean> | [setMyName](https://core.telegram.org/bots/api#setmyname) |
 | `setMyProfilePhoto` | `params`: [SetMyProfilePhotoParams](#setmyprofilephotoparams), `signal?`: AbortSignal | Promise<boolean> | [setMyProfilePhoto](https://core.telegram.org/bots/api#setmyprofilephoto) |
+| `setMySettings` | `params?`: [SetMySettingsParams](#setmysettingsparams), `signal?`: AbortSignal | Promise<boolean> | [setMySettings](https://core.telegram.org/bots/api#setmysettings) |
 | `setMyShortDescription` | `params?`: [SetMyShortDescriptionParams](#setmyshortdescriptionparams), `signal?`: AbortSignal | Promise<boolean> | [setMyShortDescription](https://core.telegram.org/bots/api#setmyshortdescription) |
 | `setPassportDataErrors` | `params`: [SetPassportDataErrorsParams](#setpassportdataerrorsparams), `signal?`: AbortSignal | Promise<boolean> | [setPassportDataErrors](https://core.telegram.org/bots/api#setpassportdataerrors) |
 | `setStickerEmojiList` | `params`: [SetStickerEmojiListParams](#setstickeremojilistparams), `signal?`: AbortSignal | Promise<boolean> | [setStickerEmojiList](https://core.telegram.org/bots/api#setstickeremojilist) |
@@ -246,7 +247,7 @@ An animated profile photo (a video); `main_frame_timestamp` picks the still fram
 | Property | Type |
 | --- | --- |
 | `api` | [Api](#api) |
-| `botInfo` | [User](#user) \| undefined |
+| `botInfo` | [BotFullInfo](#botfullinfo) \| undefined |
 
 ### `Context`
 
@@ -256,7 +257,7 @@ An animated profile photo (a video); `main_frame_timestamp` picks the still fram
 | --- | --- | --- | --- |
 | `answerCallbackQuery` | `other?`: Omit<[AnswerCallbackQueryParams](#answercallbackqueryparams), "callback_query_id"> | Promise<boolean> | Answer the callback query that triggered this update. Throws if the update is not a callback query. |
 | `getSession` | - | [SessionHandle](#sessionhandle)<T> | The session handle for this update: `.data` (the persistent bag - mutate it in place or reassign it, it flushes after the handler), `.ext()` for layers built on sessions, and `.delete()` to evict the key. `<T>` is the caller's asserted `data` shape, defaulting to `Record<string, unknown>` like `createSession()` itself; to fix it once instead of per call site, use the middleware's own `.get(ctx)`. Throws if the session middleware has not run for this update (not registered, or no derivable session key). |
-| `reply` | `text`: string, `other?`: Omit<[SendMessageParams](#sendmessageparams), "chat_id" \| "text"> | Promise<[Message](#message)> | Send a message to the inferred chat, staying where the incoming message came from: `business_connection_id` for business messages (including `deleted_business_messages`), `message_thread_id` for forum-topic messages (`is_topic_message`; a plain reply thread is not followed), and `direct_messages_topic_id` for channel direct-messages chats. For a callback query these come from the message the button is attached to. Anything in `other` wins; pass e.g. `{ message_thread_id: undefined }` to opt out.  Throws if no chat id can be derived from the update (e.g. an inline query carries no chat) unless `other` makes it an ephemeral reply to a callback query, and for `guest_message`, which must be answered with `api.answerGuestQuery` and its `guest_query_id` instead. |
+| `reply` | `text`: string, `other?`: Omit<[SendMessageParams](#sendmessageparams), "chat_id" \| "text"> | Promise<[Message](#message)> | Send a message to the inferred chat, staying where the incoming message came from: `business_connection_id` for business messages (including `deleted_business_messages`), `message_thread_id` for forum-topic messages (`is_topic_message`; a plain reply thread is not followed), and `direct_messages_topic_id` for channel direct-messages chats. For a callback query these come from the message the button is attached to. Anything in `other` wins; pass e.g. `{ message_thread_id: undefined }` to opt out.  Throws if no chat id can be derived from the update (e.g. an inline query, or a callback query that arrives with only `inline_message_id`, carries no chat) unless `other` makes it an ephemeral reply to a callback query, and for `guest_message`, which must be answered with `api.answerGuestQuery` and its `guest_query_id` instead. |
 
 #### Properties
 
@@ -274,7 +275,7 @@ An animated profile photo (a video); `main_frame_timestamp` picks the still fram
 | `editedMessage` | [Message](#message) \| undefined |
 | `from` | [User](#user) \| undefined |
 | `inlineQuery` | [InlineQuery](#inlinequery) \| undefined |
-| `me` | [User](#user) \| undefined |
+| `me` | [BotFullInfo](#botfullinfo) \| undefined |
 | `message` | [Message](#message) \| undefined |
 
 ### `EntityBuilder`
@@ -491,7 +492,7 @@ Fluent builder for the `blocks` form of an `InputRichMessage`.
 | `details` | `summary`: [RichTextContent](#richtextcontent), `blocks`: [BlockContent](#blockcontent), `isOpen?`: true | this | A details/disclosure block with an always-shown `summary`. |
 | `divider` | - | this | A horizontal divider. |
 | `document` | `document`: [InputMediaDocument](#inputmediadocument), `caption?`: [RichBlockCaption](#richblockcaption) | this | A document block. |
-| `expandableBlockquote` | `text`: [RichTextContent](#richtextcontent), `credit?`: [RichTextContent](#richtextcontent) | this | An expandable (collapsed) block quotation. |
+| `expandableBlockquote` | `blocks`: [BlockContent](#blockcontent), `credit?`: [RichTextContent](#richtextcontent) | this | An expandable (collapsed) block quotation wrapping nested blocks, with an optional `credit`. |
 | `footer` | `text`: [RichTextContent](#richtextcontent) | this | A footer block. |
 | `heading` | `text`: [RichTextContent](#richtextcontent), `size`: number | this | A section heading; `size` is 1 (largest) to 6 (smallest). |
 | `list` | `items`: [InputRichBlockListItem](#inputrichblocklistitem)[] | this | An ordered/unordered list; build items with `richListItem`. |
@@ -1887,6 +1888,31 @@ type BotDescription = {
 };
 ```
 
+### `BotFullInfo`
+
+```ts
+type BotFullInfo = {
+  active_usernames?: string[];
+  allows_users_to_create_topics: boolean;
+  can_connect_to_business: boolean;
+  can_join_groups: boolean;
+  can_manage_bots: boolean;
+  can_read_all_group_messages: boolean;
+  first_name: string;
+  has_main_web_app: boolean;
+  has_topic_sidebar: boolean;
+  has_topics_enabled: boolean;
+  id: number;
+  inline_query_placeholder?: string;
+  is_bot: true;
+  needs_inline_query_location: boolean;
+  supports_guest_queries: boolean;
+  supports_inline_queries: boolean;
+  supports_join_request_queries: boolean;
+  username?: string;
+};
+```
+
 ### `BotName`
 
 ```ts
@@ -2012,6 +2038,14 @@ type CallbackQuery = {
   inline_message_id?: string;
   message?: [MaybeInaccessibleMessage](#maybeinaccessiblemessage);
 };
+```
+
+### `CallbackQueryMode`
+
+Every documented `callback_query_mode` value, typo-proof versus raw strings.
+
+```ts
+type CallbackQueryMode = typeof [CallbackQueryMode](#callbackquerymode)[keyof typeof [CallbackQueryMode](#callbackquerymode)];
 ```
 
 ### `Chat`
@@ -4007,7 +4041,7 @@ type GetMeParams = Record<string, never>;
 ### `GetMeResult`
 
 ```ts
-type GetMeResult = [User](#user);
+type GetMeResult = [BotFullInfo](#botfullinfo);
 ```
 
 ### `GetMyCommandsParams`
@@ -5275,8 +5309,8 @@ type InputRichBlockDocument = {
 
 ```ts
 type InputRichBlockExpandableBlockQuotation = {
+  blocks: [InputRichBlock](#inputrichblock)[];
   credit?: [RichText](#richtext);
-  text: [RichText](#richtext);
   type: string;
 };
 ```
@@ -7076,8 +7110,8 @@ type RichBlockDocument = {
 
 ```ts
 type RichBlockExpandableBlockQuotation = {
+  blocks: [RichBlock](#richblock)[];
   credit?: [RichText](#richtext);
-  text: [RichText](#richtext);
   type: string;
 };
 ```
@@ -8869,6 +8903,34 @@ type SetMyProfilePhotoParams = {
 type SetMyProfilePhotoResult = boolean;
 ```
 
+### `SetMySettingsParams`
+
+```ts
+type SetMySettingsParams = {
+  allows_users_to_create_topics?: boolean;
+  callback_query_mode?: string;
+  can_communicate_with_bots?: boolean;
+  can_connect_to_business?: boolean;
+  can_join_groups?: boolean;
+  can_manage_bots?: boolean;
+  can_read_all_group_messages?: boolean;
+  has_topic_sidebar?: boolean;
+  has_topics_enabled?: boolean;
+  inline_feedback_share_denominator?: number;
+  inline_query_placeholder?: string;
+  needs_inline_query_location?: boolean;
+  supports_guest_queries?: boolean;
+  supports_inline_queries?: boolean;
+  supports_join_request_queries?: boolean;
+};
+```
+
+### `SetMySettingsResult`
+
+```ts
+type SetMySettingsResult = boolean;
+```
+
 ### `SetMyShortDescriptionParams`
 
 ```ts
@@ -9944,22 +10006,12 @@ type UploadStickerFileResult = [File](#file);
 ```ts
 type User = {
   added_to_attachment_menu?: true;
-  allows_users_to_create_topics?: boolean;
-  can_connect_to_business?: boolean;
-  can_join_groups?: boolean;
-  can_manage_bots?: boolean;
-  can_read_all_group_messages?: boolean;
   first_name: string;
-  has_main_web_app?: boolean;
-  has_topics_enabled?: boolean;
   id: number;
   is_bot: boolean;
   is_premium?: true;
   language_code?: string;
   last_name?: string;
-  supports_guest_queries?: boolean;
-  supports_inline_queries?: boolean;
-  supports_join_request_queries?: boolean;
   username?: string;
 };
 ```
@@ -10260,6 +10312,7 @@ type WidgetQueryWallet = {
 type WriteAccessAllowed = {
   from_attachment_menu?: boolean;
   from_request?: boolean;
+  inviter?: [User](#user);
   web_app_name?: string;
 };
 ```

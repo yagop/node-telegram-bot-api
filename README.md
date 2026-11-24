@@ -2,7 +2,7 @@
 
 <div align=center>
 
-[![Bot API](https://img.shields.io/badge/Bot%20API-v.10.4-00aced.svg?style=flat-square&logo=telegram)](https://core.telegram.org/bots/api)
+[![Bot API](https://img.shields.io/badge/Bot%20API-v.10.5-00aced.svg?style=flat-square&logo=telegram)](https://core.telegram.org/bots/api)
 [![npm package](https://img.shields.io/npm/v/node-telegram-bot-api?logo=npm&style=flat-square)](https://www.npmjs.org/package/node-telegram-bot-api)
 
 [![https://telegram.me/node_telegram_bot_api](https://img.shields.io/badge/💬%20Telegram-Channel-blue.svg?style=flat-square)](https://telegram.me/node_telegram_bot_api)
@@ -368,7 +368,7 @@ The default session key is per **chat**, so in a group the marker belongs to the
 
 #### Button presses
 
-`expectCallback(ctx, id, marker?, { ttlSeconds? })` / `matchCallback<M>(ctx, { once? })` are the callback-query peers, keyed on `callback_query.message.message_id` (`taggedReplies(ctx).expectPress` / `.matchPress` for string tags). Replies and presses live in **separate tables**, so a quoted reply to a message that also carries a keyboard cannot consume the button's marker; register both if a message can be answered either way.
+`expectCallback(ctx, id, marker?, { ttlSeconds? })` / `matchCallback<M>(ctx, { once? })` are the callback-query peers, keyed on `callback_query.message.message_id` (`taggedReplies(ctx).expectPress` / `.matchPress` for string tags). A press that arrives with only `inline_message_id` (inline mode, or a bot that set `callback_query_mode` with `setMySettings`) never matches. Replies and presses live in **separate tables**, so a quoted reply to a message that also carries a keyboard cannot consume the button's marker; register both if a message can be answered either way.
 
 **Reach for them only when `callback_data` is not enough.** A button already carries 64 bytes you chose, round-tripped by Telegram for free - that is the idiomatic way to route a press, and it needs no session at all:
 

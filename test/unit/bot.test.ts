@@ -1,7 +1,7 @@
 import { describe, test } from "node:test";
 import assert from "node:assert/strict";
 import { Bot } from "../../src/core/bot.js";
-import type { Update, User } from "../../src/types/index.js";
+import type { BotFullInfo, Update } from "../../src/types/index.js";
 
 function newBot(): Bot {
   // init() always fetches getMe(); answer it so these tests hit no real network.
@@ -290,7 +290,7 @@ describe("Bot command @-addressing", () => {
 
   test("botInfo and ctx.me are populated for a command bot", async () => {
     const bot = newCommandBot("thisbot");
-    let seen: User | undefined;
+    let seen: BotFullInfo | undefined;
     bot.command("start", (ctx) => {
       seen = ctx.me;
     });

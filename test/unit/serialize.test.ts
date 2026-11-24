@@ -1,6 +1,7 @@
 import { describe, test } from "node:test";
 import assert from "node:assert/strict";
 import { type EncodedRequest, encodeForm } from "../../src/core/encode.js";
+import { CallbackQueryMode } from "../../src/core/index.js";
 import { InputFile } from "../../src/core/files.js";
 import { MediaGroupBuilder } from "../../src/core/media.js";
 import { serializeParams } from "../../src/core/serialize.js";
@@ -22,6 +23,7 @@ import type {
   SendVideoNoteParams,
   SendVideoParams,
   SendVoiceParams,
+  SetMySettingsParams,
 } from "../../src/types/index.js";
 
 /** Plain params -> serializeParams -> encodeForm. */
@@ -70,6 +72,12 @@ describe("serializeParams", () => {
   test("array field is stringified", async () => {
     const { body } = await enc({ chat_id: 1, message_ids: [10, 11] });
     assert.strictEqual((body() as URLSearchParams).get("message_ids"), "[10,11]");
+  });
+
+  test("CallbackQueryMode is exported from the root and sent as its plain string", async () => {
+    const params: SetMySettingsParams = { callback_query_mode: CallbackQueryMode.Inline };
+    const { body } = await enc(params);
+    assert.strictEqual((body() as URLSearchParams).get("callback_query_mode"), "inline");
   });
 
   test("null/undefined fields are dropped before the wire", async () => {

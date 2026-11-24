@@ -11,6 +11,7 @@
 import type {
   AnswerCallbackQueryParams,
   AnswerCallbackQueryResult,
+  BotFullInfo,
   CallbackQuery,
   Chat,
   InlineQuery,
@@ -232,9 +233,9 @@ export class Context {
    * learned by the time a handler asks - the bot may only fetch it during
    * `init()`, after the `Context` was constructed.
    */
-  private readonly meProvider?: () => User | undefined;
+  private readonly meProvider?: () => BotFullInfo | undefined;
 
-  constructor(update: Update, api: Api, me?: () => User | undefined) {
+  constructor(update: Update, api: Api, me?: () => BotFullInfo | undefined) {
     this.update = update;
     this.api = api;
     this.meProvider = me;
@@ -294,7 +295,7 @@ export class Context {
    * not learned it: no `command()` was registered (so `getMe()` never ran), or
    * `init()` has not completed yet.
    */
-  get me(): User | undefined {
+  get me(): BotFullInfo | undefined {
     return this.meProvider?.();
   }
 
@@ -309,8 +310,9 @@ export class Context {
    * query these come from the message the button is attached to. Anything in
    * `other` wins; pass e.g. `{ message_thread_id: undefined }` to opt out.
    *
-   * Throws if no chat id can be derived from the update (e.g. an inline query
-   * carries no chat) unless `other` makes it an ephemeral reply to a callback
+   * Throws if no chat id can be derived from the update (e.g. an inline query,
+   * or a callback query that arrives with only `inline_message_id`, carries no
+   * chat) unless `other` makes it an ephemeral reply to a callback
    * query, and for `guest_message`, which must be answered with
    * `api.answerGuestQuery` and its `guest_query_id` instead.
    */

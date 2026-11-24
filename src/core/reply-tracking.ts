@@ -373,9 +373,10 @@ export function matchCallback<M extends ReplyMarker = ReplyMarker>(
   ctx: Context,
   options?: { once?: boolean }
 ): M | undefined {
-  // `message` is absent when the keyboard is on an inline-mode message or one
-  // too old for Telegram to send along (only `inline_message_id` arrives), so
-  // there is nothing to key on - route those by `callback_data` instead.
+  // `message` is absent when the keyboard is on an inline-mode message, one too
+  // old for Telegram to send along, or the bot set `callback_query_mode` via
+  // `setMySettings` (only `inline_message_id` arrives), so there is nothing to
+  // key on - route those by `callback_data` instead.
   const pressed = ctx.callbackQuery?.message?.message_id;
   if (pressed === undefined) {
     return undefined;

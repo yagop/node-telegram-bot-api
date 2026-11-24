@@ -5,6 +5,36 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased][Unreleased]
 
+### Bot API 10.5 (November 22, 2026)
+
+#### Bot Settings
+
+- Added `setMySettings` (inline mode, privacy mode, joining groups, topics in
+  private chats, topic sidebar, `callback_query_mode`). `has_topic_sidebar`
+  takes effect only while `has_topics_enabled` is on: otherwise Telegram
+  accepts the call but `getMe` keeps reporting `has_topic_sidebar: false`.
+- Added the `CallbackQueryMode` const (`Default`, `Auto`, `Inline`), like
+  `ParseMode` a typo-proof handle on a field that stays `string`:
+  `setMySettings({ callback_query_mode: CallbackQueryMode.Inline })`.
+- Added `BotFullInfo`, now returned by `getMe`, with the new fields
+  `active_usernames`, `inline_query_placeholder`, `needs_inline_query_location`
+  and `has_topic_sidebar`. `bot.botInfo` and `ctx.me` are typed `BotFullInfo`.
+- With `callback_query_mode` set, callback queries from the bot's own messages
+  can arrive with `inline_message_id` instead of `message`. For those,
+  `ctx.chat` is `undefined`, `ctx.reply` throws, and `matchCallback` does not
+  match - route them by `callback_data`.
+- **Breaking (types):** the bot-only fields (`can_join_groups`,
+  `can_read_all_group_messages`, `supports_inline_queries`, ...) are removed
+  from `User`, matching the docs. Read them from `getMe()` / `bot.botInfo`.
+
+#### General
+
+- Added `inviter` to `WriteAccessAllowed`.
+- **Breaking:** `RichBlockExpandableBlockQuotation` and
+  `InputRichBlockExpandableBlockQuotation` replace `text` with `blocks`, and
+  `RichMessageBuilder.expandableBlockquote` now takes nested blocks (like
+  `blockquote`) instead of rich text.
+
 ## [2.4.1][2.4.1] - 2026-11-21
 
 ### Polling

@@ -155,6 +155,18 @@ describe("RichMessageBuilder", () => {
     assert.strictEqual(msg.is_rtl, true);
   });
 
+  test("expandableBlockquote wraps nested blocks like blockquote", () => {
+    const msg = new RichMessageBuilder()
+      .expandableBlockquote((b) => b.paragraph("a"))
+      .expandableBlockquote([{ type: "paragraph", text: "b" }], "src")
+      .build();
+
+    assert.deepStrictEqual(msg.blocks, [
+      { type: "expandable_blockquote", blocks: [{ type: "paragraph", text: "a" }] },
+      { type: "expandable_blockquote", blocks: [{ type: "paragraph", text: "b" }], credit: "src" },
+    ]);
+  });
+
   test("table + caption helpers produce the wire shape", () => {
     const msg = new RichMessageBuilder()
       .table([[richTableCell("A", { align: "center", valign: "top", is_header: true })]], {

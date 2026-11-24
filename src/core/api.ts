@@ -399,6 +399,10 @@ export class Api {
   setManagedBotAccessSettings(params: T.SetManagedBotAccessSettingsParams, signal?: AbortSignal): Promise<T.SetManagedBotAccessSettingsResult> {
     return this.request<T.SetManagedBotAccessSettingsResult>("setManagedBotAccessSettings", params, signal);
   }
+  /** {@link https://core.telegram.org/bots/api#setmysettings setMySettings} */
+  setMySettings(params?: T.SetMySettingsParams, signal?: AbortSignal): Promise<T.SetMySettingsResult> {
+    return this.request<T.SetMySettingsResult>("setMySettings", params, signal);
+  }
   /** {@link https://core.telegram.org/bots/api#setmycommands setMyCommands} */
   setMyCommands(params: T.SetMyCommandsParams, signal?: AbortSignal): Promise<T.SetMyCommandsResult> {
     return this.request<T.SetMyCommandsResult>("setMyCommands", params, signal);

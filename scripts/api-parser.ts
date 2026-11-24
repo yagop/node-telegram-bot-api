@@ -261,7 +261,7 @@ const REPLY_MARKUP_UNION =
 // taken verbatim from the documentation wording.
 const RETURN_OVERRIDES: Record<string, string> = {
   getUpdates: "Update[]",
-  getMe: "User",
+  getMe: "BotFullInfo",
   getMyDefaultAdministratorRights: "ChatAdministratorRights",
   getUserProfilePhotos: "UserProfilePhotos",
   getUserProfileAudios: "UserProfileAudios",
@@ -475,6 +475,7 @@ const PRELUDE_NAMES = new Set([
   "ChatId",
   "ReplyMarkup",
   "ParseMode",
+  "CallbackQueryMode",
   "ChatOrCallbackReply",
   "DistributiveOmit",
 ]);
@@ -491,6 +492,14 @@ export type ChatId = number | string;
 
 /** Text formatting mode accepted by \`parse_mode\` fields. */
 export type ParseMode = "Markdown" | "MarkdownV2" | "HTML";
+
+/** Every documented \`callback_query_mode\` value, typo-proof versus raw strings. */
+export const CallbackQueryMode = {
+  Default: "default",
+  Auto: "auto",
+  Inline: "inline",
+} as const;
+export type CallbackQueryMode = (typeof CallbackQueryMode)[keyof typeof CallbackQueryMode];
 
 /** One member of the union \`U\`: each member forbids the keys only other members have. */
 type _Exclusive<U, T = U> = T extends unknown ? T & { [K in Exclude<_KeysOfUnion<U>, keyof T>]?: never } : never;
