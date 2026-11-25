@@ -30,7 +30,7 @@ import { run } from "node-telegram-bot-api/node"; // managed runner: wires Ctrl-
 const bot = new Bot(process.env.BOT_TOKEN!);
 
 // commands, regex and update types are all middleware - registration order wins
-bot.command("start", (ctx) => ctx.reply("Hi! Send me anything."));
+bot.command("start", (ctx) => ctx.reply({ text: "Hi! Send me anything." }));
 bot.hears(/echo (.+)/, (ctx) => ctx.reply(ctx.match![1]!));
 
 bot.on("message", (ctx) =>
@@ -48,16 +48,6 @@ bot.on("callback_query", async (ctx) => {
 });
 
 await run(bot); // core-only alternative that runs anywhere: await bot.startPolling()
-```
-
-`ctx.reply` also takes a single params object - the same call as the positional form, with `text` inside it - which reads better once the options pile up. Both forms are supported and neither is deprecated:
-
-```ts
-await ctx.reply({
-  text: "Pick one:",
-  reply_markup: keyboard,
-  parse_mode: "HTML",
-});
 ```
 
 ## 📡 Calling the API directly
