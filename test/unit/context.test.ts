@@ -43,7 +43,6 @@ function fakeApi() {
       return true;
     },
   } as unknown as Api;
-
   return { api, calls };
 }
 
@@ -196,7 +195,7 @@ describe("Context", () => {
 
   describe("editMessageText()", () => {
     /** A callback-query update: a press carrying the given fields. */
-    function pressUpdate(press: Partial<Pick<CallbackQuery, "message" | "inline_message_id">>): Update {
+    function pressUpdate(press: Pick<CallbackQuery, "message" | "inline_message_id">): Update {
       return {
         update_id: 1,
         callback_query: {
@@ -248,6 +247,18 @@ describe("Context", () => {
     test("an inline-mode press edits by inline_message_id", async () => {
       assert.deepStrictEqual(await sentParams(pressOnInlineMessage, { text: "edited" }), {
         inline_message_id: "inline-1",
+        text: "edited",
+      });
+    });
+
+    test("a press carrying both message and inline_message_id prefers the message", async () => {
+      const pressOnBoth = pressUpdate({
+        message: pressedMessage,
+        inline_message_id: "inline-1",
+      });
+      assert.deepStrictEqual(await sentParams(pressOnBoth, { text: "edited" }), {
+        chat_id: 123,
+        message_id: 7,
         text: "edited",
       });
     });

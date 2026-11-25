@@ -127,7 +127,8 @@ library source:
 
 `Context` (in `src/core/context.ts`) has a small, curated set of ergonomic shortcuts
 that infer an id from the current update and delegate to `this.api.<method>` - today
-just `reply` (-> `sendMessage`) and `answerCallbackQuery`. Add a new one **only** if
+`reply` (-> `sendMessage`), `answerCallbackQuery`, and `editMessageText` (the pressed
+message, or its `inline_message_id`). Add a new one **only** if
 the new method is a similarly ubiquitous per-update reply/answer helper (rare). Do
 not add a shortcut for every new method.
 
