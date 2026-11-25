@@ -122,7 +122,7 @@ koa-style middleware over a per-update `Context`. `bot.use(mw)` registers middle
 `bot.command(name)`, `bot.hears(trigger)` are filter middleware in the same chain - registration
 order wins, and each can wrap everything downstream via `await next()` (sessions, auth, rate-limit,
 error boundaries). `Context` bundles the raw `update`, the typed `api`, a mutable `state` bag, and
-chat-inferring shortcuts (`ctx.reply`, `ctx.answerCallbackQuery`). Update sources are async
+chat-inferring shortcuts (`ctx.reply`, `ctx.answerCallbackQuery`, `ctx.editMessageText`). Update sources are async
 generators - `longPoll(api, opts, signal)` replaces the old polling class. Two entry points share
 **one** dispatch path: `bot.startPolling()` pumps `longPoll`; `bot.handleUpdate(update)` handles a
 single update and is what `webhookCallback` calls.

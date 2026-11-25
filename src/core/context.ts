@@ -131,22 +131,20 @@ const replySourceOf: { [K in UpdateType]: (u: Variant<K>) => ReplySource | undef
   shared_widget_query: () => undefined,
 };
 
+/** The slice of the pressed message `ctx.editMessageText` derives its target from. */
+type EditSource = Pick<Message, "chat" | "message_id" | "business_connection_id">;
+
+/** The target params `ctx.editMessageText` infers from the pressed message. */
+type EditTarget = Pick<EditMessageTextParams, "chat_id" | "message_id" | "business_connection_id">;
+
 /**
- * Derive the target params `ctx.editMessageText` sends for an incoming message:
- * `chat_id` + `message_id`, plus `business_connection_id` when the message carries
- * one (a business message sent on behalf of a connection). Keys are only set
- * when the source carries them, so a plain-chat edit stays `{ chat_id, message_id, text }`.
+ * Derive the target params for an edit of `message`: `chat_id` + `message_id`,
+ * plus `business_connection_id` when the message carries one (a business
+ * message sent on behalf of a connection). Keys are only set when the source
+ * carries them, so a plain-chat edit stays `{ chat_id, message_id, text }`.
  */
-function editMessageTextTarget(message: Message): {
-  chat_id: number;
-  message_id: number;
-  business_connection_id?: string;
-} {
-  const target: {
-    chat_id: number;
-    message_id: number;
-    business_connection_id?: string;
-  } = {
+function editMessageTextTarget(message: EditSource): EditTarget {
+  const target: EditTarget = {
     chat_id: message.chat.id,
     message_id: message.message_id,
   };
@@ -385,9 +383,10 @@ export class Context {
    * target is inferred from the callback query: `callback_query.message` wins
    * (`chat_id` + `message_id`, with `business_connection_id` copied from the
    * message when it carries one); otherwise `callback_query.inline_message_id`,
-   * the button sitting on an inline-mode message. Anything in `params` wins
-   * over the inferred routing, so `params` can still be used to opt out of
-   * the connection routing (e.g. `{ business_connection_id: undefined }`).
+   * the button sitting on an inline-mode message. `params` wins over the
+   * inferred routing, which in practice means `business_connection_id`: pass
+   * `{ business_connection_id: undefined }` to opt out of a business message's
+   * connection.
    *
    * Throws if the update is not a callback query, or the callback carries
    * neither `message` nor `inline_message_id` - the same shape as
@@ -413,7 +412,7 @@ export class Context {
         "ctx.editMessageText: cannot infer a target from this callback query (no message and no inline_message_id)"
       );
     }
-    return this.api.editMessageText({ ...params, inline_message_id: inlineMessageId });
+    return this.api.editMessageText({ inline_message_id: inlineMessageId, ...params });
   }
 
   /**

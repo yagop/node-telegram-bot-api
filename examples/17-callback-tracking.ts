@@ -94,8 +94,8 @@ bot.on("callback_query", async (ctx, next) => {
   const page = Number(match[1]);
   try {
     // The shortcut picks the target itself: the pressed message (chat_id +
-    // message_id), or inline_message_id for inline-mode messages (an absent
-    // `message`).
+    // message_id), or inline_message_id when `message` is absent - an inline-mode
+    // message, or a bot that set `callback_query_mode` via `setMySettings`.
     await ctx.editMessageText({
       text: pageText(page),
       reply_markup: pageKeyboard(page),
