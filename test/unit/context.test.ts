@@ -2,7 +2,7 @@ import { describe, test } from "node:test";
 import assert from "node:assert/strict";
 import type { Api } from "../../src/core/api.js";
 import { Context } from "../../src/core/context.js";
-import type { Update } from "../../src/types/index.js";
+import type { CallbackQuery, Update } from "../../src/types/index.js";
 
 /** A minimal message update keyed for the discriminated-union accessors. */
 function messageUpdate(): Update {
@@ -20,9 +20,14 @@ function messageUpdate(): Update {
 
 /** A fake Api recording the calls the Context makes. */
 function fakeApi() {
-  const calls: { sendMessage: unknown[]; answerCallbackQuery: unknown[] } = {
+  const calls: {
+    sendMessage: unknown[];
+    answerCallbackQuery: unknown[];
+    editMessageText: unknown[];
+  } = {
     sendMessage: [],
     answerCallbackQuery: [],
+    editMessageText: [],
   };
   const api = {
     sendMessage: async (params: unknown) => {
@@ -33,7 +38,12 @@ function fakeApi() {
       calls.answerCallbackQuery.push(params);
       return true;
     },
+    editMessageText: async (params: unknown) => {
+      calls.editMessageText.push(params);
+      return true;
+    },
   } as unknown as Api;
+
   return { api, calls };
 }
 
@@ -182,6 +192,99 @@ describe("Context", () => {
       const ctx = new Context({ update_id: 1, [kind]: payload } as unknown as Update, api);
       assert.strictEqual(ctx.chat, undefined, `${kind} should resolve no chat`);
     }
+  });
+
+  describe("editMessageText()", () => {
+    /** A callback-query update: a press carrying the given fields. */
+    function pressUpdate(press: Partial<Pick<CallbackQuery, "message" | "inline_message_id">>): Update {
+      return {
+        update_id: 1,
+        callback_query: {
+          id: "cq1",
+          from: { id: 9, is_bot: false, first_name: "Zoe" },
+          chat_instance: "ci",
+          ...press,
+        },
+      };
+    }
+
+    // Minimal on purpose: the shortcut reads only chat.id / message_id /
+    // business_connection_id off the pressed message, so this shape covers
+    // InaccessibleMessage too (a press on a message too old to arrive in full).
+    const pressedMessage = { message_id: 7, date: 0, chat: { id: 123, type: "private" } };
+    const pressOnMessage = pressUpdate({ message: pressedMessage });
+    const pressOnBusinessMessage = pressUpdate({
+      message: { ...pressedMessage, business_connection_id: "bc1" },
+    });
+    const pressOnInlineMessage = pressUpdate({ inline_message_id: "inline-1" });
+
+    /** Run the shortcut on `update` and return the params it sent. */
+    async function sentParams(
+      update: Update,
+      params: Parameters<Context["editMessageText"]>[0],
+    ) {
+      const { api, calls } = fakeApi();
+      await new Context(update, api).editMessageText(params);
+      return calls.editMessageText[0];
+    }
+
+    test("a pressed message edits by chat_id + message_id", async () => {
+      assert.deepStrictEqual(await sentParams(pressOnMessage, { text: "edited" }), {
+        chat_id: 123,
+        message_id: 7,
+        text: "edited",
+      });
+    });
+
+    test("a pressed business message carries its business_connection_id", async () => {
+      assert.deepStrictEqual(await sentParams(pressOnBusinessMessage, { text: "edited" }), {
+        chat_id: 123,
+        message_id: 7,
+        text: "edited",
+        business_connection_id: "bc1",
+      });
+    });
+
+    test("an inline-mode press edits by inline_message_id", async () => {
+      assert.deepStrictEqual(await sentParams(pressOnInlineMessage, { text: "edited" }), {
+        inline_message_id: "inline-1",
+        text: "edited",
+      });
+    });
+
+    test("caller options win over the inferred routing", async () => {
+      assert.deepStrictEqual(
+        await sentParams(pressOnBusinessMessage, {
+          text: "edited",
+          business_connection_id: undefined,
+          parse_mode: "HTML",
+        }),
+        {
+          chat_id: 123,
+          message_id: 7,
+          text: "edited",
+          business_connection_id: undefined,
+          parse_mode: "HTML",
+        },
+      );
+    });
+
+    test("a press with neither message nor inline_message_id throws", () => {
+      const { api, calls } = fakeApi();
+      const ctx = new Context(pressUpdate({}), api);
+      assert.throws(
+        () => ctx.editMessageText({ text: "edited" }),
+        /cannot infer a target from this callback query/,
+      );
+      assert.strictEqual(calls.editMessageText.length, 0);
+    });
+
+    test("a non-callback update throws (edit is for button presses)", () => {
+      const { api, calls } = fakeApi();
+      const ctx = new Context(messageUpdate(), api);
+      assert.throws(() => ctx.editMessageText({ text: "edited" }), /this update has no callback query/);
+      assert.strictEqual(calls.editMessageText.length, 0);
+    });
   });
 
   describe("reply() routing (issue #1386)", () => {

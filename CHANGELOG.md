@@ -35,6 +35,16 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   `RichMessageBuilder.expandableBlockquote` now takes nested blocks (like
   `blockquote`) instead of rich text.
 
+### Context shortcuts
+
+- Added `ctx.editMessageText(params)` (text required) - edit the
+  message that triggered a callback query, picking the target itself:
+  `callback_query.message` (`chat_id` + `message_id`, with
+  `business_connection_id` copied when the message carries one) or
+  `callback_query.inline_message_id` for inline-mode messages. Throws if the
+  update is not a callback query, or the callback carries neither - the same
+  shape as `answerCallbackQuery`.
+
 ## [2.4.1][2.4.1] - 2026-11-21
 
 ### Polling
