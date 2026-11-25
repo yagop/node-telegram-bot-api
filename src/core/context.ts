@@ -14,7 +14,6 @@ import type {
   BotFullInfo,
   CallbackQuery,
   Chat,
-  ChatOrCallbackReply,
   EditMessageTextParams,
   EditMessageTextResult,
   InlineQuery,
@@ -154,6 +153,14 @@ function editMessageTextTarget(message: EditSource): EditTarget {
   }
   return target;
 }
+
+/**
+ * What `ctx.reply` sends, minus the target it infers: `text` plus every
+ * `sendMessage` option. `chat_id` is never a `reply` param - the chat is inferred
+ * (or the reply is an ephemeral callback reply), so it is omitted here. Exported
+ * for wrappers that forward reply options.
+ */
+export type ReplyParams = Omit<SendMessageParams, "chat_id">;
 
 /** The routing params `ctx.reply` infers from the incoming message. */
 type ReplyRouting = Pick<
@@ -346,16 +353,11 @@ export class Context {
    * The positional form `reply(text, other?)` is the same call with the object
    * pre-split; it is kept for the existing call sites and is not deprecated.
    */
+  reply(params: ReplyParams): Promise<SendMessageResult>;
+  reply(text: string, other?: Omit<ReplyParams, "text">): Promise<SendMessageResult>;
   reply(
-    params: Omit<SendMessageParams, keyof ChatOrCallbackReply> & { text: string }
-  ): Promise<SendMessageResult>;
-  reply(
-    text: string,
-    other?: Omit<Omit<SendMessageParams, keyof ChatOrCallbackReply>, "text">
-  ): Promise<SendMessageResult>;
-  reply(
-    textOrParams: string | (Omit<SendMessageParams, keyof ChatOrCallbackReply> & { text: string }),
-    other?: Omit<Omit<SendMessageParams, keyof ChatOrCallbackReply>, "text">
+    textOrParams: string | ReplyParams,
+    other?: Omit<ReplyParams, "text">
   ): Promise<SendMessageResult> {
     const params =
       typeof textOrParams === "string" ? { text: textOrParams, ...other } : textOrParams;

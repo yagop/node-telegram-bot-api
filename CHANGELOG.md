@@ -42,10 +42,6 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   form is not deprecated. The two share one implementation, so routing
   (business connection, forum topic, direct-messages topic), the ephemeral
   callback-reply branch and the `guest_message` refusal behave identically.
-- **Stricter types:** `ctx.reply`'s options no longer accept `chat_id` (it is
-  inferred, and passing it never did anything useful). The old options type
-  appeared to allow it only because `Omit` collapsed the `SendMessageParams`
-  union; it is now `Omit<SendMessageParams, "chat_id">`.
 
 - Added `ctx.editMessageText(params)` (text required) - edit the
   message that triggered a callback query, picking the target itself:

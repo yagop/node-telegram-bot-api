@@ -111,7 +111,8 @@ test("emitClass lists every signature of an overloaded method, not just the firs
   );
   const row = out.split("\n").find((line) => line.startsWith("| `reply` |"));
   assert.ok(row, "reply row rendered");
-  assert.match(row, /`params`: ReplyParams/);
+  // The type renders as a link when the name resolves to a documented declaration.
+  assert.match(row, /`params`: (?:\[ReplyParams\]\(#replyparams\)|ReplyParams)/);
   assert.match(row, /`text`: string, `other\?`: object/);
   assert.match(row, /; /); // the two signatures are joined
 });
