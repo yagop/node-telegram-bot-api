@@ -50,6 +50,16 @@ bot.on("callback_query", async (ctx) => {
 await run(bot); // core-only alternative that runs anywhere: await bot.startPolling()
 ```
 
+`ctx.reply` also takes a single params object - the same call as the positional form, with `text` inside it - which reads better once the options pile up. Both forms are supported and neither is deprecated:
+
+```ts
+await ctx.reply({
+  text: "Pick one:",
+  reply_markup: keyboard,
+  parse_mode: "HTML",
+});
+```
+
 ## 📡 Calling the API directly
 
 `Api` mirrors the wire API 1:1 - one method per Bot API method, each taking a single params object.

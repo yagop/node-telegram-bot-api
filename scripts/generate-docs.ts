@@ -286,22 +286,29 @@ function emitClass(c: Obj): string {
       "| --- | --- | --- | --- |"
     );
     for (const m of methods) {
-      const sig = sigsOf(m)[0];
-      if (!sig) {
+      const signatures = sigsOf(m);
+      if (!signatures.length) {
         continue;
       }
-      const params = (sig.parameters || [])
-        .map(
-          (p: Obj) =>
-            `\`${p.flags?.isRest ? "..." : ""}${p.name}${p.flags?.isOptional ? "?" : ""}\`: ${escCell(renderType(p.type, true))}`
+      // An overloaded method (Context.reply) lists every signature, joined with
+      // ";" as TypeScript writes overload types - the first alone would hide
+      // the positional form every README example uses.
+      const params = signatures
+        .map((sig: Obj) =>
+          (sig.parameters || [])
+            .map(
+              (p: Obj) =>
+                `\`${p.flags?.isRest ? "..." : ""}${p.name}${p.flags?.isOptional ? "?" : ""}\`: ${escCell(renderType(p.type, true))}`
+            )
+            .join(", ")
         )
-        .join(", ");
-      const ret = escCell(renderType(sig.type, true));
+        .join("; ");
+      const ret = escCell(renderType(signatures[0].type, true));
       // Render the full comment summary: for generated Api methods this is the
       // {@link} -> the official Bot API page; for hand-written library methods
       // (Bot.command, Context.reply, builders) it is the prose description that
       // would otherwise be dropped.
-      const desc = escCell(renderSummary(sig.comment || m.comment));
+      const desc = escCell(renderSummary(signatures[0].comment || m.comment));
       out.push(`| \`${m.name}\` | ${params || "-"} | ${ret || "void"} | ${desc || "-"} |`);
     }
   }
@@ -392,7 +399,7 @@ function emitEnum(e: Obj): string {
 //   mapped         { parameter, parameterType, templateType, readonlyModifier?, optionalModifier?, nameType? }
 //   template-lit   { head: string, tail: [[type, string], ...] }
 //   conditional    { checkType, extendsType, trueType, falseType }
-export const __test = { renderType, slug, byName };
+export const __test = { renderType, slug, byName, emitClass };
 
 // ---------------------------------------------------------------- assemble ---
 

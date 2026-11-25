@@ -92,6 +92,59 @@ describe("Context", () => {
     );
   });
 
+  // The object form is the same call with `{ text, ...other }` pre-split; it must
+  // send exactly what the positional form sends, including on the edge branches.
+  describe("reply(params) object form", () => {
+    test("sends the same params as the positional form", async () => {
+      const positional = fakeApi();
+      await new Context(messageUpdate(), positional.api).reply("pong", { parse_mode: "HTML" });
+      const object = fakeApi();
+      await new Context(messageUpdate(), object.api).reply({ text: "pong", parse_mode: "HTML" });
+      assert.deepStrictEqual(object.calls.sendMessage, positional.calls.sendMessage);
+      assert.deepStrictEqual(object.calls.sendMessage[0], { chat_id: 555, text: "pong", parse_mode: "HTML" });
+    });
+
+    test("a bare string as the params object is not mistaken for the positional form", async () => {
+      // Guard the dispatch: the object overload takes an object, but at runtime a
+      // bare string must still route to the positional branch, not be spread.
+      const { api, calls } = fakeApi();
+      await new Context(messageUpdate(), api).reply("pong");
+      assert.deepStrictEqual(calls.sendMessage[0], { chat_id: 555, text: "pong" });
+    });
+
+    test("routes an ephemeral callback reply without a chat", async () => {
+      const { api, calls } = fakeApi();
+      const ctx = new Context(chatlessCallback, api);
+      await ctx.reply({ text: "pong", ephemeral_message_parameters: { callback_query_id: "cb" } });
+      assert.deepStrictEqual(calls.sendMessage[0], {
+        text: "pong",
+        ephemeral_message_parameters: { callback_query_id: "cb" },
+      });
+    });
+
+    test("throws without a chat unless it is an ephemeral callback reply", () => {
+      const { api } = fakeApi();
+      const ctx = new Context(chatlessCallback, api);
+      assert.throws(() => ctx.reply({ text: "pong" }), /cannot infer a chat id/);
+      assert.throws(
+        () => ctx.reply({ text: "pong", ephemeral_message_parameters: { receiver_user_id: 9 } }),
+        /cannot infer a chat id/
+      );
+    });
+
+    test("is refused for guest_message, like the positional form", () => {
+      const { api } = fakeApi();
+      const ctx = new Context(
+        {
+          update_id: 1,
+          guest_message: { message_id: 1, date: 0, chat: { id: 1, type: "private" }, guest_query_id: "gq" },
+        } as unknown as Update,
+        api,
+      );
+      assert.throws(() => ctx.reply({ text: "pong" }), /answerGuestQuery/);
+    });
+  });
+
   test("chat / from / chatId accessors", () => {
     const { api } = fakeApi();
     const ctx = new Context(messageUpdate(), api);

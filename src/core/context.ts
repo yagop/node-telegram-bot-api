@@ -14,6 +14,7 @@ import type {
   BotFullInfo,
   CallbackQuery,
   Chat,
+  ChatOrCallbackReply,
   EditMessageTextParams,
   EditMessageTextResult,
   InlineQuery,
@@ -333,18 +334,31 @@ export class Context {
    * (`is_topic_message`; a plain reply thread is not followed), and
    * `direct_messages_topic_id` for channel direct-messages chats. For a callback
    * query these come from the message the button is attached to. Anything in
-   * `other` wins; pass e.g. `{ message_thread_id: undefined }` to opt out.
+   * `params` (or the positional `other`) wins over the inferred routing; pass
+   * e.g. `{ message_thread_id: undefined }` to opt out.
    *
    * Throws if no chat id can be derived from the update (e.g. an inline query,
    * or a callback query that arrives with only `inline_message_id`, carries no
-   * chat) unless `other` makes it an ephemeral reply to a callback
+   * chat) unless `params` / `other` makes it an ephemeral reply to a callback
    * query, and for `guest_message`, which must be answered with
    * `api.answerGuestQuery` and its `guest_query_id` instead.
+   *
+   * The positional form `reply(text, other?)` is the same call with the object
+   * pre-split; it is kept for the existing call sites and is not deprecated.
    */
   reply(
+    params: Omit<SendMessageParams, keyof ChatOrCallbackReply> & { text: string }
+  ): Promise<SendMessageResult>;
+  reply(
     text: string,
-    other?: Omit<SendMessageParams, "chat_id" | "text">
+    other?: Omit<Omit<SendMessageParams, keyof ChatOrCallbackReply>, "text">
+  ): Promise<SendMessageResult>;
+  reply(
+    textOrParams: string | (Omit<SendMessageParams, keyof ChatOrCallbackReply> & { text: string }),
+    other?: Omit<Omit<SendMessageParams, keyof ChatOrCallbackReply>, "text">
   ): Promise<SendMessageResult> {
+    const params =
+      typeof textOrParams === "string" ? { text: textOrParams, ...other } : textOrParams;
     if ("guest_message" in this.update) {
       throw new Error(
         "ctx.reply: guest messages cannot be answered with sendMessage; use api.answerGuestQuery with message.guest_query_id"
@@ -354,14 +368,14 @@ export class Context {
     if (chatId === undefined) {
       // An ephemeral reply to a callback query needs no chat (e.g. a button on an
       // inline message, whose callback query carries no chat).
-      const ephemeral = other?.ephemeral_message_parameters;
+      const ephemeral = params.ephemeral_message_parameters;
       if (ephemeral && ephemeral.receiver_user_id === undefined) {
-        return this.api.sendMessage({ text, ...other, ephemeral_message_parameters: ephemeral });
+        return this.api.sendMessage({ ...params, ephemeral_message_parameters: ephemeral });
       }
       throw new Error("ctx.reply: cannot infer a chat id from this update");
     }
     const routing = replyRouting(resolve(this.update, replySourceOf));
-    return this.api.sendMessage({ chat_id: chatId, text, ...routing, ...other });
+    return this.api.sendMessage({ chat_id: chatId, ...routing, ...params });
   }
 
   /**
