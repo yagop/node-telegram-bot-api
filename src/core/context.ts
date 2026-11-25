@@ -2,7 +2,7 @@
  * Per-update Context.
  *
  * Bundles the raw discriminated `update`, the shared `Api`, a mutable `state`
- * bag, and ergonomic shortcuts (`reply`, `answerCallbackQuery`) that infer the
+ * bag, and ergonomic shortcuts (`reply`, `answerCallbackQuery`, `editMessageText`) that infer the
  * chat/callback from the update. Typed accessors read each payload via
  * `"key" in update`, mirroring the discriminated-union shape, so they
  * return `T | undefined` without unsafe casts.
@@ -14,6 +14,8 @@ import type {
   BotFullInfo,
   CallbackQuery,
   Chat,
+  EditMessageTextParams,
+  EditMessageTextResult,
   InlineQuery,
   Message,
   SendMessageParams,
@@ -128,6 +130,31 @@ const replySourceOf: { [K in UpdateType]: (u: Variant<K>) => ReplySource | undef
   widget_query: () => undefined,
   shared_widget_query: () => undefined,
 };
+
+/**
+ * Derive the target params `ctx.editMessageText` sends for an incoming message:
+ * `chat_id` + `message_id`, plus `business_connection_id` when the message carries
+ * one (a business message sent on behalf of a connection). Keys are only set
+ * when the source carries them, so a plain-chat edit stays `{ chat_id, message_id, text }`.
+ */
+function editMessageTextTarget(message: Message): {
+  chat_id: number;
+  message_id: number;
+  business_connection_id?: string;
+} {
+  const target: {
+    chat_id: number;
+    message_id: number;
+    business_connection_id?: string;
+  } = {
+    chat_id: message.chat.id,
+    message_id: message.message_id,
+  };
+  if (message.business_connection_id !== undefined) {
+    target.business_connection_id = message.business_connection_id;
+  }
+  return target;
+}
 
 /** The routing params `ctx.reply` infers from the incoming message. */
 type ReplyRouting = Pick<
@@ -351,6 +378,42 @@ export class Context {
       throw new Error("ctx.answerCallbackQuery: this update has no callback query");
     }
     return this.api.answerCallbackQuery({ callback_query_id: cq.id, ...other });
+  }
+
+  /**
+   * Edit the message that triggered this update, via `api.editMessageText`. The
+   * target is inferred from the callback query: `callback_query.message` wins
+   * (`chat_id` + `message_id`, with `business_connection_id` copied from the
+   * message when it carries one); otherwise `callback_query.inline_message_id`,
+   * the button sitting on an inline-mode message. Anything in `params` wins
+   * over the inferred routing, so `params` can still be used to opt out of
+   * the connection routing (e.g. `{ business_connection_id: undefined }`).
+   *
+   * Throws if the update is not a callback query, or the callback carries
+   * neither `message` nor `inline_message_id` - the same shape as
+   * `answerCallbackQuery`, which refuses non-callback updates.
+   */
+  editMessageText(
+    params: Omit<EditMessageTextParams, "chat_id" | "message_id" | "inline_message_id"> & {
+      text: string;
+    }
+  ): Promise<EditMessageTextResult> {
+    const callbackQuery = this.callbackQuery;
+    if (!callbackQuery) {
+      throw new Error("ctx.editMessageText: this update has no callback query");
+    }
+    const callbackQueryMessage = callbackQuery.message;
+    if (callbackQueryMessage) {
+      const target = editMessageTextTarget(callbackQueryMessage);
+      return this.api.editMessageText({ ...target, ...params });
+    }
+    const inlineMessageId = callbackQuery.inline_message_id;
+    if (inlineMessageId === undefined) {
+      throw new Error(
+        "ctx.editMessageText: cannot infer a target from this callback query (no message and no inline_message_id)"
+      );
+    }
+    return this.api.editMessageText({ ...params, inline_message_id: inlineMessageId });
   }
 
   /**

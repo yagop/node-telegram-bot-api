@@ -92,19 +92,11 @@ bot.on("callback_query", async (ctx, next) => {
   await ctx.answerCallbackQuery();
 
   const page = Number(match[1]);
-  // `message` is absent for inline-mode messages and when the bot set
-  // `callback_query_mode`; then only `inline_message_id` identifies the page.
-  const query = ctx.callbackQuery;
-  const target = query?.message
-    ? { chat_id: query.message.chat.id, message_id: query.message.message_id }
-    : query?.inline_message_id
-      ? { inline_message_id: query.inline_message_id }
-      : undefined;
-  if (!target) return;
-
   try {
-    await ctx.api.editMessageText({
-      ...target,
+    // The shortcut picks the target itself: the pressed message (chat_id +
+    // message_id), or inline_message_id for inline-mode messages (an absent
+    // `message`).
+    await ctx.editMessageText({
       text: pageText(page),
       reply_markup: pageKeyboard(page),
     });
