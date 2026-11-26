@@ -160,9 +160,9 @@ bot.on("callback_query", async (ctx, next) => {
   ctx.getSession<Session>().data.pendingConfirmationId = undefined;
 
   await ctx.answerCallbackQuery({ text: "Deleting..." });
-  await ctx.reply(
-    `Ran ${pending.op} on ${pending.targets.join(", ")} (asked at ${pending.requestedAt}).`
-  );
+  await ctx.reply({
+    text: `Ran ${pending.op} on ${pending.targets.join(", ")} (asked at ${pending.requestedAt}).`,
+  });
 });
 
 await run(bot, { exitOnError: true });

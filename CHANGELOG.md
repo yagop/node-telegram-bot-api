@@ -465,8 +465,8 @@ middleware over a per-update `Context`.
 | `bot.on('message', msg => ...)` | `bot.on('message', ctx => ...)` - a router over `Context`, not an `EventEmitter` |
 | `bot.onText(/\/echo (.+)/, (msg, m) => ...)` | `bot.hears(/\/echo (.+)/, ctx => { ctx.match[1] })` |
 | `bot.onReplyToMessage(chatId, msgId, ...)` | middleware reading `ctx.message.reply_to_message` |
-| `bot.sendMessage(chatId, text, opts)` | `bot.api.sendMessage({ chat_id, text, ...opts })` or, in a handler, `ctx.reply(text, opts)` |
-| `bot.sendMessage(id, t, { reply_markup: { inline_keyboard: [...] } })` | `ctx.reply(t, { reply_markup: new InlineKeyboardBuilder().text('A','a').build() })` |
+| `bot.sendMessage(chatId, text, opts)` | `bot.api.sendMessage({ chat_id, text, ...opts })` or, in a handler, `ctx.reply({ text, ...opts })` |
+| `bot.sendMessage(id, t, { reply_markup: { inline_keyboard: [...] } })` | `ctx.reply({ text: t, reply_markup: new InlineKeyboardBuilder().text('A','a').build() })` |
 | `{ reply_markup: JSON.stringify(markup) }` (manual) | a plain object `{ inline_keyboard: [...] }` or a builder `.build()` - the field is a plain typed object; the pipeline serializes it |
 | `bot.sendPhoto(id, '/path/to/p.jpg')` | `bot.api.sendPhoto({ chat_id, photo: await fromPath('/path/to/p.jpg') })` (from `'node-telegram-bot-api/node'`) |
 | `bot.sendPhoto(id, fs.createReadStream(...))` | `bot.api.sendPhoto({ chat_id, photo: new InputFile(bytes) })` |
@@ -524,11 +524,11 @@ import { run } from "node-telegram-bot-api/node";
 const bot = new Bot(process.env.BOT_TOKEN!);
 
 bot.command("start", (ctx) => {
-  return ctx.reply("Hi");
+  return ctx.reply({ text: "Hi" });
 });
 
 bot.hears(/\/echo (.+)/, (ctx) => {
-  return ctx.reply(ctx.match![1]!);
+  return ctx.reply({ text: ctx.match![1]! });
 });
 
 bot.on("callback_query", (ctx) => {
@@ -649,7 +649,7 @@ The **package name is intentionally retained** (`node-telegram-bot-api`) even th
 
 #### Mental-model shifts
 
-- **One client, single-argument methods.** `Api` mirrors the wire API: one method per Bot API method, each taking one params object. Positional ergonomics (`ctx.reply(text)`) live on `Context`.
+- **One client, single-argument methods.** `Api` mirrors the wire API: one method per Bot API method, each taking one params object. Reply ergonomics live on `Context` as `ctx.reply({ text, ...options })`. (The positional `ctx.reply(text, options)` shortcut shown elsewhere in this section was deprecated in 2.5.x in favor of the object form.)
 - **Structured fields are plain typed objects.** `reply_markup`, `entities`, `reply_parameters`, `media`, ... take a plain object/array (or a fluent builder, which returns the same plain shape); the pipeline serializes them once. No `json()` wrapper, no branded strings. A nested file is just an `InputFile` dropped into the file field - the pipeline hoists it to an `attach://` part.
 - **Composition over events.** `bot.use(mw)` and the filter helpers (`on`/`command`/`hears`) are koa-style middleware over a per-update `Context`, so sessions/auth/rate-limiting/error-boundaries wrap one another via `await next()`. A handler error never stops the bot: it is routed to the error boundary (default: log via `console.error` and continue); install your own with `bot.catch()`, and rethrow from it to opt back into fail-loud.
 - **Two entry points, one dispatch path.** `bot.startPolling(source)` pumps an async generator for long-running processes; `bot.handleUpdate(update)` handles a single update and is what the edge/webhook callback calls.
