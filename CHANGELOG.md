@@ -5,6 +5,14 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased][Unreleased]
 
+### Context shortcuts
+
+- **Deprecated:** the positional `ctx.reply(text, options?)` form, in favor of
+  `ctx.reply({ text, ...options })` (added in 2.5.0). It keeps working and is
+  covered by the same tests; the `@deprecated` tag marks it for removal in the
+  next major version. 2.5.0's note that it was "not deprecated" is superseded
+  by this entry.
+
 ## [2.5.0][2.5.0] - 2026-11-26
 
 ### Bot API 10.5 (November 22, 2026)

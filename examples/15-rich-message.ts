@@ -40,7 +40,10 @@ const richMessage = new RichMessageBuilder()
   .blockquote((b) => b.paragraph("No escaping. No hand-counted offsets."), "the changelog")
   .list([
     richListItem((b) => b.paragraph("Headings, paragraphs, quotes")),
-    richListItem((b) => b.paragraph("Ordered/unordered lists"), { has_checkbox: true, is_checked: true }),
+    richListItem((b) => b.paragraph("Ordered/unordered lists"), {
+      has_checkbox: true,
+      is_checked: true,
+    }),
     richListItem((b) => b.paragraph("Buttons and media")),
   ])
   .buttons([

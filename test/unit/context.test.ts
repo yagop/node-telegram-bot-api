@@ -415,6 +415,9 @@ describe("Context", () => {
 
     // Drive both forms through the same table: routing is shared code, but the
     // object form goes through a different overload, so prove parity per case.
+    // The positional form is deprecated, not removed - it keeps its coverage
+    // until the major that drops it, so the strike-through in an editor here is
+    // expected.
     async function replyTo(
       update: Record<string, unknown>,
       other?: Record<string, unknown>,

@@ -104,12 +104,15 @@ if (chatId !== 0) {
   const gifFile = await bot.api.getFile({ file_id: gifMsg.animation.file_id });
   await bot.api.deleteMessage({ chat_id: chatId, message_id: gifMsg.message_id });
   const clip = await fetch(
-    `https://api.telegram.org/file/bot${process.env.BOT_TOKEN}/${gifFile.file_path}`,
+    `https://api.telegram.org/file/bot${process.env.BOT_TOKEN}/${gifFile.file_path}`
   );
   const still = await fetch("https://telegram.org/example/photo.jpg");
   await bot.api.sendLivePhoto({
     chat_id: chatId,
-    live_photo: new InputFile(await clip.blob(), { filename: "live.mp4", contentType: "video/mp4" }),
+    live_photo: new InputFile(await clip.blob(), {
+      filename: "live.mp4",
+      contentType: "video/mp4",
+    }),
     photo: new InputFile(await still.blob(), { filename: "still.jpg", contentType: "image/jpeg" }),
     caption: "Live photo: video + still",
   });

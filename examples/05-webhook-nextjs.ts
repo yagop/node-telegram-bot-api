@@ -16,7 +16,7 @@ const token = process.env.BOT_TOKEN!;
 const secret = process.env.WEBHOOK_SECRET!;
 
 const bot = new Bot(token);
-bot.command("start", (ctx) => ctx.reply("Hello from Next.js ▲"));
+bot.command("start", (ctx) => ctx.reply({ text: "Hello from Next.js ▲" }));
 
 // app/api/telegram/route.ts - App Router route handler:
 export const POST = nextAppWebhook(bot, { secretToken: secret });

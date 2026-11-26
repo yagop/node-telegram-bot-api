@@ -229,7 +229,7 @@ The web-standard callback is a pure `(Request) => Promise<Response>` - one funct
 import { Bot, webhookCallback } from "node-telegram-bot-api";
 
 const bot = new Bot(TOKEN);
-bot.on("message", (ctx) => ctx.reply("hi from the edge"));
+bot.on("message", (ctx) => ctx.reply({ text: "hi from the edge" }));
 
 export default {
   fetch: webhookCallback(bot, { secretToken: SECRET }),
@@ -298,7 +298,7 @@ bot.use(createSession<Session>({ store: new MemorySessionStorage(), initial: () 
 bot.command("count", async (ctx) => {
   const s = ctx.getSession<Session>();
   s.data.count++; // mutate in place, or reassign: s.data = { count: 0 }
-  await ctx.reply(`Seen ${s.data.count} times`);
+  await ctx.reply({ text: `Seen ${s.data.count} times` });
 });
 ```
 
@@ -307,7 +307,7 @@ Tired of repeating `<Session>`? Keep the middleware and use its own accessor, ty
 ```ts
 const session = createSession<Session>({ store: new MemorySessionStorage(), initial: () => ({ count: 0 }) });
 bot.use(session);
-bot.command("count", (ctx) => ctx.reply(`Seen ${++session.get(ctx).data.count} times`));
+bot.command("count", (ctx) => ctx.reply({ text: `Seen ${++session.get(ctx).data.count} times` }));
 ```
 
 Both return the same handle, which is also where the non-bag members live: `.ext()` for layers built on sessions, and `.delete()`, which evicts the whole key on flush - an explicit end-of-conversation / `/forget` / erasure hook. `ctx.getSession()` and `session.get(ctx)` throw when the middleware did not run for this update (not registered, or no derivable key).
@@ -326,7 +326,7 @@ import { taggedReplies } from "node-telegram-bot-api";
 type Session = { name?: string };
 
 bot.command("start", async (ctx) => {
-  const sent = await ctx.reply("What's your name?", { reply_markup: { force_reply: true } });
+  const sent = await ctx.reply({ text: "What's your name?", reply_markup: { force_reply: true } });
   // tag the message we sent with the step its reply will answer
   taggedReplies<"name" | "email">(ctx).expect(sent.message_id, "name");
 });
@@ -337,10 +337,12 @@ bot.on("message", async (ctx, next) => {
 
   if (step === "name") {
     ctx.getSession<Session>().data.name = ctx.message?.text;
-    const sent = await ctx.reply("And your email?", { reply_markup: { force_reply: true } });
+    const sent = await ctx.reply({ text: "And your email?", reply_markup: { force_reply: true } });
     taggedReplies<"name" | "email">(ctx).expect(sent.message_id, "email"); // chain the next prompt
   } else {
-    await ctx.reply(`Thanks ${ctx.getSession<Session>().data.name}, got your email: ${ctx.message?.text}`);
+    await ctx.reply({
+      text: `Thanks ${ctx.getSession<Session>().data.name}, got your email: ${ctx.message?.text}`,
+    });
   }
 });
 ```
@@ -382,7 +384,10 @@ bot.on("callback_query", (ctx) => {
 The session-backed version earns its keep for a marker that does not fit in 64 bytes, one the client must not read (`callback_data` is plain text in the app), or a button that must fire at most once:
 
 ```ts
-const sent = await ctx.reply("Delete everything?", { reply_markup: { inline_keyboard: [[{ text: "Yes", callback_data: "y" }]] } });
+const sent = await ctx.reply({
+  text: "Delete everything?",
+  reply_markup: { inline_keyboard: [[{ text: "Yes", callback_data: "y" }]] },
+});
 expectCallback(ctx, sent.message_id, { op: "delete", by: ctx.from?.id }, { ttlSeconds: 3600 });
 
 bot.on("callback_query", async (ctx, next) => {

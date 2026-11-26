@@ -292,15 +292,21 @@ function emitClass(c: Obj): string {
       }
       // An overloaded method (Context.reply) lists every signature, joined with
       // ";" as TypeScript writes overload types - the first alone would hide
-      // the positional form every README example uses.
+      // the positional form. A signature carrying @deprecated is prefixed with
+      // "@deprecated" so the reference shows which form is marked, since only
+      // the first signature's comment becomes the row description.
+      const isDeprecated = (sig: Obj) =>
+        (sig.comment?.blockTags || []).some((tag: Obj) => tag.tag === "@deprecated");
       const params = signatures
-        .map((sig: Obj) =>
-          (sig.parameters || [])
-            .map(
-              (p: Obj) =>
-                `\`${p.flags?.isRest ? "..." : ""}${p.name}${p.flags?.isOptional ? "?" : ""}\`: ${escCell(renderType(p.type, true))}`
-            )
-            .join(", ")
+        .map(
+          (sig: Obj) =>
+            (isDeprecated(sig) ? "**@deprecated** " : "") +
+            (sig.parameters || [])
+              .map(
+                (p: Obj) =>
+                  `\`${p.flags?.isRest ? "..." : ""}${p.name}${p.flags?.isOptional ? "?" : ""}\`: ${escCell(renderType(p.type, true))}`
+              )
+              .join(", ")
         )
         .join("; ");
       const ret = escCell(renderType(signatures[0].type, true));

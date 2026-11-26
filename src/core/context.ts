@@ -341,19 +341,21 @@ export class Context {
    * (`is_topic_message`; a plain reply thread is not followed), and
    * `direct_messages_topic_id` for channel direct-messages chats. For a callback
    * query these come from the message the button is attached to. Anything in
-   * `params` (or the positional `other`) wins over the inferred routing; pass
-   * e.g. `{ message_thread_id: undefined }` to opt out.
+   * `params` wins over the inferred routing; pass e.g.
+   * `{ message_thread_id: undefined }` to opt out.
    *
    * Throws if no chat id can be derived from the update (e.g. an inline query,
    * or a callback query that arrives with only `inline_message_id`, carries no
-   * chat) unless `params` / `other` makes it an ephemeral reply to a callback
+   * chat) unless `params` makes it an ephemeral reply to a callback
    * query, and for `guest_message`, which must be answered with
    * `api.answerGuestQuery` and its `guest_query_id` instead.
-   *
-   * The positional form `reply(text, other?)` is the same call with the object
-   * pre-split; it is kept for the existing call sites and is not deprecated.
    */
   reply(params: ReplyParams): Promise<SendMessageResult>;
+  /**
+   * @deprecated Use `reply({ text, ...options })` instead. The positional form is
+   * the same call with `{ text, ...other }` pre-split, and will be removed in
+   * the next major version.
+   */
   reply(text: string, other?: Omit<ReplyParams, "text">): Promise<SendMessageResult>;
   reply(
     textOrParams: string | ReplyParams,

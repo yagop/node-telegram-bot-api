@@ -18,7 +18,7 @@ const allowed = new Set(
   (process.env.ALLOWED_USERS ?? "")
     .split(",")
     .map((s) => Number(s.trim()))
-    .filter((n) => Number.isFinite(n) && n !== 0),
+    .filter((n) => Number.isFinite(n) && n !== 0)
 );
 
 // A trivial in-memory session store keyed by chat id.
@@ -49,7 +49,7 @@ bot.use((ctx, next) => {
   if (allowed.size === 0) return next(); // open mode when no allowlist set
   const userId = ctx.from?.id;
   if (userId !== undefined && allowed.has(userId)) return next();
-  return ctx.reply("⛔ You're not on the allowlist.");
+  return ctx.reply({ text: "⛔ You're not on the allowlist." });
 });
 
 // Handler - reads/writes the per-chat session placed on `ctx.state`.
@@ -57,7 +57,7 @@ bot.on("message", (ctx) => {
   const session = ctx.state.session as Session | undefined;
   if (!session) return;
   session.count += 1;
-  return ctx.reply(`You've sent ${session.count} message(s) this session.`);
+  return ctx.reply({ text: `You've sent ${session.count} message(s) this session.` });
 });
 
 await run(bot, { exitOnError: true });
