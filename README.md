@@ -31,10 +31,11 @@ const bot = new Bot(process.env.BOT_TOKEN!);
 
 // commands, regex and update types are all middleware - registration order wins
 bot.command("start", (ctx) => ctx.reply({ text: "Hi! Send me anything." }));
-bot.hears(/echo (.+)/, (ctx) => ctx.reply(ctx.match![1]!));
+bot.hears(/echo (.+)/, (ctx) => ctx.reply({ text: ctx.match![1]! }));
 
 bot.on("message", (ctx) =>
-  ctx.reply("Pick one:", {
+  ctx.reply({
+    text: "Pick one:",
     reply_markup: new InlineKeyboardBuilder()
       .text("👍", "up")
       .text("👎", "down")
@@ -524,8 +525,8 @@ import { longPoll } from "node-telegram-bot-api";
 
 for await (const update of longPoll(api, {
   timeout: 30,
-  retry: true,          // default true - resume on transient errors, keep the offset
-  maxBackoffMs: 60_000, // default 60s - cap between failed polls
+  retry: true,         // default true - resume on transient errors, keep the offset
+  retryDelayMs: 1_000, // default 1s - wait before re-polling a transient error without retry_after
   onError: (err) => console.warn("poll failed, backing off", err),
 }, signal)) {
   // ... fatal 4xx still stops the loop; an aborted signal returns cleanly
