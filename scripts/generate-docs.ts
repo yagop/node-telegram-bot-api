@@ -290,32 +290,36 @@ function emitClass(c: Obj): string {
       if (!signatures.length) {
         continue;
       }
-      // An overloaded method (Context.reply) lists every signature, joined with
-      // ";" as TypeScript writes overload types - the first alone would hide
-      // the positional form. A signature carrying @deprecated is prefixed with
-      // "@deprecated" so the reference shows which form is marked, since only
-      // the first signature's comment becomes the row description.
-      const isDeprecated = (sig: Obj) =>
-        (sig.comment?.blockTags || []).some((tag: Obj) => tag.tag === "@deprecated");
-      const params = signatures
-        .map(
-          (sig: Obj) =>
-            (isDeprecated(sig) ? "**@deprecated** " : "") +
-            (sig.parameters || [])
-              .map(
-                (p: Obj) =>
-                  `\`${p.flags?.isRest ? "..." : ""}${p.name}${p.flags?.isOptional ? "?" : ""}\`: ${escCell(renderType(p.type, true))}`
-              )
-              .join(", ")
-        )
-        .join("; ");
-      const ret = escCell(renderType(signatures[0].type, true));
-      // Render the full comment summary: for generated Api methods this is the
-      // {@link} -> the official Bot API page; for hand-written library methods
-      // (Bot.command, Context.reply, builders) it is the prose description that
-      // would otherwise be dropped.
-      const desc = escCell(renderSummary(signatures[0].comment || m.comment));
-      out.push(`| \`${m.name}\` | ${params || "-"} | ${ret || "void"} | ${desc || "-"} |`);
+      // One row per signature. A non-overloaded method is one row, as before; an
+      // overloaded one (Context.reply) gets a row each, so every form shows its
+      // own parameters AND its own description - a single joined row would hide
+      // the second signature's comment, which is where an @deprecated notice lives.
+      for (const sig of signatures) {
+        const params = (sig.parameters || [])
+          .map(
+            (p: Obj) =>
+              `\`${p.flags?.isRest ? "..." : ""}${p.name}${p.flags?.isOptional ? "?" : ""}\`: ${escCell(renderType(p.type, true))}`
+          )
+          .join(", ");
+        const ret = escCell(renderType(sig.type, true));
+        // The summary carries the prose description (for generated Api methods the
+        // {@link} -> the official Bot API page; for hand-written library methods
+        // the description that would otherwise be dropped). A signature's own comment
+        // wins over the method's, so an overload's @deprecated text is shown.
+        const comment = sig.comment || m.comment;
+        const summary = renderSummary(comment);
+        const deprecated = (comment?.blockTags || [])
+          .filter((tag: Obj) => tag.tag === "@deprecated")
+          .map((tag: Obj) => (tag.content || []).map(renderPart).join(""))
+          .join(" ")
+          .trim();
+        const desc = [deprecated ? `**@deprecated** ${deprecated}` : "", summary]
+          .filter(Boolean)
+          .join(" ");
+        out.push(
+          `| \`${m.name}\` | ${params || "-"} | ${ret || "void"} | ${escCell(desc) || "-"} |`
+        );
+      }
     }
   }
   const props = propsOf(c);
