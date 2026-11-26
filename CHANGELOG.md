@@ -5,6 +5,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased][Unreleased]
 
+## [2.5.0][2.5.0] - 2026-11-26
+
 ### Bot API 10.5 (November 22, 2026)
 
 #### Bot Settings
@@ -1492,4 +1494,5 @@ Fixed:
 [2.3.0]:https://github.com/yagop/node-telegram-bot-api/releases/tag/v2.3.0
 [2.4.0]:https://github.com/yagop/node-telegram-bot-api/releases/tag/v2.4.0
 [2.4.1]:https://github.com/yagop/node-telegram-bot-api/releases/tag/v2.4.1
-[Unreleased]:https://github.com/yagop/node-telegram-bot-api/compare/v2.4.1...master
+[2.5.0]:https://github.com/yagop/node-telegram-bot-api/releases/tag/v2.5.0
+[Unreleased]:https://github.com/yagop/node-telegram-bot-api/compare/v2.5.0...master
