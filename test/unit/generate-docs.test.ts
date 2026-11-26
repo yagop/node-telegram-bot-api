@@ -2,7 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 
 import { __test } from "../../scripts/generate-docs.js";
-const { renderType, slug, byName } = __test;
+const { renderType, slug, byName, emitClass } = __test;
 
 const T = (o: Record<string, any>) => o;
 
@@ -80,4 +80,39 @@ test("byName sorts by codepoint, not locale (deterministic across runtimes)", ()
   const names = byName(arr).map((x) => x.name);
   // codepoint order: uppercase (B,Z) before underscore/ascii-lowercase
   assert.deepEqual(names, ["Bot", "Bot2", "Zoo", "_x", "api"]);
+});
+
+test("emitClass lists every signature of an overloaded method, not just the first", () => {
+  // Context.reply is overloaded (object form + positional form); the method
+  // table must show both or the positional form every README example uses
+  // vanishes from the reference.
+  const stringType = T({ type: "intrinsic", name: "string" });
+  const signatures = [
+    {
+      parameters: [T({ name: "params", type: T({ type: "reference", name: "ReplyParams" }) })],
+      type: T({ type: "reference", name: "Promise" }),
+      comment: T({ summary: [] }),
+    },
+    {
+      parameters: [
+        T({ name: "text", type: stringType }),
+        T({ name: "other", flags: T({ isOptional: true }), type: T({ type: "intrinsic", name: "object" }) }),
+      ],
+      type: T({ type: "reference", name: "Promise" }),
+      comment: T({ summary: [] }),
+    },
+  ];
+  const out = emitClass(
+    T({
+      name: "Ctx",
+      kind: 128, // ReflectionKind.Class
+      children: [T({ name: "reply", kind: 2048 /* ReflectionKind.Method */, signatures })],
+    }),
+  );
+  const row = out.split("\n").find((line) => line.startsWith("| `reply` |"));
+  assert.ok(row, "reply row rendered");
+  // The type renders as a link when the name resolves to a documented declaration.
+  assert.match(row, /`params`: (?:\[ReplyParams\]\(#replyparams\)|ReplyParams)/);
+  assert.match(row, /`text`: string, `other\?`: object/);
+  assert.match(row, /; /); // the two signatures are joined
 });

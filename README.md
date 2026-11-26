@@ -30,7 +30,7 @@ import { run } from "node-telegram-bot-api/node"; // managed runner: wires Ctrl-
 const bot = new Bot(process.env.BOT_TOKEN!);
 
 // commands, regex and update types are all middleware - registration order wins
-bot.command("start", (ctx) => ctx.reply("Hi! Send me anything."));
+bot.command("start", (ctx) => ctx.reply({ text: "Hi! Send me anything." }));
 bot.hears(/echo (.+)/, (ctx) => ctx.reply(ctx.match![1]!));
 
 bot.on("message", (ctx) =>

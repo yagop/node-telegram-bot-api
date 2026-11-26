@@ -37,6 +37,12 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Context shortcuts
 
+- Added the object form `ctx.reply({ text, ...options })` alongside the
+  positional `ctx.reply(text, options?)`. Both are supported; the positional
+  form is not deprecated. The two share one implementation, so routing
+  (business connection, forum topic, direct-messages topic), the ephemeral
+  callback-reply branch and the `guest_message` refusal behave identically.
+
 - Added `ctx.editMessageText(params)` (text required) - edit the
   message that triggered a callback query, picking the target itself:
   `callback_query.message` (`chat_id` + `message_id`, with
