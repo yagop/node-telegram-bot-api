@@ -28,7 +28,7 @@ const port = Number(process.env.PORT ?? "8443");
 const path = "/telegram";
 
 const bot = new Bot(token);
-bot.command("start", (ctx) => ctx.reply("Hello from a raw node:http webhook 🌐"));
+bot.command("start", (ctx) => ctx.reply({ text: "Hello from a raw node:http webhook 🌐" }));
 
 // A bare node:http server: the same secret-token check and dispatch as every other
 // webhook runtime, just without a framework. Requests off `path` get a 404.

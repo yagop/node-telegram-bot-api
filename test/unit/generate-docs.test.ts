@@ -1,7 +1,8 @@
-import { test } from "node:test";
 import assert from "node:assert/strict";
+import { test } from "node:test";
 
 import { __test } from "../../scripts/generate-docs.js";
+
 const { renderType, slug, byName, emitClass } = __test;
 
 const T = (o: Record<string, any>) => o;
@@ -15,7 +16,7 @@ test("mapped type renders its constraint, modifier, and template value", () => {
       templateType: T({ type: "reference", name: "Foo" }),
     }),
     true,
-    "",
+    ""
   );
   assert.equal(out, "{ [K in keyof]: Foo }");
 });
@@ -31,7 +32,7 @@ test("mapped type inlines +readonly and ? modifiers when present", () => {
       optionalModifier: "+",
     }),
     true,
-    "",
+    ""
   );
   assert.equal(out, "{ +readonly [P in keyof]+?: string }");
 });
@@ -43,15 +44,21 @@ test("template-literal renders head + substitutions + separators", () => {
       type: "template-literal",
       head: "",
       tail: [
-        [T({ type: "union", types: [T({ type: "literal", value: "on" }), T({ type: "literal", value: "off" })] }), "-"],
+        [
+          T({
+            type: "union",
+            types: [T({ type: "literal", value: "on" }), T({ type: "literal", value: "off" })],
+          }),
+          "-",
+        ],
         [T({ type: "reference", name: "T" }), ""],
       ],
     }),
     true,
-    "",
+    ""
   );
   // The union is a *substitution*, so it renders as `${...}`, not inlined.
-  assert.equal(out, "`${\"on\" | \"off\"}-${T}`");
+  assert.equal(out, '`${"on" | "off"}-${T}`');
 });
 
 test("conditional type renders check/extends/true/false with spaces", () => {
@@ -64,7 +71,7 @@ test("conditional type renders check/extends/true/false with spaces", () => {
       falseType: T({ type: "intrinsic", name: "never" }),
     }),
     true,
-    "",
+    ""
   );
   assert.equal(out, "T extends string ? number : never");
 });
@@ -82,7 +89,7 @@ test("byName sorts by codepoint, not locale (deterministic across runtimes)", ()
   assert.deepEqual(names, ["Bot", "Bot2", "Zoo", "_x", "api"]);
 });
 
-test("emitClass lists every signature of an overloaded method, not just the first", () => {
+test("emitClass gives an overloaded method one row per signature", () => {
   // Context.reply is overloaded (object form + positional form); the method
   // table must show both or the positional form every README example uses
   // vanishes from the reference.
@@ -96,10 +103,27 @@ test("emitClass lists every signature of an overloaded method, not just the firs
     {
       parameters: [
         T({ name: "text", type: stringType }),
-        T({ name: "other", flags: T({ isOptional: true }), type: T({ type: "intrinsic", name: "object" }) }),
+        T({
+          name: "other",
+          flags: T({ isOptional: true }),
+          type: T({ type: "intrinsic", name: "object" }),
+        }),
       ],
       type: T({ type: "reference", name: "Promise" }),
-      comment: T({ summary: [] }),
+      // The positional overload carries @deprecated as a TypeDoc block tag.
+      comment: T({
+        summary: [],
+        blockTags: [
+          T({
+            tag: "@deprecated",
+            content: [
+              T({ kind: "text", text: "Use " }),
+              T({ kind: "code", text: "`reply({ text })`" }),
+              T({ kind: "text", text: " instead." }),
+            ],
+          }),
+        ],
+      }),
     },
   ];
   const out = emitClass(
@@ -107,12 +131,19 @@ test("emitClass lists every signature of an overloaded method, not just the firs
       name: "Ctx",
       kind: 128, // ReflectionKind.Class
       children: [T({ name: "reply", kind: 2048 /* ReflectionKind.Method */, signatures })],
-    }),
+    })
   );
-  const row = out.split("\n").find((line) => line.startsWith("| `reply` |"));
-  assert.ok(row, "reply row rendered");
+  const rows = out.split("\n").filter((line) => line.startsWith("| `reply` |"));
+  assert.strictEqual(rows.length, 2, "one row per overload");
+  // Asserting the length above does not narrow the element type, so find each
+  // row by what it contains instead of indexing.
+  const objectRow = rows.find((row) => row.includes("`params`:"));
+  const positionalRow = rows.find((row) => row.includes("`text`: string"));
+  assert.ok(objectRow && positionalRow, "both overloads rendered");
   // The type renders as a link when the name resolves to a documented declaration.
-  assert.match(row, /`params`: (?:\[ReplyParams\]\(#replyparams\)|ReplyParams)/);
-  assert.match(row, /`text`: string, `other\?`: object/);
-  assert.match(row, /; /); // the two signatures are joined
+  assert.match(objectRow, /`params`: (?:\[ReplyParams\]\(#replyparams\)|ReplyParams)/);
+  assert.match(positionalRow, /`text`: string, `other\?`: object/);
+  // Only the deprecated overload is marked, in its own row, with its own text.
+  assert.doesNotMatch(objectRow, /@deprecated/);
+  assert.match(positionalRow, /\*\*@deprecated\*\* Use `reply\(/);
 });

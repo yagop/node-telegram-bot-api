@@ -46,26 +46,29 @@ bot.use(
   createSession<Session>({
     store: new FileSessionStorage({ path: "./.great_bot_sessions" }),
     initial: () => ({ edits: 0 }),
-  }),
+  })
 );
 
 // `/start` opens the flow: ask for the name, tag its reply as the "name" step.
 bot.command("start", async (ctx) => {
-  const sent = await ctx.reply("👋 What's your name?", { reply_markup: { force_reply: true } });
+  const sent = await ctx.reply({
+    text: "👋 What's your name?",
+    reply_markup: { force_reply: true },
+  });
   taggedReplies<"name" | "email">(ctx).expect(sent.message_id, "name");
 });
 
 // `/me` reads the persisted profile back - proof it survives restarts.
 bot.command("me", (ctx) => {
   const { name, email, edits } = ctx.getSession<Session>().data;
-  if (name === undefined) return ctx.reply("No profile yet - send /start.");
-  return ctx.reply(`Name: ${name}\nEmail: ${email ?? "-"}\nCompleted ${edits}x`);
+  if (name === undefined) return ctx.reply({ text: "No profile yet - send /start." });
+  return ctx.reply({ text: `Name: ${name}\nEmail: ${email ?? "-"}\nCompleted ${edits}x` });
 });
 
 // `/forget` drops the whole session for this chat.
 bot.command("forget", (ctx) => {
   ctx.getSession().delete();
-  return ctx.reply("Forgotten. Send /start to begin again.");
+  return ctx.reply({ text: "Forgotten. Send /start to begin again." });
 });
 
 // One handler routes every awaited reply by its tag.
@@ -77,7 +80,7 @@ bot.on("message", async (ctx, next) => {
 
   if (step === "name") {
     ctx.getSession<Session>().data.name = text;
-    const sent = await ctx.reply("And your email?", { reply_markup: { force_reply: true } });
+    const sent = await ctx.reply({ text: "And your email?", reply_markup: { force_reply: true } });
     taggedReplies<"name" | "email">(ctx).expect(sent.message_id, "email"); // chain the next prompt
     return;
   }
@@ -86,7 +89,9 @@ bot.on("message", async (ctx, next) => {
   const data = ctx.getSession<Session>().data;
   data.email = text;
   data.edits += 1;
-  await ctx.reply(`Thanks ${data.name}! Saved ${data.email}. Send /me to see it, /start to redo.`);
+  await ctx.reply({
+    text: `Thanks ${data.name}! Saved ${data.email}. Send /me to see it, /start to redo.`,
+  });
 });
 
 await run(bot, { exitOnError: true });

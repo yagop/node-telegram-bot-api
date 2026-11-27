@@ -42,7 +42,7 @@
  *
  * ```ts
  * bot.command("start", async (ctx) => {
- *   const sent = await ctx.reply("Your name?", { reply_markup: { force_reply: true } });
+ *   const sent = await ctx.reply({ text: "Your name?", reply_markup: { force_reply: true } });
  *   expectReply(ctx, sent.message_id, { step: "name" }, { ttlSeconds: 3600 });
  * });
  *

@@ -1,5 +1,7 @@
-import { describe, test } from "node:test";
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+import { describe, test } from "node:test";
+import ts from "typescript";
 import type { Api } from "../../src/core/api.js";
 import { Context } from "../../src/core/context.js";
 import type { CallbackQuery, Update } from "../../src/types/index.js";
@@ -415,6 +417,9 @@ describe("Context", () => {
 
     // Drive both forms through the same table: routing is shared code, but the
     // object form goes through a different overload, so prove parity per case.
+    // The positional form is deprecated, not removed - it keeps its coverage
+    // until the major that drops it, so the strike-through in an editor here is
+    // expected.
     async function replyTo(
       update: Record<string, unknown>,
       other?: Record<string, unknown>,
@@ -644,5 +649,40 @@ describe("Context", () => {
       assert.throws(() => ctx.reply("pong"), /answerGuestQuery/);
       assert.strictEqual(calls.sendMessage.length, 0);
     });
+  });
+});
+
+describe("Context.reply deprecation (pinned on the source)", () => {
+  // Read the real source rather than a fixture: `@deprecated` must sit on the
+  // positional overload alone. If it drifts onto the object form (or off the
+  // positional one), every README example lights up - or nothing does.
+  const sourceText = readFileSync(new URL("../../src/core/context.ts", import.meta.url), "utf8");
+  const sourceFile = ts.createSourceFile("context.ts", sourceText, ts.ScriptTarget.ES2022, true);
+  const classNode = sourceFile.statements.find(
+    (statement) => ts.isClassDeclaration(statement) && statement.name?.text === "Context"
+  );
+  assert.ok(classNode && ts.isClassDeclaration(classNode), "Context class found");
+  const overloads = classNode.members.filter(
+    (member): member is ts.MethodDeclaration =>
+      ts.isMethodDeclaration(member) && member.name.getText() === "reply"
+  );
+  const deprecationByFirstParam = overloads.map((overload) => ({
+    firstParam: overload.parameters[0]?.name.getText(),
+    isImplementation: overload.body !== undefined,
+    deprecated: ts.getJSDocTags(overload).some((tag) => ts.isJSDocDeprecatedTag(tag)),
+  }));
+
+  test("exactly three reply declarations: object overload, positional overload, implementation", () => {
+    assert.deepStrictEqual(
+      deprecationByFirstParam.map(({ firstParam }) => firstParam),
+      ["params", "text", "textOrParams"]
+    );
+  });
+
+  test("only the positional overload is @deprecated", () => {
+    assert.deepStrictEqual(
+      deprecationByFirstParam.map(({ deprecated }) => deprecated),
+      [false, true, false]
+    );
   });
 });

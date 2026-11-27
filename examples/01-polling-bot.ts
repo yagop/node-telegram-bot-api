@@ -16,29 +16,31 @@ const token = process.env.BOT_TOKEN!;
 const bot = new Bot(token);
 
 // `/start` and `/help` share one handler. `ctx.match` is the trimmed args string.
-bot.command(["start", "help"], (ctx) => ctx.reply("Hi! Send me anything and I'll echo it."));
+bot.command(["start", "help"], (ctx) =>
+  ctx.reply({ text: "Hi! Send me anything and I'll echo it." })
+);
 
 // `/echo something` → replies "something". `ctx.match` holds the args after the command.
 bot.command("echo", (ctx) => {
   const args = (ctx.match as string) || "(nothing to echo)";
-  return ctx.reply(args);
+  return ctx.reply({ text: args });
 });
 
 // Exact-string trigger.
-bot.hears("ping", (ctx) => ctx.reply("pong"));
+bot.hears("ping", (ctx) => ctx.reply({ text: "pong" }));
 
 // RegExp trigger: `ctx.match` becomes the RegExpMatchArray, so capture groups are available.
 bot.hears(/^roll (\d+)$/, (ctx) => {
   const m = ctx.match as RegExpMatchArray;
   const sides = Number(m[1]);
   const value = 1 + Math.floor(Math.random() * sides);
-  return ctx.reply(`🎲 ${value}`);
+  return ctx.reply({ text: `🎲 ${value}` });
 });
 
 // Fallback: any other text message gets echoed.
 bot.on("message", (ctx) => {
   const text = ctx.message?.text;
-  if (text) return ctx.reply(text);
+  if (text) return ctx.reply({ text: text });
 });
 
 // Error boundary: anything thrown by the chain lands here instead of crashing the loop.

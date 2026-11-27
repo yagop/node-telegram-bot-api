@@ -32,13 +32,17 @@ bot.use(session);
 // `/start` kicks off the flow.
 bot.command("start", (ctx) => {
   session.get(ctx).data = { step: "ship_name" };
-  return ctx.reply("🧑‍🚀 Welcome to mission control, Captain. Your spaceship needs a name!");
+  return ctx.reply({
+    text: "🧑‍🚀 Welcome to mission control, Captain. Your spaceship needs a name!",
+  });
 });
 
 // `/cancel` resets at any point.
 bot.command("cancel", (ctx) => {
   session.get(ctx).delete();
-  return ctx.reply("🍕 Mission cancelled. The crew has gone for pizza. Send /start for a new mission.");
+  return ctx.reply({
+    text: "🍕 Mission cancelled. The crew has gone for pizza. Send /start for a new mission.",
+  });
 });
 
 // Drive the steps from plain text messages (skip slash-commands, handled above).
@@ -52,15 +56,23 @@ bot.on("message", (ctx) => {
   switch (state.step) {
     case "ship_name":
       handle.data = { step: "destination", ship: text };
-      return ctx.reply(`🍿 ${text} is fuelled and stocked with snacks. Where are we going? 🪐 Pick any planet, real or invented.`);
+      return ctx.reply({
+        text: `🍿 ${text} is fuelled and stocked with snacks. Where are we going? 🪐 Pick any planet, real or invented.`,
+      });
     case "destination":
       // TypeScript knows state.ship exists here.
       handle.data = { step: "launched", ship: state.ship, destination: text };
-      return ctx.reply(`🚀 3... 2... 1... Liftoff! ${state.ship} is headed for ${text}. 🐈 The ship's cat has claimed the captain's chair.`);
+      return ctx.reply({
+        text: `🚀 3... 2... 1... Liftoff! ${state.ship} is headed for ${text}. 🐈 The ship's cat has claimed the captain's chair.`,
+      });
     case "launched":
-      return ctx.reply(`🌌 ${state.ship} is cruising toward ${state.destination}. Send /start for a new mission.`);
+      return ctx.reply({
+        text: `🌌 ${state.ship} is cruising toward ${state.destination}. Send /start for a new mission.`,
+      });
     case "idle":
-      return ctx.reply("🛰️ The launchpad is empty. Send /start to build your mission.");
+      return ctx.reply({
+        text: "🛰️ The launchpad is empty. Send /start to build your mission.",
+      });
   }
 });
 

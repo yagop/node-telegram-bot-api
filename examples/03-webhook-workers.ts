@@ -29,7 +29,7 @@ interface ExecutionContext {
 export default {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     const bot = new Bot(env.BOT_TOKEN);
-    bot.command("start", (c) => c.reply("Hello from the edge ⚡"));
+    bot.command("start", (c) => c.reply({ text: "Hello from the edge ⚡" }));
 
     const handle = webhookCallback(bot, {
       secretToken: env.WEBHOOK_SECRET,

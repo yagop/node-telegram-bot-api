@@ -32,7 +32,8 @@ bot.on("message", async (ctx, next) => {
 });
 
 bot.command("stats", (ctx) =>
-  ctx.reply("Press to see your stats (only you will see them).", {
+  ctx.reply({
+    text: "Press to see your stats (only you will see them).",
     reply_markup: { inline_keyboard: [[{ text: "Show my stats", callback_data: "stats" }]] },
   })
 );

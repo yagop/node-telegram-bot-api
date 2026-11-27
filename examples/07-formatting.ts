@@ -37,7 +37,9 @@ if (chatId !== 0) {
 // You can also hand-build a plain `MessageEntity[]` with `EntityType` when you
 // already know the offsets (e.g. mirroring text produced elsewhere).
 const manualText = "spoiler ahead";
-const manualEntities: MessageEntity[] = [{ type: EntityType.Spoiler, offset: 0, length: manualText.length }];
+const manualEntities: MessageEntity[] = [
+  { type: EntityType.Spoiler, offset: 0, length: manualText.length },
+];
 if (chatId !== 0) {
   await api.sendMessage({ chat_id: chatId, text: manualText, entities: manualEntities });
 }

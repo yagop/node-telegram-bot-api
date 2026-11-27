@@ -5,6 +5,14 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased][Unreleased]
 
+### Context shortcuts
+
+- **Deprecated:** the positional `ctx.reply(text, options?)` form, in favor of
+  `ctx.reply({ text, ...options })` (added in 2.5.0). It keeps working and is
+  covered by the same tests; the `@deprecated` tag marks it for removal in the
+  next major version. 2.5.0's note that it was "not deprecated" is superseded
+  by this entry.
+
 ## [2.5.0][2.5.0] - 2026-11-26
 
 ### Bot API 10.5 (November 22, 2026)
@@ -642,6 +650,8 @@ The **package name is intentionally retained** (`node-telegram-bot-api`) even th
 #### Mental-model shifts
 
 - **One client, single-argument methods.** `Api` mirrors the wire API: one method per Bot API method, each taking one params object. Positional ergonomics (`ctx.reply(text)`) live on `Context`.
+
+> *Added later (unreleased, after 2.5.0):* `ctx.reply(text, opts)` above is the form 2.0.0 shipped. It still works but is now deprecated; on 2.5.0 or later prefer `ctx.reply({ text, ...opts })`. See the Unreleased section at the top.
 - **Structured fields are plain typed objects.** `reply_markup`, `entities`, `reply_parameters`, `media`, ... take a plain object/array (or a fluent builder, which returns the same plain shape); the pipeline serializes them once. No `json()` wrapper, no branded strings. A nested file is just an `InputFile` dropped into the file field - the pipeline hoists it to an `attach://` part.
 - **Composition over events.** `bot.use(mw)` and the filter helpers (`on`/`command`/`hears`) are koa-style middleware over a per-update `Context`, so sessions/auth/rate-limiting/error-boundaries wrap one another via `await next()`. A handler error never stops the bot: it is routed to the error boundary (default: log via `console.error` and continue); install your own with `bot.catch()`, and rethrow from it to opt back into fail-loud.
 - **Two entry points, one dispatch path.** `bot.startPolling(source)` pumps an async generator for long-running processes; `bot.handleUpdate(update)` handles a single update and is what the edge/webhook callback calls.

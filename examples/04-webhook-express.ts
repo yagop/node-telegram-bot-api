@@ -12,18 +12,25 @@
  *
  * This file is illustrative (needs a running server); it only needs to typecheck.
  */
-import { Bot, type NodeLikeRequest, type NodeLikeResponse, registerExpressWebhook } from "node-telegram-bot-api";
+import {
+  Bot,
+  type NodeLikeRequest,
+  type NodeLikeResponse,
+  registerExpressWebhook,
+} from "node-telegram-bot-api";
 
 const token = process.env.BOT_TOKEN!;
 const secret = process.env.WEBHOOK_SECRET!;
 
 const bot = new Bot(token);
-bot.command("start", (ctx) => ctx.reply("Hello from Express 🚂"));
+bot.command("start", (ctx) => ctx.reply({ text: "Hello from Express 🚂" }));
 
 // Minimal structural stand-in for an Express app. Replace with `express()`:
 //   import express from "express";
 //   const app = express();
-const app: { post(path: string, handler: (req: NodeLikeRequest, res: NodeLikeResponse) => unknown): void } = {
+const app: {
+  post(path: string, handler: (req: NodeLikeRequest, res: NodeLikeResponse) => unknown): void;
+} = {
   post(path) {
     console.log(`(stub) registered POST ${path}`);
   },

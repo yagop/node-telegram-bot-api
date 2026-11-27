@@ -80,7 +80,7 @@ function pageText(page: number): string {
 }
 
 // 1) Stateless paging - the button carries everything the handler needs.
-bot.command("page", (ctx) => ctx.reply(pageText(0), { reply_markup: pageKeyboard(0) }));
+bot.command("page", (ctx) => ctx.reply({ text: pageText(0), reply_markup: pageKeyboard(0) }));
 
 bot.on("callback_query", async (ctx, next) => {
   const match = /^page:(\d+)$/.exec(ctx.callbackQuery?.data ?? "");
@@ -117,7 +117,8 @@ bot.command("delete", async (ctx) => {
   const previous = session.data.pendingConfirmationId;
   if (previous !== undefined) forgetCallback(ctx, previous);
 
-  const sent = await ctx.reply("Delete all your data? This cannot be undone.", {
+  const sent = await ctx.reply({
+    text: "Delete all your data? This cannot be undone.",
     reply_markup: { inline_keyboard: [[{ text: "Yes, delete", callback_data: "confirm" }]] },
   });
 
@@ -159,9 +160,9 @@ bot.on("callback_query", async (ctx, next) => {
   ctx.getSession<Session>().data.pendingConfirmationId = undefined;
 
   await ctx.answerCallbackQuery({ text: "Deleting..." });
-  await ctx.reply(
-    `Ran ${pending.op} on ${pending.targets.join(", ")} (asked at ${pending.requestedAt}).`
-  );
+  await ctx.reply({
+    text: `Ran ${pending.op} on ${pending.targets.join(", ")} (asked at ${pending.requestedAt}).`,
+  });
 });
 
 await run(bot, { exitOnError: true });

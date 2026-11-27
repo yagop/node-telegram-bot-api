@@ -25,7 +25,13 @@
  *
  * Run: BOT_TOKEN=123:abc bun examples/18-reply-tracking-lru.ts
  */
-import { Bot, createSession, expectCallback, matchCallback, MemorySessionStorage } from "node-telegram-bot-api";
+import {
+  Bot,
+  createSession,
+  expectCallback,
+  MemorySessionStorage,
+  matchCallback,
+} from "node-telegram-bot-api";
 import { run } from "node-telegram-bot-api/node";
 
 /** The oversized, private marker each sticky keyboard carries - too big for callback_data. */
@@ -48,7 +54,7 @@ bot.use(
       defaultTtlSeconds: 3600, // every marker expires after an idle hour...
       slidingTtl: true, // ...but each press pushes that hour out again
     },
-  }),
+  })
 );
 
 const stickyKeyboard = { inline_keyboard: [[{ text: "Ping this menu", callback_data: "ping" }]] };
@@ -56,7 +62,10 @@ const stickyKeyboard = { inline_keyboard: [[{ text: "Ping this menu", callback_d
 // Each `/menu` sends a fresh tracked keyboard. Fire it many times: older, un-pressed
 // menus are evicted once the chat is over budget, so the envelope cannot balloon.
 bot.command("menu", async (ctx) => {
-  const sent = await ctx.reply("Sticky menu - press it to keep it alive.", { reply_markup: stickyKeyboard });
+  const sent = await ctx.reply({
+    text: "Sticky menu - press it to keep it alive.",
+    reply_markup: stickyKeyboard,
+  });
   const marker: MenuMarker = {
     kind: "sticky-menu",
     openedBy: ctx.from?.id ?? 0,
@@ -73,7 +82,10 @@ bot.on("callback_query", async (ctx, next) => {
   if (ctx.callbackQuery?.data !== "ping") return next();
   const marker = matchCallback<MenuMarker>(ctx);
   if (!marker) {
-    await ctx.answerCallbackQuery({ text: "This menu was evicted or expired - send /menu again.", show_alert: true });
+    await ctx.answerCallbackQuery({
+      text: "This menu was evicted or expired - send /menu again.",
+      show_alert: true,
+    });
     return;
   }
   await ctx.answerCallbackQuery({ text: `Still alive - opened ${marker.openedAt}` });
@@ -84,9 +96,9 @@ bot.command("pending", (ctx) => {
   const slot = ctx.getSession().ext<{ presses: Record<string, unknown> }>(
     "reply",
     () => ({ replies: {}, presses: {} }),
-    (s) => typeof s.presses === "object" && s.presses !== null,
+    (s) => typeof s.presses === "object" && s.presses !== null
   );
-  return ctx.reply(`Tracked menus for this chat: ${Object.keys(slot.presses).length}`);
+  return ctx.reply({ text: `Tracked menus for this chat: ${Object.keys(slot.presses).length}` });
 });
 
 await run(bot, { exitOnError: true });
