@@ -352,9 +352,9 @@ export class Context {
    */
   reply(params: ReplyParams): Promise<SendMessageResult>;
   /**
-   * @deprecated Use `reply({ text, ...options })` instead. The positional form is
-   * the same call with `{ text, ...other }` pre-split, and will be removed in
-   * the next major version.
+   * @deprecated Use `reply({ text, ...options })` instead - one params object,
+   * like every other `Context`/`Api` method. This form is the same call with
+   * `{ text, ...other }` pre-split; it keeps working until the next major version.
    */
   reply(text: string, other?: Omit<ReplyParams, "text">): Promise<SendMessageResult>;
   reply(
